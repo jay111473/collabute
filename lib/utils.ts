@@ -10,3 +10,18 @@ export function truncateToFourWords(str: string): string {
   if (words.length <= 4) return str;
   return words.slice(0, 4).join(" ") + "...";
 }
+
+type Issue = {
+  status: string;
+};
+
+export function calculateProgressPercentage(
+  issues: Issue[],
+  completedStatus: string = "resolved"
+): number {
+  const completedIssues = issues.filter(
+    (issue) => issue.status === completedStatus
+  ).length;
+  const totalIssues = issues.length;
+  return totalIssues > 0 ? Math.round((completedIssues / totalIssues) * 100) : 0;
+}

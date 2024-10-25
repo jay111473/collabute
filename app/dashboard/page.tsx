@@ -104,8 +104,8 @@ const IssuesTable = ({ issues }: { issues: Issue[] }) => (
 );
 
 const Dashboard = async () => {
-  const token = cookies().get("token")?.value;
-  const userId = cookies().get("userid")?.value;
+  const token = (await cookies()).get("token")?.value;
+  const userId = (await cookies()).get("userid")?.value;
 
   if (!token || !userId) {
     throw new Error("Authentication required");

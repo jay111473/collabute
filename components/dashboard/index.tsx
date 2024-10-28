@@ -69,7 +69,9 @@ const ProjectPageComponent = ({ project }: { project: Project }) => {
           <span className="w-full h-px bg-gray-200"></span>
           <Tabs defaultValue="issues">
             <TabsList className="p-4">
-              <TabsTrigger value="issues">Issues</TabsTrigger>
+              <TabsTrigger value="issues">
+                Issues ({project.issues.length})
+              </TabsTrigger>
               <TabsTrigger value="collabuters">Collabuters</TabsTrigger>
               <TabsTrigger value="latest-activity">Latest Activity</TabsTrigger>
             </TabsList>
@@ -99,7 +101,6 @@ const ProjectPageComponent = ({ project }: { project: Project }) => {
               </div>
             </TabsContent>
           </Tabs>
-          <span className="w-full h-px bg-gray-200"></span>
         </Card>
       </main>
     </div>

@@ -26,7 +26,9 @@ export interface User {
 export interface Issue {
   id: string;
   title: string;
+  description: string;
   status: string;
+  budget: number;
   requests: Request[];
   priority: string;
   assignee?: {

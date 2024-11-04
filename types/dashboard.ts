@@ -2,11 +2,19 @@ export interface Project {
   id: string;
   title: string;
   description: string;
+  slug: string;
   issues: Issue[];
+  stacks: Stacks[];
   requests: Request[];
   status: string;
   budget: number;
   updatedAt: string;
+  projectType: ProjectType;
+}
+
+export interface Stacks {
+  id: string;
+  name: string;
 }
 
 export interface User {
@@ -50,3 +58,5 @@ export interface DashboardData {
     totalPayment?: number;
   };
 }
+
+export type ProjectType = 'normal' | 'urgent' | 'featured' | 'trending';

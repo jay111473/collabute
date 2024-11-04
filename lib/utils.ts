@@ -1,4 +1,3 @@
-import { Issue } from "@/types/dashboard";
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -11,6 +10,32 @@ export function truncateToFourWords(str: string): string {
   if (words.length <= 4) return str;
   return words.slice(0, 4).join(" ") + "...";
 }
+
+export function truncateText(text: string, wordLimit: number = 10): string {
+  if (!text) return "";
+  const words = text.split(" ");
+  if (words.length <= wordLimit) return text;
+  return words.slice(0, wordLimit).join(" ") + "...";
+}
+
+export const getBulbColor = (color: string) => {
+  switch (color) {
+    case "yellow":
+      return "text-yellow-400";
+    case "blue":
+      return "text-blue-400";
+    case "green":
+      return "text-green-400";
+    case "gray":
+      return "text-gray-400";
+    default:
+      return "text-gray-400";
+  }
+};  
+
+type Issue = {
+  status: string;
+};
 
 export function getStatusInfo(status: string): {
   label: string;
@@ -29,21 +54,6 @@ export function getStatusInfo(status: string): {
       return { label: status, color: "gray" }; // Default color if status is unknown
   }
 }
-
-export const getBulbColor = (color: string) => {
-  switch (color) {
-    case "yellow":
-      return "text-yellow-400";
-    case "blue":
-      return "text-blue-400";
-    case "green":
-      return "text-green-400";
-    case "gray":
-      return "text-gray-400";
-    default:
-      return "text-gray-400";
-  }
-};
 
 export function calculateProgressPercentage(
   issues: Issue[],

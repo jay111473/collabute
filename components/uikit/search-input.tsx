@@ -1,3 +1,5 @@
+"use client";
+
 import React, { forwardRef } from "react";
 import { Input, InputProps } from "../ui/input";
 import { Search } from "lucide-react";

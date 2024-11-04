@@ -1,16 +1,14 @@
-"use client";
-import { useTheme } from "next-themes";
 import React from "react";
-import { ExploreComponent } from "./components/explore";
-import { CircleUser } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ExploreComponent } from "@/components/dashboard/projects/explore";
+import { getProjects } from "@/lib/get-projects";
 
-const Explore = () => {
-  const { setTheme } = useTheme();
+const Explore = async () => {
+  const { docs } = await getProjects(1);
+
   return (
-    <>
-      <ExploreComponent />
-    </>
+    <div className="">
+      <ExploreComponent projects={docs} />
+    </div>
   );
 };
 

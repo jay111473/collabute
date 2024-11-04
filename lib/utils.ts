@@ -11,6 +11,13 @@ export function truncateToFourWords(str: string): string {
   return words.slice(0, 4).join(" ") + "...";
 }
 
+export function truncateText(text: string, wordLimit: number = 10): string {
+  if (!text) return '';
+  const words = text.split(' ');
+  if (words.length <= wordLimit) return text;
+  return words.slice(0, wordLimit).join(' ') + '...';
+}
+
 type Issue = {
   status: string;
 };

@@ -16,19 +16,19 @@ const bgs = [
   "bg-blue-200",
 ];
 
-export const Users: React.FC<Props> = ({ users }) => {
+export const Collabuters: React.FC<Props> = ({ users }) => {
   return (
     <span className="flex border border-gray-400 px-2 py-1 rounded-full gap-2 items-center pr-5">
-      <UsersIcon />
-      <span className="text-sm font-bold">{users?.length}</span>
-      <span className="flex">
+      <UsersIcon size={14} />
+      <p className="text-xs font-bold">{users?.length}</p>
+      <p className="flex">
         {users?.map((user, index) => {
           return (
             <span key={index} className="-mr-5">
               <Avatar className="flex items-center">
                 <AvatarImage src={user?.src} />
                 <AvatarFallback
-                  className={cn(bgs[index % bgs?.length], "w-8 h-8")}
+                  className={cn(bgs[index % bgs?.length], "w-5 h-5")}
                 >
                   {user?.label?.slice(0, 2)?.toUpperCase?.()}
                 </AvatarFallback>
@@ -36,7 +36,7 @@ export const Users: React.FC<Props> = ({ users }) => {
             </span>
           );
         })}
-      </span>
+      </p>
     </span>
   );
 };

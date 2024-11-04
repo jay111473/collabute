@@ -68,4 +68,4 @@ export const ProjectCard = ({ project }: ProjectCardProps) => {
       </Card>
     </Link>
   );
-}; 
+};

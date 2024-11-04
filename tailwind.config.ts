@@ -20,10 +20,11 @@ const config = {
     },
     extend: {
       colors: {
-        primary: {
-          light: "#7300FF",
-          dark: "#D4B0FF",
-        },
+        primary: "#7300FF",
+        primary2: "#A154FF",
+        secondary: "#ffffff",
+        primaryLowOpacity: "#daabff33",
+        accent: "#930CFE",
       },
       keyframes: {
         meteor: {

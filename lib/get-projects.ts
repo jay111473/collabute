@@ -3,12 +3,24 @@ import axios from "axios";
 
 export interface Projects {
   docs: Project[];
+  totalDocs: number;
+  limit: number;
+  totalPages: number;
+  page: number;
+  pagingCounter: number;
+  hasPrevPage: boolean;
+  hasNextPage: boolean;
+  prevPage: number | null;
+  nextPage: number | null;
 }
 
-export async function getProjects(page: number): Promise<Projects> {
+export async function getProjects(
+  page: number = 1,
+  limit: number = 5
+): Promise<Projects> {
   try {
     const response = await axios.get<Projects>(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/projects?limit=5&page=${page}&depth=1`
+      `${process.env.NEXT_PUBLIC_API_URL}/api/projects?limit=${limit}&page=${page}&depth=1`
     );
     return response?.data;
   } catch (error) {

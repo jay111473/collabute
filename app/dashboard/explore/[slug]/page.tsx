@@ -5,7 +5,6 @@ import ProjectPageComponent from "@/components/dashboard";
 const ProjectPage = async ({ params }: { params: { slug: string } }) => {
   const { slug } = await params;
   const { docs } = await getProject(slug);
-  console.log(docs);
   const project = docs[0];
 
   return (

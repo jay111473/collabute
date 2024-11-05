@@ -30,10 +30,21 @@ export interface Issue {
   status: string;
   budget: number;
   requests: Request[];
+  onboardingVideo: {
+    url: string;
+    name: string;
+  }
+  onboardingVideoThumbnail: {
+    url: string
+    name: string
+  }
+  onboardingVideoLink: string;
   priority: string;
   assignee?: {
     name: string;
   };
+  videoId?: string; // Optional YouTube video ID
+  videoUrl?: string; // Optional YouTube video URL
 }
 
 export type RequestType = "feature" | "bug";

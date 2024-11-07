@@ -14,7 +14,7 @@ interface ProjectCardProps {
 export const ProjectCard = ({ project }: ProjectCardProps) => {
   return (
     <Link href={`/dashboard/explore/${project.slug}`}>
-      <Card className="text-black">
+      <Card className="text-black rounded-lg hover:shadow-primary2 duration-300">
         <CardContent className="flex flex-col p-0 py-4 space-y-4">
           <div className="flex justify-between px-4">
             <div className="flex flex-col justify-start items-start gap-y-2">

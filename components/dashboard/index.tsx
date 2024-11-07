@@ -120,7 +120,11 @@ const ProjectPageComponent = ({ project }: { project: Project }) => {
               />
               <div className="flex flex-col gap-4">
                 {filteredAndSortedIssues.map((issue) => (
-                  <IssueCard key={issue.id} issue={issue} />
+                  <IssueCard
+                    key={issue.id}
+                    issue={issue}
+                    projectTitle={project.title}
+                  />
                 ))}
               </div>
             </TabsContent>

@@ -2,15 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import RectangleStack from "@/public/icons/rectangle-stack";
 import { Issue } from "@/types/dashboard";
-import {
-  Circle,
-  CircleDot,
-  DollarSign,
-  BookmarkPlus,
-  BookmarkCheck,
-  Clock,
-  Bookmark,
-} from "lucide-react";
+import { Circle, CircleDot, DollarSign, Clock } from "lucide-react";
 import { getBulbColor, getStatusInfo } from "@/lib/utils";
 import {
   Accordion,
@@ -27,6 +19,7 @@ import { ApplyDrawer } from "./apply-drawer";
 
 interface IssueCardProps {
   issue: Issue;
+  projectTitle: string;
 }
 
 const IssueCardBadges = ({
@@ -105,7 +98,7 @@ const IssueDetailRow = ({
   </motion.div>
 );
 
-const IssueCard = ({ issue }: IssueCardProps) => {
+const IssueCard = ({ issue, projectTitle }: IssueCardProps) => {
   const { label, color } = getStatusInfo(issue.status);
   const [isOpen, setIsOpen] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(issue.isBookmarked || false);
@@ -128,7 +121,6 @@ const IssueCard = ({ issue }: IssueCardProps) => {
     <Accordion
       type="single"
       collapsible
-      className="w-full"
       onValueChange={(value) => setIsOpen(!!value)}
     >
       <AccordionItem value="item-1" className="border rounded-lg px-4">
@@ -146,7 +138,11 @@ const IssueCard = ({ issue }: IssueCardProps) => {
               </AnimatePresence>
             </div>
             <div className="flex items-center gap-2 p-2">
-              <ApplyDrawer issue={issue} onApply={handleApply} />
+              <ApplyDrawer
+                issue={issue}
+                projectTitle={projectTitle}
+                onApply={handleApply}
+              />
             </div>
           </div>
         </AccordionTrigger>

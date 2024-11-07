@@ -29,6 +29,8 @@ export interface Issue {
   description: string;
   status: string;
   budget: number;
+  createdAt: string;
+  isBookmarked?: boolean;
   requests: Request[];
   onboardingVideo: {
     url: string;

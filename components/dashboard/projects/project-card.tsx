@@ -32,11 +32,11 @@ export const ProjectCard = ({ project }: ProjectCardProps) => {
                 {truncateText(project.description)}
               </p>
             </div>
-            <div className="flex flex-col items-center">
-              <div className="text-primary-light font-bold text-lg">
+            <div className="flex flex-col items-end">
+              <div className="text-primary-light font-bold text-xl">
                 ${project.budget}
               </div>
-              <p className="text-gray-500">Budget</p>
+              <p className="text-gray-500 text-xs">Budget</p>
             </div>
           </div>
           <Divider />
@@ -48,7 +48,7 @@ export const ProjectCard = ({ project }: ProjectCardProps) => {
           </div>
           <Divider />
           <div className="flex px-6 items-center gap-2 justify-between">
-            <p className="text-sm ">Timeline</p>
+            <p className="text-sm ">Progress</p>
             <div className="flex items-center gap-2">
               <Progress className="w-20 ml-2 bg-gray-300" value={30} />
               <p className="text-xs">Two weeks</p>

@@ -42,14 +42,29 @@ const SearchFilterBar = ({
 }: SearchFilterBarProps) => {
   return (
     <div className="flex flex-col gap-4 w-full">
-      <div className={cn("flex justify-between items-center gap-2", className)}>
+      <div className={cn("flex justify-start items-center gap-2", className)}>
         <Input
-          className="w-full p-2 text-black placeholder:text-gray-400 rounded-3xl"
+          className="w-2/5 p-2 text-black placeholder:text-gray-400 rounded-3xl"
           placeholder={placeholder}
           onChange={(e) => onChange(e.target.value)}
         />
+        <div className="flex gap-2">
+          {filters?.map((filter) => (
+            <Badge
+              variant="outline"
+              key={filter.value}
+              className={cn(
+                "rounded-3xl font-medium text-sm cursor-pointer py-2.5 px-4",
+                selectedFilter === filter.value && "border-primary text-primary"
+              )}
+              onClick={() => onFilterChange(filter.value)}
+            >
+              {filter.label}
+            </Badge>
+          ))}
+        </div>
         <Select value={selectedSort} onValueChange={onSortChange}>
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-[180px] rounded-3xl">
             <SelectValue placeholder="Sort by" />
           </SelectTrigger>
           <SelectContent>
@@ -60,21 +75,6 @@ const SearchFilterBar = ({
             ))}
           </SelectContent>
         </Select>
-      </div>
-      <div className="flex gap-2">
-        {filters?.map((filter) => (
-          <Badge
-            variant="outline"
-            key={filter.value}
-            className={cn(
-              "rounded-3xl font-medium text-sm cursor-pointer py-2.5 px-4",
-              selectedFilter === filter.value && "border-primary text-primary"
-            )}
-            onClick={() => onFilterChange(filter.value)}
-          >
-            {filter.label}
-          </Badge>
-        ))}
       </div>
     </div>
   );

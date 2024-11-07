@@ -135,13 +135,13 @@ const Dashboard = async () => {
           />
           <DashboardCard
             title="Balance"
-            value={data.wallet}
+            value={`$${data.wallet}`}
             icon={DollarSign}
             subtext="+19% from last month"
           />
           <DashboardCard
             title="Total Payments"
-            value={data.developerFields?.totalPayment || 0}
+            value={`$${data.developerFields?.totalPayment || 0}`}
             icon={ArrowLeftRight}
             subtext="+20.1% from last month"
           />

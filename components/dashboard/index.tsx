@@ -90,7 +90,7 @@ const ProjectPageComponent = ({ project }: { project: Project }) => {
               icon={<Clock9 className="h-4 w-4 text-primary2" />}
               variant="outline"
             >
-              timeline
+              Progress
               <Progress className="w-20 ml-2" value={progressPercentage} />
               <span className="text-xs">{progressPercentage}%</span>
             </Badge>

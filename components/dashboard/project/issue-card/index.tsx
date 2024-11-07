@@ -2,7 +2,15 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import RectangleStack from "@/public/icons/rectangle-stack";
 import { Issue } from "@/types/dashboard";
-import { Circle, CircleDot, DollarSign } from "lucide-react";
+import {
+  Circle,
+  CircleDot,
+  DollarSign,
+  BookmarkPlus,
+  BookmarkCheck,
+  Clock,
+  Bookmark,
+} from "lucide-react";
 import { getBulbColor, getStatusInfo } from "@/lib/utils";
 import {
   Accordion,
@@ -14,6 +22,8 @@ import { useState } from "react";
 import { Divider } from "@/components/uikit/divider";
 import { motion, AnimatePresence } from "framer-motion";
 import { YouTubeEmbed } from "@/components/ui/youtube-embed";
+import { format } from "date-fns";
+import { ApplyDrawer } from "./apply-drawer";
 
 interface IssueCardProps {
   issue: Issue;
@@ -34,6 +44,13 @@ const IssueCardBadges = ({
     exit={{ opacity: 0, x: -20 }}
     className="flex items-center gap-4"
   >
+    <Badge
+      icon={<Clock className="h-4 w-4 text-primary2" />}
+      className="font-medium text-xs"
+      variant="outline"
+    >
+      {format(new Date(issue.createdAt), "MMM dd, yyyy")}
+    </Badge>
     <Badge
       icon={<RectangleStack />}
       className="font-medium text-xs"
@@ -91,15 +108,20 @@ const IssueDetailRow = ({
 const IssueCard = ({ issue }: IssueCardProps) => {
   const { label, color } = getStatusInfo(issue.status);
   const [isOpen, setIsOpen] = useState(false);
+  const [isBookmarked, setIsBookmarked] = useState(issue.isBookmarked || false);
 
   const pendingRequestsCount =
     issue.requests.filter((request) => request.requestStatus === "pending")
       .length || 0;
 
-  const handleApply = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent accordion from toggling when clicking the button
-    // Add your apply logic here
-    console.log("Applied to issue:", issue.id);
+  const handleApply = (issueId: string) => {
+    console.log("Applied to issue:", issueId);
+  };
+
+  const handleBookmark = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsBookmarked(!isBookmarked);
+    console.log("Bookmarked issue:", issue.id);
   };
 
   return (
@@ -123,14 +145,9 @@ const IssueCard = ({ issue }: IssueCardProps) => {
                 )}
               </AnimatePresence>
             </div>
-            <Button
-              onClick={handleApply}
-              variant="outline"
-              size="sm"
-              className=" text-primary hover:text-white hover:border-primary hover:bg-primary lg:mr-4 py-2"
-            >
-              Apply
-            </Button>
+            <div className="flex items-center gap-2 p-2">
+              <ApplyDrawer issue={issue} onApply={handleApply} />
+            </div>
           </div>
         </AccordionTrigger>
         <AccordionContent>

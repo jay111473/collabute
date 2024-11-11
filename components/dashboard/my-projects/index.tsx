@@ -64,7 +64,7 @@ const MyProjectsComponent = ({
             />
             <div className="grid gap-4 mt-6">
               {issues?.map((issue) => (
-                <IssueCard key={issue.id} issue={issue}/>
+                <IssueCard isMyProject={true} key={issue.id} issue={issue} />
               ))}
             </div>
           </TabsContent>

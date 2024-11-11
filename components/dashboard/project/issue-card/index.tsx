@@ -1,8 +1,7 @@
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import RectangleStack from "@/public/icons/rectangle-stack";
 import { Issue } from "@/types/dashboard";
-import { Circle, CircleDot, DollarSign, Clock } from "lucide-react";
+import { Circle, CircleDot, Clock } from "lucide-react";
 import { getBulbColor, getStatusInfo } from "@/lib/utils";
 import {
   Accordion,
@@ -20,6 +19,7 @@ import { ApplyDrawer } from "./apply-drawer";
 interface IssueCardProps {
   issue: Issue;
   projectTitle: string;
+  isMyProject?: boolean;
 }
 
 const IssueCardBadges = ({
@@ -62,14 +62,6 @@ const IssueCardBadges = ({
     >
       {label}
     </Badge>
-    <Badge
-      icon={<DollarSign className="text-primary2" size={14} />}
-      className="font-medium text-xs"
-      variant="outline"
-    >
-      budget
-      <span className="text-xs">${issue.budget}</span>
-    </Badge>
   </motion.div>
 );
 
@@ -98,7 +90,7 @@ const IssueDetailRow = ({
   </motion.div>
 );
 
-const IssueCard = ({ issue, projectTitle }: IssueCardProps) => {
+const IssueCard = ({ issue, projectTitle, isMyProject }: IssueCardProps) => {
   const { label, color } = getStatusInfo(issue.status);
   const [isOpen, setIsOpen] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(issue.isBookmarked || false);
@@ -123,29 +115,42 @@ const IssueCard = ({ issue, projectTitle }: IssueCardProps) => {
       collapsible
       onValueChange={(value) => setIsOpen(!!value)}
     >
-      <AccordionItem value="item-1" className="border rounded-lg px-4">
-        <AccordionTrigger className="hover:no-underline">
-          <div className="flex items-center justify-between w-full">
-            <div className="flex items-center gap-4 flex-1">
+      <AccordionItem
+        value="item-1"
+        className={`rounded-lg px-4 bg-gray-50 shadow-none ${
+          isMyProject ? "border-l-4 border-l-primary2" : ""
+        }`}
+      >
+        <div className="flex items-center justify-between w-full p-2">
+          <div className="flex items-center gap-4 flex-1">
+            <AccordionTrigger showChevron={false}>
               <h3 className="font-medium text-black flex items-center gap-2">
                 <CircleDot className="text-primary2" size={16} />
                 {issue?.title}
               </h3>
-              <AnimatePresence>
-                {!isOpen && (
-                  <IssueCardBadges issue={issue} color={color} label={label} />
-                )}
-              </AnimatePresence>
-            </div>
-            <div className="flex items-center gap-2 p-2">
+            </AccordionTrigger>
+            <AnimatePresence>
+              {!isOpen && (
+                <IssueCardBadges issue={issue} color={color} label={label} />
+              )}
+            </AnimatePresence>
+          </div>
+          {!isMyProject && (
+            <div className="flex items-center gap-4 p-2">
+              <div className="flex flex-col items-end">
+                <div className="text-primary-light font-bold text-xl">
+                  ${issue.budget}
+                </div>
+                <p className="text-gray-500 text-xs">Budget</p>
+              </div>
               <ApplyDrawer
                 issue={issue}
                 projectTitle={projectTitle}
                 onApply={handleApply}
               />
             </div>
-          </div>
-        </AccordionTrigger>
+          )}
+        </div>
         <AccordionContent>
           <AnimatePresence>
             {isOpen && (
@@ -176,13 +181,6 @@ const IssueCard = ({ issue, projectTitle }: IssueCardProps) => {
                   label="Status"
                   value={label}
                   delay={0.2}
-                />
-                <Divider />
-                <IssueDetailRow
-                  icon={<DollarSign className="text-primary2" size={14} />}
-                  label="Budget"
-                  value={`$${issue.budget}`}
-                  delay={0.3}
                 />
                 <Divider />
                 <IssueDetailRow

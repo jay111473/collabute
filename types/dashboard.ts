@@ -19,8 +19,139 @@ export interface Stacks {
 
 export interface User {
   id: number;
-  name?: string;
-  email?: string;
+  name: string;
+  profilePicture?: (number | null) | Media;
+  type: "developer" | "startup";
+  phoneNumber?: string | null;
+  role?: ("admin" | "user") | null;
+  githubId?: string | null;
+  wallet?: number | null;
+  developerFields?: {
+    bio?: string | null;
+    issues?: (number | Issue)[] | null;
+    totalPayment?: number | null;
+    payments?:
+      | {
+          paymentDate?: string | null;
+          paymentAmount?: number | null;
+          paymentType?: ("income" | "withdrawal" | "tip") | null;
+          paymentMethod?: string | null;
+          paymentStatus?: ("pending" | "completed" | "failed") | null;
+          paymentReference?: string | null;
+          paymentDescription?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+    dateJoined?: string | null;
+    profilePicture?: (number | null) | Media;
+    skills?:
+      | {
+          skill?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+    experienceLevel?:
+      | ("junior" | "mid_level" | "senior" | "lead" | "architect")
+      | null;
+    githubProfile?: string | null;
+    linkedinProfile?: string | null;
+    personalWebsite?: string | null;
+    primaryRole?:
+      | (
+          | "Frontend Developer"
+          | "Backend Developer"
+          | "Full Stack Developer"
+          | "Mobile Developer"
+          | "DevOps Engineer"
+          | "Data Scientist"
+          | "UI/UX Designer"
+          | "QA Engineer"
+          | "Other"
+        )
+      | null;
+    availability?:
+      | ("full_time" | "part_time" | "contract" | "freelance" | "not_available")
+      | null;
+    preferredWorkType?: ("remote" | "on_site" | "hybrid") | null;
+    education?:
+      | {
+          degree?: string | null;
+          institution?: string | null;
+          graduationYear?: number | null;
+          id?: string | null;
+        }[]
+      | null;
+    languages?:
+      | {
+          language?: string | null;
+          proficiency?:
+            | ("Beginner" | "Intermediate" | "Advanced" | "Native")
+            | null;
+          id?: string | null;
+        }[]
+      | null;
+    hourlyRate?: number | null;
+    preferredProjectDuration?:
+      | (
+          | "Less than 1 month"
+          | "1-3 months"
+          | "3-6 months"
+          | "6-12 months"
+          | "More than 12 months"
+        )
+      | null;
+  };
+  startupFields?: {
+    companyName?: string | null;
+    description?: string | null;
+    foundingDate?: string | null;
+    cto?: (number | null) | User;
+    fundingInformation?: {
+      fundingStage?:
+        | ("Pre-seed" | "Seed" | "Series A" | "Series B" | "Series C+")
+        | null;
+      totalFundingRaised?: number | null;
+      lastFundingDate?: string | null;
+    };
+    teamSize?: ("1-10" | "10-50" | "50-100" | "+100") | null;
+    productStage?:
+      | ("Idea" | "Prototype" | "MVP" | "Beta" | "Launched" | "Growth")
+      | null;
+  };
+  website?: string | null;
+  contactInformation?: {
+    email?: string | null;
+    phone?: string | null;
+    address?: string | null;
+  };
+  projects?: (number | Project)[] | null;
+  sub?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  email: string;
+  resetPasswordToken?: string | null;
+  resetPasswordExpiration?: string | null;
+  salt?: string | null;
+  hash?: string | null;
+  loginAttempts?: number | null;
+  lockUntil?: string | null;
+  password?: string | null;
+}
+
+export interface Media {
+  id: number;
+  alt: string;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
 }
 
 export interface Issue {
@@ -35,11 +166,11 @@ export interface Issue {
   onboardingVideo: {
     url: string;
     name: string;
-  }
+  };
   onboardingVideoThumbnail: {
-    url: string
-    name: string
-  }
+    url: string;
+    name: string;
+  };
   onboardingVideoLink: string;
   priority: string;
   assignee?: {
@@ -72,4 +203,4 @@ export interface DashboardData {
   };
 }
 
-export type ProjectType = 'normal' | 'urgent' | 'featured' | 'trending';
+export type ProjectType = "normal" | "urgent" | "featured" | "trending";

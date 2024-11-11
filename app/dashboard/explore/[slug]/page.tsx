@@ -1,6 +1,6 @@
 import React from "react";
 import { getProject } from "@/lib/get-project";
-import ProjectPageComponent from "@/components/dashboard";
+import ProjectPageComponent from "@/components/dashboard/projects";
 
 const ProjectPage = async ({ params }: { params: { slug: string } }) => {
   const { slug } = await params;

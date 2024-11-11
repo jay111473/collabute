@@ -1,3 +1,40 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+  .gradient-border-mask {
+    --border-size: 1px;
+    --border-angle: 0turn;
+    
+    background-image: conic-gradient(
+      from var(--border-angle),
+      hsl(var(--primary)) 0deg 90deg,
+      hsl(var(--primary-foreground)) 90deg 180deg,
+      hsl(var(--primary)) 180deg 270deg,
+      hsl(var(--primary-foreground)) 270deg 360deg
+    );
+    background-size: calc(100% - (var(--border-size) * 2))
+      calc(100% - (var(--border-size) * 2));
+    background-position: center;
+    background-repeat: no-repeat;
+
+    animation: bg-spin 3s linear infinite;
+  }
+
+  @keyframes bg-spin {
+    to {
+      --border-angle: 1turn;
+    }
+  }
+}
+
+@layer utilities {
+  .glow-effect {
+    --glow-line-thickness: 1px;
+    --glow-line-length: 20px;
+    --glow-blur-size: 5px;
+    --glow-offset: 0px;
+    --glow-color: hsl(var(--primary));
+  }
+}

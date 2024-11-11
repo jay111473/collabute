@@ -54,16 +54,6 @@ export const ProjectCard = ({ project }: ProjectCardProps) => {
               <p className="text-xs">Two weeks</p>
             </div>
           </div>
-          {/* <div className="flex px-6 items-center justify-between">
-            <p className="text-sm ">Collabuters</p>
-            <Collabuters
-              users={[
-                { src: "", label: "Sobhan" },
-                { src: "", label: "Arman" },
-                { src: "", label: "Behrooz" },
-              ]}
-            />
-          </div> */}
         </CardContent>
       </Card>
     </Link>

@@ -5,16 +5,8 @@ import { Project, ProjectType } from "@/types/dashboard";
 import { useState, useMemo } from "react";
 import { ProjectCard } from "./project-card";
 import { useRouter, useSearchParams } from "next/navigation";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
-import { FolderOpen } from "lucide-react";
+import { Flame, FolderOpen, Star, TrendingUp } from "lucide-react";
+import { CustomPagination } from "./custom-pagination";
 
 interface PaginationProps {
   currentPage: number;
@@ -30,9 +22,27 @@ interface ExploreComponentProps {
 
 const projectTypeFilters = [
   { label: "Normal", value: "normal" },
-  { label: "Urgent", value: "urgent" },
-  { label: "Featured", value: "featured" },
-  { label: "Trending", value: "trending" },
+  {
+    label: "Urgent",
+    value: "urgent",
+    bgColor: "bg-orange-100 bg-opacity-50",
+    borderColor: "border-orange-200",
+    icon: <Flame size={20} className="text-orange-500" />,
+  },
+  {
+    label: "Featured",
+    value: "featured",
+    bgColor: "bg-blue-100 bg-opacity-50",
+    borderColor: "border-blue-200",
+    icon: <Star size={20} className="text-blue-500" />,
+  },
+  {
+    label: "Trending",
+    value: "trending",
+    bgColor: "bg-green-100 bg-opacity-50",
+    borderColor: "border-green-200",
+    icon: <TrendingUp size={20} className="text-green-500" />,
+  },
 ];
 
 const sortOptions = [
@@ -91,74 +101,6 @@ export const ExploreComponent = ({
     router.push(`/dashboard/explore${query}`);
   };
 
-  const generatePaginationItems = () => {
-    const items = [];
-    const maxVisiblePages = 5;
-    const halfVisible = Math.floor(maxVisiblePages / 2);
-
-    let startPage = Math.max(1, pagination.currentPage - halfVisible);
-    let endPage = Math.min(
-      pagination.totalPages,
-      startPage + maxVisiblePages - 1
-    );
-
-    if (endPage - startPage + 1 < maxVisiblePages) {
-      startPage = Math.max(1, endPage - maxVisiblePages + 1);
-    }
-
-    // Add first page
-    if (startPage > 1) {
-      items.push(
-        <PaginationItem key="1">
-          <PaginationLink onClick={() => handlePageChange(1)}>1</PaginationLink>
-        </PaginationItem>
-      );
-      if (startPage > 2) {
-        items.push(
-          <PaginationItem key="ellipsis1">
-            <PaginationEllipsis />
-          </PaginationItem>
-        );
-      }
-    }
-
-    // Add pages
-    for (let page = startPage; page <= endPage; page++) {
-      items.push(
-        <PaginationItem key={page}>
-          <PaginationLink
-            isActive={page === pagination.currentPage}
-            onClick={() => handlePageChange(page)}
-          >
-            {page}
-          </PaginationLink>
-        </PaginationItem>
-      );
-    }
-
-    // Add last page
-    if (endPage < pagination.totalPages) {
-      if (endPage < pagination.totalPages - 1) {
-        items.push(
-          <PaginationItem key="ellipsis2">
-            <PaginationEllipsis />
-          </PaginationItem>
-        );
-      }
-      items.push(
-        <PaginationItem key={pagination.totalPages}>
-          <PaginationLink
-            onClick={() => handlePageChange(pagination.totalPages)}
-          >
-            {pagination.totalPages}
-          </PaginationLink>
-        </PaginationItem>
-      );
-    }
-
-    return items;
-  };
-
   return (
     <div className="flex flex-col gap-3">
       <SearchFilterBar
@@ -194,35 +136,13 @@ export const ExploreComponent = ({
             ))}
           </div>
 
-          {pagination.totalPages > 1 && (
-            <Pagination>
-              <PaginationContent>
-                <PaginationItem>
-                  <PaginationPrevious
-                    onClick={() => handlePageChange(pagination.currentPage - 1)}
-                    className={
-                      !pagination.hasPrevPage
-                        ? "pointer-events-none opacity-50"
-                        : ""
-                    }
-                  />
-                </PaginationItem>
-
-                {generatePaginationItems()}
-
-                <PaginationItem>
-                  <PaginationNext
-                    onClick={() => handlePageChange(pagination.currentPage + 1)}
-                    className={
-                      !pagination.hasNextPage
-                        ? "pointer-events-none opacity-50"
-                        : ""
-                    }
-                  />
-                </PaginationItem>
-              </PaginationContent>
-            </Pagination>
-          )}
+          <CustomPagination
+            currentPage={pagination.currentPage}
+            totalPages={pagination.totalPages}
+            hasNextPage={pagination.hasNextPage}
+            hasPrevPage={pagination.hasPrevPage}
+            onPageChange={handlePageChange}
+          />
         </>
       )}
     </div>

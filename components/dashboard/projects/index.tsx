@@ -8,8 +8,10 @@ import { useState, useMemo } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import SearchFilterBar from "@/components/dashboard/project/search-filter-bar";
 import { calculateProgressPercentage } from "@/lib/utils";
-import { Project, Issue } from "@/types/dashboard";
-import IssueCard from "./project/issue-card";
+import { Project } from "@/types/dashboard";
+import IssueCard from "../project/issue-card";
+
+type StatusType = "open" | "in_progress" | "resolved" | "closed";
 
 const issueFilters = [
   { label: "Open", value: "open" },
@@ -26,10 +28,16 @@ const sortOptions = [
 
 type SortOption = "newest" | "oldest" | "priority";
 
-const ProjectPageComponent = ({ project }: { project: Project }) => {
+const ProjectPageComponent = ({
+  project,
+  isMyProject,
+}: {
+  project: Project;
+  isMyProject?: boolean;
+}) => {
   const progressPercentage = calculateProgressPercentage(project.issues);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
+  const [selectedStatus, setSelectedStatus] = useState<StatusType | null>(null);
   const [sortBy, setSortBy] = useState<SortOption>("newest");
 
   const filteredAndSortedIssues = useMemo(() => {
@@ -68,7 +76,7 @@ const ProjectPageComponent = ({ project }: { project: Project }) => {
     <div className="flex flex-col">
       <main className="flex flex-1 flex-col gap-4 lg:gap-6">
         <Card className="flex flex-col gap-2 py-4">
-          <div className="flex items-center justify-start gap-4 px-4">
+          <div className="flex items-center justify-start gap-2 px-4">
             <h3 className="font-medium text-black text-lg">{project?.title}</h3>
             <Badge
               className="font-medium !text-xs"
@@ -95,39 +103,82 @@ const ProjectPageComponent = ({ project }: { project: Project }) => {
               <span className="text-xs">{progressPercentage}%</span>
             </Badge>
           </div>
-          <p className="text-gray-600 font-medium text-sm px-4 py-2">
+          <p className="text-gray-600 font-light text-sm px-4 py-2">
             {project.description}
           </p>
           <span className="w-full h-px bg-gray-200"></span>
-          <Tabs defaultValue="issues">
-            <TabsList className="p-4">
-              <TabsTrigger value="issues">
-                Issues ({project.issues.length})
-              </TabsTrigger>
-              <TabsTrigger value="collabuters">Collabuters</TabsTrigger>
-              <TabsTrigger value="latest-activity">Latest Activity</TabsTrigger>
-            </TabsList>
-            <TabsContent className="p-4 flex flex-col gap-y-4" value="issues">
-              <SearchFilterBar
-                placeholder="Search Issues"
-                filters={issueFilters}
-                sortOptions={sortOptions}
-                onChange={setSearchQuery}
-                onFilterChange={(value) => setSelectedStatus(value)}
-                onSortChange={(value) => setSortBy(value as SortOption)}
-                selectedFilter={selectedStatus}
-                selectedSort={sortBy}
-              />
-              <div className="flex flex-col gap-4">
-                {filteredAndSortedIssues.map((issue) => (
-                  <IssueCard
-                    key={issue.id}
-                    issue={issue}
-                    projectTitle={project.title}
-                  />
-                ))}
-              </div>
-            </TabsContent>
+          <Tabs defaultValue={!isMyProject ? "issues" : "open-issues"}>
+            {!isMyProject ? (
+              <TabsList className="p-4">
+                <TabsTrigger value="issues">
+                  Issues ({project.issues.length})
+                </TabsTrigger>
+                <TabsTrigger value="collabuters">Collabuters</TabsTrigger>
+                <TabsTrigger value="latest-activity">
+                  Latest Activity
+                </TabsTrigger>
+              </TabsList>
+            ) : (
+              <TabsList className="p-4">
+                <TabsTrigger value="open-issues">
+                  Open issues ({project.issues.length})
+                </TabsTrigger>
+                <TabsTrigger value="done-issues">Done issues</TabsTrigger>
+              </TabsList>
+            )}
+            {!isMyProject ? (
+              <TabsContent className="p-4 flex flex-col gap-y-4" value="issues">
+                <SearchFilterBar
+                  placeholder="Search Issues"
+                  filters={issueFilters}
+                  sortOptions={sortOptions}
+                  onChange={setSearchQuery}
+                  onFilterChange={(value) =>
+                    setSelectedStatus(value as StatusType)
+                  }
+                  onSortChange={(value) => setSortBy(value as SortOption)}
+                  selectedFilter={selectedStatus}
+                  selectedSort={sortBy}
+                />
+                <div className="flex flex-col gap-4">
+                  {filteredAndSortedIssues.map((issue) => (
+                    <IssueCard
+                      key={issue.id}
+                      issue={issue}
+                      projectTitle={project.title}
+                    />
+                  ))}
+                </div>
+              </TabsContent>
+            ) : (
+              <TabsContent
+                className="p-4 flex flex-col gap-y-4"
+                value="open-issues"
+              >
+                <SearchFilterBar
+                  placeholder="Search Issues"
+                  filters={issueFilters}
+                  sortOptions={sortOptions}
+                  onChange={setSearchQuery}
+                  onFilterChange={(value) =>
+                    setSelectedStatus(value as StatusType)
+                  }
+                  onSortChange={(value) => setSortBy(value as SortOption)}
+                  selectedFilter={selectedStatus}
+                  selectedSort={sortBy}
+                />
+                <div className="flex flex-col gap-4">
+                  {filteredAndSortedIssues.map((issue) => (
+                    <IssueCard
+                      key={issue.id}
+                      issue={issue}
+                      projectTitle={project.title}
+                      isMyProject={isMyProject}
+                    />
+                  ))}
+                </div>
+              </TabsContent>
+            )}
           </Tabs>
         </Card>
       </main>

@@ -21,9 +21,8 @@ export default function DashboardLayout({
   const navItems = [
     { name: "Dashboard", icon: LayoutPanelLeft, path: "/dashboard" },
     { name: "Explore", icon: Compass, path: "/dashboard/explore" },
+    { name: "My Projects", icon: Layers3, path: "/dashboard/my-projects" },
     { name: "Payments", icon: CircleDollarSign, path: "/dashboard/payments" },
-    { name: "Projects", icon: Layers3, path: "/dashboard/projects" },
-    { name: "AI tools", icon: Sparkles, path: "/dashboard/ai-tools" },
   ];
 
   return (

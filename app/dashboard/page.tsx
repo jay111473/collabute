@@ -1,8 +1,8 @@
 import { Button } from "@/components/ui/button";
 import {
-  ArrowLeftRight,
   CircleUser,
   DollarSign,
+  ArrowLeftRight,
   GitPullRequest,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,20 +15,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { cookies } from "next/headers";
-import axios from "axios";
 import { truncateToFourWords } from "@/lib/utils";
-import { DashboardData, Project, Issue } from "@/types/dashboard";
-
-async function fetchDashboardData(
-  userId: string,
-  token: string
-): Promise<DashboardData> {
-  const { data } = await axios.get(
-    `${process.env.NEXT_PUBLIC_API_URL}/api/users/${userId}`,
-    { headers: { Authorization: `Bearer ${token}` } }
-  );
-  return data;
-}
+import { Project, Issue } from "@/types/dashboard";
+import { getUser } from "@/lib/get-user";
 
 const DashboardCard = ({
   title,
@@ -106,12 +95,10 @@ const IssuesTable = ({ issues }: { issues: Issue[] }) => (
 const Dashboard = async () => {
   const token = (await cookies()).get("token")?.value;
   const userId = (await cookies()).get("userid")?.value;
-
+  const user = await getUser(userId || "", token || "");
   if (!token || !userId) {
     throw new Error("Authentication required");
   }
-
-  const data = await fetchDashboardData(userId, token);
 
   return (
     <div className="flex flex-col">
@@ -129,19 +116,19 @@ const Dashboard = async () => {
         <div className="grid gap-4 md:grid-cols-2 md:gap-4 lg:grid-cols-3">
           <DashboardCard
             title="Issues"
-            value={data.developerFields?.issues?.length || 0}
+            value={user.developerFields?.issues?.length || 0}
             icon={GitPullRequest}
             subtext="+180.1% from last month"
           />
           <DashboardCard
             title="Balance"
-            value={`$${data.wallet}`}
+            value={`$${user.wallet}`}
             icon={DollarSign}
             subtext="+19% from last month"
           />
           <DashboardCard
             title="Total Payments"
-            value={`$${data.developerFields?.totalPayment || 0}`}
+            value={`$${user.developerFields?.totalPayment || 0}`}
             icon={ArrowLeftRight}
             subtext="+20.1% from last month"
           />
@@ -152,7 +139,7 @@ const Dashboard = async () => {
               <CardTitle>Recent Projects</CardTitle>
             </CardHeader>
             <CardContent>
-              <ProjectsTable projects={data.projects || []} />
+              <ProjectsTable projects={user.projects as Project[]} />
             </CardContent>
           </Card>
           <Card>
@@ -160,7 +147,7 @@ const Dashboard = async () => {
               <CardTitle>Recent Issues</CardTitle>
             </CardHeader>
             <CardContent>
-              <IssuesTable issues={data.developerFields?.issues || []} />
+              <IssuesTable issues={user.developerFields?.issues as Issue[]} />
             </CardContent>
           </Card>
         </div>

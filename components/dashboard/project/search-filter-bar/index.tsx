@@ -17,6 +17,9 @@ type SearchFilterBarProps = {
   filters: {
     label: string;
     value: string;
+    bgColor?: string;
+    borderColor?: string;
+    icon?: React.ReactNode;
   }[];
   sortOptions: {
     label: string;
@@ -54,11 +57,13 @@ const SearchFilterBar = ({
               variant="outline"
               key={filter.value}
               className={cn(
-                "rounded-3xl font-medium text-sm cursor-pointer py-2.5 px-4",
-                selectedFilter === filter.value && "border-primary text-primary"
+                `rounded-3xl font-medium text-xs cursor-pointer py-2.5 px-4 flex items-center gap-1 ${filter.bgColor} ${filter.borderColor}`,
+                selectedFilter === filter.value &&
+                  "border-primary text-primary"
               )}
               onClick={() => onFilterChange(filter.value)}
             >
+              {filter.icon}
               {filter.label}
             </Badge>
           ))}

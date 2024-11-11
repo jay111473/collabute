@@ -18,7 +18,7 @@ import { ApplyDrawer } from "./apply-drawer";
 
 interface IssueCardProps {
   issue: Issue;
-  projectTitle: string;
+  projectTitle?: string;
   isMyProject?: boolean;
 }
 
@@ -145,7 +145,7 @@ const IssueCard = ({ issue, projectTitle, isMyProject }: IssueCardProps) => {
               </div>
               <ApplyDrawer
                 issue={issue}
-                projectTitle={projectTitle}
+                projectTitle={projectTitle || ""}
                 onApply={handleApply}
               />
             </div>

@@ -1,5 +1,6 @@
 import MyProjectsComponent from "@/components/dashboard/my-projects";
-import { getProjects } from "@/lib/get-projects";
+import { getUser } from "@/lib/get-user";
+import { Issue, Project } from "@/types/dashboard";
 import { cookies } from "next/headers";
 import React from "react";
 
@@ -11,10 +12,13 @@ const MyProjects = async () => {
     window.location.href = "/auth/login";
   }
 
-  const { docs: projects } = await getProjects(1, 5);
+  const user = await getUser(userId || "", token || "");
   return (
     <div>
-      <MyProjectsComponent projects={projects} />
+      <MyProjectsComponent
+        projects={user?.projects as Project[]}
+        issues={user?.developerFields?.issues as Issue[]}
+      />
     </div>
   );
 };

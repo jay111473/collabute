@@ -1,23 +1,24 @@
 "use client";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Project } from "@/types/dashboard";
+import { Issue, Project } from "@/types/dashboard";
 import { CircleUser } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import SearchFilterBar from "@/components/dashboard/project/search-filter-bar";
 import ProjectPageComponent from "../projects";
-
-const projectTypeFilters = [
-  { label: "All", value: "all" },
-  { label: "In Progress", value: "in-progress" },
-  { label: "Completed", value: "completed" },
-];
+import IssueCard from "../project/issue-card";
 
 const sortOptions = [
   { label: "Newest", value: "newest" },
   { label: "Oldest", value: "oldest" },
 ];
-const MyProjectsComponent = ({ projects }: { projects: Project[] }) => {
+const MyProjectsComponent = ({
+  projects,
+  issues,
+}: {
+  projects: Project[];
+  issues: Issue[];
+}) => {
   return (
     <div className="flex flex-col">
       <header className="flex h-14 justify-between items-center gap-4 border-b bg-muted/40 px-4 lg:h-[60px] lg:px-6">
@@ -45,7 +46,6 @@ const MyProjectsComponent = ({ projects }: { projects: Project[] }) => {
               />
             ))}
           </TabsContent>
-
           <TabsContent value="issues">
             <SearchFilterBar
               placeholder="Search issues..."
@@ -62,11 +62,11 @@ const MyProjectsComponent = ({ projects }: { projects: Project[] }) => {
               selectedFilter="all"
               selectedSort="newest"
             />
-            {/* <div className="grid gap-4 mt-6">
-              {projects?.map((project) => (
-                <IssueCard key={project.id} issue={project} projectTitle={""} />
+            <div className="grid gap-4 mt-6">
+              {issues?.map((issue) => (
+                <IssueCard key={issue.id} issue={issue}/>
               ))}
-            </div> */}
+            </div>
           </TabsContent>
         </Tabs>
       </main>

@@ -1,23 +1,49 @@
 "use client";
 import React from "react";
-import BlurIn from "@/components/magicui/blur-in";
+import { Button } from "@/components/ui/button";
 
 const Hero = () => {
   return (
-    <div className="w-full flex flex-col justify-center items-center mt-10">
-      <BlurIn
-        className="text-4xl md:text-4xl lg:text-5xl  max-w-7xl mx-auto text-center mt-6 relative z-20 py-6 bg-clip-text text-transparent bg-gradient-to-b  text-white !font-sans font-semibold"
-        word="Connect, Contribute and Earn with Collabute"
-      />
-      <a
-        href="#early-bird"
-        className="relative inline-flex h-12 overflow-hidden rounded-full p-[1px] focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-50"
-      >
-        <span className="absolute inset-[-1000%] animate-[spin_2s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#E2CBFF_0%,#393BB2_50%,#E2CBFF_100%)]" />
-        <span className="inline-flex h-full w-full cursor-pointer items-center justify-center rounded-full bg-slate-950 px-3 py-1 text-sm font-medium text-white backdrop-blur-3xl">
-          Register Early Bird
+    <div className="w-full flex flex-col justify-center items-center min-h-[70vh] relative">
+      {/* Innovation badge */}
+      <div className="mb-6 px-4 py-1.5 bg-neutral-900/50 rounded-full border border-neutral-800 flex items-center gap-2">
+        <span className="text-sm text-neutral-300">✨ Innovation with ai</span>
+      </div>
+
+      {/* Main title */}
+      <h1 className="text-5xl md:text-6xl lg:text-7xl max-w-4xl mx-auto text-center relative z-20 font-bold">
+        <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-neutral-200">
+          Collabute:{" "}
         </span>
-      </a>
+        <span className="bg-clip-text text-transparent bg-gradient-to-r from-neutral-200 to-neutral-400">
+          Unite{" "}
+        </span>
+        <span className="text-white">to Create</span>
+      </h1>
+
+      {/* Subtitle */}
+      <p className="text-neutral-400 text-lg md:text-xl max-w-2xl text-center mt-6 mb-8">
+        Where Entrepreneurs and Developers Collaborate Seamlessly
+        to Bring Ideas to Life—Faster and Smarter.
+      </p>
+
+      {/* CTA Buttons */}
+      <div className="flex flex-col sm:flex-row gap-4">
+        <Button 
+          size="lg"
+          variant="primary"
+          className="text-white px-4 py-2"
+        >
+          Start your project
+        </Button>
+        <Button 
+          size="lg"
+          variant="outline"
+          className="border-neutral-800 hover:bg-neutral-900 text-white px-4 py-2 !border-opacity-30"
+        >
+          Join as a Developer
+        </Button>
+      </div>
     </div>
   );
 };

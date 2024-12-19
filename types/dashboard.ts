@@ -26,10 +26,23 @@ export interface User {
   role?: ("admin" | "user") | null;
   githubId?: string | null;
   wallet?: number | null;
+  transactions?:
+    | {
+        transactionDate?: string | null;
+        transactionAmount?: number | null;
+        transactionType?: ("income" | "withdrawal" | "tip") | null;
+        transactionMethod?: string | null;
+        transactionStatus?: ("pending" | "completed" | "failed") | null;
+        transactionProject?: (number | null) | Project;
+        transactionDescription?: string | null;
+        id?: string | null;
+      }[]
+    | null;
   developerFields?: {
     bio?: string | null;
     issues?: (number | Issue)[] | null;
     totalPayment?: number | null;
+    withdrawableAmount?: number | null;
     payments?:
       | {
           paymentDate?: string | null;

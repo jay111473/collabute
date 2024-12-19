@@ -58,7 +58,7 @@ export function TiptapEditor({
     <div className="border rounded-md">
       <div className="border-b p-2 flex flex-wrap gap-1">
         <Button
-          variant="ghost"
+          variant="outline"
           size="sm"
           onClick={() => editor.chain().focus().toggleBold().run()}
           className={editor.isActive("bold") ? "bg-muted" : ""}
@@ -66,7 +66,7 @@ export function TiptapEditor({
           <Bold className="h-4 w-4" />
         </Button>
         <Button
-          variant="ghost"
+          variant="outline"
           size="sm"
           onClick={() => editor.chain().focus().toggleItalic().run()}
           className={editor.isActive("italic") ? "bg-muted" : ""}
@@ -74,7 +74,7 @@ export function TiptapEditor({
           <Italic className="h-4 w-4" />
         </Button>
         <Button
-          variant="ghost"
+          variant="outline"
           size="sm"
           onClick={() => editor.chain().focus().toggleBulletList().run()}
           className={editor.isActive("bulletList") ? "bg-muted" : ""}
@@ -82,7 +82,7 @@ export function TiptapEditor({
           <List className="h-4 w-4" />
         </Button>
         <Button
-          variant="ghost"
+          variant="outline"
           size="sm"
           onClick={() => editor.chain().focus().toggleOrderedList().run()}
           className={editor.isActive("orderedList") ? "bg-muted" : ""}
@@ -90,7 +90,7 @@ export function TiptapEditor({
           <ListOrdered className="h-4 w-4" />
         </Button>
         <Button
-          variant="ghost"
+          variant="outline"
           size="sm"
           onClick={() => editor.chain().focus().toggleBlockquote().run()}
           className={editor.isActive("blockquote") ? "bg-muted" : ""}
@@ -98,7 +98,7 @@ export function TiptapEditor({
           <Quote className="h-4 w-4" />
         </Button>
         <Button
-          variant="ghost"
+          variant="outline"
           size="sm"
           onClick={() => editor.chain().focus().undo().run()}
           disabled={!editor.can().undo()}
@@ -106,7 +106,7 @@ export function TiptapEditor({
           <Undo className="h-4 w-4" />
         </Button>
         <Button
-          variant="ghost"
+          variant="outline"
           size="sm"
           onClick={() => editor.chain().focus().redo().run()}
           disabled={!editor.can().redo()}

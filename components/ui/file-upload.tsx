@@ -157,7 +157,7 @@ export function FileUpload({
                 </span>
               </div>
               <Button
-                variant="ghost"
+                variant="outline"
                 size="sm"
                 onClick={() => removeFile(index)}
                 className="h-8 w-8 p-0"

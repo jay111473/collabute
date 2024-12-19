@@ -3,6 +3,8 @@ import Feature from "@/components/home/feature";
 import EarlyBirdForm from "@/components/home/early-bird";
 import Hero from "@/components/home/hero";
 import About from "@/components/home/about";
+import Developers from "@/components/home/developers";
+import HowItWorks from "@/components/home/how-it-works";
 
 export default function Home() {
   return (
@@ -11,6 +13,8 @@ export default function Home() {
       <Hero />
       <Feature />
       <About />
+      <Developers />
+      <HowItWorks />
       <EarlyBirdForm />
     </main>
   ); 

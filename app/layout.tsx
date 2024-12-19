@@ -4,6 +4,7 @@ import { Analytics } from "@vercel/analytics/react";
 import "./globals.css";
 import { EmailProvider } from "./providers/EmailContext";
 import { ThemeProvider } from "./providers/ThemeProvider";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -24,6 +25,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${poppins.className}`}>
+        <SpeedInsights />
         <EmailProvider>
           <ThemeProvider
             attribute="class"

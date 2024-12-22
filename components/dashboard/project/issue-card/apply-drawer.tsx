@@ -22,8 +22,9 @@ import { format } from "date-fns";
 import RectangleStack from "@/public/icons/rectangle-stack";
 import { getBulbColor, getStatusInfo } from "@/lib/utils";
 import { Circle } from "lucide-react";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { TiptapEditor } from "@/components/ui/tiptap-editor";
+import { FileUpload } from "@/components/ui/file-upload";
 
 interface ApplyDrawerProps {
   issue: Issue;
@@ -38,6 +39,7 @@ export function ApplyDrawer({
 }: ApplyDrawerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [proposal, setProposal] = useState("");
+  const [attachments, setAttachments] = useState<File[]>([]);
   const { label, color } = getStatusInfo(issue.status);
 
   const handleApply = (e: React.MouseEvent) => {
@@ -138,12 +140,24 @@ export function ApplyDrawer({
                   (Explain how you plan to solve this issue)
                 </span>
               </Label>
-              <Textarea
-                id="proposal"
+              <TiptapEditor
+                content={proposal}
+                onChange={setProposal}
                 placeholder="Write your proposal here..."
-                className="min-h-[200px] resize-none"
-                value={proposal}
-                onChange={(e) => setProposal(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>
+                Attachments
+                <span className="text-xs text-gray-500 ml-1">
+                  (Optional: Add relevant files or documents)
+                </span>
+              </Label>
+              <FileUpload
+                onFilesSelected={setAttachments}
+                maxFiles={5}
+                maxSize={10}
+                acceptedTypes={[".pdf", ".doc", ".docx", ".txt", ".zip"]}
               />
             </div>
           </div>

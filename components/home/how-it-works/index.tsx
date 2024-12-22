@@ -1,8 +1,9 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { motion } from 'framer-motion'
+import { motion, useScroll, useTransform, Variants } from 'framer-motion'
 import { cn } from '@/lib/utils'
+import AIBadge from '@/components/uikit/ai-badge'
 
 interface Step {
   number: number
@@ -32,6 +33,112 @@ const steps: Step[] = [
     description: 'Developers contribute, earn based on input, and entrepreneurs launch faster.'
   }
 ]
+
+const textVariants: Variants = {
+  hidden: {
+    opacity: 0.15,
+  },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.02,
+    }
+  },
+}
+
+const letterVariants: Variants = {
+  hidden: { opacity: 0.15 },
+  visible: { 
+    opacity: 1,
+  },
+}
+
+function ScrollLetter({ 
+  char, 
+  index, 
+  total, 
+  parentRef,
+}: { 
+  char: string
+  index: number
+  total: number
+  parentRef: React.RefObject<HTMLDivElement>
+}) {
+  const { scrollYProgress } = useScroll({
+    target: parentRef,
+    offset: ["start end", "center center"]
+  })
+
+  const opacity = useTransform(
+    scrollYProgress,
+    [
+      Math.max(0, index / total),
+      Math.min(1, (index + 1) / total)
+    ],
+    [0.15, 1]
+  )
+
+  return (
+    <motion.span
+      style={{ 
+        opacity,
+        marginRight: char === " " ? "0.25em" : "0em"
+      }}
+      className="inline-block"
+    >
+      {char}
+    </motion.span>
+  )
+}
+
+function ScrollAnimatedText({ 
+  text, 
+  className, 
+}: { 
+  text: string
+  className: string
+}) {
+  const textRef = useRef<HTMLDivElement>(null)
+  const characters = text.split("")
+
+  return (
+    <motion.div
+      ref={textRef}
+      className={className}
+    >
+      {characters.map((char, index) => (
+        <ScrollLetter 
+          key={index}
+          char={char}
+          index={index}
+          total={characters.length}
+          parentRef={textRef}
+        />
+      ))}
+    </motion.div>
+  )
+}
+
+function FadeInText({ 
+  text, 
+  className,
+  isVisible
+}: { 
+  text: string
+  className: string
+  isVisible: boolean
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0.15 }}
+      animate={{ opacity: isVisible ? 1 : 0.6 }}
+      transition={{ duration: 0.7 }}
+      className={className}
+    >
+      {text}
+    </motion.div>
+  )
+}
 
 export function HowItWorks() {
   const [activeStep, setActiveStep] = useState(1)
@@ -63,16 +170,15 @@ export function HowItWorks() {
   }, [])
 
   return (
-    <section ref={sectionRef} className="relative bg-black min-h-screen">
+    <section ref={sectionRef} className="relative min-h-screen">
       <div className="container px-4 mx-auto">
         <div className="text-center mb-32">
-          <div className="inline-flex items-center gap-2 rounded-full bg-transparent border border-white/30 px-4 py-1.5 mb-6">
-            <span className="text-purple-400">✨</span>
-            <span className="text-white text-sm">How it works</span>
+          <div className="flex justify-center">
+            <AIBadge text="How it works" />
           </div>
-          <h2 className="text-4xl md:text-5xl font-bold mb-6">
-            <span className="bg-gradient-to-r from-purple-200 to-purple-400 bg-clip-text text-transparent">
-              Seamless Collaboration
+          <h2 className="text-[36px] font-bold mb-6">
+            <span className="text-darkPrimary">
+              Collaboration
             </span>
             <span className="text-white"> from Concept to Completion</span>
           </h2>
@@ -94,33 +200,29 @@ export function HowItWorks() {
                 activeStep === step.number ? 'opacity-100' : 'opacity-60'
               )}
             >
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ 
-                  opacity: activeStep === step.number ? 1 : 0.6
-                }}
-                transition={{ duration: 0.7 }}
-                className="space-y-5"
-              >
+              <div className="space-y-5">
                 <div className={cn(
                   "text-zinc-600 text-sm font-medium",
                   activeStep === step.number ? "text-purple-200" : "text-zinc-700"
                 )}>
                   Step {step.number}
                 </div>
-                <h3 className={cn(
-                  "text-4xl font-bold tracking-tight uppercase",
-                  activeStep === step.number ? "text-purple-200" : "text-zinc-700"
-                )}>
-                  {step.title}
-                </h3>
-                <p className={cn(
-                  "text-2xl font-light leading-relaxed capitalize",
-                  activeStep === step.number ? "text-purple-200" : "text-zinc-600"
-                )}>
-                  {step.description}
-                </p>
-              </motion.div>
+                <ScrollAnimatedText 
+                  text={step.title}
+                  className={cn(
+                    "text-4xl font-bold tracking-tight uppercase",
+                    activeStep === step.number ? "text-purple-200" : "text-zinc-700"
+                  )}
+                />
+                <FadeInText 
+                  text={step.description}
+                  className={cn(
+                    "text-2xl font-light leading-relaxed capitalize",
+                    activeStep === step.number ? "text-purple-200" : "text-zinc-600"
+                  )}
+                  isVisible={activeStep === step.number}
+                />
+              </div>
             </div>
           ))}
         </div>

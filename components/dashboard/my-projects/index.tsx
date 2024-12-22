@@ -22,7 +22,7 @@ const MyProjectsComponent = ({
   return (
     <div className="flex flex-col">
       <header className="flex h-14 justify-between items-center gap-4 border-b bg-muted/40 px-4 lg:h-[60px] lg:px-6">
-        <h3 className="text-lg dark:text-white">My Projects</h3>
+        <h3 className="text-lg ">My Projects</h3>
         <Button
           variant="outline"
           size="icon"

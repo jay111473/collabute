@@ -25,6 +25,7 @@ const config = {
         secondary: "#ffffff",
         primaryLowOpacity: "#daabff33",
         accent: "#930CFE",
+        darkPrimary: "#C69DF8",
       },
       keyframes: {
         meteor: {
@@ -66,6 +67,9 @@ const config = {
         "accordion-up": "accordion-up 0.2s ease-out",
         meteor: "meteor 5s linear infinite",
         shine: 'shine 8s cubic-bezier(0.4, 0, 0.2, 1) infinite'
+      },
+      fontFamily: {
+        sans: ['var(--font-plus-jakarta)'],
       },
     },
   },

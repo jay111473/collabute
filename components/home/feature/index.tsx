@@ -1,24 +1,17 @@
 import React from "react";
 import { Card, CardContent } from "../../ui/card";
 import { Rocket, Sparkles, DollarSign, Diamond } from "lucide-react";
+import AIBadge from "@/components/uikit/ai-badge";
 
 const Feature = () => {
   return (
     <section className="w-full">
       <div className="container px-4 md:px-6">
         <div className="flex flex-col items-center text-center mb-16">
-          <div className="relative mb-4">
-            <div className="absolute -top-[1px] left-1/2 -translate-x-1/2 w-[calc(100%-2px)] h-[2px] bg-gradient-to-r from-transparent via-white/50 to-transparent" />
-            
-            <div className="relative inline-flex items-center gap-2 px-3 py-2 rounded-full border border-white/20">
-              <Sparkles className="w-4 h-4 text-purple-400" />
-              <span className="text-xs font-medium text-white">
-                Smart solution
-              </span>
-            </div>
-          </div>
+          <AIBadge text="Smart solution" />
           <h2 className="text-3xl md:text-4xl font-bold">
-            <span className="text-purple-400">Why</span> Choose Collabute?
+            <span className="text-purple-400">Your Technical Arm </span> in
+            Action
           </h2>
         </div>
 
@@ -61,9 +54,7 @@ function FeatureCard({ icon, title, description }: FeatureCardProps) {
       <div className="absolute inset-0 bg-gradient-to-b from-purple-500/20 via-purple-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
       <div className="absolute -inset-x-20 -inset-y-40 from-purple-500/20 via-transparent to-transparent bg-gradient-to-r rotate-12 transform scale-y-[2] group-hover:animate-shine" />
       <CardContent className="relative flex flex-col items-start space-y-4 p-6">
-        <div className="rounded-full p-2.5 bg-purple-500/10 backdrop-blur-md border border-purple-500/20">
-          {icon}
-        </div>
+        {icon}
         <h3 className="text-xl font-bold text-white">{title}</h3>
         <p className="text-sm text-gray-400">{description}</p>
       </CardContent>

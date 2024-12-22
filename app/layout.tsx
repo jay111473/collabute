@@ -1,15 +1,15 @@
 import type { Metadata } from "next";
-import { Poppins } from "next/font/google";
+import { Plus_Jakarta_Sans } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
 import "./globals.css";
 import { EmailProvider } from "./providers/EmailContext";
 import { ThemeProvider } from "./providers/ThemeProvider";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
-const poppins = Poppins({
+const plusJakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
   weight: ["300", "400", "500", "700"],
-  variable: "--poppins",
+  variable: "--font-plus-jakarta",
 });
 
 export const metadata: Metadata = {
@@ -24,7 +24,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${poppins.className}`}>
+      <body className={`${plusJakarta.className}`}>
         <SpeedInsights />
         <EmailProvider>
           <ThemeProvider

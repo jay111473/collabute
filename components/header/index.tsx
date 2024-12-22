@@ -19,8 +19,8 @@ export function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   return (
-    <header className="w-full fixed top-0 left-0 right-0 z-50">
-      <div className="mx-4 my-4">
+    <header className="w-full fixed top-0 left-0 right-0 z-50 flex justify-center items-center">
+      <div className="mx-4 my-4 w-3/4">
         <div className="backdrop-blur-md bg-black/30 border border-white/[0.1] rounded-xl shadow-lg">
           <div className="container flex h-20 items-center">
             {/* Logo - visible on all screens */}
@@ -62,11 +62,10 @@ export function Header() {
                 <Link href="/login">Login</Link>
               </Button>
               <Button 
-                variant="primary" 
                 className="px-4 py-2" 
                 asChild
               >
-                <Link href="/start-project">Start your project</Link>
+                <Link href="/start-project">Sign up</Link>
               </Button>
             </div>
 

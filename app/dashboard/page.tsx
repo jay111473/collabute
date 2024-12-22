@@ -18,31 +18,9 @@ import { cookies } from "next/headers";
 import { truncateToFourWords } from "@/lib/utils";
 import { Project, Issue } from "@/types/dashboard";
 import { getUser } from "@/lib/get-user";
+import DashboardCard from "@/components/uikit/dashboard-card";
 
-const DashboardCard = ({
-  title,
-  value,
-  icon: Icon,
-  subtext,
-}: {
-  title: string;
-  value: number | string;
-  icon: React.ElementType;
-  subtext: string;
-}) => (
-  <Card>
-    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-      <CardTitle className="text-sm font-medium text-primary2">
-        {title}
-      </CardTitle>
-      <Icon className="h-4 w-4 text-muted-foreground" />
-    </CardHeader>
-    <CardContent>
-      <div className="text-2xl font-bold">{value}</div>
-      <p className="text-xs text-muted-foreground">{subtext}</p>
-    </CardContent>
-  </Card>
-);
+
 
 const ProjectsTable = ({ projects }: { projects: Project[] }) => (
   <Table>
@@ -97,13 +75,13 @@ const Dashboard = async () => {
   const userId = (await cookies()).get("userid")?.value;
   const user = await getUser(userId || "", token || "");
   if (!token || !userId) {
-    throw new Error("Authentication required");
+    window.location.href = "/auth/login";
   }
 
   return (
     <div className="flex flex-col">
       <header className="flex h-14 justify-between items-center gap-4 border-b bg-muted/40 px-4 lg:h-[60px] lg:px-6">
-        <h3 className="text-lg dark:text-white">Dashboard</h3>
+        <h3 className="text-lg">Dashboard</h3>
         <Button
           variant="outline"
           size="icon"

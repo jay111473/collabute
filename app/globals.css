@@ -6,7 +6,7 @@
   .gradient-border-mask {
     --border-size: 1px;
     --border-angle: 0turn;
-    
+
     background-image: conic-gradient(
       from var(--border-angle),
       hsl(var(--primary)) 0deg 90deg,
@@ -37,4 +37,24 @@
     --glow-offset: 0px;
     --glow-color: hsl(var(--primary));
   }
+}
+
+.cosmic-button {
+  border-radius: 6px;
+  background: radial-gradient(
+      22.12% 100% at 48.06% 100%,
+      rgba(206, 172, 247, 0.5) 0%,
+      rgba(17, 23, 61, 0) 100%
+    ),
+    radial-gradient(
+      58.31% 100% at 48.06% 100%,
+      rgba(174, 120, 241, 0.5) 0%,
+      rgba(17, 23, 61, 0) 100%
+    ),
+    rgba(46, 28, 69, 0.28);
+  border-image: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.2),
+    rgba(255, 255, 255, 0)
+  ) 1;
 }

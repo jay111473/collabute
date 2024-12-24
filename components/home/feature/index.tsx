@@ -9,7 +9,7 @@ const Feature = () => {
       <div className="container px-4 md:px-6">
         <div className="flex flex-col items-center text-center mb-16">
           <AIBadge text="Smart solution" />
-          <h2 className="text-3xl md:text-4xl font-bold">
+          <h2 className="text-3xl md:text-4xl font-bold text-white">
             <span className="text-purple-400">Your Technical Arm </span> in
             Action
           </h2>
@@ -50,7 +50,7 @@ interface FeatureCardProps {
 
 function FeatureCard({ icon, title, description }: FeatureCardProps) {
   return (
-    <Card className="group relative overflow-hidden rounded-[20px] border border-purple-500/20 bg-gradient-to-b from-purple-500/5 to-transparent backdrop-blur-sm transition-all hover:border-purple-500/40">
+    <Card className="relative overflow-hidden rounded-[20px] border border-purple-500/20 bg-[#09090b] bg-gradient-to-b from-purple-500/5 to-transparent backdrop-blur-sm transition-all hover:border-purple-500/40">
       <div className="absolute inset-0 bg-gradient-to-b from-purple-500/20 via-purple-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
       <div className="absolute -inset-x-20 -inset-y-40 from-purple-500/20 via-transparent to-transparent bg-gradient-to-r rotate-12 transform scale-y-[2] group-hover:animate-shine" />
       <CardContent className="relative flex flex-col items-start space-y-4 p-6">

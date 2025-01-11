@@ -3,7 +3,6 @@ import {
   CircleDollarSign,
   Layers3,
   LayoutPanelLeft,
-  Sparkles,
   Compass,
 } from "lucide-react";
 import React from "react";

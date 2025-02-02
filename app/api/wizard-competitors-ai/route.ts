@@ -14,17 +14,18 @@ export async function POST(req: Request) {
     console.log("Received request body:", body);
 
     const { projectName, description, industry, industries } = body;
-    
+
     // Handle both single industry or industries array
-    const primaryIndustry = industry || (Array.isArray(industries) ? industries[0] : undefined);
-    
+    const primaryIndustry =
+      industry || (Array.isArray(industries) ? industries[0] : undefined);
+
     console.log("Extracted fields:", {
       projectName,
       description,
       primaryIndustry,
       hasProjectName: !!projectName,
       hasDescription: !!description,
-      hasPrimaryIndustry: !!primaryIndustry
+      hasPrimaryIndustry: !!primaryIndustry,
     });
 
     if (!projectName || !description || !primaryIndustry) {
@@ -35,10 +36,10 @@ export async function POST(req: Request) {
       ].filter(Boolean);
 
       return NextResponse.json(
-        { 
-          error: "Missing required fields", 
+        {
+          error: "Missing required fields",
           missingFields,
-          receivedData: body 
+          receivedData: body,
         },
         { status: 400 }
       );
@@ -49,7 +50,11 @@ export async function POST(req: Request) {
       Project Name: ${projectName}
       Description: ${description}
       Primary Industry: ${primaryIndustry}
-      ${industries ? `Related Industries: ${industries.slice(1).join(', ')}` : ''}
+      ${
+        industries
+          ? `Related Industries: ${industries.slice(1).join(", ")}`
+          : ""
+      }
 
       For each competitor, provide:
       1. Company name
@@ -95,20 +100,33 @@ export async function POST(req: Request) {
 
     try {
       const competitors = JSON.parse(text);
-      
+
       // Sanitize and validate the response
       const sanitizedCompetitors = competitors
         .slice(0, 5) // Limit to 5 competitors
-        .map(comp => ({
-          name: comp.name?.trim() || "Unknown",
-          url: comp.url?.trim() || "#",
-          swot: comp.swot ? {
-            strengths: (comp.swot.strengths || []).slice(0, 3),
-            weaknesses: (comp.swot.weaknesses || []).slice(0, 3),
-            opportunities: (comp.swot.opportunities || []).slice(0, 3),
-            threats: (comp.swot.threats || []).slice(0, 3),
-          } : undefined
-        }));
+        .map(
+          (comp: {
+            name: string;
+            url: string;
+            swot: {
+              strengths: any;
+              weaknesses: any;
+              opportunities: any;
+              threats: any;
+            };
+          }) => ({
+            name: comp.name?.trim() || "Unknown",
+            url: comp.url?.trim() || "#",
+            swot: comp.swot
+              ? {
+                  strengths: (comp.swot.strengths || []).slice(0, 3),
+                  weaknesses: (comp.swot.weaknesses || []).slice(0, 3),
+                  opportunities: (comp.swot.opportunities || []).slice(0, 3),
+                  threats: (comp.swot.threats || []).slice(0, 3),
+                }
+              : undefined,
+          })
+        );
 
       return NextResponse.json({ competitors: sanitizedCompetitors });
     } catch (parseError) {

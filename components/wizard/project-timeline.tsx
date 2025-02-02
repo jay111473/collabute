@@ -34,7 +34,9 @@ export function ProjectTimeline({ features, onFeaturesChange }: ProjectTimelineP
         const weeks = parseInt(f.estimatedTimeline.split(' ')[0]);
         return sum + weeks;
       }, 0),
-      totalPrice: phaseFeatures.reduce((sum, f) => sum + f.estimatedPrice, 0),
+      totalPrice: phaseFeatures.reduce((sum, f) => {
+        return sum + (typeof f.estimatedPrice === 'number' ? f.estimatedPrice : 0);
+      }, 0),
     };
     return acc;
   }, {} as Record<string, { totalTime: number; totalPrice: number }>);
@@ -97,7 +99,7 @@ export function ProjectTimeline({ features, onFeaturesChange }: ProjectTimelineP
                       <div className="flex items-center gap-2">
                         <h4 className="text-base font-medium">{feature.title}</h4>
                         <span className={`text-xs px-2 py-0.5 rounded-full ${
-                          feature.complexity === 'high' 
+                          feature.complexity === 'complex' 
                             ? 'bg-red-500/10 text-red-500'
                             : feature.complexity === 'medium'
                             ? 'bg-yellow-500/10 text-yellow-500'

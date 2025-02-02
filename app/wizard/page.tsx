@@ -10,7 +10,9 @@ import { ProjectInfo } from "@/components/wizard/project-info";
 import { ProjectCompetitors } from "@/components/wizard/project-competitors";
 import { ProjectFeatures } from "@/components/wizard/project-features";
 import { ProjectTimeline } from "@/components/wizard/project-timeline";
-import { ProjectScope, ProjectSide } from "@/types/wizard";
+import { ProjectScope, ProjectSide, Stack, Project, Feature } from "@/types/wizard";
+import { ProjectLeader } from "@/components/wizard/project-leader";
+import { IndustrySelection } from "@/components/wizard/industry-selection";
 
 interface Industry {
   label: string;
@@ -22,14 +24,15 @@ interface Competitor {
   url: string;
 }
 
-interface Feature {
-  title: string;
-  description: string;
-  estimatedTimeline: string;
-  estimatedPrice: number;
-  phase: 'alpha' | 'beta' | 'production';
-  complexity: 'low' | 'medium' | 'high';
-  projectSide: ProjectSide;
+interface Lead {
+  id: number;
+  name: string;
+  experience: number;
+  stack: (number | Stack)[];
+  projects?: (number | Project)[] | null;
+  availability?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
 }
 
 interface WizardData {
@@ -45,6 +48,7 @@ interface WizardData {
   } | null;
   competitors: Competitor[];
   features: Feature[];
+  leader: Lead | null;
 }
 
 export default function Wizard() {
@@ -62,11 +66,12 @@ export default function Wizard() {
       name: "",
       description: "",
       industries: [],
-      projectScope: 'unknown',
+      projectScope: "unknown",
       projectPlatforms: [],
     },
     competitors: [],
     features: [],
+    leader: null,
   });
   const [hasCalledAI, setHasCalledAI] = useState(false);
   const [hasCalledCompetitorsAI, setHasCalledCompetitorsAI] = useState(false);
@@ -108,6 +113,8 @@ export default function Wizard() {
             },
           }));
         }
+        // Move to next step after getting AI suggestions
+        setCurrentStep(currentStep + 1);
       } catch (error) {
         console.error("Error fetching industries:", error);
       } finally {
@@ -118,13 +125,20 @@ export default function Wizard() {
 
     // Call competitors AI when moving from step 1 to 2
     if (
-      currentStep === 1 &&
+      currentStep === 2 &&
       hasCalledAI &&
       !hasCalledCompetitorsAI &&
       wizardData.projectInfo
     ) {
       setIsLoading(true);
       try {
+        console.log('Sending competitors API request:', {
+          projectName: wizardData.projectInfo.name,
+          description: wizardData.projectInfo.description,
+          industries: wizardData.projectInfo.industries,
+          industry: wizardData.projectInfo.industries[0],
+        });
+
         const response = await fetch("/api/wizard-competitors-ai", {
           method: "POST",
           headers: {
@@ -134,14 +148,21 @@ export default function Wizard() {
             projectName: wizardData.projectInfo.name,
             description: wizardData.projectInfo.description,
             industries: wizardData.projectInfo.industries,
+            industry: wizardData.projectInfo.industries[0],
           }),
         });
 
         const data = await response.json();
-        setSuggestedCompetitors(data.competitors || []);
-        setHasCalledCompetitorsAI(true);
+        console.log('Competitors API response:', data);
+
+        if (data.error) {
+          console.error('Competitors API error:', data.error, data.missingFields);
+          return;
+        }
 
         if (data.competitors?.length > 0) {
+          setSuggestedCompetitors(data.competitors);
+          setHasCalledCompetitorsAI(true);
           setWizardData((prev) => ({
             ...prev,
             competitors: data.competitors,
@@ -152,11 +173,12 @@ export default function Wizard() {
       } finally {
         setIsLoading(false);
       }
+      return;
     }
 
     // Call features AI when moving from step 2 to 3
     if (
-      currentStep === 2 &&
+      currentStep === 3 &&
       !hasCalledFeaturesAI &&
       wizardData.projectInfo &&
       wizardData.competitors.length > 0
@@ -204,10 +226,13 @@ export default function Wizard() {
     }
 
     // Proceed to next step
-    if (currentStep < 4) {
-      setCurrentStep(currentStep + 1);
-      if (currentStep === 1) {
-        setHasCalledAI(false);
+    if (currentStep < 6) {
+      // Don't automatically increment step if we're calling competitors AI
+      if (!(currentStep === 2 && !hasCalledCompetitorsAI)) {
+        setCurrentStep(currentStep + 1);
+        if (currentStep === 1) {
+          setHasCalledAI(false);
+        }
       }
     }
   };
@@ -257,13 +282,31 @@ export default function Wizard() {
     }));
   };
 
+  const handleLeaderChange = (leader: Lead | null) => {
+    setWizardData((prev) => ({
+      ...prev,
+      leader,
+    }));
+  };
+
+  const handleIndustriesChange = (industries: string[]) => {
+    setWizardData((prev) => ({
+      ...prev,
+      projectInfo: {
+        ...prev.projectInfo!,
+        industries,
+      },
+    }));
+  };
+
   const canProceedToNextStep = () => {
     if (currentStep === 1) {
       const wordCount =
         wizardData.projectInfo?.description?.trim().split(/\s+/).length || 0;
 
       if (!hasCalledAI) {
-        const hasPlatforms = wizardData.projectInfo?.projectScope === 'unknown' || 
+        const hasPlatforms =
+          wizardData.projectInfo?.projectScope === "unknown" ||
           (wizardData.projectInfo?.projectPlatforms.length ?? 0) > 0;
 
         return (
@@ -272,10 +315,14 @@ export default function Wizard() {
           !!wizardData.projectInfo?.projectScope &&
           hasPlatforms
         );
-      } else {
-        return !!wizardData.projectInfo?.industries?.length;
       }
+      return true;
     } else if (currentStep === 2) {
+      return (
+        wizardData.projectInfo?.industries &&
+        wizardData.projectInfo.industries.length > 0
+      );
+    } else if (currentStep === 3) {
       if (!hasCalledFeaturesAI) {
         return wizardData.competitors.length > 0;
       } else {
@@ -300,11 +347,22 @@ export default function Wizard() {
             <ProjectInfo
               onProjectInfoChange={handleProjectInfoChange}
               isLoading={isLoading}
-              suggestedIndustries={suggestedIndustries}
+              suggestedIndustries={[]}
             />
           </div>
         );
       case 2:
+        return (
+          <div className="col-span-2">
+            <IndustrySelection
+              onIndustriesChange={handleIndustriesChange}
+              isLoading={isLoading}
+              suggestedIndustries={suggestedIndustries}
+              selectedIndustries={wizardData.projectInfo?.industries || []}
+            />
+          </div>
+        );
+      case 3:
         return (
           <div className="col-span-2">
             <ProjectCompetitors
@@ -316,7 +374,7 @@ export default function Wizard() {
             />
           </div>
         );
-      case 3:
+      case 4:
         return (
           <div className="col-span-2">
             <ProjectFeatures
@@ -328,7 +386,16 @@ export default function Wizard() {
             />
           </div>
         );
-      case 4:
+      case 5:
+        return (
+          <div className="col-span-2">
+            <ProjectLeader
+              onLeaderChange={handleLeaderChange}
+              selectedLeader={wizardData.leader}
+            />
+          </div>
+        );
+      case 6:
         return (
           <div className="col-span-2">
             <ProjectTimeline
@@ -348,7 +415,7 @@ export default function Wizard() {
         <WizardLogo />
         <div className="p-2 border border-darkPrimary/20 rounded-xl">
           <div className="mx-auto flex-1 flex flex-col border-2 border-darkPrimary/40 p-9 rounded-xl">
-            <StepIndicator currentStep={currentStep} totalSteps={5} />
+            <StepIndicator currentStep={currentStep} totalSteps={6} />
 
             <div className="grid md:grid-cols-2 gap-12 flex-1">
               {renderStep()}

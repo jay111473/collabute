@@ -1,12 +1,11 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { PlusIcon, XIcon, PencilIcon, InfoIcon } from "lucide-react";
+import { PlusIcon, XIcon, PencilIcon, InfoIcon, RefreshCcw } from "lucide-react";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -24,17 +23,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ProjectSide, Feature } from "@/types/wizard";
+import { Feature, ProjectSide, ProjectInfo, Competitor } from "@/types/wizard";
 
 interface ProjectFeaturesProps {
-  projectInfo: {
-    name: string;
-    description: string;
-    industries: string[];
-    projectPlatforms: { value: string; isCore?: boolean }[];
-    projectScope: string;
-  };
-  competitors: Array<{ name: string; url: string }>;
+  projectInfo: ProjectInfo;
+  competitors: Competitor[];
   onFeaturesChange: (features: Feature[]) => void;
   isLoading: boolean;
   suggestedFeatures: Feature[];
@@ -89,16 +82,19 @@ function FeatureCard({
                   </TooltipTrigger>
                   <TooltipContent
                     side="top"
-                    className="max-w-[300px] bg-[#1A1A1A] border-white/10"
+                    className="max-w-[400px] bg-[#1A1A1A] border-white/10"
                   >
-                    <div className="space-y-2">
-                      <p className="text-sm text-white/80">
-                        {feature.description}
-                      </p>
-                      <div className="flex items-center gap-4 text-xs text-white/60">
-                        <span>Timeline: {feature.estimatedTimeline}</span>
-                        <span>Price: ${feature.estimatedPrice}</span>
-                        <span>Complexity: {feature.complexity}</span>
+                    <div className="space-y-3">
+                      <div>
+                        <p className="text-sm text-white/80 mb-2">
+                          {feature.description}
+                        </p>
+                        <div className="flex items-center gap-4 text-xs text-white/60">
+                          <span>Timeline: {feature.estimatedTimeline}</span>
+                          <span>Price: ${feature.estimatedPrice}</span>
+                          <span>Complexity: {feature.complexity}</span>
+                          <span>Platform: {feature.platform}</span>
+                        </div>
                       </div>
                     </div>
                   </TooltipContent>
@@ -132,18 +128,21 @@ function FeaturesByProjectSide({
   selectedFeatures,
   onFeatureToggle,
   onFeatureRemove,
+  onAddFeature,
+  currentPhase,
 }: {
   features: Feature[];
   projectSides: ProjectSide[];
   selectedFeatures: Feature[];
   onFeatureToggle: (feature: Feature) => void;
   onFeatureRemove: (feature: Feature) => void;
+  onAddFeature: (projectSide: ProjectSide) => void;
+  currentPhase: "alpha" | "beta" | "production";
 }) {
   return (
     <div className="space-y-8">
       {projectSides.map((side) => {
         const sideFeatures = features.filter((f) => f.projectSide === side);
-        if (sideFeatures.length === 0) return null;
 
         return (
           <div key={side} className="space-y-4">
@@ -162,6 +161,19 @@ function FeaturesByProjectSide({
                   onRemove={() => onFeatureRemove(feature)}
                 />
               ))}
+              {/* Add Feature Button for each platform */}
+              <div
+                onClick={() => onAddFeature(side)}
+                className="border-2 border-dashed border-primary2/30 hover:border-primary2/50 rounded-xl p-6 flex items-center justify-center cursor-pointer transition-all duration-300 backdrop-blur-sm group hover:shadow-[0_0_15px_rgba(168,85,247,0.1)] h-[100px] w-[200px]"
+              >
+                <Button
+                  variant="outline"
+                  className="w-full h-full flex items-center gap-2 border-0 text-primary2/70 hover:text-primary2 hover:bg-primary2/5"
+                >
+                  <PlusIcon className="h-4 w-4 text-gray-500" />
+                  <span>Add {getProjectSideLabel(side)} Feature</span>
+                </Button>
+              </div>
             </div>
           </div>
         );
@@ -175,73 +187,95 @@ export function ProjectFeatures({
   competitors,
   onFeaturesChange,
   isLoading,
-  suggestedFeatures: initialSuggestedFeatures,
+  suggestedFeatures,
 }: ProjectFeaturesProps) {
-  const [selectedFeatures, setSelectedFeatures] = useState<Feature[]>(
-    initialSuggestedFeatures
-  );
-  const [suggestedFeatures, setSuggestedFeatures] = useState<Feature[]>(
-    initialSuggestedFeatures
-  );
-  const [currentPhase, setCurrentPhase] = useState<
-    "alpha" | "beta" | "production"
-  >("alpha");
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [newFeature, setNewFeature] = useState<Feature>({
+  const [selectedFeatures, setSelectedFeatures] = useState<Feature[]>([]);
+  const [currentPhase, setCurrentPhase] = useState<"alpha" | "beta" | "production">("alpha");
+  const [showAddFeatureDialog, setShowAddFeatureDialog] = useState(false);
+  const [isRetrying, setIsRetrying] = useState(false);
+  const [error, setError] = useState(false);
+  
+  const defaultNewFeature: Partial<Feature> = {
     title: "",
     description: "",
-    estimatedTimeline: "2 weeks",
-    estimatedPrice: 2000,
-    phase: "beta",
-    complexity: "medium",
+    estimatedTimeline: "",
+    estimatedPrice: "",
+    complexity: "simple",
+    platform: projectInfo.projectPlatforms[0]?.value || "frontend",
     projectSide: "frontend",
-  });
+    phase: "alpha",
+  };
+  const [newFeature, setNewFeature] = useState<Partial<Feature>>(defaultNewFeature);
 
   const projectSides = getProjectSides(projectInfo.projectPlatforms);
 
-  const handleFeatureToggle = (feature: Feature) => {
-    const isSelected = selectedFeatures.some((f) => f.title === feature.title);
-    let newFeatures;
+  const handleRetry = async () => {
+    try {
+      setIsRetrying(true);
+      setError(false);
+      
+      const response = await fetch("/api/wizard-features-ai", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          projectName: projectInfo.name,
+          description: projectInfo.description,
+          industries: projectInfo.industries,
+          competitors,
+          projectPlatforms: projectInfo.projectPlatforms,
+          projectScope: projectInfo.projectScope,
+        }),
+      });
 
-    if (isSelected) {
-      newFeatures = selectedFeatures.filter((f) => f.title !== feature.title);
-    } else {
-      newFeatures = [...selectedFeatures, feature];
+      if (!response.ok) {
+        throw new Error('Failed to generate features');
+      }
+
+      const data = await response.json();
+      
+      if (!data.features || !Array.isArray(data.features) || data.features.length === 0) {
+        throw new Error('No features generated');
+      }
+
+      // Update both the parent state and local state
+      onFeaturesChange(data.features);
+      setSelectedFeatures([]); // Reset selected features
+      setError(false);
+    } catch (err) {
+      console.error("Error retrying feature generation:", err);
+      setError(true);
+    } finally {
+      setIsRetrying(false);
     }
+  };
 
-    setSelectedFeatures(newFeatures);
-    onFeaturesChange(newFeatures);
+  const handleFeatureToggle = (feature: Feature) => {
+    setSelectedFeatures((prev) => {
+      const isSelected = prev.some((f) => f.title === feature.title);
+      if (isSelected) {
+        return prev.filter((f) => f.title !== feature.title);
+      }
+      return [...prev, feature];
+    });
+    onFeaturesChange(selectedFeatures);
   };
 
   const handleFeatureRemove = (feature: Feature) => {
-    const updatedFeatures = suggestedFeatures.filter(
-      (f) => f.title !== feature.title
+    setSelectedFeatures((prev) =>
+      prev.filter((f) => f.title !== feature.title)
     );
-    const updatedSelected = selectedFeatures.filter(
-      (f) => f.title !== feature.title
-    );
-    setSuggestedFeatures(updatedFeatures);
-    setSelectedFeatures(updatedSelected);
-    onFeaturesChange(updatedSelected);
+    onFeaturesChange(selectedFeatures.filter((f) => f.title !== feature.title));
   };
 
   const handleAddFeature = () => {
     if (newFeature.title && newFeature.description) {
-      const featureWithPhase = { ...newFeature, phase: currentPhase };
-      const updatedFeatures = [...suggestedFeatures, featureWithPhase];
-      setSuggestedFeatures(updatedFeatures);
-      setSelectedFeatures([...selectedFeatures, featureWithPhase]);
-      onFeaturesChange([...selectedFeatures, featureWithPhase]);
-      setNewFeature({
-        title: "",
-        description: "",
-        estimatedTimeline: "2 weeks",
-        estimatedPrice: 2000,
-        phase: "beta",
-        complexity: "medium",
-        projectSide: "frontend",
-      });
-      setIsDialogOpen(false);
+      const feature = { ...newFeature, phase: currentPhase } as Feature;
+      setSelectedFeatures((prev) => [...prev, feature]);
+      onFeaturesChange([...selectedFeatures, feature]);
+      setShowAddFeatureDialog(false);
+      setNewFeature(defaultNewFeature);
     }
   };
 
@@ -249,23 +283,15 @@ export function ProjectFeatures({
     (feature) => feature.phase === currentPhase
   );
 
-  return (
-    <div className="w-full space-y-8 text-white">
+  if (isLoading || isRetrying) {
+    return (
       <div className="space-y-6">
         <div className="space-y-1">
+          <h2 className="text-xl font-semibold text-white">Project Features</h2>
           <p className="text-sm text-white/60">
-            Select/Customize your project Features
-          </p>
-          <h2 className="text-3xl font-semibold tracking-tight">
-            Feature list
-          </h2>
-          <p className="text-base text-white/60">
-            These are AI generated Features for your project
+            Generating features for your project...
           </p>
         </div>
-      </div>
-
-      {isLoading ? (
         <div className="flex flex-wrap gap-4">
           {[1, 2, 3, 4, 5, 6].map((i) => (
             <div
@@ -274,111 +300,223 @@ export function ProjectFeatures({
             />
           ))}
         </div>
-      ) : (
-        <div className="space-y-6">
-          <Tabs
-            defaultValue="alpha"
-            value={currentPhase}
-            onValueChange={(value: any) => setCurrentPhase(value)}
-          >
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="alpha">Alpha (MVP)</TabsTrigger>
-              <TabsTrigger value="beta">Beta</TabsTrigger>
-              <TabsTrigger value="production">Production</TabsTrigger>
-            </TabsList>
+      </div>
+    );
+  }
 
-            <TabsContent value={currentPhase} className="mt-6">
-              <FeaturesByProjectSide
-                features={currentPhaseFeatures}
-                projectSides={projectSides}
-                selectedFeatures={selectedFeatures}
-                onFeatureToggle={handleFeatureToggle}
-                onFeatureRemove={handleFeatureRemove}
-              />
-            </TabsContent>
-          </Tabs>
-
-          {/* Add Feature Button */}
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <div className="border-2 border-dashed border-primary2/30 hover:border-primary2/50 rounded-xl p-6 flex items-center justify-center cursor-pointer transition-all duration-300 backdrop-blur-sm group hover:shadow-[0_0_15px_rgba(168,85,247,0.1)] h-[100px] w-[200px]">
-                <Button
-                  variant="outline"
-                  className="w-full h-full flex items-center gap-2 border-0 text-primary2/70 hover:text-primary2 hover:bg-primary2/5"
-                >
-                  <PlusIcon className="h-4 w-4" />
-                  <span>Add Feature</span>
-                </Button>
-              </div>
-            </DialogTrigger>
-            <DialogContent className="bg-[#1A1A1A] border-white/10 text-white">
-              <DialogHeader>
-                <DialogTitle>Add New Feature</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4 pt-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-white/70">
-                    Title
-                  </label>
-                  <Input
-                    placeholder="Enter feature title"
-                    value={newFeature.title}
-                    onChange={(e) =>
-                      setNewFeature({ ...newFeature, title: e.target.value })
-                    }
-                    className="bg-black/40 border-white/10 focus-visible:ring-primary2 text-white"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-white/70">
-                    Description
-                  </label>
-                  <Textarea
-                    placeholder="Enter feature description"
-                    value={newFeature.description}
-                    onChange={(e) =>
-                      setNewFeature({
-                        ...newFeature,
-                        description: e.target.value,
-                      })
-                    }
-                    className="bg-black/40 border-white/10 focus-visible:ring-primary2 min-h-[100px] text-white"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-white/70">
-                    Project Side
-                  </label>
-                  <Select
-                    value={newFeature.projectSide}
-                    onValueChange={(value: any) =>
-                      setNewFeature({ ...newFeature, projectSide: value })
-                    }
-                  >
-                    <SelectTrigger className="bg-black/40 border-white/10">
-                      <SelectValue placeholder="Select project side" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {projectSides.map((side) => (
-                        <SelectItem key={side} value={side}>
-                          {getProjectSideLabel(side)}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <Button
-                  onClick={handleAddFeature}
-                  disabled={!newFeature.title || !newFeature.description}
-                  className="w-full bg-primary2 hover:bg-primary2/90 text-white"
-                >
-                  Add Feature
-                </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
+  if (error || (suggestedFeatures && suggestedFeatures.length === 0)) {
+    return (
+      <div className="space-y-6">
+        <div className="space-y-1">
+          <h2 className="text-xl font-semibold text-white">Project Features</h2>
+          <p className="text-sm text-white/60">
+            There was an error generating features for your project.
+          </p>
         </div>
-      )}
+        <div className="flex items-center justify-center p-8 border border-white/10 rounded-lg">
+          <div className="text-center space-y-4">
+            <p className="text-white/60">
+              We couldn&apos;t generate features at this time. Would you like to try again?
+            </p>
+            <Button onClick={handleRetry} className="gap-2">
+              <RefreshCcw className="h-4 w-4" />
+              Retry Feature Generation
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="space-y-1">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-semibold text-white">Project Features</h2>
+          <Button onClick={handleRetry} variant="outline" size="sm" className="gap-2">
+            <RefreshCcw className="h-3 w-3" />
+            Regenerate Features
+          </Button>
+        </div>
+        <p className="text-sm text-white/60">
+          Select features for each phase of your project. Each feature represents a specific implementation task.
+        </p>
+      </div>
+
+      <Tabs
+        defaultValue="alpha"
+        value={currentPhase}
+        onValueChange={(value: string) => {
+          if (value === "alpha" || value === "beta" || value === "production") {
+            setCurrentPhase(value);
+          }
+        }}
+      >
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="alpha">Alpha (MVP)</TabsTrigger>
+          <TabsTrigger value="beta">Beta</TabsTrigger>
+          <TabsTrigger value="production">Production</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value={currentPhase} className="mt-6">
+          <div className="space-y-8">
+            {projectSides.map((side) => {
+              const sideFeatures = currentPhaseFeatures.filter(
+                (f) => f.projectSide === side
+              );
+
+              return (
+                <div key={side} className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-medium text-white capitalize">
+                      {getProjectSideLabel(side)} Features
+                    </h3>
+                    <Button
+                      variant="outline"
+                      className="gap-2"
+                      onClick={() => {
+                        setNewFeature((prev) => ({
+                          ...defaultNewFeature,
+                          projectSide: side,
+                          phase: currentPhase,
+                        }));
+                        setShowAddFeatureDialog(true);
+                      }}
+                    >
+                      <PlusIcon className="h-4 w-4" />
+                      Add {getProjectSideLabel(side)} Feature
+                    </Button>
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-4">
+                    {sideFeatures.map((feature) => (
+                      <FeatureCard
+                        key={feature.title}
+                        feature={feature}
+                        isSelected={selectedFeatures.some(
+                          (f) => f.title === feature.title
+                        )}
+                        onToggle={() => handleFeatureToggle(feature)}
+                        onRemove={() => handleFeatureRemove(feature)}
+                      />
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </TabsContent>
+      </Tabs>
+
+      <Dialog
+        open={showAddFeatureDialog}
+        onOpenChange={setShowAddFeatureDialog}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add New Feature</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <Input
+              placeholder="Feature Title"
+              value={newFeature.title}
+              onChange={(e) =>
+                setNewFeature((prev) => ({ ...prev, title: e.target.value }))
+              }
+            />
+            <Textarea
+              placeholder="Feature Description"
+              value={newFeature.description}
+              onChange={(e) =>
+                setNewFeature((prev) => ({
+                  ...prev,
+                  description: e.target.value,
+                }))
+              }
+            />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm text-white/60">Platform</label>
+                <Select
+                  value={newFeature.platform}
+                  onValueChange={(value) =>
+                    setNewFeature((prev) => ({ ...prev, platform: value }))
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select Platform" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {projectInfo.projectPlatforms.map((platform) => (
+                      <SelectItem key={platform.value} value={platform.value}>
+                        {platform.value}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm text-white/60">Complexity</label>
+                <Select
+                  value={newFeature.complexity}
+                  onValueChange={(value) =>
+                    setNewFeature((prev) => ({
+                      ...prev,
+                      complexity: value as "simple" | "medium" | "complex",
+                    }))
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select Complexity" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="simple">Simple</SelectItem>
+                    <SelectItem value="medium">Medium</SelectItem>
+                    <SelectItem value="complex">Complex</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm text-white/60">Timeline</label>
+                <Input
+                  placeholder="e.g., 2 weeks"
+                  value={newFeature.estimatedTimeline}
+                  onChange={(e) =>
+                    setNewFeature((prev) => ({
+                      ...prev,
+                      estimatedTimeline: e.target.value,
+                    }))
+                  }
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm text-white/60">Price ($)</label>
+                <Input
+                  placeholder="e.g., 2000"
+                  value={newFeature.estimatedPrice}
+                  onChange={(e) =>
+                    setNewFeature((prev) => ({
+                      ...prev,
+                      estimatedPrice: e.target.value,
+                    }))
+                  }
+                />
+              </div>
+            </div>
+            <div className="flex justify-end gap-4">
+              <Button
+                variant="outline"
+                onClick={() => setShowAddFeatureDialog(false)}
+              >
+                Cancel
+              </Button>
+              <Button onClick={handleAddFeature}>Add Feature</Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

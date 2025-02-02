@@ -31,10 +31,11 @@ export interface Feature {
   title: string;
   description: string;
   estimatedTimeline: string;
-  estimatedPrice: number;
-  phase: 'alpha' | 'beta' | 'production';
-  complexity: 'low' | 'medium' | 'high';
+  estimatedPrice: string;
+  complexity: "simple" | "medium" | "complex";
+  platform: string;
   projectSide: ProjectSide;
+  phase: "alpha" | "beta" | "production";
 }
 
 export interface ProjectInfo {
@@ -46,6 +47,39 @@ export interface ProjectInfo {
     value: string;
     isCore?: boolean;
   }[];
+}
+
+export interface Stack {
+  id: number;
+  name: string;
+  description?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+
+export interface Project {
+  id: number;
+  name: string;
+  description?: string | null;
+  status: string;
+  updatedAt: string;
+  createdAt: string;
+}
+
+export interface Competitor {
+  name: string;
+  url: string;
+}
+
+export interface Lead {
+  id: number;
+  name: string;
+  experience: number;
+  stack: (number | Stack)[];
+  projects?: (number | Project)[] | null;
+  availability?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
 }
 
 export const PROJECT_PLATFORMS: ProjectPlatform[] = [

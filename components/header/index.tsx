@@ -1,22 +1,22 @@
-'use client'
+"use client";
 
-import React, { useState } from "react"
-import Image from "next/image"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Menu } from "lucide-react"
-import { MobileMenu } from "@/components/header/mobile-menu"
+import React, { useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Menu } from "lucide-react";
+import { MobileMenu } from "@/components/header/mobile-menu";
 
 const navigationLinks = [
-  { href: '/', label: 'Home' },
-  { href: '/our-solution', label: 'Our Solution' },
-  { href: '/how-it-works', label: 'How it works' },
-  { href: '/about', label: 'About' },
-  { href: '/contact-us', label: 'Contact us' },
-]
+  { href: "/", label: "Home" },
+  { href: "/our-solution", label: "Our Solution" },
+  { href: "/how-it-works", label: "How it works" },
+  { href: "/about", label: "About" },
+  { href: "/contact-us", label: "Contact us" },
+];
 
 export function Header() {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
     <header className="w-full fixed top-0 left-0 right-0 z-[100] flex justify-center items-center">
@@ -26,14 +26,16 @@ export function Header() {
             {/* Logo */}
             <div className="flex-1 md:flex-[0.7]">
               <Link href="/" className="flex items-center space-x-2">
-                <Image 
-                  src="/logo.svg" 
-                  alt="Collabute Logo" 
-                  width={40} 
+                <Image
+                  src="/logo.svg"
+                  alt="Collabute Logo"
+                  width={40}
                   height={40}
                   className="h-8 md:h-10 w-auto"
                 />
-                <span className="text-lg md:text-xl font-semibold text-white">Collabute</span>
+                <span className="text-lg md:text-xl font-semibold text-white">
+                  Collabute
+                </span>
               </Link>
             </div>
 
@@ -54,17 +56,14 @@ export function Header() {
 
             {/* Desktop Buttons */}
             <div className="hidden md:flex flex-[0.7] items-center justify-end space-x-4">
-              <Button 
-                variant="outline" 
-                className="px-4 py-2 bg-transparent border-white/20 text-white hover:bg-white/10" 
+              <Button
+                variant="outline"
+                className="px-4 py-2 bg-transparent border-white/20 text-white hover:bg-white/10"
                 asChild
               >
-                <Link href="/login">Login</Link>
+                <Link href="/auth">Login</Link>
               </Button>
-              <Button 
-                className="px-4 py-2" 
-                asChild
-              >
+              <Button className="px-4 py-2" asChild>
                 <Link href="/start-project">Sign up</Link>
               </Button>
             </div>
@@ -82,13 +81,13 @@ export function Header() {
       </div>
 
       {/* Mobile Menu Component */}
-      <MobileMenu 
-        isOpen={isMobileMenuOpen} 
+      <MobileMenu
+        isOpen={isMobileMenuOpen}
         onClose={() => setIsMobileMenuOpen(false)}
         navigationLinks={navigationLinks}
       />
     </header>
-  )
+  );
 }
 
-export default Header
+export default Header;

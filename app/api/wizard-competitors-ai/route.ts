@@ -51,7 +51,17 @@ export async function POST(req: Request) {
       Primary Industry: ${primaryIndustry}
       ${industries ? `Related Industries: ${industries.slice(1).join(', ')}` : ''}
 
-      Please provide a list of 5 main competitors in this space, focusing primarily on the ${primaryIndustry} sector.
+      For each competitor, provide:
+      1. Company name
+      2. Website URL
+      3. SWOT Analysis with:
+         - 3 key strengths
+         - 3 key weaknesses
+         - 3 opportunities
+         - 3 threats
+
+      Please provide 3-5 main competitors in this space, focusing primarily on the ${primaryIndustry} sector.
+      Format the response as a valid JSON array of competitor objects.
     `;
 
     const { text } = await generateText({
@@ -62,15 +72,20 @@ export async function POST(req: Request) {
         
         Provide the result as a valid JSON array of competitor objects. Each competitor should have:
         - name: The company/product name
-        - description: A brief (max 150 chars) description
-        - website: The main website URL
+        - url: The main website URL
+        - swot: An object containing arrays of strengths, weaknesses, opportunities, and threats
         
         Example output format:
         [
           {
             "name": "CompetitorName",
-            "description": "Brief description of what they do",
-            "website": "https://example.com"
+            "url": "https://example.com",
+            "swot": {
+              "strengths": ["Strength 1", "Strength 2", "Strength 3"],
+              "weaknesses": ["Weakness 1", "Weakness 2", "Weakness 3"],
+              "opportunities": ["Opportunity 1", "Opportunity 2", "Opportunity 3"],
+              "threats": ["Threat 1", "Threat 2", "Threat 3"]
+            }
           }
         ]
         
@@ -79,20 +94,26 @@ export async function POST(req: Request) {
     });
 
     try {
-      const competitors: Competitor[] = JSON.parse(text);
+      const competitors = JSON.parse(text);
       
       // Sanitize and validate the response
       const sanitizedCompetitors = competitors
         .slice(0, 5) // Limit to 5 competitors
         .map(comp => ({
           name: comp.name?.trim() || "Unknown",
-          description: comp.description?.slice(0, 150)?.trim() || "No description available",
-          website: comp.website?.trim() || "#"
+          url: comp.url?.trim() || "#",
+          swot: comp.swot ? {
+            strengths: (comp.swot.strengths || []).slice(0, 3),
+            weaknesses: (comp.swot.weaknesses || []).slice(0, 3),
+            opportunities: (comp.swot.opportunities || []).slice(0, 3),
+            threats: (comp.swot.threats || []).slice(0, 3),
+          } : undefined
         }));
 
       return NextResponse.json({ competitors: sanitizedCompetitors });
     } catch (parseError) {
       console.error("Error parsing competitors response:", parseError);
+      console.error("Raw text:", text);
       return NextResponse.json(
         { error: "Failed to process competitors data" },
         { status: 500 }

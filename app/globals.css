@@ -58,3 +58,31 @@
     rgba(255, 255, 255, 0)
   ) 1;
 }
+
+/* Add these styles to your globals.css */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+    transition: background-color 5000s ease-in-out 0s;
+    -webkit-text-fill-color: inherit !important;
+    -webkit-box-shadow: 0 0 0px 1000px transparent inset;
+}
+
+/* Firefox specific */
+input:-moz-autofill,
+input:-moz-autofill:focus {
+    background-color: transparent !important;
+    color: inherit !important;
+}
+
+/* For all browsers */
+input:autofill,
+input:autofill:hover,
+input:autofill:focus,
+input:autofill:active {
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: inherit !important;
+    transition: background-color 5000s ease-in-out 0s;
+    box-shadow: inset 0 0 20px 20px transparent !important;
+}

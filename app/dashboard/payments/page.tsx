@@ -1,7 +1,7 @@
 import DashboardCard from "@/components/uikit/dashboard-card";
 import { getUser } from "@/lib/get-user";
 import { cookies } from "next/headers";
-import { DollarSign, GitPullRequest } from "lucide-react";
+import { DollarSign } from "lucide-react";
 import React from "react";
 import { TransactionBox } from "@/components/dashboard/payments/transaction-box";
 

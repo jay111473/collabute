@@ -13,16 +13,19 @@ const DashboardCard = ({
   subtext?: string;
 }) => {
   return (
-    <Card>
+    <Card className="relative overflow-hidden rounded-[20px] border border-white/10 bg-black">
+      <div className="absolute" />
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium text-primary2">
+        <CardTitle className="text-sm font-medium text-white/60">
           {title}
         </CardTitle>
-        <Icon className="h-4 w-4 text-muted-foreground" />
+        <Icon className="h-4 w-4 text-white/60" />
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
-        <p className="text-xs text-muted-foreground">{subtext}</p>
+        <div className="text-2xl font-bold text-white">{value}</div>
+        {subtext && (
+          <p className="text-xs text-white/60 mt-1">{subtext}</p>
+        )}
       </CardContent>
     </Card>
   );

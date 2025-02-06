@@ -3,7 +3,6 @@ import {
   CircleDollarSign,
   Layers3,
   LayoutPanelLeft,
-  Sparkles,
   Compass,
 } from "lucide-react";
 import React from "react";
@@ -27,9 +26,9 @@ export default function DashboardLayout({
 
   return (
     <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
-      <div className="hidden border-r bg-muted/40 md:block">
+      <div className="hidden border-r border-white/10 bg-black text-white md:block">
         <div className="flex h-full max-h-screen flex-col gap-2">
-          <div className="flex items-center justify-start gap-x-2 px-6 pt-4 pb-12 border-b">
+          <div className="flex items-center justify-start gap-x-2 px-6 pt-4 pb-12 border-b border-white/10">
             <Link
               className="flex flex-col items-center justify-center gap-x-2 w-full"
               href={"/"}
@@ -47,8 +46,8 @@ export default function DashboardLayout({
                   className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all text-sm
                 ${
                   pathname === item.path
-                    ? "bg-primaryLowOpacity text-primary"
-                    : "text-black hover:text-primary hover:bg-primaryLowOpacity"
+                    ? "bg-gray-500/20 text-darkPrimary"
+                    : "text-white hover:text-darkPrimary "
                 }`}
                 >
                   <item.icon className="h-4 w-4" />

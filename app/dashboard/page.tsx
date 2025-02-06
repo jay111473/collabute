@@ -79,19 +79,19 @@ const Dashboard = async () => {
   }
 
   return (
-    <div className="flex flex-col">
-      <header className="flex h-14 justify-between items-center gap-4 border-b bg-muted/40 px-4 lg:h-[60px] lg:px-6">
-        <h3 className="text-lg">Dashboard</h3>
+    <div className="flex flex-col bg-black">
+      <header className="flex h-14 justify-between items-center gap-4 border-b border-white/10 bg-black px-4 lg:h-[60px] lg:px-6 lg:py-8">
+        <h3 className="text-lg font-semibold text-white">Dashboard</h3>
         <Button
           variant="outline"
           size="icon"
-          className="rounded-full border-opacity-50"
+          className="rounded-full border-white/10 bg-transparent hover:bg-white/5"
         >
-          <CircleUser className="h-5 w-5" />
+          <CircleUser className="h-5 w-5 text-white/60" />
         </Button>
       </header>
       <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
-        <div className="grid gap-4 md:grid-cols-2 md:gap-4 lg:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-2 md:gap-6 lg:grid-cols-3">
           <DashboardCard
             title="Issues"
             value={user.developerFields?.issues?.length || 0}
@@ -111,18 +111,18 @@ const Dashboard = async () => {
             subtext="+20.1% from last month"
           />
         </div>
-        <div className="grid gap-4 md:grid-cols-2">
-          <Card>
+        <div className="grid gap-6 md:grid-cols-2">
+          <Card className="border border-white/10 bg-[#09090b] rounded-[20px]">
             <CardHeader>
-              <CardTitle>Recent Projects</CardTitle>
+              <CardTitle className="text-white">Recent Projects</CardTitle>
             </CardHeader>
             <CardContent>
               <ProjectsTable projects={user.projects as Project[]} />
             </CardContent>
           </Card>
-          <Card>
+          <Card className="border border-white/10 bg-[#09090b] rounded-[20px]">
             <CardHeader>
-              <CardTitle>Recent Issues</CardTitle>
+              <CardTitle className="text-white">Recent Issues</CardTitle>
             </CardHeader>
             <CardContent>
               <IssuesTable issues={user.developerFields?.issues as Issue[]} />

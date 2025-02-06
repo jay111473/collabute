@@ -58,7 +58,6 @@ const Password = () => {
           return "Successfully logged in!";
         },
         error: (err) => {
-          console.error(err);
           return "Failed to log in. Please try again.";
         },
       }

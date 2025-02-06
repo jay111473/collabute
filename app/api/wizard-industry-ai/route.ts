@@ -1,6 +1,8 @@
-import { generateText } from "ai";
+import { generateObject } from "ai";
 import { openai } from "@ai-sdk/openai";
 import { NextResponse } from "next/server";
+import { bedrock } from "@ai-sdk/amazon-bedrock";
+import { z } from "zod";
 
 interface IndustryOption {
   label: string;
@@ -10,18 +12,33 @@ interface IndustryOption {
 export async function POST(req: Request) {
   try {
     const data = await req.json();
-    const { text } = await generateText({
-      model: openai("gpt-4o-mini"),
+
+    const industrySchema = z.object({
+      industries: z.array(
+        z.object({
+          label: z.string(),
+          value: z.string(),
+        })
+      ),
+    });
+
+    const { object } = await generateObject({
+      model: bedrock("anthropic.claude-3-5-sonnet-20240620-v1:0"),
       prompt: data.prompt,
+      schema: industrySchema,
       system: `
     You are the AI assistant for Collabute's project creation wizard. Your primary role is to assist entrepreneurs in defining, refining, and initiating their projects by providing tailored guides, feature suggestions, and relevant industry insights based on their inputs.
     ### Task:
     When a user provides a project name and description, your job is to:
     1. **Identify up to 3 relevant industries** for the project.
-    2. **Return the result as an array of objects**, each with the following structure:
+    2. **Return the result as an object with an industries array**, with the following structure:
       {
-        "label": "Industry Label",
-        "value": "industry_name_for_db"
+        "industries": [
+          {
+            "label": "Industry Label",
+            "value": "industry_name_for_db"
+          }
+        ]
       }
     ### Guidelines:
     - The **"label"** should be a clear, user-friendly industry name (e.g., "E-commerce," "Healthcare," "EdTech").
@@ -34,48 +51,23 @@ export async function POST(req: Request) {
       - Project Name: "FitCoach"
       - Description: "An AI-powered fitness app offering personalized workout plans and nutrition advice."
       **Output:**
-      [
-        {
-          "label": "Fitness & Wellness",
-          "value": "fitness-wellness"
-        },
-        {
-          "label": "HealthTech",
-          "value": "healthtech"
-        }
-      ]
+      {
+        "industries": [
+          {
+            "label": "Fitness & Wellness",
+            "value": "fitness-wellness"
+          },
+          {
+            "label": "HealthTech",
+            "value": "healthtech"
+          }
+        ]
+      }
     `,
     });
 
-    // Parse the text response into a proper array
-    let industries: IndustryOption[] = [];
-    
-    try {
-      // Clean up the text and parse it
-      const cleanText = text.replace(/```json|\```/g, '').trim();
-      industries = JSON.parse(cleanText);
-      
-      // Validate the structure
-      if (!Array.isArray(industries)) {
-        throw new Error('Response is not an array');
-      }
-      
-      // Validate each item in the array
-      industries = industries.filter(item => 
-        item && 
-        typeof item === 'object' && 
-        typeof item.label === 'string' && 
-        typeof item.value === 'string'
-      );
-      
-    } catch (parseError) {
-      console.error('Failed to parse AI response:', parseError);
-      industries = [];
-    }
-
-    return NextResponse.json({ industries });
+    return NextResponse.json({ industries: object.industries });
   } catch (error) {
-    console.error('Error in industry AI route:', error);
     return NextResponse.json({ industries: [] }, { status: 500 });
   }
 }

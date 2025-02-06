@@ -80,49 +80,9 @@ Scope: ${projectScope}
 
 For each platform and phase (alpha, beta, production) generate at least 10 features.
 
-IMPORTANT RULES:
-1. For projectSide, you can ONLY use these exact values:
-   - "frontend" - for user interface features
-   - "backend" - for server-side features
-   - "ios" - for iOS-specific features
-   - "android" - for Android-specific features
-   - "ai" - for AI/ML features
-   - "devops" - for DevOps features
-   - "windows" - for Windows-specific features
-   - "macos" - for macOS-specific features
-   - "linux" - for Linux-specific features
-   - "cross-platform" - for cross-platform features
+make sure to understand that when you are providing fullstack features their implementation should be divided between frontend and backend, 
+go with best practices and make sure you are providing features that are small enough to be managable as a task for a single developer. and big enough to be able to pay for this feature to developer
 
-2. For fullstack features, split them into separate frontend and backend features.
-  use your own thinking to make a proper split
-
-3. For platform, use these exact values:
-   frontend, backend, ios, android, windows, macos, cross-platform-mobile, cross-platform-desktop, ai, fullstack
-
-4. For complexity, use:
-   simple, medium, complex
-
-5. For phases, use:
-   alpha, beta, production
-
-Example Features:
-For a fullstack authentication system:
-1. Frontend Feature:
-   {
-     "title": "Authentication Components",
-     "description": "Implement login, registration, and password reset forms with validation and error handling",
-     "projectSide": "frontend",
-     "platform": "frontend"
-   }
-
-2. Backend Feature:
-   {
-     "title": "Authentication API Endpoints",
-     "description": "Create REST endpoints for user authentication, token management, and password reset",
-     "projectSide": "backend",
-     "platform": "backend"
-   }
-     
 For each feature, provide:
 1. Clear, descriptive title
 2. Detailed description of functionality
@@ -154,11 +114,9 @@ NEVER use "fullstack" as a projectSide - split fullstack features into frontend 
         maxTokens: 4000,
       });
 
-      console.log(data.object, "data.object");
 
       return NextResponse.json(data.object);
     } catch (error) {
-      console.error("Error generating features:", error);
       return NextResponse.json(
         {
           features: [],
@@ -169,7 +127,6 @@ NEVER use "fullstack" as a projectSide - split fullstack features into frontend 
       );
     }
   } catch (error) {
-    console.error("Error in features AI route:", error);
     return NextResponse.json(
       {
         features: [],

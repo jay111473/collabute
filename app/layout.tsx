@@ -5,6 +5,7 @@ import "./globals.css";
 import { EmailProvider } from "./providers/EmailContext";
 import { ThemeProvider } from "./providers/ThemeProvider";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { CSPostHogProvider } from "./provider";
 
 const plusJakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -26,6 +27,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${plusJakarta.className}`}>
         <SpeedInsights />
+        <CSPostHogProvider>
         <EmailProvider>
           <ThemeProvider
             attribute="class"
@@ -34,8 +36,9 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             {children}
-          </ThemeProvider>
-        </EmailProvider>
+            </ThemeProvider>
+          </EmailProvider>
+        </CSPostHogProvider>
         <Analytics />
       </body>
     </html>

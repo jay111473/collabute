@@ -11,22 +11,11 @@ interface Competitor {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    console.log("Received request body:", body);
-
     const { projectName, description, industry, industries } = body;
 
     // Handle both single industry or industries array
     const primaryIndustry =
       industry || (Array.isArray(industries) ? industries[0] : undefined);
-
-    console.log("Extracted fields:", {
-      projectName,
-      description,
-      primaryIndustry,
-      hasProjectName: !!projectName,
-      hasDescription: !!description,
-      hasPrimaryIndustry: !!primaryIndustry,
-    });
 
     if (!projectName || !description || !primaryIndustry) {
       const missingFields = [
@@ -130,15 +119,12 @@ export async function POST(req: Request) {
 
       return NextResponse.json({ competitors: sanitizedCompetitors });
     } catch (parseError) {
-      console.error("Error parsing competitors response:", parseError);
-      console.error("Raw text:", text);
       return NextResponse.json(
         { error: "Failed to process competitors data" },
         { status: 500 }
       );
     }
   } catch (error) {
-    console.error("Error in competitors AI route:", error);
     return NextResponse.json(
       { error: "Failed to analyze competitors" },
       { status: 500 }

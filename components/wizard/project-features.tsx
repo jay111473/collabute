@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { PlusIcon, XIcon, InfoIcon, RefreshCcw } from "lucide-react";
+import { PlusIcon, XIcon, InfoIcon, RefreshCcw, Loader2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -24,6 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Feature, ProjectSide, ProjectInfo, Competitor } from "@/types/wizard";
+import { cn } from "@/lib/utils";
 
 // Types
 interface ProjectFeaturesProps {
@@ -95,7 +96,10 @@ const getProjectSides = (platforms: ProjectInfo['projectPlatforms']): ProjectSid
 
 // Components
 const FeatureCard: React.FC<FeatureCardProps> = ({ feature, onRemove }) => (
-  <div className="group relative p-6 rounded-xl transition-all duration-300 backdrop-blur-sm inline-flex items-center shrink-0 bg-transparent border border-white/5 hover:border-white/10">
+  <div className="group relative p-6 rounded-xl transition-all duration-300 backdrop-blur-sm inline-flex items-center shrink-0 
+    bg-[#141414] border border-zinc-800 hover:border-darkPrimary/50 hover:shadow-[0_0_20px_rgba(123,97,255,0.15)]
+    before:absolute before:inset-0 before:rounded-xl before:transition-all before:duration-300
+    hover:before:shadow-[0_0_30px_rgba(123,97,255,0.15)] before:-z-10">
     <div className="flex items-start gap-3">
       <div className="min-w-0">
         <div className="flex items-center gap-6">
@@ -108,7 +112,7 @@ const FeatureCard: React.FC<FeatureCardProps> = ({ feature, onRemove }) => (
           <Button
             variant="outline"
             size="icon"
-            className="h-7 w-7"
+            className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
             onClick={onRemove}
           >
             <XIcon className="h-3.5 w-3.5" />
@@ -132,7 +136,6 @@ const FeatureTooltip: React.FC<{ feature: Feature }> = ({ feature }) => (
           <p className="text-sm text-white/80 mb-2">{feature.description}</p>
           <div className="flex items-center gap-4 text-xs text-white/60">
             <span>Timeline: {feature.estimatedTimeline}</span>
-            <span>Price: ${feature.estimatedPrice}</span>
             <span>Complexity: {feature.complexity}</span>
             <span>Platform: {feature.platform}</span>
           </div>
@@ -248,33 +251,18 @@ const AddFeatureDialog: React.FC<AddFeatureDialogProps> = ({
               </Select>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="text-sm text-white/60">Timeline</label>
-              <Input
-                placeholder="e.g., 2 weeks"
-                value={feature.estimatedTimeline}
-                onChange={(e) => 
-                  setFeature(prev => ({
-                    ...prev,
-                    estimatedTimeline: e.target.value
-                  }))
-                }
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm text-white/60">Price ($)</label>
-              <Input
-                placeholder="e.g., 2000"
-                value={feature.estimatedPrice}
-                onChange={(e) => 
-                  setFeature(prev => ({
-                    ...prev,
-                    estimatedPrice: e.target.value
-                  }))
-                }
-              />
-            </div>
+          <div className="space-y-2">
+            <label className="text-sm text-white/60">Timeline</label>
+            <Input
+              placeholder="e.g., 2 weeks"
+              value={feature.estimatedTimeline}
+              onChange={(e) => 
+                setFeature(prev => ({
+                  ...prev,
+                  estimatedTimeline: e.target.value
+                }))
+              }
+            />
           </div>
           <div className="flex justify-end gap-4">
             <Button variant="outline" onClick={onClose}>
@@ -302,12 +290,12 @@ export function ProjectFeatures({
   const [isRetrying, setIsRetrying] = useState(false);
   const [error, setError] = useState(false);
   const [newFeatureSide, setNewFeatureSide] = useState<ProjectSide>("frontend");
+  const [hasRegenerated, setHasRegenerated] = useState(false);
 
   const defaultNewFeature: Partial<Feature> = {
     title: "",
     description: "",
     estimatedTimeline: "",
-    estimatedPrice: "",
     complexity: "simple",
     platform: projectInfo.projectPlatforms[0]?.value || "frontend",
     projectSide: newFeatureSide,
@@ -344,6 +332,7 @@ export function ProjectFeatures({
       setFeatures(data.features);
       onFeaturesChange(data.features);
       setError(false);
+      setHasRegenerated(true);
     } catch (err) {
       console.error("Error retrying feature generation:", err);
       setError(true);
@@ -383,7 +372,11 @@ export function ProjectFeatures({
 
   return (
     <div className="space-y-6">
-      <Header onRetry={handleRetry} />
+      <Header 
+        onRetry={handleRetry} 
+        hasRegenerated={hasRegenerated}
+        isRegenerating={isRetrying}
+      />
       <Tabs
         defaultValue="alpha"
         value={currentPhase}
@@ -394,7 +387,7 @@ export function ProjectFeatures({
         }}
       >
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="alpha" className="text-white data-[state=active]:text-primary2">Alpha (MVP)</TabsTrigger>
+          <TabsTrigger value="alpha" className="text-white data-[state=active]:text-primary2">Alpha</TabsTrigger>
           <TabsTrigger value="beta" className="text-white data-[state=active]:text-primary2">Beta</TabsTrigger>
           <TabsTrigger value="production" className="text-white data-[state=active]:text-primary2">Production</TabsTrigger>
         </TabsList>
@@ -430,20 +423,27 @@ export function ProjectFeatures({
 }
 
 const LoadingState = () => (
-  <div className="space-y-6">
-    <div className="space-y-1">
-      <h2 className="text-xl font-semibold text-white">Project Features</h2>
-      <p className="text-sm text-white/60">
-        Generating features for your project...
-      </p>
-    </div>
-    <div className="flex flex-wrap gap-4">
-      {[1, 2, 3, 4, 5, 6].map((i) => (
-        <div
-          key={i}
-          className="h-[100px] w-[300px] bg-card/50 animate-pulse rounded-xl border border-border/50"
-        />
-      ))}
+  <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center">
+    <div className="max-w-md w-full">
+      <div className="space-y-6">
+        <div className="space-y-2 text-center">
+          <h2 className="text-2xl font-semibold text-white">Project Features</h2>
+          <p className="text-base text-gray-400">
+            Generating features for your project...
+          </p>
+        </div>
+        <div className="flex items-center justify-center">
+          <Loader2 className="h-12 w-12 animate-spin text-darkPrimary" />
+        </div>
+        <div className="flex flex-wrap gap-4">
+          {[1, 2, 3].map((i) => (
+            <div
+              key={i}
+              className="h-[100px] w-full bg-zinc-900/50 animate-pulse rounded-xl border border-zinc-800/50"
+            />
+          ))}
+        </div>
+      </div>
     </div>
   </div>
 );
@@ -470,17 +470,86 @@ const ErrorState = ({ onRetry }: { onRetry: () => void }) => (
   </div>
 );
 
-const Header = ({ onRetry }: { onRetry: () => void }) => (
-  <div className="space-y-1">
-    <div className="flex items-center justify-between">
-      <h2 className="text-xl font-semibold text-white">Project Features</h2>
-      <Button onClick={onRetry} variant="outline" size="sm" className="gap-2">
-        <RefreshCcw className="h-3 w-3" />
-        Regenerate Features
-      </Button>
-    </div>
-    <p className="text-sm text-white/60">
-      Select features for each phase of your project. Each feature represents a specific implementation task.
-    </p>
-  </div>
-);
+const Header = ({ 
+  onRetry, 
+  hasRegenerated,
+  isRegenerating 
+}: { 
+  onRetry: () => void;
+  hasRegenerated: boolean;
+  isRegenerating: boolean;
+}) => {
+  const handleRegenerate = async () => {
+    await onRetry();
+  };
+
+  return (
+    <>
+      {isRegenerating && <LoadingState />}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-semibold text-white">Project Features</h2>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
+              <div className="flex flex-col items-end gap-1">
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button 
+                        onClick={handleRegenerate} 
+                        variant="outline" 
+                        size="sm" 
+                        className="gap-2 relative group"
+                        disabled={hasRegenerated}
+                      >
+                        <RefreshCcw className={cn(
+                          "h-3 w-3 transition-all",
+                          !hasRegenerated && "group-hover:rotate-180"
+                        )} />
+                        Regenerate Features
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="bg-zinc-900 border-zinc-800">
+                      <p className="text-sm text-zinc-400">
+                        {hasRegenerated 
+                          ? "Feature regeneration can only be used once"
+                          : "Not satisfied? Generate a new set of features based on your requirements"
+                        }
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+                <p className="text-xs text-zinc-500">
+                  {hasRegenerated ? "No attempts remaining" : "1 attempt remaining"}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="space-y-4">
+          <p className="text-sm text-white/60">
+            We organize development into three strategic phases to ensure efficient resource allocation and systematic feature delivery.
+          </p>
+          
+          <div className="bg-zinc-900/50 border border-zinc-800 rounded-lg p-4 space-y-3">
+            <h3 className="text-sm font-medium text-white">Development Phases Explained</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+              <div className="space-y-2">
+                <p className="font-medium text-primary2">Alpha Phase (Foundation)</p>
+                <p className="text-zinc-400">Core system architecture and essential functionalities. This phase focuses on building the fundamental infrastructure, critical APIs, and basic user flows. Helps technical teams validate architecture decisions and establish development patterns.</p>
+              </div>
+              <div className="space-y-2">
+                <p className="font-medium text-primary2">Beta Phase (Enhancement)</p>
+                <p className="text-zinc-400">Feature enrichment and system robustness. Development focuses on expanding core functionalities, implementing secondary features, and enhancing system reliability. Includes comprehensive testing and performance optimization.</p>
+              </div>
+              <div className="space-y-2">
+                <p className="font-medium text-primary2">Production Phase (Refinement)</p>
+                <p className="text-zinc-400">Advanced features and system maturity. This phase covers sophisticated functionalities, third-party integrations, and scalability improvements. Focuses on production-grade features that complete your product vision.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};

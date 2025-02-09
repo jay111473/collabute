@@ -142,9 +142,7 @@ function ProjectPlatformSelect({
   scope: ProjectScope;
   projectDescription: string;
 }) {
-  const [suggestedPlatforms, setSuggestedPlatforms] = useState<
-    ProjectPlatform[]
-  >([]);
+  const [suggestedPlatforms, setSuggestedPlatforms] = useState<ProjectPlatform[]>([]);
 
   useEffect(() => {
     if (scope === "unknown" && projectDescription) {
@@ -249,40 +247,66 @@ function ProjectPlatformSelect({
       </div>
 
       {scope !== "unknown" && (
-        <Select
-          value={values[values.length - 1]?.value || ""}
-          onValueChange={handleValueChange}
-        >
-          <SelectTrigger className={cn(INPUT_BASE_STYLES, "w-full")}>
-            <SelectValue placeholder="Select project platforms" />
-          </SelectTrigger>
-          <SelectContent>
-            {Object.entries(groupedPlatforms).map(([category, platforms]) => (
-              <div key={category}>
-                <div className="px-2 py-1.5 text-sm font-semibold text-gray-400">
+        <div className="space-y-4 rounded-lg border border-zinc-800 bg-black/50 p-4">
+          {Object.entries(groupedPlatforms).map(([category, platforms], index, array) => (
+            <div key={category}>
+              <div className="space-y-2">
+                <div className="text-sm font-semibold text-gray-400">
                   {getCategoryLabel(category)}
                 </div>
-                {platforms.map((platform) => (
-                  <div
-                    key={platform.value}
-                    onClick={() => handleValueChange(platform.value)}
-                    className="relative flex items-center px-8 py-2 cursor-pointer hover:bg-primary2/20 text-sm"
-                  >
-                    <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
-                      {values.some((v) => v.value === platform.value) && (
-                        <CheckIcon className="h-4 w-4" />
-                      )}
-                    </span>
-                    <span className="truncate">{platform.label}</span>
-                  </div>
-                ))}
-                {category !== Object.keys(groupedPlatforms).slice(-1)[0] && (
-                  <div className="h-px bg-gray-800 my-1" />
-                )}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  {platforms.map((platform) => {
+                    const isSelected = values.some((v) => v.value === platform.value);
+                    const isCore = platform.isCore;
+                    
+                    return (
+                      <div
+                        key={platform.value}
+                        className={cn(
+                          "group relative flex items-start gap-3 rounded-lg p-3 cursor-pointer transition-all",
+                          isSelected
+                            ? "bg-darkPrimary/10 hover:bg-darkPrimary/20"
+                            : "hover:bg-zinc-800/50"
+                        )}
+                        onClick={() => handleValueChange(platform.value)}
+                      >
+                        <div className={cn(
+                          "flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors mt-1",
+                          isSelected
+                            ? "border-darkPrimary bg-darkPrimary"
+                            : "border-zinc-700 group-hover:border-zinc-500"
+                        )}>
+                          {isSelected && <CheckIcon className="h-3 w-3 text-black" />}
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm text-white">{platform.label}</span>
+                            {isCore && (
+                              <Badge
+                                variant="outline"
+                                className="text-[10px] h-4 bg-darkPrimary/10 border-darkPrimary/20 text-darkPrimary"
+                              >
+                                Core
+                              </Badge>
+                            )}
+                          </div>
+                          {platform.description && (
+                            <p className="text-xs text-gray-400 line-clamp-2">
+                              {platform.description}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
-            ))}
-          </SelectContent>
-        </Select>
+              {index < array.length - 1 && (
+                <div className="h-px bg-zinc-800 my-4" />
+              )}
+            </div>
+          ))}
+        </div>
       )}
 
       {values.length > 0 && (
@@ -295,15 +319,15 @@ function ProjectPlatformSelect({
                 className={cn(
                   "group relative flex items-center gap-2 px-3 py-1.5 rounded-lg transition-colors",
                   isCore
-                    ? "bg-primary2/20"
-                    : "bg-primary2/10 hover:bg-primary2/20"
+                    ? "bg-darkPrimary/20"
+                    : "bg-darkPrimary/10 hover:bg-darkPrimary/20"
                 )}
               >
                 <span className="text-sm text-white">{platform.label}</span>
                 {isCore && (
                   <Badge
                     variant="outline"
-                    className="text-xs bg-primary2/20 border-primary2"
+                    className="text-xs bg-darkPrimary/20 border-darkPrimary"
                   >
                     Core
                   </Badge>
@@ -345,8 +369,7 @@ function ProjectPlatformSelect({
       {scope === "unknown" && suggestedPlatforms.length > 0 && (
         <p className="text-sm text-gray-500">
           Based on your project description, we&apos;ve suggested the platforms
-          you&apos;ll need. Core platforms are essential and can&apos;t be
-          removed.
+          you&apos;ll need. Core platforms are essential and can&apos;t be removed.
         </p>
       )}
     </div>
@@ -420,7 +443,7 @@ export function ProjectInfo({
         <Input
           value={projectInfo.name}
           onChange={(e) => handleInputChange(e.target.value, "name")}
-          placeholder="Enter your project name ..."
+          placeholder="Enter your project name (it's editable later) ..."
           className={cn(
             INPUT_BASE_STYLES,
             "placeholder:text-gray-500 rounded-lg"
@@ -443,15 +466,22 @@ export function ProjectInfo({
             <SelectValue placeholder="Select project scope" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="full">Full Project (End-to-end solution)</SelectItem>
-            <SelectItem value="partial">Partial Project (Specific component/module)</SelectItem>
+            <SelectItem value="full">
+              New Project (Build from scratch)
+            </SelectItem>
+            <SelectItem value="partial">
+              Already have a project (Add a new feature)
+            </SelectItem>
             <SelectItem value="unknown">I&apos;m not sure yet</SelectItem>
           </SelectContent>
         </Select>
         <p className="text-sm text-gray-500 mt-1">
-          {projectInfo.projectScope === 'full' && "We'll help you plan and build a complete solution from start to finish."}
-          {projectInfo.projectScope === 'partial' && "We'll focus on building a specific part of your project."}
-          {projectInfo.projectScope === 'unknown' && "Don't worry if you're not sure. We'll help you figure out what you need based on your requirements."}
+          {projectInfo.projectScope === "full" &&
+            "We'll help you plan and build a complete solution from start to finish."}
+          {projectInfo.projectScope === "partial" &&
+            "We'll focus on building a specific part of your project."}
+          {projectInfo.projectScope === "unknown" &&
+            "Don't worry if you're not sure. We'll help you figure out what you need based on your requirements."}
         </p>
       </div>
 
@@ -468,11 +498,13 @@ export function ProjectInfo({
         />
       </div>
 
-      {projectInfo.projectScope !== 'unknown' && (
+      {projectInfo.projectScope !== "unknown" && (
         <div className="animate-in fade-in slide-in-from-top-4 duration-500">
           <ProjectPlatformSelect
             values={projectInfo.projectPlatforms}
-            onValuesChange={(values) => updateProjectInfo({ projectPlatforms: values })}
+            onValuesChange={(values) =>
+              updateProjectInfo({ projectPlatforms: values })
+            }
             scope={projectInfo.projectScope}
             projectDescription={projectInfo.description}
           />

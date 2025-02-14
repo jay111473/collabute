@@ -536,7 +536,7 @@ export default function Wizard() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A] flex flex-col">
+    <div className="min-h-screen bg-[#0A0A0A] flex flex-col overflow-x-hidden">
       {isLoading && <LoadingOverlay step={currentStep} />}
       <div className="container mx-auto px-4 py-6 flex-1 flex flex-col">
         <WizardLogo />
@@ -553,7 +553,7 @@ export default function Wizard() {
 
       {/* Fixed Navigation Bar */}
       <div className="fixed bottom-0 left-0 right-0 bg-[#0A0A0A]/80 backdrop-blur-md border-t border-darkPrimary/20 py-4">
-        <div className="container mx-auto px-4 flex justify-end gap-4">
+        <div className="max-w-[100vw] w-full mx-auto px-4 flex justify-end gap-4 overflow-x-hidden">
           {currentStep > 0 && (
             <Button
               variant="outline"

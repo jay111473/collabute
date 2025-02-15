@@ -33,9 +33,8 @@ export interface Feature {
   estimatedTimeline: string;
   estimatedPrice: string;
   complexity: "simple" | "medium" | "complex";
-  platform: string;
+  platform: "web" | "mobile" | "desktop" | "ai";
   projectSide: ProjectSide;
-  phase: "alpha" | "beta" | "production";
 }
 
 export interface ProjectInfo {

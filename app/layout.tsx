@@ -6,7 +6,7 @@ import { EmailProvider } from "./providers/EmailContext";
 import { ThemeProvider } from "./providers/ThemeProvider";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { CSPostHogProvider } from "./provider";
-
+import { UserProvider } from "./providers/UserContext";
 const plusJakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
   weight: ["300", "400", "500", "700"],
@@ -28,14 +28,14 @@ export default function RootLayout({
       <body className={`${plusJakarta.className}`}>
         <SpeedInsights />
         <CSPostHogProvider>
-        <EmailProvider>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            {children}
+          <EmailProvider>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="system"
+              enableSystem
+              disableTransitionOnChange
+            >
+              <UserProvider>{children}</UserProvider>
             </ThemeProvider>
           </EmailProvider>
         </CSPostHogProvider>

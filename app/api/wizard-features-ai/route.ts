@@ -1,7 +1,7 @@
 import { generateObject } from "ai";
-import { bedrock } from "@ai-sdk/amazon-bedrock";
 import { NextResponse } from "next/server";
-import { ProjectSide } from "@/types/wizard";
+import { Competitor } from "@/types/wizard";
+import { anthropic } from "@ai-sdk/anthropic";
 import { z } from "zod";
 
 interface ProjectPlatformInput {
@@ -9,20 +9,16 @@ interface ProjectPlatformInput {
   isCore?: boolean;
 }
 const platformEnum = z.enum([
-  "frontend",
-  "backend",
-  "ios",
-  "android",
-  "windows",
-  "macos",
-  "cross-platform-mobile",
-  "cross-platform-desktop",
+  "web",
+  "mobile",
+  "desktop",
   "ai",
-  "fullstack",
 ]);
 
 export async function POST(request: Request) {
   try {
+    const requestData = await request.json();
+
     const {
       projectName,
       description,
@@ -30,24 +26,48 @@ export async function POST(request: Request) {
       competitors,
       projectPlatforms,
       projectScope,
-    } = (await request.json()) as {
-      projectName: string;
-      description: string;
-      industries: string[];
-      competitors: { name: string; url: string }[];
-      projectPlatforms: ProjectPlatformInput[];
-      projectScope: string;
-    };
+    } = requestData;
 
-    // Create the schema with dynamic project sides
+    // Validate required fields
+    if (
+      !projectName ||
+      !description ||
+      !industries ||
+      !competitors ||
+      !projectPlatforms ||
+      !projectScope
+    ) {
+      console.error("Missing required fields:", {
+        hasProjectName: !!projectName,
+        hasDescription: !!description,
+        hasIndustries: !!industries,
+        hasCompetitors: !!competitors,
+        hasProjectPlatforms: !!projectPlatforms,
+        hasProjectScope: !!projectScope,
+      });
+      return NextResponse.json(
+        {
+          error: "Missing required fields",
+          missingFields: {
+            projectName: !projectName,
+            description: !description,
+            industries: !industries,
+            competitors: !competitors,
+            projectPlatforms: !projectPlatforms,
+            projectScope: !projectScope,
+          },
+        },
+        { status: 400 }
+      );
+    }
+
+    // Create the schema with business-friendly structure
     const featureSchema = z.object({
       features: z.array(
         z.object({
           title: z.string(),
           description: z.string(),
-          estimatedPrice: z.string(),
           estimatedTimeline: z.string(),
-          phase: z.enum(["alpha", "beta", "production"]),
           complexity: z.enum(["simple", "medium", "complex"]),
           platform: platformEnum,
           projectSide: z.enum([
@@ -66,59 +86,102 @@ export async function POST(request: Request) {
       ),
     });
 
-    const prompt = `You are a senior full-stack developer. Generate detailed features for a ${projectPlatforms
-      .map((p) => p.value)
-      .join(", ")} project.
+    const prompt = `You are a product manager with deep understanding of software development. Generate user-focused, business-friendly features for a ${projectPlatforms
+      .map((p: ProjectPlatformInput) => p.value)
+      .join(", ")} project. Focus on creating a Minimum Viable Product (MVP) that delivers core business value.
 
 Project Context:
 Name: ${projectName}
 Description: ${description}
 Industries: ${industries.join(", ")}
-Competitors: ${competitors.map((c) => c.name).join(", ")}
-Platforms: ${projectPlatforms.map((p) => p.value).join(", ")}
+Competitors: ${competitors.map((c: Competitor) => c.name).join(", ")}
+Target Platforms: ${projectPlatforms
+      .map((p: ProjectPlatformInput) => {
+        // Map technical platforms to business-friendly terms
+        const platformMap: Record<string, string> = {
+          'frontend': 'web',
+          'backend': 'web',
+          'ios': 'mobile',
+          'android': 'mobile',
+          'windows': 'desktop',
+          'macos': 'desktop',
+          'cross-platform-mobile': 'mobile',
+          'cross-platform-desktop': 'desktop',
+          'ai': 'ai',
+          'fullstack': 'web'
+        };
+        return platformMap[p.value] || p.value;
+      })
+      .filter((value: string, index: number, self: string[]) => self.indexOf(value) === index) // Remove duplicates
+      .join(", ")}
 Scope: ${projectScope}
 
-For each platform and phase (alpha, beta, production) generate at least 10 features.
+Generate at least 15 essential MVP features that will provide immediate business value and user benefit.
 
-make sure to understand that when you are providing fullstack features their implementation should be divided between frontend and backend, 
-go with best practices and make sure you are providing features that are small enough to be managable as a task for a single developer. and big enough to be able to pay for this feature to developer
+Important Guidelines:
+1. Write feature descriptions in business language that stakeholders can understand
+2. Focus on user value and business benefits
+3. Avoid any technical terminology
+4. Describe features from an end-user perspective
+5. Use clear, simple language for timelines and complexity
 
 For each feature, provide:
-1. Clear, descriptive title
-2. Detailed description of functionality
-3. Estimated timeline
-4. Estimated price
-5. Complexity level
+1. A clear, business-focused title
+2. Description focusing on user benefits and business value
+3. Realistic timeline estimate in weeks/months
+4. Simple complexity indication (simple/medium/complex)
 
 Remember:
-- NEVER use "fullstack" as a projectSide
-- Split fullstack features into separate frontend and backend features
-- Always use the exact values specified above for projectSide, platform, complexity, and phase
-`;
+- Focus on WHAT the feature does for users, not HOW it's implemented
+- Use everyday business language
+- Keep descriptions focused on value and outcomes
+- Ensure features are essential for MVP launch
+- Consider user journey and business goals`;
 
     try {
       const data = await generateObject({
-        model: bedrock("anthropic.claude-3-5-sonnet-20240620-v1:0"),
+        model: anthropic("claude-3-5-sonnet-20241022"),
         prompt,
         schema: featureSchema,
-        system: `You are a senior full-stack developer with extensive experience in ${projectPlatforms
-          .map((p) => p.value)
-          .join(", ")} development.
-Generate detailed features that are clear and actionable.
-Focus on functionality and business value rather than technical implementation.
-Your responses must be valid JSON objects only, following the exact schema provided.
-Provide at least 10 features for each platform and phase.
-NEVER use "fullstack" as a projectSide - split fullstack features into frontend and backend parts.
-`,
-        temperature: 0.7,
-        maxTokens: 4000,
+        system: `You are a product manager who translates business needs into clear feature descriptions. Your role is to generate MVP features that business stakeholders and end-users can easily understand.
+
+Key Principles:
+- Write for business stakeholders and end-users
+- Focus on immediate business value and user benefits
+- Use clear, jargon-free language
+- Describe features in terms of user needs and business outcomes
+- Focus on MVP essentials that deliver core value
+
+When describing features:
+- DO: "Enable customers to easily find and purchase products using simple search and filters"
+- DON'T: "Implement elasticsearch with faceted search functionality"
+
+Platform Guidelines:
+- Web: Features for browser-based access
+- Mobile: Features for smartphone/tablet users
+- Desktop: Features for computer applications
+- AI: Smart features that enhance user experience
+
+Your responses must be valid JSON objects following the schema, but focus on business value and user benefits.
+
+Timeline Guidance:
+- Simple: 1-2 weeks
+- Medium: 2-4 weeks
+- Complex: 4-8 weeks`,
+        temperature: 1,
       });
 
+      console.log("Successfully generated features:", {
+        featureCount: data.object.features?.length || 0,
+      });
 
       return NextResponse.json(data.object);
     } catch (error) {
+      console.error("Error in AI generation:", error);
       return NextResponse.json(
         {
+          error: "AI generation failed",
+          details: error instanceof Error ? error.message : "Unknown error",
           features: [],
         },
         {
@@ -127,8 +190,11 @@ NEVER use "fullstack" as a projectSide - split fullstack features into frontend 
       );
     }
   } catch (error) {
+    console.error("Error in main request handler:", error);
     return NextResponse.json(
       {
+        error: "Request processing failed",
+        details: error instanceof Error ? error.message : "Unknown error",
         features: [],
       },
       {

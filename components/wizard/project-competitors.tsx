@@ -1,12 +1,28 @@
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState } from "react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Loader2, MapPin, TrendingUp, Building2, Calendar, X, ExternalLink, AlertTriangle, Info, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { ProjectInfo } from "@/types/wizard";
-import { ChevronDown } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface Competitor {
   name: string;
   url: string;
+  slogan?: string;
+  yearFounded?: number;
+  businessScale?: 'Startup' | 'SMB' | 'Enterprise' | 'Global Enterprise';
+  marketShare?: {
+    percentage: number;
+    region: string;
+  };
+  description?: string;
   swot?: {
     strengths: string[];
     weaknesses: string[];
@@ -16,11 +32,169 @@ interface Competitor {
 }
 
 interface ProjectCompetitorsProps {
-  projectInfo: ProjectInfo;
+  projectInfo: {
+    name: string;
+    description: string;
+    industries: string[];
+  };
   competitors: Competitor[];
   onCompetitorsChange: (competitors: Competitor[]) => void;
-  isLoading: boolean;
+  isLoading?: boolean;
   suggestedCompetitors: Competitor[];
+}
+
+function CompetitorCard({ competitor, onRemove }: { competitor: Competitor; onRemove: () => void }) {
+  const getScaleColor = (scale?: string) => {
+    switch (scale) {
+      case 'Startup': return 'text-emerald-500';
+      case 'SMB': return 'text-blue-500';
+      case 'Enterprise': return 'text-purple-500';
+      case 'Global Enterprise': return 'text-amber-500';
+      default: return 'text-gray-500';
+    }
+  };
+
+  const getScaleDescription = (scale: string) => {
+    switch (scale) {
+      case 'Startup': return 'Early-stage company, typically less than 5 years old with under 100 employees';
+      case 'SMB': return 'Small to Medium Business, typically 100-999 employees';
+      case 'Enterprise': return 'Large established company, typically 1,000-9,999 employees';
+      case 'Global Enterprise': return 'Major international corporation, typically 10,000+ employees worldwide';
+      default: return '';
+    }
+  };
+
+  return (
+    <Card className="relative group bg-[#141414] border border-zinc-800 hover:border-darkPrimary/50 transition-all duration-200">
+      <div className="absolute top-4 right-4 flex items-center gap-2">
+        <a
+          href={competitor.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="p-2 rounded-lg bg-darkPrimary/10 border border-darkPrimary/20 text-darkPrimary hover:bg-darkPrimary/20 transition-colors"
+        >
+          <ExternalLink className="h-4 w-4" />
+        </a>
+        <button
+          onClick={onRemove}
+          className="p-2 rounded-lg bg-red-500/10 border border-red-500/20 text-red-500 hover:bg-red-500/20 transition-colors"
+        >
+          <X className="h-4 w-4" />
+        </button>
+      </div>
+
+      <div className="p-6 space-y-6">
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <h3 className="text-xl font-semibold text-white">
+              {competitor.name}
+            </h3>
+            {competitor.description && (
+              <p className="text-base text-zinc-400 leading-relaxed">
+                {competitor.description}
+              </p>
+            )}
+          </div>
+
+          <div className="flex items-center gap-4">
+            {competitor.yearFounded && (
+              <div className="flex items-center gap-2">
+                <Calendar className="h-4 w-4 text-zinc-500" />
+                <span className="text-sm text-zinc-400">
+                  Founded in {competitor.yearFounded}
+                </span>
+              </div>
+            )}
+            
+            {competitor.businessScale && (
+              <div className="flex items-center gap-2">
+                <Building2 className="h-4 w-4 text-zinc-500" />
+                <span className={cn("text-sm", getScaleColor(competitor.businessScale))}>
+                  {competitor.businessScale}
+                </span>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <Info className="h-3.5 w-3.5 text-zinc-500 hover:text-zinc-400 transition-colors" />
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="bg-zinc-900 border-zinc-800">
+                      <p className="text-sm text-zinc-300">
+                        {getScaleDescription(competitor.businessScale)}
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {competitor.marketShare && (
+          <div className="flex items-center gap-4 pt-4 border-t border-zinc-800">
+            <div className="flex items-center gap-2">
+              <TrendingUp className="h-4 w-4 text-emerald-500" />
+              <span className="text-sm text-emerald-500">
+                {competitor.marketShare.percentage}% Market Share
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <MapPin className="h-4 w-4 text-zinc-500" />
+              <span className="text-sm text-zinc-400">
+                {competitor.marketShare.region}
+              </span>
+            </div>
+          </div>
+        )}
+
+        {competitor.swot && (
+          <div className="pt-4 border-t border-zinc-800">
+            <div className="grid grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <h4 className="text-sm font-medium text-emerald-500">Strengths</h4>
+                <ul className="space-y-1">
+                  {competitor.swot.strengths.map((strength, index) => (
+                    <li key={index} className="text-sm text-zinc-400">
+                      • {strength}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="space-y-2">
+                <h4 className="text-sm font-medium text-red-500">Weaknesses</h4>
+                <ul className="space-y-1">
+                  {competitor.swot.weaknesses.map((weakness, index) => (
+                    <li key={index} className="text-sm text-zinc-400">
+                      • {weakness}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="space-y-2">
+                <h4 className="text-sm font-medium text-blue-500">Opportunities</h4>
+                <ul className="space-y-1">
+                  {competitor.swot.opportunities.map((opportunity, index) => (
+                    <li key={index} className="text-sm text-zinc-400">
+                      • {opportunity}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="space-y-2">
+                <h4 className="text-sm font-medium text-amber-500">Threats</h4>
+                <ul className="space-y-1">
+                  {competitor.swot.threats.map((threat, index) => (
+                    <li key={index} className="text-sm text-zinc-400">
+                      • {threat}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </Card>
+  );
 }
 
 export function ProjectCompetitors({
@@ -30,254 +204,60 @@ export function ProjectCompetitors({
   isLoading,
   suggestedCompetitors,
 }: ProjectCompetitorsProps) {
-  console.log("ProjectCompetitors Props:", {
-    projectInfo,
-    competitors,
-    isLoading,
-    suggestedCompetitors,
-  });
-
-  const [showCompetitors, setShowCompetitors] = useState(false);
-  const [selectedCompetitors, setSelectedCompetitors] = useState<Competitor[]>(
-    []
-  );
-  const [activeCompetitor, setActiveCompetitor] = useState<Competitor | null>(
-    null
-  );
-
-  useEffect(() => {
-    console.log("suggestedCompetitors changed:", suggestedCompetitors);
-    if (suggestedCompetitors.length > 0) {
-      setShowCompetitors(true);
-      setSelectedCompetitors(suggestedCompetitors);
-      onCompetitorsChange(suggestedCompetitors);
-    }
-  }, [suggestedCompetitors, onCompetitorsChange]);
-
-  useEffect(() => {
-    console.log("competitors changed:", competitors);
-    if (competitors.length > 0) {
-      setShowCompetitors(true);
-      setSelectedCompetitors(competitors);
-    }
-  }, [competitors]);
-
-  useEffect(() => {
-    console.log("State Update:", {
-      showCompetitors,
-      selectedCompetitors,
-      activeCompetitor,
-    });
-  }, [showCompetitors, selectedCompetitors, activeCompetitor]);
-
-  const handleCompetitorSelect = (competitor: Competitor) => {
-    if (activeCompetitor?.name === competitor.name) {
-      setActiveCompetitor(null);
-      return;
-    }
-    setActiveCompetitor(competitor);
-  };
-
-  const container = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.2,
-      },
-    },
-  };
-
-  const item = {
-    hidden: { y: 20, opacity: 0 },
-    show: { y: 0, opacity: 1 },
-  };
-
-  const renderSwotAnalysis = (competitor: Competitor) => {
-    if (!competitor.swot) return null;
-
-    return (
-      <motion.div
-        initial={{ opacity: 0, height: 0 }}
-        animate={{ opacity: 1, height: "auto" }}
-        exit={{ opacity: 0, height: 0 }}
-        className="grid grid-cols-2 gap-4 mt-4"
-      >
-        <div className="space-y-2">
-          <h4 className="text-primary2 font-medium">Strengths</h4>
-          <ul className="list-disc list-inside text-sm text-gray-300 space-y-1">
-            {competitor.swot.strengths.map((strength, i) => (
-              <li key={i}>{strength}</li>
-            ))}
-          </ul>
-        </div>
-        <div className="space-y-2">
-          <h4 className="text-red-400 font-medium">Weaknesses</h4>
-          <ul className="list-disc list-inside text-sm text-gray-300 space-y-1">
-            {competitor.swot.weaknesses.map((weakness, i) => (
-              <li key={i}>{weakness}</li>
-            ))}
-          </ul>
-        </div>
-        <div className="space-y-2">
-          <h4 className="text-green-400 font-medium">Opportunities</h4>
-          <ul className="list-disc list-inside text-sm text-gray-300 space-y-1">
-            {competitor.swot.opportunities.map((opportunity, i) => (
-              <li key={i}>{opportunity}</li>
-            ))}
-          </ul>
-        </div>
-        <div className="space-y-2">
-          <h4 className="text-yellow-400 font-medium">Threats</h4>
-          <ul className="list-disc list-inside text-sm text-gray-300 space-y-1">
-            {competitor.swot.threats.map((threat, i) => (
-              <li key={i}>{threat}</li>
-            ))}
-          </ul>
-        </div>
-      </motion.div>
-    );
-  };
-
   return (
-    <div className="relative min-h-[600px] flex items-center justify-center">
-      <AnimatePresence>
-        {(showCompetitors || selectedCompetitors.length > 0) && (
-          <motion.div
-            initial="hidden"
-            animate="show"
-            variants={container}
-            className="w-full max-w-4xl mx-auto space-y-8"
-          >
-            <div className="text-center space-y-4">
-              <h2 className="text-3xl font-bold text-white">Market Analysis</h2>
-              <p className="text-gray-400 max-w-2xl mx-auto">
-                We&apos;ve analyzed your market and identified key competitors.
-                Click on each competitor to see their detailed SWOT analysis.
-              </p>
-            </div>
+    <div className="space-y-8">
+      <div className="space-y-4">
+        <h2 className="text-2xl font-bold text-white">Market Analysis</h2>
+        <p className="text-gray-400">
+          Let&apos;s analyze your competitors to understand the market landscape and identify opportunities.
+        </p>
+        <div className="flex items-center gap-2 bg-amber-950/30 border border-amber-500/20 rounded-lg px-4 py-2">
+          <AlertTriangle className="h-4 w-4 text-amber-500" />
+          <p className="text-sm text-amber-500">This data is AI-generated and may not be 100% accurate</p>
+        </div>
+      </div>
 
-            <div className="grid grid-cols-1 gap-6">
-              {selectedCompetitors.map((competitor) => (
-                <motion.div
-                  key={competitor.name}
-                  variants={item}
-                  whileHover={{ scale: 1.01 }}
-                  className={cn(
-                    "relative group cursor-pointer p-6 rounded-2xl border-2 transition-all duration-300",
-                    "bg-gradient-to-br from-darkPrimary/20 to-darkPrimary/5",
-                    activeCompetitor?.name === competitor.name
-                      ? "border-primary2"
-                      : "border-white/10 hover:border-white/20"
-                  )}
-                  onClick={() => handleCompetitorSelect(competitor)}
-                >
-                  {/* Glow Effect */}
-                  <div
-                    className={cn(
-                      "absolute inset-0 rounded-2xl transition-opacity duration-300",
-                      "bg-gradient-to-r from-primary2/20 to-primary/20 blur-xl",
-                      activeCompetitor?.name === competitor.name
-                        ? "opacity-100"
-                        : "opacity-0 group-hover:opacity-50"
-                    )}
-                  />
-
-                  {/* Content */}
-                  <div className="relative z-10">
-                    <div className="flex items-center justify-between mb-2">
-                      <h3 className="text-xl font-semibold text-white">
-                        {competitor.name}
-                      </h3>
-                      <div className="flex items-center gap-2">
-                        <a
-                          href={competitor.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className={cn(
-                            "px-4 py-1.5 rounded-lg text-sm flex items-center gap-2",
-                            "bg-primary2/10 hover:bg-primary2/20 text-primary2",
-                            "transition-colors duration-200"
-                          )}
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          Visit Website <span className="text-xs">→</span>
-                        </a>
-                        <ChevronDown
-                          className={cn(
-                            "w-5 h-5 text-gray-400 transition-transform duration-200 ml-4",
-                            activeCompetitor?.name === competitor.name &&
-                              "transform rotate-180"
-                          )}
-                        />
-                      </div>
-                    </div>
-
-                    {activeCompetitor?.name === competitor.name &&
-                      renderSwotAnalysis(competitor)}
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Enhanced Loading Animation */}
-      {isLoading && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-sm"
-        >
-          <div className="relative">
-            {/* Main glow */}
-            <div className="absolute inset-0 rounded-full bg-primary2/20 blur-3xl animate-pulse" />
-
-            {/* Orbiting dots */}
-            <div className="relative w-32 h-32">
-              <motion.div
-                className="absolute w-3 h-3 bg-primary2 rounded-full"
-                animate={{
-                  rotate: 360,
-                  scale: [1, 1.2, 1],
-                }}
-                transition={{
-                  duration: 2,
-                  repeat: Infinity,
-                  ease: "linear",
-                }}
-                style={{ transformOrigin: "16px 16px" }}
+      {isLoading ? (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-darkPrimary" />
+        </div>
+      ) : (
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {competitors.map((competitor, index) => (
+              <CompetitorCard
+                key={index}
+                competitor={competitor}
+                onRemove={() => onCompetitorsChange(competitors.filter((_, i) => i !== index))}
               />
-              <motion.div
-                className="absolute w-3 h-3 bg-primary2/80 rounded-full"
-                animate={{
-                  rotate: -360,
-                  scale: [1, 1.2, 1],
-                }}
-                transition={{
-                  duration: 3,
-                  repeat: Infinity,
-                  ease: "linear",
-                }}
-                style={{
-                  transformOrigin: "16px 16px",
-                  left: "50%",
-                  top: "50%",
-                }}
-              />
-            </div>
-
-            {/* Loading text */}
-            <div className="text-center mt-8">
-              <p className="text-white text-lg font-medium">Analyzing Market</p>
-              <p className="text-gray-400 text-sm">
-                Identifying key competitors...
-              </p>
-            </div>
+            ))}
           </div>
-        </motion.div>
+
+          <Card className="bg-zinc-900/30 border-zinc-800 border-dashed">
+            <div className="p-6 text-center space-y-4">
+              <div className="mx-auto w-12 h-12 rounded-full bg-zinc-800/50 flex items-center justify-center">
+                <Plus className="h-6 w-6 text-zinc-500" />
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-lg font-medium text-zinc-300">Add Your Own Competitors</h3>
+                <p className="text-sm text-zinc-500 max-w-md mx-auto">
+                  Coming soon! You&apos;ll be able to manually add and track your competitors. Stay tuned for updates.
+                </p>
+              </div>
+              <Badge variant="outline" className="bg-zinc-900/50 text-zinc-500 border-zinc-700">
+                Coming Soon
+              </Badge>
+            </div>
+          </Card>
+
+          {competitors.length === 0 && (
+            <div className="text-center py-8">
+              <p className="text-gray-400">
+                No competitors found. We&apos;ll analyze your market and suggest relevant competitors.
+              </p>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

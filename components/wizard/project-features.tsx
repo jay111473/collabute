@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { PlusIcon, XIcon, InfoIcon, RefreshCcw, Loader2 } from "lucide-react";
+import { PlusIcon, XIcon, InfoIcon, RefreshCcw, Loader2, ClockIcon } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -96,27 +96,47 @@ const getProjectSides = (platforms: ProjectInfo['projectPlatforms']): ProjectSid
 
 // Components
 const FeatureCard: React.FC<FeatureCardProps> = ({ feature, onRemove }) => (
-  <div className="group relative p-6 rounded-xl transition-all duration-300 backdrop-blur-sm inline-flex items-center shrink-0 
-    bg-[#141414] border border-zinc-800 hover:border-darkPrimary/50 hover:shadow-[0_0_20px_rgba(123,97,255,0.15)]
-    before:absolute before:inset-0 before:rounded-xl before:transition-all before:duration-300
-    hover:before:shadow-[0_0_30px_rgba(123,97,255,0.15)] before:-z-10">
-    <div className="flex items-start gap-3">
-      <div className="min-w-0">
-        <div className="flex items-center gap-6">
-          <div className="flex items-center gap-2">
-            <h3 className="text-base font-medium leading-none text-white whitespace-nowrap">
-              {feature.title}
-            </h3>
-            <FeatureTooltip feature={feature} />
-          </div>
-          <Button
-            variant="outline"
-            size="icon"
-            className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-            onClick={onRemove}
-          >
-            <XIcon className="h-3.5 w-3.5" />
-          </Button>
+  <div className="group relative p-5 rounded-xl transition-all duration-300 h-full
+    bg-[#141414] border border-zinc-800 hover:border-darkPrimary/50 hover:shadow-[0_0_20px_rgba(123,97,255,0.15)]">
+    <div className="flex flex-col h-full">
+      <div className="flex items-start justify-between gap-4">
+        <h3 className="text-base font-medium text-white">
+          {feature.title}
+        </h3>
+        <Button
+          variant="outline"
+          size="icon"
+          className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity duration-200 -mt-1 -mr-2 shrink-0"
+          onClick={onRemove}
+        >
+          <XIcon className="h-3.5 w-3.5" />
+        </Button>
+      </div>
+      
+      <p className="text-sm text-white/60 mt-2 line-clamp-2">
+        {feature.description}
+      </p>
+
+      <div className="flex items-center gap-3 text-xs text-white/60 mt-4 pt-4 border-t border-zinc-800">
+        <div className="flex items-center gap-1.5">
+          <ClockIcon className="h-3.5 w-3.5" />
+          {feature.estimatedTimeline}
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className={cn(
+            "w-2 h-2 rounded-full",
+            feature.complexity === 'simple' && "bg-emerald-500",
+            feature.complexity === 'medium' && "bg-blue-500",
+            feature.complexity === 'complex' && "bg-violet-500"
+          )} />
+          <span className={cn(
+            "capitalize",
+            feature.complexity === 'simple' && "text-emerald-400",
+            feature.complexity === 'medium' && "text-blue-400",
+            feature.complexity === 'complex' && "text-violet-400"
+          )}>
+            {feature.complexity}
+          </span>
         </div>
       </div>
     </div>
@@ -193,6 +213,23 @@ const AddFeatureDialog: React.FC<AddFeatureDialogProps> = ({
     }
   };
 
+  // Map technical platforms to business platforms
+  const mapToPlatform = (value: string): "web" | "mobile" | "desktop" | "ai" => {
+    const platformMap: Record<string, "web" | "mobile" | "desktop" | "ai"> = {
+      'frontend': 'web',
+      'backend': 'web',
+      'ios': 'mobile',
+      'android': 'mobile',
+      'windows': 'desktop',
+      'macos': 'desktop',
+      'cross-platform-mobile': 'mobile',
+      'cross-platform-desktop': 'desktop',
+      'ai': 'ai',
+      'fullstack': 'web'
+    };
+    return platformMap[value] || 'web';
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent>
@@ -215,7 +252,10 @@ const AddFeatureDialog: React.FC<AddFeatureDialogProps> = ({
               <label className="text-sm text-white/60">Platform</label>
               <Select
                 value={feature.platform}
-                onValueChange={(value) => setFeature(prev => ({ ...prev, platform: value }))}
+                onValueChange={(value) => setFeature(prev => ({ 
+                  ...prev, 
+                  platform: mapToPlatform(value)
+                }))}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select Platform" />
@@ -285,61 +325,21 @@ export function ProjectFeatures({
   suggestedFeatures,
 }: ProjectFeaturesProps) {
   const [features, setFeatures] = useState<Feature[]>(suggestedFeatures);
-  const [currentPhase, setCurrentPhase] = useState<"alpha" | "beta" | "production">("alpha");
   const [showAddFeatureDialog, setShowAddFeatureDialog] = useState(false);
-  const [isRetrying, setIsRetrying] = useState(false);
-  const [error, setError] = useState(false);
   const [newFeatureSide, setNewFeatureSide] = useState<ProjectSide>("frontend");
-  const [hasRegenerated, setHasRegenerated] = useState(false);
 
   const defaultNewFeature: Partial<Feature> = {
     title: "",
     description: "",
     estimatedTimeline: "",
     complexity: "simple",
-    platform: projectInfo.projectPlatforms[0]?.value || "frontend",
+    platform: "web",
     projectSide: newFeatureSide,
-    phase: currentPhase,
   };
 
   useEffect(() => {
     setFeatures(suggestedFeatures);
   }, [suggestedFeatures]);
-
-  const handleRetry = async () => {
-    try {
-      setIsRetrying(true);
-      setError(false);
-      
-      const response = await fetch("/api/wizard-features-ai", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          projectName: projectInfo.name,
-          description: projectInfo.description,
-          industries: projectInfo.industries,
-          competitors,
-          projectPlatforms: projectInfo.projectPlatforms,
-          projectScope: projectInfo.projectScope,
-        }),
-      });
-
-      if (!response.ok) throw new Error('Failed to generate features');
-
-      const data = await response.json();
-      if (!data.features?.length) throw new Error('No features generated');
-
-      setFeatures(data.features);
-      onFeaturesChange(data.features);
-      setError(false);
-      setHasRegenerated(true);
-    } catch (err) {
-      console.error("Error retrying feature generation:", err);
-      setError(true);
-    } finally {
-      setIsRetrying(false);
-    }
-  };
 
   const handleFeatureRemove = (feature: Feature) => {
     const newFeatures = features.filter(f => f.title !== feature.title);
@@ -359,51 +359,117 @@ export function ProjectFeatures({
     setShowAddFeatureDialog(true);
   };
 
-  if (isLoading || isRetrying) {
+  if (isLoading) {
     return <LoadingState />;
   }
 
-  if (error || !features.length) {
-    return <ErrorState onRetry={handleRetry} />;
+  if (!features.length) {
+    return (
+      <div className="flex flex-col items-center justify-center p-8 text-center">
+        <p className="text-white/60 mb-4">No features have been added yet.</p>
+      </div>
+    );
   }
 
-  const currentPhaseFeatures = features.filter(f => f.phase === currentPhase);
-  const projectSides = getProjectSides(projectInfo.projectPlatforms);
+  // Group features by platform for business view
+  const featuresByPlatform = features.reduce((acc, feature) => {
+    const platformMap: Record<string, string> = {
+      'frontend': 'Web',
+      'backend': 'Web',
+      'ios': 'Mobile',
+      'android': 'Mobile',
+      'windows': 'Desktop',
+      'macos': 'Desktop',
+      'cross-platform-mobile': 'Mobile',
+      'cross-platform-desktop': 'Desktop',
+      'ai': 'AI',
+      'fullstack': 'Web'
+    };
+    
+    const businessPlatform = platformMap[feature.platform] || feature.platform;
+    if (!acc[businessPlatform]) {
+      acc[businessPlatform] = [];
+    }
+    acc[businessPlatform].push(feature);
+    return acc;
+  }, {} as Record<string, Feature[]>);
 
   return (
-    <div className="space-y-6">
-      <Header 
-        onRetry={handleRetry} 
-        hasRegenerated={hasRegenerated}
-        isRegenerating={isRetrying}
-      />
-      <Tabs
-        defaultValue="alpha"
-        value={currentPhase}
-        onValueChange={(value: string) => {
-          if (value === "alpha" || value === "beta" || value === "production") {
-            setCurrentPhase(value);
-          }
-        }}
-      >
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="alpha" className="text-white data-[state=active]:text-primary2">Alpha</TabsTrigger>
-          <TabsTrigger value="beta" className="text-white data-[state=active]:text-primary2">Beta</TabsTrigger>
-          <TabsTrigger value="production" className="text-white data-[state=active]:text-primary2">Production</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value={currentPhase} className="mt-6">
-          <div className="space-y-8">
-            {projectSides.map((side) => (
-              <FeaturesSection
-                key={side}
-                features={currentPhaseFeatures.filter(f => f.projectSide === side)}
-                projectSide={side}
-                onRemove={handleFeatureRemove}
-                onAddNew={handleAddNewFeature}
-              />
-            ))}
+    <div className="space-y-8">
+      <Tabs defaultValue="mvp" className="w-full">
+        <div className="flex flex-col items-center justify-center text-center mb-8">
+          <TabsList className="relative inline-flex mb-6 bg-[#1A1A1A] p-1">
+            <TabsTrigger value="mvp" className="relative z-10 px-8">
+              <div className="flex flex-col items-center gap-1">
+                <span className="text-sm font-medium">MVP Features</span>
+                <div className="h-1 w-full bg-darkPrimary rounded-full" />
+              </div>
+            </TabsTrigger>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <TabsTrigger value="roadmap" disabled className="relative z-10 px-8 opacity-50 cursor-not-allowed">
+                    <div className="flex flex-col items-center gap-1">
+                      <span className="text-sm font-medium">Product Roadmap</span>
+                      <div className="h-1 w-full bg-zinc-700 rounded-full" />
+                    </div>
+                  </TabsTrigger>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="max-w-[300px] bg-[#1A1A1A] border-white/10 p-4">
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-darkPrimary animate-pulse" />
+                      <p className="text-sm font-medium text-white">Locked: Complete MVP First</p>
+                    </div>
+                    <p className="text-sm text-white/80">
+                      Focus on your core features! Once you&apos;ve built your MVP, we&apos;ll unlock an exciting roadmap with advanced features and future possibilities.
+                    </p>
+                  </div>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            <div className="absolute top-1/2 left-0 w-full h-[1px] bg-zinc-800 -translate-y-1/2" />
+          </TabsList>
+          
+          <div className="flex items-center gap-2 text-sm text-white/60">
+            <div className="w-2 h-2 rounded-full bg-darkPrimary" />
+            <span>Current Phase: MVP Development</span>
           </div>
+        </div>
+
+        <TabsContent value="mvp" className="space-y-6">
+          {Object.entries(featuresByPlatform).map(([platform, platformFeatures]) => (
+            <div key={platform}>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <h3 className="text-lg font-medium text-white">
+                    {platform}
+                  </h3>
+                  <span className="text-sm text-white/60">
+                    {platformFeatures.length} feature{platformFeatures.length !== 1 ? 's' : ''}
+                  </span>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-2"
+                  onClick={() => handleAddNewFeature(platformFeatures[0]?.projectSide || "frontend")}
+                >
+                  <PlusIcon className="h-4 w-4" />
+                  Add Feature
+                </Button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {platformFeatures.map((feature) => (
+                  <FeatureCard
+                    key={feature.title}
+                    feature={feature}
+                    onRemove={() => handleFeatureRemove(feature)}
+                  />
+                ))}
+              </div>
+            </div>
+          ))}
         </TabsContent>
       </Tabs>
 
@@ -414,7 +480,6 @@ export function ProjectFeatures({
         defaultFeature={{
           ...defaultNewFeature,
           projectSide: newFeatureSide,
-          phase: currentPhase,
         }}
         projectPlatforms={projectInfo.projectPlatforms}
       />
@@ -427,129 +492,15 @@ const LoadingState = () => (
     <div className="max-w-md w-full">
       <div className="space-y-6">
         <div className="space-y-2 text-center">
-          <h2 className="text-2xl font-semibold text-white">Project Features</h2>
+          <h2 className="text-2xl font-semibold text-white">Generating Features</h2>
           <p className="text-base text-gray-400">
-            Generating features for your project...
+            Please wait while we create your feature list...
           </p>
         </div>
         <div className="flex items-center justify-center">
           <Loader2 className="h-12 w-12 animate-spin text-darkPrimary" />
         </div>
-        <div className="flex flex-wrap gap-4">
-          {[1, 2, 3].map((i) => (
-            <div
-              key={i}
-              className="h-[100px] w-full bg-zinc-900/50 animate-pulse rounded-xl border border-zinc-800/50"
-            />
-          ))}
-        </div>
       </div>
     </div>
   </div>
 );
-
-const ErrorState = ({ onRetry }: { onRetry: () => void }) => (
-  <div className="space-y-6">
-    <div className="space-y-1">
-      <h2 className="text-xl font-semibold text-white">Project Features</h2>
-      <p className="text-sm text-white/60">
-        There was an error generating features for your project.
-      </p>
-    </div>
-    <div className="flex items-center justify-center p-8 border border-white/10 rounded-lg">
-      <div className="text-center space-y-4">
-        <p className="text-white/60">
-          We couldn&apos;t generate features at this time. Would you like to try again?
-        </p>
-        <Button onClick={onRetry} className="gap-2">
-          <RefreshCcw className="h-4 w-4" />
-          Retry Feature Generation
-        </Button>
-      </div>
-    </div>
-  </div>
-);
-
-const Header = ({ 
-  onRetry, 
-  hasRegenerated,
-  isRegenerating 
-}: { 
-  onRetry: () => void;
-  hasRegenerated: boolean;
-  isRegenerating: boolean;
-}) => {
-  const handleRegenerate = async () => {
-    await onRetry();
-  };
-
-  return (
-    <>
-      {isRegenerating && <LoadingState />}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl font-semibold text-white">Project Features</h2>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-3">
-              <div className="flex flex-col items-end gap-1">
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button 
-                        onClick={handleRegenerate} 
-                        variant="outline" 
-                        size="sm" 
-                        className="gap-2 relative group"
-                        disabled={hasRegenerated}
-                      >
-                        <RefreshCcw className={cn(
-                          "h-3 w-3 transition-all",
-                          !hasRegenerated && "group-hover:rotate-180"
-                        )} />
-                        Regenerate Features
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent side="top" className="bg-zinc-900 border-zinc-800">
-                      <p className="text-sm text-zinc-400">
-                        {hasRegenerated 
-                          ? "Feature regeneration can only be used once"
-                          : "Not satisfied? Generate a new set of features based on your requirements"
-                        }
-                      </p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-                <p className="text-xs text-zinc-500">
-                  {hasRegenerated ? "No attempts remaining" : "1 attempt remaining"}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="space-y-4">
-          <p className="text-sm text-white/60">
-            We organize development into three strategic phases to ensure efficient resource allocation and systematic feature delivery.
-          </p>
-          
-          <div className="bg-zinc-900/50 border border-zinc-800 rounded-lg p-4 space-y-3">
-            <h3 className="text-sm font-medium text-white">Development Phases Explained</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-              <div className="space-y-2">
-                <p className="font-medium text-primary2">Alpha Phase (Foundation)</p>
-                <p className="text-zinc-400">Core system architecture and essential functionalities. This phase focuses on building the fundamental infrastructure, critical APIs, and basic user flows. Helps technical teams validate architecture decisions and establish development patterns.</p>
-              </div>
-              <div className="space-y-2">
-                <p className="font-medium text-primary2">Beta Phase (Enhancement)</p>
-                <p className="text-zinc-400">Feature enrichment and system robustness. Development focuses on expanding core functionalities, implementing secondary features, and enhancing system reliability. Includes comprehensive testing and performance optimization.</p>
-              </div>
-              <div className="space-y-2">
-                <p className="font-medium text-primary2">Production Phase (Refinement)</p>
-                <p className="text-zinc-400">Advanced features and system maturity. This phase covers sophisticated functionalities, third-party integrations, and scalability improvements. Focuses on production-grade features that complete your product vision.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </>
-  );
-};

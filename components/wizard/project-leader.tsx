@@ -10,13 +10,9 @@ import {
   BriefcaseIcon,
   ClockIcon,
   CheckIcon,
+  XIcon,
 } from "lucide-react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import axios from "axios";
 
 interface Lead {
   id: number;
@@ -46,13 +42,13 @@ export function ProjectLeader({
     async function fetchLeads() {
       setIsLoading(true);
       try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/lead`
+        const response = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/lead?depth=2`
         );
-        if (!response.ok) {
+        if (response.status !== 200) {
           throw new Error("Failed to fetch leads");
         }
-        const data = await response.json();
+        const data = response.data;
         console.log(data);
         setLeads(data.docs);
       } catch (error) {
@@ -63,7 +59,7 @@ export function ProjectLeader({
     }
 
     fetchLeads();
-  }, []);
+  }, [hasExistingManager]);
 
   const handleManagerOptionChange = (value: string) => {
     setHasExistingManager(value === "existing");
@@ -157,104 +153,91 @@ export function ProjectLeader({
             <h3 className="text-lg font-medium text-white">
               Available Project Leaders
             </h3>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Badge
-                    variant="outline"
-                    className="bg-darkPrimary/10 text-darkPrimary border-darkPrimary/20"
-                  >
-                    {leads.length} Available
-                  </Badge>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p className="text-sm">
-                    These leaders are currently available for new projects
-                  </p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <Badge
+              variant="outline"
+              className="bg-darkPrimary/10 text-darkPrimary border-darkPrimary/20"
+            >
+              {leads.length} Available
+            </Badge>
           </div>
 
           <div className="space-y-4">
             {isLoading ? (
               <div className="flex items-center justify-center py-12">
-                <Loader2 className="h-8 w-8 animate-spin text-primary2" />
+                <Loader2 className="h-8 w-8 animate-spin text-darkPrimary" />
               </div>
             ) : (
-              <div className="grid gap-4">
-                {leads?.map((lead) => {
-                  console.log(lead);
-                  return (
-                    <div
-                      key={lead.id}
-                      onClick={() => handleLeaderSelect(lead)}
-                      className={cn(
-                        "group relative rounded-xl border border-white/20 p-6 transition-all duration-200 hover:bg-white/5 cursor-pointer",
-                        selectedLeader?.id === lead.id &&
-                          "bg-white/5 border-primary2/50"
-                      )}
-                    >
-                      <div className="flex items-start justify-between gap-6">
-                        <div className="flex items-start gap-4">
-                          <Avatar className="h-12 w-12 rounded-lg border-2 border-white/10">
-                            <AvatarImage
-                              src={`https://avatar.vercel.sh/${lead.name}.png`}
-                              alt={lead.name}
-                            />
-                          </Avatar>
-                          <div className="space-y-1">
-                            <div className="flex items-center gap-2">
-                              <h4 className="text-lg font-medium text-white">
-                                {lead.name}
-                              </h4>
-                              {selectedLeader?.id === lead.id && (
-                                <CheckIcon className="h-5 w-5 text-primary2" />
-                              )}
-                            </div>
-                            <p className="text-sm text-gray-400">
-                              Technical Product Manager
-                            </p>
-                            <div className="flex flex-wrap gap-2 pt-2">
-                              {lead.stack.slice(0, 3).map((tech, index) => (
-                                <Badge
-                                  key={index}
-                                  variant="outline"
-                                  className="bg-white/5 text-xs"
-                                >
-                                  {typeof tech === "number" ? tech : tech.name}
-                                </Badge>
-                              ))}
-                              {lead.stack.length > 3 && (
-                                <Badge
-                                  variant="outline"
-                                  className="bg-white/5 text-xs"
-                                >
-                                  +{lead.stack.length - 3} more
-                                </Badge>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {leads?.map((lead) => (
+                  <div
+                    key={lead.id}
+                    onClick={() => handleLeaderSelect(lead)}
+                    className={cn(
+                      "group relative p-5 rounded-xl transition-all duration-300 h-full",
+                      "bg-[#141414] border border-zinc-800 hover:border-darkPrimary/50 hover:shadow-[0_0_20px_rgba(123,97,255,0.15)]",
+                      selectedLeader?.id === lead.id &&
+                        "border-darkPrimary/50 bg-white/5"
+                    )}
+                  >
+                    <div className="flex flex-col h-full">
+                      <div className="flex items-start gap-4">
+                        <Avatar className="h-12 w-12 rounded-lg border-2 border-white/10">
+                          <AvatarImage
+                            src={`https://avatar.vercel.sh/${lead.name}.png`}
+                            alt={lead.name}
+                          />
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
-                            <ClockIcon className="h-4 w-4 text-gray-400" />
-                            <span className="text-sm text-white">
-                              {lead.experience}+ years
-                            </span>
+                            <h4 className="text-base font-medium text-white truncate">
+                              {lead.name}
+                            </h4>
+                            {selectedLeader?.id === lead.id && (
+                              <CheckIcon className="h-4 w-4 text-darkPrimary shrink-0" />
+                            )}
                           </div>
-                          <div className="flex items-center gap-2">
-                            <BriefcaseIcon className="h-4 w-4 text-gray-400" />
-                            <span className="text-sm text-white">
-                              {lead.projects?.length || 0} projects
-                            </span>
-                          </div>
+                          <p className="text-sm text-white/60">
+                            Technical Product Manager
+                          </p>
                         </div>
                       </div>
+
+                      <div className="flex flex-wrap gap-2 mt-4">
+                        {lead.stack.map((tech, index) => (
+                          <Badge
+                            key={index}
+                            variant="outline"
+                            className="bg-[#141414] text-xs border-zinc-800 px-2 py-1 flex items-center gap-1.5 text-white/60"
+                          >
+                            {typeof tech === "number" ? tech : tech.name}
+                            <button className="hover:bg-white/5 rounded-sm p-0.5">
+                              <XIcon className="h-3 w-3 text-white/40" />
+                            </button>
+                          </Badge>
+                        ))}
+                      </div>
+
+                      <div className="flex items-center gap-4 mt-4 pt-4 border-t border-zinc-800">
+                        <div className="flex items-center gap-1.5 text-xs text-white/60">
+                          <ClockIcon className="h-3.5 w-3.5" />
+                          {lead.experience}+ years
+                        </div>
+                        <div className="flex items-center gap-1.5 text-xs text-white/60">
+                          <BriefcaseIcon className="h-3.5 w-3.5" />
+                          {lead.projects?.length || 0} projects
+                        </div>
+                        {lead.availability && (
+                          <Badge
+                            variant="outline"
+                            className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20 text-xs ml-auto"
+                          >
+                            Available
+                          </Badge>
+                        )}
+                      </div>
                     </div>
-                  );
-                })}
+                  </div>
+                ))}
               </div>
             )}
           </div>

@@ -16,11 +16,10 @@ import {
 } from "@/components/ui/table";
 import { cookies } from "next/headers";
 import { truncateToFourWords } from "@/lib/utils";
-import { Project, Issue } from "@/types/dashboard";
+import { Project, Issue, User } from "@/types/dashboard";
 import { getUser } from "@/lib/get-user";
 import DashboardCard from "@/components/uikit/dashboard-card";
-
-
+import { StartupProjectCard } from "@/components/dashboard/projects/startup-project-card";
 
 const ProjectsTable = ({ projects }: { projects: Project[] }) => (
   <Table>
@@ -63,7 +62,11 @@ const IssuesTable = ({ issues }: { issues: Issue[] }) => (
             </span>
           </TableCell>
           <TableCell>{issue.priority}</TableCell>
-          <TableCell>{issue.assignee?.name}</TableCell>
+          <TableCell>
+            {issue.assignees
+              ?.map((assignee) => (assignee as User)?.name)
+              .join(", ")}
+          </TableCell>
         </TableRow>
       ))}
     </TableBody>
@@ -91,44 +94,79 @@ const Dashboard = async () => {
         </Button>
       </header>
       <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
-        <div className="grid gap-4 md:grid-cols-2 md:gap-6 lg:grid-cols-3">
-          <DashboardCard
-            title="Issues"
-            value={user.developerFields?.issues?.length || 0}
-            icon={GitPullRequest}
-            subtext="+180.1% from last month"
-          />
-          <DashboardCard
-            title="Balance"
-            value={`$${user.wallet}`}
-            icon={DollarSign}
-            subtext="+19% from last month"
-          />
-          <DashboardCard
-            title="Total Payments"
-            value={`$${user.developerFields?.totalPayment || 0}`}
-            icon={ArrowLeftRight}
-            subtext="+20.1% from last month"
-          />
-        </div>
-        <div className="grid gap-6 md:grid-cols-2">
-          <Card className="border border-white/10 bg-[#09090b] rounded-[20px]">
-            <CardHeader>
-              <CardTitle className="text-white">Recent Projects</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ProjectsTable projects={user.projects as Project[]} />
-            </CardContent>
-          </Card>
-          <Card className="border border-white/10 bg-[#09090b] rounded-[20px]">
-            <CardHeader>
-              <CardTitle className="text-white">Recent Issues</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <IssuesTable issues={user.developerFields?.issues as Issue[]} />
-            </CardContent>
-          </Card>
-        </div>
+        {user.type === "developer" && (
+          <div className="grid gap-4 md:grid-cols-2 md:gap-6 lg:grid-cols-3">
+            <DashboardCard
+              title="Issues"
+              value={user.developerFields?.issues?.length || 0}
+              icon={GitPullRequest}
+              subtext="+180.1% from last month"
+            />
+            <DashboardCard
+              title="Balance"
+              value={`$${user.wallet}`}
+              icon={DollarSign}
+              subtext="+19% from last month"
+            />
+            <DashboardCard
+              title="Total Payments"
+              value={`$${user.developerFields?.totalPayment || 0}`}
+              icon={ArrowLeftRight}
+              subtext="+20.1% from last month"
+            />
+          </div>
+        )}
+        {user.type === "startup" && (
+          <div className="grid gap-4 md:grid-cols-2 md:gap-6 lg:grid-cols-2">
+            <DashboardCard
+              title="Projects"
+              value={user?.projects?.length || 0}
+              icon={GitPullRequest}
+              subtext="+180.1% from last month"
+            />
+            <DashboardCard
+              title="My Funds"
+              value={`$${user.wallet}`}
+              icon={DollarSign}
+              subtext="+19% from last month"
+            />
+          </div>
+        )}
+        {user.type === "developer" && (
+          <div className="grid gap-6 md:grid-cols-2">
+            <Card className="border border-white/10 bg-[#09090b] rounded-[20px]">
+              <CardHeader>
+                <CardTitle className="text-white">Recent Projects</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ProjectsTable projects={user.projects as Project[]} />
+              </CardContent>
+            </Card>
+            <Card className="border border-white/10 bg-[#09090b] rounded-[20px]">
+              <CardHeader>
+                <CardTitle className="text-white">Recent Issues</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <IssuesTable issues={user.developerFields?.issues as Issue[]} />
+              </CardContent>
+            </Card>
+          </div>
+        )}
+        {user.type === "startup" && (
+          <div className="flex flex-col gap-4">
+            <h3 className="text-white text-lg font-semibold">My Projects</h3>
+            <div className="grid gap-4 md:grid-cols-2 md:gap-6 lg:grid-cols-2">
+              {user?.projects?.map(
+                (project: number | Project, index: number) => (
+                  <StartupProjectCard
+                    key={index}
+                    project={project as Project}
+                  />
+                )
+              )}
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );

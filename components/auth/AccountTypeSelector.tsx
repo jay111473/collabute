@@ -29,7 +29,7 @@ export const AccountTypeSelector = ({ form }: AccountTypeSelectorProps) => {
             </FormControl>
             <Label
               htmlFor="developer"
-              className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover py-2 px-4 peer-data-[state=checked]:border-black [&:has([data-state=checked])]:border-black"
+              className="flex flex-col items-center justify-between rounded-md border-2 border-background bg-popover py-2 px-4 peer-data-[state=checked]:border-white [&:has([data-state=checked])]:border-white"
             >
               <Code2 className="mb-2 h-6 w-6" />
               <div className="text-center">Developer</div>
@@ -45,7 +45,7 @@ export const AccountTypeSelector = ({ form }: AccountTypeSelectorProps) => {
             </FormControl>
             <Label
               htmlFor="startup"
-              className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover py-2 px-4 peer-data-[state=checked]:border-black [&:has([data-state=checked])]:border-black"
+              className="flex flex-col items-center justify-between rounded-md border-2 border-background bg-popover py-2 px-4 peer-data-[state=checked]:border-white [&:has([data-state=checked])]:border-white"
             >
               <Building className="mb-2 h-6 w-6" />
               <div className="text-center">Startup</div>

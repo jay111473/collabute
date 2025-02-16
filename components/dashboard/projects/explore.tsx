@@ -1,7 +1,7 @@
 "use client";
 
 import SearchFilterBar from "@/components/dashboard/project/search-filter-bar";
-import { Project, ProjectType } from "@/types/dashboard";
+import { Project } from "@/types/dashboard";
 import { useState, useMemo } from "react";
 import { ProjectCard } from "./project-card";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -60,7 +60,7 @@ export const ExploreComponent = ({
   const router = useRouter();
   const searchParams = useSearchParams();
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedType, setSelectedType] = useState<ProjectType | null>(null);
+  const [selectedType, setSelectedType] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<SortOption>("newest");
 
   const filteredAndSortedProjects = useMemo(() => {
@@ -108,7 +108,7 @@ export const ExploreComponent = ({
         filters={projectTypeFilters}
         sortOptions={sortOptions}
         onChange={setSearchQuery}
-        onFilterChange={(value) => setSelectedType(value as ProjectType)}
+        onFilterChange={(value) => setSelectedType(value as string)}
         onSortChange={(value) => setSortBy(value as SortOption)}
         selectedFilter={selectedType}
         selectedSort={sortBy}

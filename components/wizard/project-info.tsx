@@ -24,7 +24,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { ProjectType } from "@/types/dashboard";
 
 // Types
 interface ProjectInfoProps {

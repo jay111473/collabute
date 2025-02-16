@@ -37,7 +37,7 @@ const Payments = async () => {
                 transactionDate: transaction?.transactionDate || '',
                 transactionAmount: transaction?.transactionAmount || 0,
                 transactionType: transaction?.transactionType || 'income',
-                transactionMethod: transaction?.transactionMethod || '',
+                transactionMethod: transaction?.transactionMethods || '',
                 transactionStatus: transaction?.transactionStatus || 'pending',
                 transactionProject: transaction?.transactionProject,
                 transactionDescription:

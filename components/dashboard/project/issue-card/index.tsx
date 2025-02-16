@@ -1,6 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import RectangleStack from "@/public/icons/rectangle-stack";
-import { Issue } from "@/types/dashboard";
+import { Issue, User } from "@/types/dashboard";
 import { Circle, CircleDot, Clock } from "lucide-react";
 import { getBulbColor, getStatusInfo } from "@/lib/utils";
 import {
@@ -49,7 +49,7 @@ const IssueCardBadges = ({
       className="font-medium text-xs"
       variant="outline"
     >
-      {issue.requests.filter((request) => request.requestStatus === "pending")
+      {issue.requests?.filter((request) => request.requestStatus === "pending")
         .length || 0}{" "}
       pending request
     </Badge>
@@ -96,7 +96,7 @@ const IssueCard = ({ issue, projectTitle, isMyProject }: IssueCardProps) => {
   const [isBookmarked, setIsBookmarked] = useState(issue.isBookmarked || false);
 
   const pendingRequestsCount =
-    issue.requests.filter((request) => request.requestStatus === "pending")
+    issue.requests?.filter((request) => request.requestStatus === "pending")
       .length || 0;
 
   const handleApply = (issueId: string) => {
@@ -194,13 +194,15 @@ const IssueCard = ({ issue, projectTitle, isMyProject }: IssueCardProps) => {
                     <YouTubeEmbed url={issue.onboardingVideoLink} />
                   </div>
                 )}
-                {issue.assignee && (
+                {issue.assignees && (
                   <>
                     <Divider />
                     <IssueDetailRow
                       icon={<CircleDot className="text-primary2" size={16} />}
                       label="Assignee"
-                      value={issue.assignee.name}
+                      value={issue.assignees
+                        ?.map((assignee) => (assignee as User).name)
+                        .join(", ")}
                       delay={0.5}
                     />
                   </>

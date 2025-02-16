@@ -44,7 +44,7 @@ export function ApplyDrawer({
 
   const handleApply = (e: React.MouseEvent) => {
     e.stopPropagation();
-    onApply(issue.id);
+    onApply(issue.id.toString());
     setIsOpen(false);
   };
 
@@ -108,7 +108,7 @@ export function ApplyDrawer({
                 className="font-medium text-xs"
                 variant="outline"
               >
-                {issue.requests.filter(
+                {issue.requests?.filter(
                   (request) => request.requestStatus === "pending"
                 ).length || 0}{" "}
                 pending request

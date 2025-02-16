@@ -412,6 +412,7 @@ export interface Issue {
   budget?: number | null;
   assignees?: (number | User)[] | null;
   reporter: number | User;
+  isBookmarked?: boolean | null;
   createdAt: string;
   updatedAt: string;
   project: number | Project;

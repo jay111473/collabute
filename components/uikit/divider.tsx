@@ -8,11 +8,11 @@ export const Divider: React.FC<
   }
 > = ({ className, vertical, dot, ...rest }) => {
   return dot ? (
-    <div {...rest} className={cn("w-1 bg-gray-300 h-1", className)} />
+    <div {...rest} className={cn("w-1 bg-grayBorders h-1", className)} />
   ) : vertical ? (
-    <div {...rest} className={cn("w-[1px] bg-gray-300 h-full", className)} />
+    <div {...rest} className={cn("w-[1px] bg-grayBorders h-full", className)} />
   ) : (
-    <div {...rest} className={cn("w-full bg-gray-300 h-[1px]", className)} />
+    <div {...rest} className={cn("w-full bg-grayBorders h-[1px]", className)} />
   );
 };
 Divider.displayName = "Divider";

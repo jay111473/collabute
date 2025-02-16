@@ -47,7 +47,7 @@ export const StartupFields = ({ form }: StartupFieldsProps) => {
                   <div
                     key={option.value}
                     className={cn(
-                      "flex items-center justify-center px-2 py-[17px] text-sm rounded-md border cursor-pointer",
+                      "flex items-center justify-center px-2 py-3 text-xs rounded-md border cursor-pointer",
                       field.value === option.value
                         ? "border-black border-2"
                         : "border-muted bg-popover"

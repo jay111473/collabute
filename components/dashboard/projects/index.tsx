@@ -8,7 +8,7 @@ import { useState, useMemo } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import SearchFilterBar from "@/components/dashboard/project/search-filter-bar";
 import { calculateProgressPercentage } from "@/lib/utils";
-import { Project } from "@/types/dashboard";
+import { Issue, Project } from "@/types/dashboard";
 import IssueCard from "../project/issue-card";
 
 type StatusType = "open" | "in_progress" | "resolved" | "closed";
@@ -35,37 +35,45 @@ const ProjectPageComponent = ({
   project: Project;
   isMyProject?: boolean;
 }) => {
-  const progressPercentage = calculateProgressPercentage(project.issues);
+  const progressPercentage = calculateProgressPercentage(
+    project.issues as Issue[]
+  );
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStatus, setSelectedStatus] = useState<StatusType | null>(null);
   const [sortBy, setSortBy] = useState<SortOption>("newest");
 
   const filteredAndSortedIssues = useMemo(() => {
-    let filtered = project.issues.filter((issue) => {
+    let filtered = project.issues?.filter((issue) => {
       // Search filter
-      const matchesSearch = issue.title
+      const matchesSearch = (issue as Issue).title
         .toLowerCase()
         .includes(searchQuery.toLowerCase());
 
       // Status filter
       const matchesStatus = selectedStatus
-        ? issue.status === selectedStatus
+        ? (issue as Issue).status === selectedStatus
         : true;
 
       return matchesSearch && matchesStatus;
     });
 
     // Sort issues
-    return filtered.sort((a, b) => {
+    return filtered?.sort((a, b) => {
       switch (sortBy) {
         case "newest":
           // You might want to add createdAt to your Issue type
-          return new Date(b.id).getTime() - new Date(a.id).getTime();
+          return (
+            new Date((b as Issue).id).getTime() -
+            new Date((a as Issue).id).getTime()
+          );
         case "oldest":
-          return new Date(a.id).getTime() - new Date(b.id).getTime();
+          return (
+            new Date((a as Issue).id).getTime() -
+            new Date((b as Issue).id).getTime()
+          );
         case "priority":
           // Sort by priority (you might want to add priority levels to your types)
-          return b.priority.localeCompare(a.priority);
+          return (b as Issue).priority.localeCompare((a as Issue).priority);
         default:
           return 0;
       }
@@ -75,15 +83,15 @@ const ProjectPageComponent = ({
   return (
     <div className="flex flex-col">
       <main className="flex flex-1 flex-col gap-4 lg:gap-6">
-        <Card className="flex flex-col gap-2 py-4">
+        <Card className="flex flex-col gap-2 py-4 bg-darkGray">
           <div className="flex items-center justify-start gap-2 px-4">
-            <h3 className="font-medium text-black text-lg">{project?.title}</h3>
+            <h3 className="font-medium text-white text-lg">{project?.title}</h3>
             <Badge
               className="font-medium !text-xs"
               icon={<GitPullRequest className="h-4 w-4 text-primary2" />}
               variant="outline"
             >
-              {project.issues.length} issues
+              {project.issues?.length} issues
             </Badge>
             <Badge
               className="font-medium !text-xs"
@@ -111,7 +119,7 @@ const ProjectPageComponent = ({
             {!isMyProject ? (
               <TabsList className="p-4">
                 <TabsTrigger value="issues">
-                  Issues ({project.issues.length})
+                  Issues ({project.issues?.length})
                 </TabsTrigger>
                 <TabsTrigger value="collabuters">Collabuters</TabsTrigger>
                 <TabsTrigger value="latest-activity">
@@ -121,7 +129,7 @@ const ProjectPageComponent = ({
             ) : (
               <TabsList className="p-4">
                 <TabsTrigger value="open-issues">
-                  Open issues ({project.issues.length})
+                  Open issues ({project.issues?.length})
                 </TabsTrigger>
                 <TabsTrigger value="done-issues">Done issues</TabsTrigger>
               </TabsList>
@@ -141,10 +149,10 @@ const ProjectPageComponent = ({
                   selectedSort={sortBy}
                 />
                 <div className="flex flex-col gap-4">
-                  {filteredAndSortedIssues.map((issue) => (
+                  {filteredAndSortedIssues?.map((issue, index) => (
                     <IssueCard
-                      key={issue.id}
-                      issue={issue}
+                      key={index}
+                      issue={issue as Issue}
                       projectTitle={project.title}
                     />
                   ))}
@@ -168,10 +176,10 @@ const ProjectPageComponent = ({
                   selectedSort={sortBy}
                 />
                 <div className="flex flex-col gap-4">
-                  {filteredAndSortedIssues.map((issue) => (
+                  {filteredAndSortedIssues?.map((issue, index ) => (
                     <IssueCard
-                      key={issue.id}
-                      issue={issue}
+                      key={index}
+                      issue={issue as Issue}
                       projectTitle={project.title}
                       isMyProject={isMyProject}
                     />

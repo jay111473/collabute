@@ -53,7 +53,6 @@ const Password = () => {
           setCookie("userid", res.data.user.id);
           // Set a flag in a cookie to indicate the user is logged in
           setCookie("isLoggedIn", "true");
-
           router.push("/dashboard");
           return "Successfully logged in!";
         },
@@ -65,9 +64,9 @@ const Password = () => {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen py-2">
+    <div className="flex flex-col items-center justify-center min-h-screen py-2 bg-background">
       <Toaster />
-      <div className="flex flex-col items-center justify-center gap-y-16 px-[80px] w-[500px] py-[90px] text-center border border-slate-200 rounded-md">
+      <div className="flex flex-col items-center justify-center gap-y-16 px-[80px] w-[500px] py-[90px] text-center rounded-md">
         <div className="flex flex-col items-center justify-center gap-y-2">
           <Image src="/logo.svg" alt="logo" width={66} height={66} />
           <h1 className="text-3xl font-bold">Collabute</h1>

@@ -14,37 +14,39 @@ interface ProjectCardProps {
 export const ProjectCard = ({ project }: ProjectCardProps) => {
   return (
     <Link href={`/dashboard/explore/${project.slug}`}>
-      <Card className="text-black rounded-lg hover:shadow-primary2 duration-300">
+      <Card className="text-white rounded-lg border-none hover:shadow-primary2 duration-300 bg-darkGray">
         <CardContent className="flex flex-col p-0 py-4 space-y-4">
           <div className="flex justify-between px-4">
             <div className="flex flex-col justify-start items-start gap-y-2">
               <div className="flex items-center gap-2">
-                <h3 className="text-xl font-medium">{project.title}</h3>
+                <h3 className="text-xl font-medium text-white">
+                  {project.title}
+                </h3>
                 <Badge
-                  className="font-medium !text-xs"
-                  icon={<GitPullRequest className="h-4 w-4 text-primary2" />}
+                  className="font-medium !text-xs border-grayBorders text-white"
+                  icon={<GitPullRequest className="h-4 w-4 text-darkPrimary" />}
                   variant="outline"
                 >
-                  {project.issues.length} issues
+                  {project.issues?.length} issues
                 </Badge>
               </div>
-              <p className="text-gray-500 truncate">
+              <p className="text-white/60 truncate">
                 {truncateText(project.description)}
               </p>
             </div>
             <div className="flex flex-col items-end">
-              <div className="text-primary-light font-bold text-xl">
+              <div className="text-darkPrimary font-bold text-xl">
                 ${project.budget}
               </div>
-              <p className="text-gray-500 text-xs">Budget</p>
+              <p className="text-white/60 text-xs">Budget</p>
             </div>
           </div>
           <Divider />
           <div className="flex px-6 items-center justify-between">
             <p className="text-sm  py-0">Skills</p>
-            <p className="text-xs py-0">
-              {project?.stacks?.map((stack) => stack.name)}
-            </p>
+            {/* <p className="text-xs py-0">
+              {project?.stacks?.map((stack: Stack) => stack?.name)}
+            </p> */}
           </div>
           <Divider />
           <div className="flex px-6 items-center gap-2 justify-between">

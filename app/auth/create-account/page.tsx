@@ -22,7 +22,8 @@ import type { CreateAccountFormData } from "@/types/auth.types";
 import { useUser } from "@/app/providers/UserContext";
 
 const CreateAccount = () => {
-  const { form, isLoading, showPassword, setShowPassword, onSubmit } = useCreateAccount();
+  const { form, isLoading, showPassword, setShowPassword, onSubmit } =
+    useCreateAccount();
   const accountType = form.watch("type");
   const router = useRouter();
   const { setUserId } = useUser();
@@ -45,19 +46,21 @@ const CreateAccount = () => {
 
       // Store the user ID
       setUserId(result.userId);
-      
+
       // Navigate to challenge
       const role = data.developerFields?.primaryRole || "Frontend Developer"; // Fallback
       router.push(`/auth/create-account/challenge?role=${role}`);
     } catch (error) {
       console.error("Signup error:", error);
       // Use toast for error handling
-      toast.error(error instanceof Error ? error.message : "Failed to create account");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to create account"
+      );
     }
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen py-2">
+    <div className="flex flex-col items-center justify-center min-h-screen py-2 bg-background">
       <Toaster />
       <div className="flex flex-col items-center justify-center gap-y-8 px-8 w-full max-w-2xl py-12 border border-slate-200 rounded-md text-left">
         <div className="flex flex-col items-center justify-center gap-y-2">
@@ -65,7 +68,10 @@ const CreateAccount = () => {
           <h1 className="text-3xl font-bold">Collabute</h1>
         </div>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmitHandler)} className="w-full">
+          <form
+            onSubmit={form.handleSubmit(onSubmitHandler)}
+            className="w-full"
+          >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <AccountTypeSelector form={form} />
 

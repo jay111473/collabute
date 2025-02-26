@@ -60,7 +60,7 @@ const CreateAccount = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen py-2 bg-background">
+    <div className="flex flex-col items-center justify-center min-h-screen py-2 bg-black">
       <Toaster />
       <div className="flex flex-col items-center justify-center gap-y-8 px-8 w-full max-w-2xl py-12 border border-slate-200 rounded-md text-left">
         <div className="flex flex-col items-center justify-center gap-y-2">

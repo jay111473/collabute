@@ -11,7 +11,7 @@ import Image from "next/image";
 const Auth = () => {
   const router = useRouter();
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen py-2 bg-background">
+    <div className="flex flex-col items-center justify-center min-h-screen py-2 bg-black">
       <div className="flex flex-col items-center justify-center gap-y-16 px-[80px] w-[500px] py-[90px] text-center rounded-md">
         <div className="flex flex-col items-center justify-center gap-y-2">
           <Image src="/logo.svg" alt="logo" width={66} height={66} />

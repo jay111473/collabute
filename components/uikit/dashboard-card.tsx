@@ -13,7 +13,7 @@ const DashboardCard = ({
   subtext?: string;
 }) => {
   return (
-    <Card className="relative overflow-hidden rounded-[20px] border border-white/10 bg-darkGray">
+    <Card className="relative overflow-hidden rounded-[8px] border border-white/10 bg-darkGray">
       <div className="absolute" />
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium text-darkPrimary">

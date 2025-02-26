@@ -3,6 +3,7 @@ import { getUser } from "@/lib/get-user";
 import { Issue, Project } from "@/types/dashboard";
 import { cookies } from "next/headers";
 import React from "react";
+import Sidebar from "@/components/dashboard/Sidebar"; 
 
 const MyProjects = async () => {
   const token = (await cookies()).get("token")?.value;
@@ -14,7 +15,8 @@ const MyProjects = async () => {
 
   const user = await getUser(userId || "", token || "");
   return (
-    <div>
+    <div className="flex">
+      <Sidebar user={user} />
       <MyProjectsComponent
         projects={user?.projects as Project[]}
         issues={user?.developerFields?.issues as Issue[]}

@@ -1,7 +1,9 @@
 import React from "react";
 import { ExploreComponent } from "@/components/dashboard/projects/explore";
 import { getProjects } from "@/lib/get-projects";
-
+import { getUser } from "@/lib/get-user";
+import { cookies } from "next/headers";
+import Sidebar from "@/components/dashboard/Sidebar";
 const Explore = async ({
   searchParams,
 }: {
@@ -9,9 +11,13 @@ const Explore = async ({
 }) => {
   const page = typeof searchParams.page === 'string' ? Number(searchParams.page) : 1;
   const projectsData = await getProjects(page);
+  const token = (await cookies()).get("token")?.value;
+  const userId = (await cookies()).get("userid")?.value;
+  const user = await getUser(userId || "", token || "");
 
   return (
-    <div className="">
+    <div className="flex">
+      <Sidebar user={user} />
       <ExploreComponent 
         projects={projectsData.docs}
         pagination={{

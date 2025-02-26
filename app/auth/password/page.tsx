@@ -64,7 +64,7 @@ const Password = () => {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen py-2 bg-background">
+    <div className="flex flex-col items-center justify-center min-h-screen py-2 bg-black">
       <Toaster />
       <div className="flex flex-col items-center justify-center gap-y-16 px-[80px] w-[500px] py-[90px] text-center rounded-md">
         <div className="flex flex-col items-center justify-center gap-y-2">

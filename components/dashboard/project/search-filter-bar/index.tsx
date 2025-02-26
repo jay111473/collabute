@@ -57,7 +57,7 @@ const SearchFilterBar = ({
               variant="outline"
               key={filter.value}
               className={cn(
-                `rounded-3xl font-medium text-xs cursor-pointer py-2.5 px-4 flex items-center gap-1 ${filter.bgColor} ${filter.borderColor}`,
+                `rounded-3xl font-medium text-xs cursor-pointer py-2 px-3 flex items-center gap-1 ${filter.bgColor} ${filter.borderColor}`,
                 selectedFilter === filter.value &&
                   "border-primary text-primary"
               )}

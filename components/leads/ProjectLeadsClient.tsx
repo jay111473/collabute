@@ -2,7 +2,6 @@
 
 import { FC } from "react";
 import { User } from "@/types/dashboard";
-import { FILTERS } from "@/types/filters";
 import { useLeadFilters } from "./hooks/useLeadFilters";
 import { LeadHeader, LeadSectionHeader } from "./LeadHeader";
 import { LeadFilterBar } from "./LeadFilterBar";
@@ -31,8 +30,6 @@ const ProjectLeadsClient: FC<ProjectLeadsClientProps> = ({ leads }) => {
   } = useLeadFilters({
     initialFilters: (() => {
       const initialFilters = {};
-      // This is now handled in the hook, but we're keeping this pattern
-      // for consistency with how the component was originally structured
       return initialFilters;
     })(),
   });

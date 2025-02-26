@@ -1,6 +1,6 @@
 import React from "react";
 
-const RectangleStack = () => {
+const RectangleStack = ({ className }: { className?: string }) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"

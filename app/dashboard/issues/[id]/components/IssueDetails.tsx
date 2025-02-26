@@ -2,7 +2,7 @@
 
 import { Badge } from "@/components/ui/badge";
 import RectangleStack from "@/public/icons/rectangle-stack";
-import { Issue, User } from "@/types/dashboard";
+import { Issue, Project, User } from "@/types/dashboard";
 import { Circle, CircleDot, Clock, ArrowLeft } from "lucide-react";
 import { getBulbColor, getStatusInfo } from "@/lib/utils";
 import { format } from "date-fns";
@@ -68,7 +68,7 @@ export default function IssueDetails({ issue }: IssueDetailsProps) {
           </div>
           <ApplyDrawer
             issue={issue}
-            projectTitle={issue.project?.title || ""}
+            projectTitle={(issue.project as Project).title || ""}
             onApply={handleApply}
           />
         </div>
@@ -91,7 +91,10 @@ export default function IssueDetails({ issue }: IssueDetailsProps) {
         </Badge>
         <Badge
           icon={
-            <Circle className={`fill-current ${getBulbColor(color)}`} size={12} />
+            <Circle
+              className={`fill-current ${getBulbColor(color)}`}
+              size={12}
+            />
           }
           className="font-medium text-xs"
           variant="outline"
@@ -103,14 +106,19 @@ export default function IssueDetails({ issue }: IssueDetailsProps) {
       <div className="flex flex-col gap-4 bg-black p-4">
         <div className="flex flex-col gap-2">
           <h2 className="text-base font-medium">Description</h2>
-          <p className="text-sm text-gray-400 leading-relaxed">{issue.description}</p>
+          <p className="text-sm text-gray-400 leading-relaxed">
+            {issue.description}
+          </p>
         </div>
 
         <Divider className="my-2 opacity-10" />
 
         <DetailRow
           icon={
-            <Circle className={`fill-current ${getBulbColor(color)}`} size={12} />
+            <Circle
+              className={`fill-current ${getBulbColor(color)}`}
+              size={12}
+            />
           }
           label="Status"
           value={label}
@@ -144,4 +152,4 @@ export default function IssueDetails({ issue }: IssueDetailsProps) {
       </div>
     </div>
   );
-} 
+}

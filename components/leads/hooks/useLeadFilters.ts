@@ -125,8 +125,8 @@ export const useLeadFilters = ({
     sort,
     setSort,
     isLoading,
-    hasActiveFilters,
+    hasActiveFilters: Boolean(search || Object.keys(filters).length || sort),
     handleFilterChange,
     resetFilters,
   };
-}; 
+};

@@ -128,7 +128,7 @@ export const StartupProjectCard = ({ project }: ProjectCardProps) => {
 
   return (
     <div>
-      <Card className="bg-darkGray border-none rounded-2xl transition-colors">
+      <Card className="bg-darkGray border-none rounded-lg transition-colors">
         <CardContent className="p-6 space-y-4">
           <div className="flex items-start justify-between">
             <div className="flex-1 space-y-4">

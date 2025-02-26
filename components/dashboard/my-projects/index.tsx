@@ -5,8 +5,8 @@ import { Issue, Project } from "@/types/dashboard";
 import { CircleUser } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import SearchFilterBar from "@/components/dashboard/project/search-filter-bar";
-import ProjectPageComponent from "../projects";
 import IssueCard from "../project/issue-card";
+import MyProjectCard from "../projects";
 
 const sortOptions = [
   { label: "Newest", value: "newest" },
@@ -20,7 +20,7 @@ const MyProjectsComponent = ({
   issues: Issue[];
 }) => {
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col w-full bg-black">
       <header className="flex h-14 justify-between items-center gap-4 border-b bg-muted/40 px-4 lg:h-[60px] lg:px-6">
         <h3 className="text-lg ">My Projects</h3>
         <Button
@@ -39,7 +39,7 @@ const MyProjectsComponent = ({
           </TabsList>
           <TabsContent value="projects">
             {projects.map((project) => (
-              <ProjectPageComponent
+              <MyProjectCard
                 key={project.id}
                 project={project}
                 isMyProject={true}

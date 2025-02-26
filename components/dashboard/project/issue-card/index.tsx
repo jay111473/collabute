@@ -15,6 +15,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { YouTubeEmbed } from "@/components/ui/youtube-embed";
 import { format } from "date-fns";
 import { ApplyDrawer } from "./apply-drawer";
+import Link from "next/link";
 
 interface IssueCardProps {
   issue: Issue;
@@ -31,12 +32,7 @@ const IssueCardBadges = ({
   color: string;
   label: string;
 }) => (
-  <motion.div
-    initial={{ opacity: 0, x: -20 }}
-    animate={{ opacity: 1, x: 0 }}
-    exit={{ opacity: 0, x: -20 }}
-    className="flex items-center gap-4"
-  >
+  <div className="flex items-center gap-4">
     <Badge
       icon={<Clock className="h-4 w-4 text-primary2" />}
       className="font-medium text-xs"
@@ -62,7 +58,7 @@ const IssueCardBadges = ({
     >
       {label}
     </Badge>
-  </motion.div>
+  </div>
 );
 
 const IssueDetailRow = ({
@@ -109,110 +105,51 @@ const IssueCard = ({ issue, projectTitle, isMyProject }: IssueCardProps) => {
     console.log("Bookmarked issue:", issue.id);
   };
 
+  // Truncate description to first 100 words
+  const truncatedDescription = issue.description
+    ? issue.description
+        .split(" ")
+        .slice(0, 100)
+        .join(" ")
+        .concat(issue.description.split(" ").length > 100 ? "..." : "")
+    : "";
+
   return (
-    <Accordion
-      type="single"
-      collapsible
-      onValueChange={(value) => setIsOpen(!!value)}
-    >
-      <AccordionItem
-        value="item-1"
-        className={`rounded-lg px-4 bg-gray-50 shadow-none ${
+    <Link href={`/dashboard/issues/${issue.id}`}>
+      <div
+        className={`rounded-lg px-4 bg-lightGray shadow-none hover:bg-gray-800/50 transition-colors ${
           isMyProject ? "border-l-4 border-l-primary2" : ""
         }`}
       >
-        <div className="flex items-center justify-between w-full p-2">
-          <div className="flex items-center gap-4 flex-1">
-            <AccordionTrigger showChevron={false}>
-              <h3 className="font-medium text-black flex items-center gap-2">
+        <div className="flex flex-col p-4 gap-4">
+          <div className="flex items-center justify-between w-full">
+            <div className="flex flex-col gap-2 flex-1">
+              <h3 className="font-medium text-white flex items-center gap-2">
                 <CircleDot className="text-primary2" size={16} />
                 {issue?.title}
               </h3>
-            </AccordionTrigger>
-            <AnimatePresence>
-              {!isOpen && (
-                <IssueCardBadges issue={issue} color={color} label={label} />
-              )}
-            </AnimatePresence>
-          </div>
-          {!isMyProject && (
-            <div className="flex items-center gap-4 p-2">
-              <div className="flex flex-col items-end">
-                <div className="text-primary-light font-bold text-xl">
-                  ${issue.budget}
-                </div>
-                <p className="text-gray-500 text-xs">Budget</p>
-              </div>
-              <ApplyDrawer
-                issue={issue}
-                projectTitle={projectTitle || ""}
-                onApply={handleApply}
-              />
+              <p className="text-sm text-gray-400">{truncatedDescription}</p>
             </div>
-          )}
-        </div>
-        <AccordionContent>
-          <AnimatePresence>
-            {isOpen && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.2 }}
-                className="flex flex-col gap-4 py-4 overflow-hidden"
-              >
-                <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.1 }}
-                  className="flex flex-col gap-2"
-                >
-                  <p className="text-sm text-gray-500">Description</p>
-                  <p className="text-sm">{issue.description}</p>
-                </motion.div>
-
-                <IssueDetailRow
-                  icon={
-                    <Circle
-                      className={`fill-current ${getBulbColor(color)}`}
-                      size={12}
-                    />
-                  }
-                  label="Status"
-                  value={label}
-                  delay={0.2}
-                />
-                <Divider />
-                <IssueDetailRow
-                  icon={<RectangleStack />}
-                  label="Pending Requests"
-                  value={pendingRequestsCount}
-                  delay={0.4}
-                />
-                {issue.onboardingVideoLink && (
-                  <div className="mt-4">
-                    <YouTubeEmbed url={issue.onboardingVideoLink} />
+            {!isMyProject && (
+              <div className="flex items-center gap-4 ml-4">
+                <div className="flex flex-col items-end">
+                  <div className="text-primary-light font-bold text-xl">
+                    ${issue.budget}
                   </div>
-                )}
-                {issue.assignees && (
-                  <>
-                    <Divider />
-                    <IssueDetailRow
-                      icon={<CircleDot className="text-primary2" size={16} />}
-                      label="Assignee"
-                      value={issue.assignees
-                        ?.map((assignee) => (assignee as User).name)
-                        .join(", ")}
-                      delay={0.5}
-                    />
-                  </>
-                )}
-              </motion.div>
+                  <p className="text-gray-500 text-xs">Budget</p>
+                </div>
+                <ApplyDrawer
+                  issue={issue}
+                  projectTitle={projectTitle || ""}
+                  onApply={handleApply}
+                />
+              </div>
             )}
-          </AnimatePresence>
-        </AccordionContent>
-      </AccordionItem>
-    </Accordion>
+          </div>
+          <IssueCardBadges issue={issue} color={color} label={label} />
+        </div>
+      </div>
+    </Link>
   );
 };
 

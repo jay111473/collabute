@@ -8,7 +8,7 @@ export default function Layout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="flex flex-col ">
+    <div className="flex flex-col bg-black">
       <header className="flex h-14 justify-between items-center gap-4 border-b bg-muted/40 px-4 lg:h-[60px] lg:px-6">
         <h3 className="text-lg ">Explore Projects</h3>
         <Button

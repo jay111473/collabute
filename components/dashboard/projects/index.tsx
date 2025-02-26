@@ -14,10 +14,14 @@ import IssueCard from "../project/issue-card";
 type StatusType = "open" | "in_progress" | "resolved" | "closed";
 
 const issueFilters = [
-  { label: "Open", value: "open" },
-  { label: "In Progress", value: "in_progress" },
-  { label: "Resolved", value: "resolved" },
-  { label: "Closed", value: "closed" },
+  { label: "Open", value: "open", borderColor: "border-grayBorders" },
+  {
+    label: "In Progress",
+    value: "in_progress",
+    borderColor: "border-grayBorders",
+  },
+  { label: "Resolved", value: "resolved", borderColor: "border-grayBorders" },
+  { label: "Closed", value: "closed", borderColor: "border-grayBorders" },
 ];
 
 const sortOptions = [
@@ -28,7 +32,7 @@ const sortOptions = [
 
 type SortOption = "newest" | "oldest" | "priority";
 
-const ProjectPageComponent = ({
+const MyProjectCard = ({
   project,
   isMyProject,
 }: {
@@ -81,9 +85,9 @@ const ProjectPageComponent = ({
   }, [project.issues, searchQuery, selectedStatus, sortBy]);
 
   return (
-    <div className="flex flex-col">
-      <main className="flex flex-1 flex-col gap-4 lg:gap-6">
-        <Card className="flex flex-col gap-2 py-4 bg-darkGray">
+    <div className="flex flex-col w-full">
+      <main className="flex flex-1 flex-col gap-4 lg:gap-6 w-full">
+        <Card className="flex flex-col gap-2 py-4 bg-darkGray text-white w-full border-none">
           <div className="flex items-center justify-start gap-2 px-4">
             <h3 className="font-medium text-white text-lg">{project?.title}</h3>
             <Badge
@@ -111,10 +115,10 @@ const ProjectPageComponent = ({
               <span className="text-xs">{progressPercentage}%</span>
             </Badge>
           </div>
-          <p className="text-gray-600 font-light text-sm px-4 py-2">
+          <p className="text-white font-light text-sm px-4 py-2">
             {project.description}
           </p>
-          <span className="w-full h-px bg-gray-200"></span>
+          <span className="w-full h-px"></span>
           <Tabs defaultValue={!isMyProject ? "issues" : "open-issues"}>
             {!isMyProject ? (
               <TabsList className="p-4">
@@ -176,7 +180,7 @@ const ProjectPageComponent = ({
                   selectedSort={sortBy}
                 />
                 <div className="flex flex-col gap-4">
-                  {filteredAndSortedIssues?.map((issue, index ) => (
+                  {filteredAndSortedIssues?.map((issue, index) => (
                     <IssueCard
                       key={index}
                       issue={issue as Issue}
@@ -194,4 +198,4 @@ const ProjectPageComponent = ({
   );
 };
 
-export default ProjectPageComponent;
+export default MyProjectCard;

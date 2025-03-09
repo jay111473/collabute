@@ -28,6 +28,7 @@ export const StartupFields = ({ form }: StartupFieldsProps) => {
               <Input
                 placeholder="Enter your company name"
                 {...field}
+                className="bg-transparent placeholder:bg-transparent border-grayBorders"
                 value={field.value ?? ""}
               />
             </FormControl>
@@ -49,8 +50,8 @@ export const StartupFields = ({ form }: StartupFieldsProps) => {
                     className={cn(
                       "flex items-center justify-center px-2 py-3 text-xs rounded-md border cursor-pointer",
                       field.value === option.value
-                        ? "border-black border-2"
-                        : "border-muted bg-popover"
+                        ? "border-purple border-2 bg-purple/10 font-bold"
+                        : "border-grayBorders bg-popover"
                     )}
                     onClick={() => field.onChange(option.value)}
                   >

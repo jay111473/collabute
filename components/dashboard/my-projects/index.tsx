@@ -7,11 +7,18 @@ import { Button } from "@/components/ui/button";
 import SearchFilterBar from "@/components/dashboard/project/search-filter-bar";
 import IssueCard from "../project/issue-card";
 import MyProjectCard from "../projects";
+import { EmptyState } from "./EmptyState";
+import { EmptyIssues } from "./EmptyIssues";
 
 const sortOptions = [
   { label: "Newest", value: "newest" },
   { label: "Oldest", value: "oldest" },
 ];
+
+/**
+ * MyProjectsComponent displays a user's projects and issues
+ * Shows an empty state when no projects exist
+ */
 const MyProjectsComponent = ({
   projects,
   issues,
@@ -19,6 +26,30 @@ const MyProjectsComponent = ({
   projects: Project[];
   issues: Issue[];
 }) => {
+  const hasProjects = projects.length > 0;
+  const hasIssues = issues.length > 0;
+
+  // If user has no projects and no issues, show the main empty state
+  if (!hasProjects && !hasIssues) {
+    return (
+      <div className="flex flex-col w-full bg-black">
+        <header className="flex h-14 justify-between items-center gap-4 border-b bg-muted/40 px-4 lg:h-[60px] lg:px-6">
+          <h3 className="text-lg ">My Projects</h3>
+          <Button
+            variant="outline"
+            size="icon"
+            className="rounded-full border-opacity-50"
+          >
+            <CircleUser className="h-5 w-5" />
+          </Button>
+        </header>
+        <main className="flex flex-1 flex-col">
+          <EmptyState />
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col w-full bg-black">
       <header className="flex h-14 justify-between items-center gap-4 border-b bg-muted/40 px-4 lg:h-[60px] lg:px-6">
@@ -38,13 +69,17 @@ const MyProjectsComponent = ({
             <TabsTrigger value="issues">My Issues</TabsTrigger>
           </TabsList>
           <TabsContent value="projects">
-            {projects.map((project) => (
-              <MyProjectCard
-                key={project.id}
-                project={project}
-                isMyProject={true}
-              />
-            ))}
+            {hasProjects ? (
+              projects.map((project) => (
+                <MyProjectCard
+                  key={project.id}
+                  project={project}
+                  isMyProject={true}
+                />
+              ))
+            ) : (
+              <EmptyState />
+            )}
           </TabsContent>
           <TabsContent value="issues">
             <SearchFilterBar
@@ -63,9 +98,13 @@ const MyProjectsComponent = ({
               selectedSort="newest"
             />
             <div className="grid gap-4 mt-6">
-              {issues?.map((issue) => (
-                <IssueCard isMyProject={true} key={issue.id} issue={issue} />
-              ))}
+              {hasIssues ? (
+                issues.map((issue) => (
+                  <IssueCard isMyProject={true} key={issue.id} issue={issue} />
+                ))
+              ) : (
+                <EmptyIssues />
+              )}
             </div>
           </TabsContent>
         </Tabs>

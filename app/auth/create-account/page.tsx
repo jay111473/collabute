@@ -22,8 +22,7 @@ import type { CreateAccountFormData } from "@/types/auth.types";
 import { useUser } from "@/app/providers/UserContext";
 
 const CreateAccount = () => {
-  const { form, isLoading, showPassword, setShowPassword, onSubmit } =
-    useCreateAccount();
+  const { form, isLoading, showPassword, setShowPassword } = useCreateAccount();
   const accountType = form.watch("type");
   const router = useRouter();
   const { setUserId } = useUser();
@@ -47,9 +46,13 @@ const CreateAccount = () => {
       // Store the user ID
       setUserId(result.userId);
 
-      // Navigate to challenge
-      const role = data.developerFields?.primaryRole || "Frontend Developer"; // Fallback
-      router.push(`/auth/create-account/challenge?role=${role}`);
+      if (data.type === "developer") {
+        // Navigate to challenge
+        const role = data.developerFields?.primaryRole || "Frontend Developer"; // Fallback
+        router.push(`/auth/create-account/challenge?role=${role}`);
+      } else {
+        router.push("/auth/onboarding");
+      }
     } catch (error) {
       console.error("Signup error:", error);
       // Use toast for error handling
@@ -62,10 +65,10 @@ const CreateAccount = () => {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen py-2 bg-black">
       <Toaster />
-      <div className="flex flex-col items-center justify-center gap-y-8 px-8 w-full max-w-2xl py-12 border border-slate-200 rounded-md text-left">
+      <div className="flex flex-col items-center justify-center gap-y-8 px-8 w-full max-w-2xl py-12 rounded-md text-left bg-darkGray">
         <div className="flex flex-col items-center justify-center gap-y-2">
           <Image src="/logo.svg" alt="logo" width={66} height={66} />
-          <h1 className="text-3xl font-bold">Collabute</h1>
+          <h1 className="text-[28px] font-bold">Collabute</h1>
         </div>
         <Form {...form}>
           <form
@@ -82,7 +85,11 @@ const CreateAccount = () => {
                   <FormItem>
                     <FormLabel>Name</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter your full name" {...field} />
+                      <Input
+                        placeholder="Enter your full name"
+                        className="bg-transparent placeholder:bg-transparent border-grayBorders "
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -96,7 +103,11 @@ const CreateAccount = () => {
                   <FormItem>
                     <FormLabel>Email</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter your email" {...field} />
+                      <Input
+                        placeholder="Enter your email"
+                        className="bg-transparent placeholder:bg-transparent border-grayBorders "
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -114,12 +125,13 @@ const CreateAccount = () => {
                         <Input
                           type={showPassword ? "text" : "password"}
                           placeholder="Enter your password"
+                          className="bg-transparent placeholder:bg-transparent border-grayBorders "
                           {...field}
                         />
                         <button
                           type="button"
                           onClick={() => setShowPassword(!showPassword)}
-                          className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                          className="absolute inset-y-0 right-0 pr-3 flex items-center bg-transparent"
                         >
                           {showPassword ? (
                             <EyeOff className="h-4 w-4 text-gray-400" />
@@ -143,6 +155,7 @@ const CreateAccount = () => {
                     <FormControl>
                       <Input
                         placeholder="Enter your phone number"
+                        className="bg-transparent placeholder:bg-transparent  border-grayBorders"
                         {...field}
                         value={field.value ?? ""}
                       />
@@ -161,7 +174,7 @@ const CreateAccount = () => {
               onClick={() => {
                 form.handleSubmit(onSubmitHandler)();
               }}
-              className="w-full mt-6"
+              className="w-full mt-6 !bg-purple !text-black hover:!bg-purple/80 hover:!text-white"
               disabled={isLoading}
             >
               {isLoading ? (

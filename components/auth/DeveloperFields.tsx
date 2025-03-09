@@ -36,6 +36,7 @@ export const DeveloperFields = ({ form }: DeveloperFieldsProps) => {
           <Select
             onValueChange={field.onChange}
             defaultValue={field?.value || ""}
+            
           >
             <FormControl>
               <SelectTrigger>

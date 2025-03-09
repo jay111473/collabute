@@ -7,9 +7,9 @@ import Sidebar from "@/components/dashboard/Sidebar";
 const Explore = async ({
   searchParams,
 }: {
-  searchParams: { [key: string]: string | string[] | undefined };
+  searchParams: Promise<any>;
 }) => {
-  const page = typeof searchParams.page === 'string' ? Number(searchParams.page) : 1;
+  const { page } = await searchParams;
   const projectsData = await getProjects(page);
   const token = (await cookies()).get("token")?.value;
   const userId = (await cookies()).get("userid")?.value;

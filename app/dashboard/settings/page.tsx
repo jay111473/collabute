@@ -5,7 +5,7 @@ import AccountSettings from "./components/AccountSettings";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default async function SettingsPage() {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const token = cookieStore.get("token")?.value;
   const userId = cookieStore.get("userid")?.value;
   const user = await getUser(userId || "", token || "");

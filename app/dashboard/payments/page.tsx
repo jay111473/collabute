@@ -13,7 +13,7 @@ const Payments = async () => {
     window.location.href = "/auth/login";
   }
   return (
-    <div className="flex">
+    <div className="flex bg-black ">
       <Sidebar user={user} />
       <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
         <div className="grid gap-4 md:grid-cols-2 md:gap-4 lg:grid-cols-2">

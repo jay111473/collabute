@@ -22,6 +22,7 @@ const config = {
       colors: {
         primary: "#7300FF",
         primary2: "#A154FF",
+        purple: "#D4B0FF",
         secondary: "#ffffff",
         darkGray: "#18181B",
         grayBorders: "#27272A",
@@ -62,18 +63,18 @@ const config = {
           },
         },
         shine: {
-          '0%': { left: '-100%' },
-          '100%': { left: '100%' }
-        }
+          "0%": { left: "-100%" },
+          "100%": { left: "100%" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         meteor: "meteor 5s linear infinite",
-        shine: 'shine 8s cubic-bezier(0.4, 0, 0.2, 1) infinite'
+        shine: "shine 8s cubic-bezier(0.4, 0, 0.2, 1) infinite",
       },
       fontFamily: {
-        sans: ['var(--font-plus-jakarta)'],
+        sans: ["var(--font-plus-jakarta)"],
       },
     },
   },

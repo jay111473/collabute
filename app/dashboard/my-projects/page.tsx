@@ -2,15 +2,16 @@ import MyProjectsComponent from "@/components/dashboard/my-projects";
 import { getUser } from "@/lib/get-user";
 import { Issue, Project } from "@/types/dashboard";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import React from "react";
-import Sidebar from "@/components/dashboard/Sidebar"; 
+import Sidebar from "@/components/dashboard/Sidebar";
 
 const MyProjects = async () => {
   const token = (await cookies()).get("token")?.value;
   const userId = (await cookies()).get("userid")?.value;
 
   if (!token || !userId) {
-    window.location.href = "/auth/login";
+    redirect("/auth/login");
   }
 
   const user = await getUser(userId || "", token || "");

@@ -21,6 +21,8 @@ import { getUser } from "@/lib/get-user";
 import DashboardCard from "@/components/uikit/dashboard-card";
 import { StartupProjectCard } from "@/components/dashboard/projects/startup-project-card";
 import Sidebar from "@/components/dashboard/Sidebar";
+import Link from "next/link";
+import Header from "@/components/dashboard/Header";
 
 const ProjectsTable = ({ projects }: { projects: Project[] }) => (
   <Table>
@@ -86,16 +88,7 @@ const Dashboard = async () => {
     <div className="flex">
       <Sidebar user={user} />
       <div className="flex flex-col bg-black w-full">
-        <header className="flex h-14 justify-between items-center gap-4 border-b border-white/10 bg-black px-4 lg:h-[60px] lg:px-6 lg:py-8">
-          <h3 className="text-lg font-semibold text-white">Dashboard</h3>
-          <Button
-            variant="outline"
-            size="icon"
-            className="rounded-full border-white/10 bg-transparent hover:bg-white/5"
-          >
-            <CircleUser className="h-5 w-5 text-white/60" />
-          </Button>
-        </header>
+        <Header />
         <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
           {user.type === "developer" && (
             <div className="grid gap-4 md:grid-cols-2 md:gap-6 lg:grid-cols-3">

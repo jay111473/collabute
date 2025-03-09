@@ -121,15 +121,16 @@ async function getLeads(token: string, searchParams: { [key: string]: string }):
 export default async function DashboardLeadsPage({
   searchParams,
 }: {
-  searchParams: { [key: string]: string };
+  searchParams: Promise<any>;
 }) {
-  const cookieStore = cookies();
+  const { search } = await searchParams;
+  const cookieStore = await cookies();
   const token = cookieStore.get("token")?.value;
   const userId = cookieStore.get("userid")?.value;
   const user = await getUser(userId || "", token || "");
   
   // Pass search params to getLeads
-  const leads = await getLeads(token || "", searchParams);
+  const leads = await getLeads(token || "", search);
 
   return (
     <div className="flex min-h-screen bg-black">

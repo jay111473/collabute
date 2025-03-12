@@ -64,7 +64,7 @@ export function Header() {
                 <Link href="/auth">Login</Link>
               </Button>
               <Button className="px-4 py-2" asChild>
-                <Link href="/auth/create-account">Sign up</Link>
+                <Link href="/auth/onboarding">Sign up</Link>
               </Button>
             </div>
 

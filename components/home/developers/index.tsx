@@ -14,7 +14,7 @@ function Developers() {
         <Image
           src="/matrix.png"
           alt="Hero background"
-          width={812}
+          width={1250}
           height={588}
           className="max-w-full h-auto"
           priority

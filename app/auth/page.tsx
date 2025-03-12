@@ -8,6 +8,8 @@ import GithubIcon from "@/public/icons/github";
 import { ArrowRightIcon } from "lucide-react";
 import Image from "next/image";
 
+
+
 const Auth = () => {
   const router = useRouter();
   return (

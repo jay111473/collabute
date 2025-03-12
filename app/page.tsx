@@ -4,6 +4,8 @@ import Hero from "@/components/home/hero";
 import About from "@/components/home/about";
 import Developers from "@/components/home/developers";
 import HowItWorks from "@/components/home/how-it-works";
+import FAQ from "@/components/home/faq";
+import Footer from "@/components/footer";
 
 export default function Home() {
   return (
@@ -16,7 +18,9 @@ export default function Home() {
         <About />
         <Developers />
         <HowItWorks />
+        <FAQ />
       </main>
+      <Footer />
     </>
   );
 }

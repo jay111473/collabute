@@ -1,7 +1,7 @@
 import React from "react";
-import { Card, CardContent } from "../../ui/card";
 import { Rocket, Sparkles, DollarSign, Diamond } from "lucide-react";
 import AIBadge from "@/components/uikit/ai-badge";
+import { SpecialCard, SpecialCardContent } from "@/components/ui/special-card";
 
 const Feature = () => {
   return (
@@ -50,15 +50,15 @@ interface FeatureCardProps {
 
 function FeatureCard({ icon, title, description }: FeatureCardProps) {
   return (
-    <Card className="relative overflow-hidden rounded-[20px] border border-purple-500/20 bg-[#09090b] bg-gradient-to-b from-purple-500/5 to-transparent backdrop-blur-sm transition-all hover:border-purple-500/40">
+    <SpecialCard className="relative overflow-hidden rounded-[20px] border border-purple-500/20 bg-[#09090b] bg-gradient-to-b from-purple-500/5 to-transparent backdrop-blur-sm transition-all hover:border-purple-500/40">
       <div className="absolute inset-0 bg-gradient-to-b from-purple-500/20 via-purple-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
       <div className="absolute -inset-x-20 -inset-y-40 from-purple-500/20 via-transparent to-transparent bg-gradient-to-r rotate-12 transform scale-y-[2] group-hover:animate-shine" />
-      <CardContent className="relative flex flex-col items-start space-y-4 p-6">
+      <SpecialCardContent className="relative flex flex-col items-start space-y-4 p-6">
         {icon}
         <h3 className="text-xl font-bold text-white">{title}</h3>
         <p className="text-sm text-gray-400">{description}</p>
-      </CardContent>
-    </Card>
+      </SpecialCardContent>
+    </SpecialCard>
   );
 }
 

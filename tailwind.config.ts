@@ -22,14 +22,13 @@ const config = {
       colors: {
         primary: "#7300FF",
         primary2: "#A154FF",
-        purple: "#D4B0FF",
         secondary: "#ffffff",
         darkGray: "#18181B",
         grayBorders: "#27272A",
         lightGray: "#222226",
         background: "#09090b",
         primaryLowOpacity: "#daabff33",
-        accent: "#930CFE",
+        accent: "#D4B0FF",
         darkPrimary: "#C69DF8",
       },
       keyframes: {

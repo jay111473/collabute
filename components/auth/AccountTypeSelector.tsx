@@ -29,10 +29,10 @@ export const AccountTypeSelector = ({ form }: AccountTypeSelectorProps) => {
             </FormControl>
             <Label
               htmlFor="developer"
-              className="flex flex-col items-center justify-between rounded-md border-2 border-grayBorders bg-popover py-2 px-4 peer-data-[state=checked]:border-purple peer-data-[state=checked]:bg-purple/10 peer-data-[state=checked]:font-bold [&:has([data-state=checked])]:border-purple [&:has([data-state=checked])]:bg-purple/10 [&:has([data-state=checked])]:font-bold"
+              className="flex items-center justify-center gap-2 rounded-md border-2 border-grayBorders bg-popover py-4 px-4 peer-data-[state=checked]:border-purple peer-data-[state=checked]:bg-purple/10 peer-data-[state=checked]:font-bold [&:has([data-state=checked])]:border-purple [&:has([data-state=checked])]:bg-purple/10 [&:has([data-state=checked])]:font-bold"
             >
-              <Code2 className="mb-2 h-6 w-6" />
-              <div className="text-center">Developer</div>
+              <Code2 className="h-4 w-4" />
+              <div className="text-center text-sm">Developer</div>
             </Label>
           </FormItem>
           <FormItem>
@@ -45,10 +45,10 @@ export const AccountTypeSelector = ({ form }: AccountTypeSelectorProps) => {
             </FormControl>
             <Label
               htmlFor="startup"
-              className="flex flex-col items-center justify-between rounded-md border-2 border-grayBorders bg-popover py-2 px-4 peer-data-[state=checked]:border-purple peer-data-[state=checked]:bg-purple/10 peer-data-[state=checked]:font-bold [&:has([data-state=checked])]:border-purple [&:has([data-state=checked])]:bg-purple/10 [&:has([data-state=checked])]:font-bold"
+              className="flex items-center justify-center gap-2 rounded-md border-2 border-grayBorders bg-popover py-4 px-4 peer-data-[state=checked]:border-purple peer-data-[state=checked]:bg-purple/10 peer-data-[state=checked]:font-bold [&:has([data-state=checked])]:border-purple [&:has([data-state=checked])]:bg-purple/10 [&:has([data-state=checked])]:font-bold"
             >
-              <Building className="mb-2 h-6 w-6" />
-              <div className="text-center">Startup</div>
+              <Building className="h-4 w-4" />
+              <div className="text-center text-sm">Startup</div>
             </Label>
           </FormItem>
         </RadioGroup>

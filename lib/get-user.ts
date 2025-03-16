@@ -1,11 +1,10 @@
 import { User } from "@/types/dashboard";
 import axios from "axios";
 
-export async function getUser(id: string, token: string): Promise<User> {
-  
+export async function getUser(token: string): Promise<any> {
   try {
     const response = await axios.get<User>(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/users/${id}`,
+      `${process.env.NEXT_PUBLIC_API_URL}/api/users/me`,
       { headers: { Authorization: `Bearer ${token}` } }
     );
     return response?.data;

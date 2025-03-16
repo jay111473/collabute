@@ -12,8 +12,8 @@ const Explore = async ({
   const { page } = await searchParams;
   const projectsData = await getProjects(page);
   const token = (await cookies()).get("token")?.value;
-  const userId = (await cookies()).get("userid")?.value;
-  const user = await getUser(userId || "", token || "");
+  const data = await getUser(token || "");
+  const user = data?.user;
 
   return (
     <div className="flex">

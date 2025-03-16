@@ -14,7 +14,8 @@ const MyProjects = async () => {
     redirect("/auth/login");
   }
 
-  const user = await getUser(userId || "", token || "");
+  const data = await getUser(token || "");
+  const user = data?.user;
   return (
     <div className="flex">
       <Sidebar user={user} />

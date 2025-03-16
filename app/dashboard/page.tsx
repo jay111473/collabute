@@ -1,10 +1,4 @@
-import { Button } from "@/components/ui/button";
-import {
-  CircleUser,
-  DollarSign,
-  ArrowLeftRight,
-  GitPullRequest,
-} from "lucide-react";
+import { DollarSign, ArrowLeftRight, GitPullRequest } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -21,7 +15,6 @@ import { getUser } from "@/lib/get-user";
 import DashboardCard from "@/components/uikit/dashboard-card";
 import { StartupProjectCard } from "@/components/dashboard/projects/startup-project-card";
 import Sidebar from "@/components/dashboard/Sidebar";
-import Link from "next/link";
 import Header from "@/components/dashboard/Header";
 
 const ProjectsTable = ({ projects }: { projects: Project[] }) => (
@@ -78,11 +71,8 @@ const IssuesTable = ({ issues }: { issues: Issue[] }) => (
 
 const Dashboard = async () => {
   const token = (await cookies()).get("token")?.value;
-  const userId = (await cookies()).get("userid")?.value;
-  const user = await getUser(userId || "", token || "");
-  if (!token || !userId) {
-    window.location.href = "/auth/login";
-  }
+  const data = await getUser(token || "");
+  const user = data?.user;
 
   return (
     <div className="flex">

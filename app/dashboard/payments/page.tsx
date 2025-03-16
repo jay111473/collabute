@@ -7,9 +7,9 @@ import { TransactionBox } from "@/components/dashboard/payments/transaction-box"
 import Sidebar from "@/components/dashboard/Sidebar";
 const Payments = async () => {
   const token = (await cookies()).get("token")?.value;
-  const userId = (await cookies()).get("userid")?.value;
-  const user = await getUser(userId || "", token || "");
-  if (!token || !userId) {
+  const data = await getUser(token || "");
+  const user = data?.user;
+  if (!token) {
     window.location.href = "/auth/login";
   }
   return (
@@ -31,7 +31,7 @@ const Payments = async () => {
         <div className="flex flex-col gap-4">
           <h2 className="text-lg font-medium">Transactions</h2>
           <div className="flex flex-col gap-4">
-            {user?.transactions?.map((transaction) => (
+            {user?.transactions?.map((transaction: any) => (
               <TransactionBox
                 key={transaction?.id || ""}
                 transaction={{

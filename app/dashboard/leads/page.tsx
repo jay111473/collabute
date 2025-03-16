@@ -126,8 +126,8 @@ export default async function DashboardLeadsPage({
   const { search } = await searchParams;
   const cookieStore = await cookies();
   const token = cookieStore.get("token")?.value;
-  const userId = cookieStore.get("userid")?.value;
-  const user = await getUser(userId || "", token || "");
+  const data = await getUser(token || "");
+  const user = data?.user;
   
   // Pass search params to getLeads
   const leads = await getLeads(token || "", search);

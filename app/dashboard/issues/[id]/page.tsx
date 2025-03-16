@@ -28,8 +28,8 @@ export default async function IssueDetailsPage({
   const { id } = await params;
   const cookieStore = await cookies();
   const token = cookieStore.get("token")?.value;
-  const userId = cookieStore.get("userid")?.value;
-  const user = await getUser(userId || "", token || "");
+  const data = await getUser(token || "");
+  const user = data?.user;
   const issue = await getIssueDetails(id);
 
   return (

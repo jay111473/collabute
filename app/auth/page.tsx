@@ -7,8 +7,7 @@ import GitLabIcon from "@/public/icons/gitlab";
 import GithubIcon from "@/public/icons/github";
 import { ArrowRightIcon } from "lucide-react";
 import Image from "next/image";
-
-
+import Link from "next/link";
 
 const Auth = () => {
   const router = useRouter();
@@ -20,10 +19,13 @@ const Auth = () => {
           <h1 className="text-3xl font-bold">Collabute</h1>
         </div>
         <div className="flex flex-col items-center justify-center w-full mt-4 gap-y-2">
-          <Button className="w-full gap-x-2 border border-white hover:bg-white/20 hover:scale-[1.02] transition-all duration-200 hover:shadow-lg dark:hover:shadow-white/10">
+          <Link
+            href={process.env.NEXT_PUBLIC_API_URL + "/api/oauth/github"}
+            className="w-full gap-x-2 border border-white hover:bg-white/20 hover:scale-[1.02] transition-all duration-200 hover:shadow-lg dark:hover:shadow-white/10"
+          >
             <GithubIcon />
             Continue with Github
-          </Button>
+          </Link>
           <Button className="w-full gap-x-2 bg-[#6B4FBB] hover:bg-[#8263d9] dark:bg-[#6B4FBB] dark:hover:bg-[#8263d9] text-white hover:scale-[1.02] transition-all duration-200 hover:shadow-lg hover:shadow-[#6B4FBB]/50">
             <GitLabIcon />
             Continue with GitLab

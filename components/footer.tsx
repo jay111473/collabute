@@ -18,84 +18,105 @@ const FooterLink = ({ href, label }: FooterLinkProps) => (
   </Link>
 );
 
+type FooterColumnProps = {
+  title: string;
+  links: Array<FooterLinkProps>;
+};
+
+const FooterColumn = ({ title, links }: FooterColumnProps) => (
+  <div>
+    <h3 className="text-white text-lg font-medium mb-4">{title}</h3>
+    <div className="flex flex-col space-y-3">
+      {links.map((link) => (
+        <FooterLink key={link.href} href={link.href} label={link.label} />
+      ))}
+    </div>
+  </div>
+);
+
+const SocialLink = ({
+  href,
+  icon: Icon,
+}: {
+  href: string;
+  icon: React.ComponentType<{ size: number }>;
+}) => (
+  <Link href={href} className="text-gray-400 hover:text-white">
+    <Icon size={20} />
+  </Link>
+);
+
+const FooterBackgroundEffects = () => (
+  <>
+    {/* Base dark background */}
+    <div className="absolute inset-0 z-0 footer-base-bg" />
+
+    {/* Starry background with top-focused mask */}
+    <div className="absolute inset-0 z-0 footer-starry-bg" />
+
+    {/* Top radial gradient for purple glow - brightened but still purple */}
+    <div className="absolute inset-0 z-0 footer-purple-glow" />
+
+    {/* Additional purple accent at the very top - brightened but still purple */}
+    <div className="absolute top-0 left-0 right-0 h-[120px] z-0 footer-top-accent" />
+
+    {/* Dark vignette effect around the edges */}
+    <div className="absolute inset-0 z-0 footer-vignette" />
+  </>
+);
+
 const Footer = () => {
+  const socialLinks = [
+    { href: "https://twitter.com", icon: FaTwitter },
+    { href: "https://linkedin.com", icon: FaLinkedin },
+    { href: "https://instagram.com", icon: FaInstagram },
+    { href: "https://discord.com", icon: FaDiscord },
+  ];
+
+  const footerColumns = [
+    {
+      title: "Products",
+      links: [
+        { href: "/lending", label: "Lending" },
+        { href: "/borrowing", label: "Borrowing" },
+        { href: "/markets", label: "Markets" },
+      ],
+    },
+    {
+      title: "Tools",
+      links: [
+        { href: "/tokens", label: "Tokens" },
+        { href: "/convert", label: "Convert" },
+        { href: "/explore-traders", label: "Explore Traders" },
+        { href: "/pricing", label: "Pricing" },
+      ],
+    },
+    {
+      title: "Support",
+      links: [
+        { href: "/beginners-guide", label: "Beginners Guide" },
+        { href: "/help-center", label: "Help Center" },
+        { href: "/feedbacks", label: "Feedbacks" },
+        { href: "/api-doc", label: "API Doc" },
+      ],
+    },
+  ];
+
   return (
-    <footer className="w-full relative overflow-hidden bg-black py-16">
-      <div className="relative z-10 mx-auto" style={{ maxWidth: "1440px" }}>
-        <div
-          className="relative mx-auto"
-          style={{
-            height: "511px",
-            padding: "60px 121px",
-            borderRadius: "12px 0px 0px 12px",
-            borderTop: "1px solid rgba(198, 157, 248, 0.20)",
-            borderBottom: "1px solid rgba(198, 157, 248, 0.20)",
-            borderLeft: "1px solid rgba(198, 157, 248, 0.20)",
-            backgroundColor: "#0A0A14",
-            position: "relative",
-            overflow: "hidden",
-          }}
-        >
-          {/* Base dark background */}
-          <div
-            className="absolute inset-0 z-0"
-            style={{
-              background:
-                "linear-gradient(180deg, #141432 0%, #080814 40%, #000000 100%)",
-            }}
-          />
-
-          {/* Starry background with top-focused mask */}
-          <div
-            className="absolute inset-0 z-0"
-            style={{
-              backgroundImage: `url('/starry-background.png')`,
-              backgroundRepeat: "repeat",
-              backgroundSize: "400px 400px",
-              opacity: 0.25,
-              mixBlendMode: "screen",
-              mask: "radial-gradient(120% 70% at 50% 0%, white 0%, rgba(255, 255, 255, 0.7) 10%, rgba(255, 255, 255, 0.3) 30%, transparent 60%)",
-              WebkitMask:
-                "radial-gradient(120% 70% at 50% 0%, white 0%, rgba(255, 255, 255, 0.7) 10%, rgba(255, 255, 255, 0.3) 30%, transparent 60%)",
-            }}
-          />
-
-          {/* Top radial gradient for purple glow */}
-          <div
-            className="absolute inset-0 z-0"
-            style={{
-              background: `radial-gradient(120% 80% at 50% 0%, rgba(198, 157, 248, 0.5) 0%, rgba(198, 157, 248, 0.25) 20%, rgba(198, 157, 248, 0.05) 40%, rgba(17, 23, 61, 0.00) 60%)`,
-              mixBlendMode: "screen",
-            }}
-          />
-
-          {/* Additional purple accent at the very top */}
-          <div
-            className="absolute top-0 left-0 right-0 h-[120px] z-0"
-            style={{
-              background: `linear-gradient(to bottom, rgba(198, 157, 248, 0.25) 0%, rgba(198, 157, 248, 0.05) 70%, transparent 100%)`,
-              mixBlendMode: "screen",
-            }}
-          />
-
-          {/* Dark vignette effect around the edges */}
-          <div
-            className="absolute inset-0 z-0"
-            style={{
-              boxShadow: "inset 0 0 200px 100px rgba(0, 0, 0, 0.9)",
-              pointerEvents: "none",
-            }}
-          />
+    <footer className="w-screen bg-black py-16 mx-0 px-0">
+      <div className=" z-10 w-full footer-container">
+        <div className="relative footer-content w-full">
+          <FooterBackgroundEffects />
 
           {/* Content container */}
-          <div className="relative z-10 h-full flex flex-col">
+          <div className="relative z-10 h-full flex flex-col justify-between w-full">
             {/* Top section with logo, social links and navigation */}
             <div
-              className="flex flex-col md:flex-row justify-between"
-              style={{ gap: "90px" }}
+              className="flex flex-col md:flex-row justify-center md:justify-between md:gap-[90px] "
+              style={{ gap: "40px" }}
             >
-              {/* Logo and social links */}
-              <div className="mb-8 md:mb-0">
+              {/* Logo and social links - centered on mobile, normal on desktop */}
+              <div className="mb-8 md:mb-0 flex flex-col items-center md:items-start">
                 <div className="flex items-center mb-6">
                   <Image
                     src="/logo.svg"
@@ -110,83 +131,32 @@ const Footer = () => {
                 </div>
 
                 <div className="flex space-x-6">
-                  <Link
-                    href="https://twitter.com"
-                    className="text-gray-400 hover:text-white"
-                  >
-                    <FaTwitter size={20} />
-                  </Link>
-                  <Link
-                    href="https://linkedin.com"
-                    className="text-gray-400 hover:text-white"
-                  >
-                    <FaLinkedin size={20} />
-                  </Link>
-                  <Link
-                    href="https://instagram.com"
-                    className="text-gray-400 hover:text-white"
-                  >
-                    <FaInstagram size={20} />
-                  </Link>
-                  <Link
-                    href="https://discord.com"
-                    className="text-gray-400 hover:text-white"
-                  >
-                    <FaDiscord size={20} />
-                  </Link>
+                  {socialLinks.map((link) => (
+                    <SocialLink
+                      key={link.href}
+                      href={link.href}
+                      icon={link.icon}
+                    />
+                  ))}
                 </div>
               </div>
 
               {/* Navigation columns */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-16">
-                {/* Products column */}
-                <div>
-                  <h3 className="text-white text-lg font-medium mb-4">
-                    Products
-                  </h3>
-                  <div className="flex flex-col space-y-3">
-                    <FooterLink href="/lending" label="Lending" />
-                    <FooterLink href="/borrowing" label="Borrowing" />
-                    <FooterLink href="/markets" label="Markets" />
-                  </div>
-                </div>
-
-                {/* Tools column */}
-                <div>
-                  <h3 className="text-white text-lg font-medium mb-4">Tools</h3>
-                  <div className="flex flex-col space-y-3">
-                    <FooterLink href="/tokens" label="Tokens" />
-                    <FooterLink href="/convert" label="Convert" />
-                    <FooterLink
-                      href="/explore-traders"
-                      label="Explore Traders"
-                    />
-                    <FooterLink href="/pricing" label="Pricing" />
-                  </div>
-                </div>
-
-                {/* Support column */}
-                <div>
-                  <h3 className="text-white text-lg font-medium mb-4">
-                    Support
-                  </h3>
-                  <div className="flex flex-col space-y-3">
-                    <FooterLink
-                      href="/beginners-guide"
-                      label="Beginners Guide"
-                    />
-                    <FooterLink href="/help-center" label="Help Center" />
-                    <FooterLink href="/feedbacks" label="Feedbacks" />
-                    <FooterLink href="/api-doc" label="API Doc" />
-                  </div>
-                </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-8 md:gap-16">
+                {footerColumns.map((column) => (
+                  <FooterColumn
+                    key={column.title}
+                    title={column.title}
+                    links={column.links}
+                  />
+                ))}
               </div>
             </div>
 
-            {/* Copyright - centered vertically and horizontally */}
-            <div className="mt-auto mb-auto text-center">
+            {/* Copyright - moved to bottom */}
+            <div className="text-center py-4 mt-16">
               <p className="text-gray-500">
-                © Collabute 2024. ALL RIGHTS RESERVED
+                © Collabute 2025. ALL RIGHTS RESERVED
               </p>
             </div>
           </div>

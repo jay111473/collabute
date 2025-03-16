@@ -92,3 +92,53 @@ input:autofill:active {
     transition: background-color 5000s ease-in-out 0s;
     box-shadow: inset 0 0 20px 20px transparent !important;
 }
+
+/* Footer Styles */
+.footer-container {
+  max-width: 1440px;
+}
+
+.footer-content {
+  min-height: 511px;
+  padding: 60px 0;
+  border-top: 1px solid rgba(220, 157, 248, 0.20);
+  border-bottom: 1px solid rgba(220, 157, 248, 0.20);
+  border-left: 1px solid rgba(220, 157, 248, 0.20);
+}
+
+@media (min-width: 768px) {
+  .footer-content {
+    padding-left: 121px;
+    padding-right: 121px;
+  }
+}
+
+/* Footer Background Effects */
+.footer-base-bg {
+  background: linear-gradient(180deg, #141432 0%, #080814 40%, #000000 100%);
+}
+
+.footer-starry-bg {
+  background-image: url('/starry-background.png');
+  background-repeat: repeat;
+  background-size: 400px 400px;
+  opacity: 0.45;
+  mix-blend-mode: screen;
+  mask: radial-gradient(120% 70% at 50% 0%, white 0%, rgba(255, 255, 255, 0.7) 10%, rgba(255, 255, 255, 0.3) 30%, transparent 60%);
+  -webkit-mask: radial-gradient(120% 70% at 50% 0%, white 0%, rgba(255, 255, 255, 0.7) 10%, rgba(255, 255, 255, 0.3) 30%, transparent 60%);
+}
+
+.footer-purple-glow {
+  background: radial-gradient(120% 80% at 50% 0%, rgba(173, 98, 205, 0.438) 0%, rgba(178, 105, 209, 0.35) 20%, rgba(153, 121, 167, 0.1) 40%, rgba(56, 17, 61, 0) 60%);
+  mix-blend-mode: screen;
+}
+
+.footer-top-accent {
+  background: linear-gradient(to bottom, rgba(220, 157, 248, 0.35) 0%, rgba(220, 157, 248, 0.1) 70%, transparent 100%);
+  mix-blend-mode: screen;
+}
+
+.footer-vignette {
+  box-shadow: inset 0 0 200px 100px rgba(0, 0, 0, 0.9);
+  pointer-events: none;
+}

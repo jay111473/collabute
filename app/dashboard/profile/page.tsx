@@ -15,6 +15,7 @@ import {
   Link as LinkIcon,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { GitHubActivitySection } from "@/components/github";
 
 /**
  * Profile page for developers
@@ -35,7 +36,7 @@ async function ProfilePage() {
       return <NonDeveloperMessage />;
     }
 
-    return <DeveloperProfile user={user} />;
+    return <DeveloperProfile user={user} token={token} />;
   } catch (error) {
     console.error("Error fetching user profile:", error);
     return <ErrorMessage />;
@@ -71,6 +72,7 @@ function NonDeveloperMessage() {
 // Types
 type DeveloperProfileProps = {
   user: User;
+  token: string;
 };
 
 type ProfileHeaderProps = {
@@ -356,7 +358,7 @@ function Achievements({ experienceLevel, hourlyRate }: AchievementsProps) {
 /**
  * Main developer profile component
  */
-function DeveloperProfile({ user }: DeveloperProfileProps) {
+function DeveloperProfile({ user, token }: DeveloperProfileProps) {
   const developerFields = user.developerFields || {};
   const username = getUsername(user);
 
@@ -398,6 +400,9 @@ function DeveloperProfile({ user }: DeveloperProfileProps) {
           experienceLevel={developerFields.experienceLevel}
           hourlyRate={developerFields.hourlyRate}
         />
+        
+        {/* GitHub Activity Section */}
+          <GitHubActivitySection token={token} userId={user.id?.toString()} />
       </div>
     </div>
   );

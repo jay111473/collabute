@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import CreateAccount from "@/components/auth/components/create-account";
 import { Toaster } from "sonner";
+import { redirect } from "next/navigation";
 // Step indicator component
 const StepIndicator = ({
   currentStep,
@@ -341,7 +342,7 @@ const Onboarding = () => {
 
   const handleFinish = () => {
     // Navigate to dashboard or home page
-    window.location.href = "/dashboard";
+    redirect("/dashboard");
   };
 
   // Render the current step content

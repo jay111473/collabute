@@ -23,6 +23,7 @@ export async function getGitHubData(
       {
         headers: {
           Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
         cache: "no-store",
       }
@@ -62,6 +63,8 @@ export async function getGitHubActivities(
       {
         headers: {
           Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
         },
         cache: "no-store",
       }
@@ -101,6 +104,8 @@ export async function getGitHubCommits(
       {
         headers: {
           Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
         },
         cache: "no-store",
       }
@@ -137,10 +142,14 @@ export async function getGitHubStats(
       {
         headers: {
           Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
         },
         cache: "no-store",
       }
     );
+
+    console.log(response);
 
     if (!response.ok) {
       const errorData = await response.json();

@@ -41,7 +41,7 @@ function CallbackContent() {
             No authentication token was found. Please try logging in again.
           </AlertDescription>
         </Alert>
-        <Button className="w-full" onClick={() => router.push("/auth/login")}>
+        <Button className="w-full" onClick={() => router.push("/auth")}>
           Return to Login
         </Button>
       </div>

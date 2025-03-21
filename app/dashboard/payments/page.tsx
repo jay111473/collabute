@@ -10,7 +10,7 @@ const Payments = async () => {
   const data = await getUser(token || "");
   const user = data?.user;
   if (!token) {
-    window.location.href = "/auth/login";
+    window.location.href = "/auth";
   }
   return (
     <div className="flex bg-black ">

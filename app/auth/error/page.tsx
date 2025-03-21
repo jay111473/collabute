@@ -45,7 +45,7 @@ function ErrorContent() {
       <CardFooter className="flex flex-col space-y-2">
         <Button 
           className="w-full" 
-          onClick={() => router.push('/auth/login')}
+          onClick={() => router.push('/auth')}
         >
           Return to Login
         </Button>

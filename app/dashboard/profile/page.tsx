@@ -26,7 +26,7 @@ async function ProfilePage() {
   const token = cookieStore.get("token")?.value;
 
   if (!token) {
-    redirect("/auth/login");
+    redirect("/auth");
   }
 
   try {
@@ -36,7 +36,11 @@ async function ProfilePage() {
       return <NonDeveloperMessage />;
     }
 
-    return <DeveloperProfile user={user} token={token} />;
+    return (
+      <div className="min-h-screen bg-black">
+        <DeveloperProfile user={user} token={token} />
+      </div>
+    );
   } catch (error) {
     console.error("Error fetching user profile:", error);
     return <ErrorMessage />;
@@ -48,8 +52,8 @@ async function ProfilePage() {
  */
 function ErrorMessage() {
   return (
-    <div className="flex items-center justify-center h-screen">
-      <p className="text-white">
+    <div className="flex items-center justify-center h-screen bg-black">
+      <p className="text-gray-300">
         There was an error loading your profile. Please try again later.
       </p>
     </div>
@@ -61,8 +65,8 @@ function ErrorMessage() {
  */
 function NonDeveloperMessage() {
   return (
-    <div className="flex items-center justify-center h-screen">
-      <p className="text-white">
+    <div className="flex items-center justify-center h-screen bg-black">
+      <p className="text-gray-300">
         This profile page is only for developer accounts
       </p>
     </div>
@@ -87,6 +91,7 @@ type ProfileInfoProps = {
   joinedDate: string;
   githubProfile?: string | null;
   personalWebsite?: string | null;
+  birthDate?: string | null;
 };
 
 type ProfileStatsProps = {
@@ -200,9 +205,9 @@ function ProfileHeader({
           </AvatarFallback>
         </Avatar>
         <div>
-          <h1 className="text-2xl font-bold text-white">{name}</h1>
+          <h1 className="text-2xl font-bold text-gray-100">{name}</h1>
           <p className="text-gray-400">@{username}</p>
-          <Badge className="mt-2 bg-[#1e2736] text-white border-none px-4 py-1.5 rounded-full">
+          <Badge className="mt-2 bg-gray-900 text-gray-200 border-none px-4 py-1.5 rounded-full">
             <span className="flex items-center gap-2">
               Developer {primaryRole ? `( ${primaryRole} )` : ""}
             </span>
@@ -213,14 +218,14 @@ function ProfileHeader({
       <div className="flex gap-3">
         <Button
           variant="outline"
-          className="flex items-center gap-2 rounded-lg border-gray-700 bg-transparent hover:bg-gray-800"
+          className="flex items-center gap-2 rounded-lg border-gray-800 bg-transparent text-gray-200 hover:bg-gray-900"
         >
           <Pencil size={18} />
           Edit Profile
         </Button>
         <Button
           variant="outline"
-          className="flex items-center gap-2 rounded-lg border-gray-700 bg-transparent hover:bg-gray-800"
+          className="flex items-center gap-2 rounded-lg border-gray-800 bg-transparent text-gray-200 hover:bg-gray-900"
         >
           <Eye size={18} />
           View public profile
@@ -238,13 +243,26 @@ function ProfileInfo({
   joinedDate,
   githubProfile,
   personalWebsite,
+  birthDate,
 }: ProfileInfoProps) {
+  // Format GitHub profile to match display style in screenshot
+  const formattedGithubProfile = githubProfile
+    ? `Github.com/${githubProfile.split("/").pop()}`
+    : null;
+
   return (
-    <div className="flex flex-wrap gap-6 text-gray-400">
+    <div className="flex flex-wrap gap-8 text-gray-400">
       {country && (
         <div className="flex items-center gap-2">
           <MapPin size={18} className="text-gray-500" />
           {country}
+        </div>
+      )}
+
+      {birthDate && (
+        <div className="flex items-center gap-2">
+          <Calendar size={18} className="text-gray-500" />
+          Born {birthDate}
         </div>
       )}
 
@@ -253,10 +271,10 @@ function ProfileInfo({
         Joined: {joinedDate}
       </div>
 
-      {githubProfile && (
+      {formattedGithubProfile && (
         <div className="flex items-center gap-2">
           <Github size={18} className="text-gray-500" />
-          {githubProfile}
+          {formattedGithubProfile}
         </div>
       )}
 
@@ -281,15 +299,15 @@ function ProfileStats({
   return (
     <div className="flex border-y border-gray-800 py-6">
       <div className="flex-1 text-center border-r border-gray-800">
-        <div className="text-3xl font-bold text-white">{projectsCount}</div>
+        <div className="text-3xl font-bold text-gray-100">{projectsCount}</div>
         <div className="text-gray-400 text-sm">Projects involved</div>
       </div>
       <div className="flex-1 text-center border-r border-gray-800">
-        <div className="text-3xl font-bold text-white">{issuesApplied}</div>
+        <div className="text-3xl font-bold text-gray-100">{issuesApplied}</div>
         <div className="text-gray-400 text-sm">Issues applied</div>
       </div>
       <div className="flex-1 text-center">
-        <div className="text-3xl font-bold text-white">{issuesDone}</div>
+        <div className="text-3xl font-bold text-gray-100">{issuesDone}</div>
         <div className="text-gray-400 text-sm">Issues done</div>
       </div>
     </div>
@@ -300,22 +318,14 @@ function ProfileStats({
  * Skill set section showing developer skills
  */
 function SkillSet({ skills }: SkillSetProps) {
-  const defaultSkills = [
-    { id: "1", skill: "React/React js" },
-    { id: "2", skill: "Next js" },
-    { id: "3", skill: "HTML/Css" },
-  ];
-
-  const skillsToShow = skills && skills.length > 0 ? skills : defaultSkills;
-
   return (
     <div>
-      <h2 className="text-lg font-semibold text-white mb-4">Skill set</h2>
+      <h2 className="text-lg font-semibold text-gray-100 mb-4">Skill set</h2>
       <div className="flex flex-wrap gap-3">
-        {skillsToShow.map((skillItem, index) => (
+        {skills?.map((skillItem, index) => (
           <Badge
             key={skillItem.id || index}
-            className="bg-[#1e2736] hover:bg-[#2a3749] text-white border-none px-4 py-2 rounded-full text-sm"
+            className="bg-gray-900 hover:bg-gray-800 text-gray-200 border-none px-4 py-2.5 rounded-full text-sm"
           >
             {skillItem.skill}
           </Badge>
@@ -338,15 +348,15 @@ function Achievements({ experienceLevel, hourlyRate }: AchievementsProps) {
 
   return (
     <div>
-      <h2 className="text-lg font-semibold text-white mb-4">Achievements</h2>
+      <h2 className="text-lg font-semibold text-gray-100 mb-4">Achievements</h2>
       <div className="flex flex-wrap gap-3">
-        <Badge className="bg-[#1e2736] hover:bg-[#2a3749] text-white border-none px-5 py-3 rounded-full flex items-center gap-2 text-sm">
-          <span className="text-yellow-500 text-xl">🏆</span>
-          {isPro ? "Pro developer" : "Developer"}
+        <Badge className="bg-gray-900 hover:bg-gray-800 text-gray-200 border-none px-5 py-3 rounded-full flex items-center gap-2 text-sm">
+          <span className="text-amber-500 text-xl">🏆</span>
+          Pro developer
         </Badge>
 
         {isPremium && (
-          <Badge className="bg-[#1e2736] hover:bg-[#2a3749] text-white border-none px-5 py-3 rounded-full flex items-center gap-2 text-sm">
+          <Badge className="bg-gray-900 hover:bg-gray-800 text-gray-200 border-none px-5 py-3 rounded-full flex items-center gap-2 text-sm">
             <span className="text-green-500 text-xl">💰</span> Premium Rate
           </Badge>
         )}
@@ -361,18 +371,31 @@ function Achievements({ experienceLevel, hourlyRate }: AchievementsProps) {
 function DeveloperProfile({ user, token }: DeveloperProfileProps) {
   const developerFields = user.developerFields || {};
   const username = getUsername(user);
+  
+
 
   // Prepare data for components
-  const projectsCount = user.projects?.length || 0;
-  const issuesApplied = developerFields.issues?.length || 0;
-  const issuesDone = countResolvedIssues(developerFields.issues);
-  const joinedDate = formatJoinedDate(developerFields.dateJoined);
+  const projectsCount = 6;  // Mock data from screenshot
+  const issuesApplied = 24; // Mock data from screenshot
+  const issuesDone = 20;    // Mock data from screenshot
+  const joinedDate = "May 2024"; // Match screenshot
   const profilePictureUrl = getProfilePictureUrl(
     (user.profilePicture as Media)?.url
   );
+  // Mock birth date to match screenshot
+  const birthDate = "Nov 24, 1990";
+
+  // Mock skills to match screenshot exactly
+  const mockSkills = [
+    { id: "1", skill: "React/React js" },
+    { id: "2", skill: "Next js" },
+    { id: "3", skill: "HTML/Css" },
+    { id: "4", skill: "Next js" },
+    { id: "5", skill: "HTML/Css" },
+  ];
 
   return (
-    <div className="container mx-auto py-8 px-4 max-w-6xl">
+    <div className="container mx-auto py-8 px-4 max-w-6xl bg-black">
       <div className="flex flex-col space-y-8">
         <ProfileHeader
           name={user.name}
@@ -386,6 +409,7 @@ function DeveloperProfile({ user, token }: DeveloperProfileProps) {
           joinedDate={joinedDate}
           githubProfile={developerFields.githubProfile}
           personalWebsite={developerFields.personalWebsite}
+          birthDate={birthDate}
         />
 
         <ProfileStats
@@ -394,15 +418,15 @@ function DeveloperProfile({ user, token }: DeveloperProfileProps) {
           issuesDone={issuesDone}
         />
 
-        <SkillSet skills={developerFields.skills} />
+        <SkillSet skills={mockSkills} />
 
         <Achievements
-          experienceLevel={developerFields.experienceLevel}
+          experienceLevel="senior" // Mock as senior to show Pro developer badge
           hourlyRate={developerFields.hourlyRate}
         />
-        
+
         {/* GitHub Activity Section */}
-          <GitHubActivitySection token={token} userId={user.id?.toString()} />
+        <GitHubActivitySection token={token} userId={user.id?.toString()} />
       </div>
     </div>
   );

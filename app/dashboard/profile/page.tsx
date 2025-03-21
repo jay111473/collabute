@@ -91,7 +91,6 @@ type ProfileInfoProps = {
   joinedDate: string;
   githubProfile?: string | null;
   personalWebsite?: string | null;
-  birthDate?: string | null;
 };
 
 type ProfileStatsProps = {
@@ -243,7 +242,6 @@ function ProfileInfo({
   joinedDate,
   githubProfile,
   personalWebsite,
-  birthDate,
 }: ProfileInfoProps) {
   // Format GitHub profile to match display style in screenshot
   const formattedGithubProfile = githubProfile
@@ -256,13 +254,6 @@ function ProfileInfo({
         <div className="flex items-center gap-2">
           <MapPin size={18} className="text-gray-500" />
           {country}
-        </div>
-      )}
-
-      {birthDate && (
-        <div className="flex items-center gap-2">
-          <Calendar size={18} className="text-gray-500" />
-          Born {birthDate}
         </div>
       )}
 
@@ -372,27 +363,20 @@ function DeveloperProfile({ user, token }: DeveloperProfileProps) {
   const developerFields = user.developerFields || {};
   const username = getUsername(user);
   
-
-
-  // Prepare data for components
-  const projectsCount = 6;  // Mock data from screenshot
-  const issuesApplied = 24; // Mock data from screenshot
-  const issuesDone = 20;    // Mock data from screenshot
-  const joinedDate = "May 2024"; // Match screenshot
+  // Use real data from user object
+  const joinedDate = formatJoinedDate(user.createdAt);
   const profilePictureUrl = getProfilePictureUrl(
     (user.profilePicture as Media)?.url
   );
-  // Mock birth date to match screenshot
-  const birthDate = "Nov 24, 1990";
 
-  // Mock skills to match screenshot exactly
-  const mockSkills = [
-    { id: "1", skill: "React/React js" },
-    { id: "2", skill: "Next js" },
-    { id: "3", skill: "HTML/Css" },
-    { id: "4", skill: "Next js" },
-    { id: "5", skill: "HTML/Css" },
-  ];
+  // Count projects from projects array
+  const projectsCount = user.projects?.length || 0;
+  
+  // Count issues applied from issues array
+  const issuesApplied = developerFields.issues?.length || 0;
+  
+  // Count issues done/resolved
+  const issuesDone = countResolvedIssues(developerFields.issues);
 
   return (
     <div className="container mx-auto py-8 px-4 max-w-6xl bg-black">
@@ -409,7 +393,6 @@ function DeveloperProfile({ user, token }: DeveloperProfileProps) {
           joinedDate={joinedDate}
           githubProfile={developerFields.githubProfile}
           personalWebsite={developerFields.personalWebsite}
-          birthDate={birthDate}
         />
 
         <ProfileStats
@@ -418,10 +401,10 @@ function DeveloperProfile({ user, token }: DeveloperProfileProps) {
           issuesDone={issuesDone}
         />
 
-        <SkillSet skills={mockSkills} />
+        <SkillSet skills={developerFields.skills} />
 
         <Achievements
-          experienceLevel="senior" // Mock as senior to show Pro developer badge
+          experienceLevel={developerFields.experienceLevel}
           hourlyRate={developerFields.hourlyRate}
         />
 

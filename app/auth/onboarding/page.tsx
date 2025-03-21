@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import CreateAccount from "@/components/auth/components/create-account";
 import { Toaster } from "sonner";
-import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
 // Step indicator component
 const StepIndicator = ({
   currentStep,
@@ -327,7 +327,7 @@ const CompleteStep = ({ onFinish }: { onFinish: () => void }) => (
 const Onboarding = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const totalSteps = 4;
-
+  const router = useRouter();
   const handleNext = () => {
     if (currentStep < totalSteps - 1) {
       setCurrentStep(currentStep + 1);
@@ -342,7 +342,7 @@ const Onboarding = () => {
 
   const handleFinish = () => {
     // Navigate to dashboard or home page
-    redirect("/dashboard");
+    router.push("/dashboard");
   };
 
   // Render the current step content

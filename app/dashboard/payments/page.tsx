@@ -5,12 +5,14 @@ import { DollarSign } from "lucide-react";
 import React from "react";
 import { TransactionBox } from "@/components/dashboard/payments/transaction-box";
 import Sidebar from "@/components/dashboard/Sidebar";
+import { redirect } from "next/navigation";
+
 const Payments = async () => {
   const token = (await cookies()).get("token")?.value;
   const data = await getUser(token || "");
   const user = data?.user;
   if (!token) {
-    window.location.href = "/auth/login";
+    redirect("/auth");
   }
   return (
     <div className="flex bg-black ">

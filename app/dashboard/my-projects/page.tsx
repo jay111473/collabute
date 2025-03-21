@@ -11,7 +11,7 @@ const MyProjects = async () => {
   const userId = (await cookies()).get("userid")?.value;
 
   if (!token || !userId) {
-    redirect("/auth/login");
+    redirect("/auth");
   }
 
   const data = await getUser(token || "");

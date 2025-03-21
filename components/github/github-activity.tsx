@@ -1,6 +1,6 @@
 "use client";
 
-import { GitHubActivity } from "@/types/github";
+import { GitHubActivity, PushEventPayload, PullRequestPayload, CreateEventPayload, DeleteEventPayload, IssuesEventPayload, ReleaseEventPayload } from "@/types/github";
 import { formatDistanceToNow } from "date-fns";
 import { Github, GitBranch, GitPullRequest, GitCommit, GitMerge, Star, Eye } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -56,24 +56,36 @@ function getActivityDescription(activity: GitHubActivity): string {
   const { type, payload, repo } = activity;
   
   switch (type) {
-    case "PushEvent":
-      return `Pushed ${payload.size || 0} commit(s) to ${repo.name}`;
-    case "PullRequestEvent":
-      return `${payload.action} pull request in ${repo.name}`;
-    case "CreateEvent":
-      return `Created ${payload.ref_type || "repository"} in ${repo.name}`;
+    case "PushEvent": {
+      const pushPayload = payload as PushEventPayload;
+      return `Pushed ${pushPayload.size || 0} commit(s) to ${repo.name}`;
+    }
+    case "PullRequestEvent": {
+      const prPayload = payload as PullRequestPayload;
+      return `${prPayload.action} pull request in ${repo.name}`;
+    }
+    case "CreateEvent": {
+      const createPayload = payload as CreateEventPayload;
+      return `Created ${createPayload.ref_type || "repository"} in ${repo.name}`;
+    }
     case "ForkEvent":
       return `Forked ${repo.name}`;
     case "WatchEvent":
       return `Starred ${repo.name}`;
-    case "IssuesEvent":
-      return `${payload.action} issue in ${repo.name}`;
+    case "IssuesEvent": {
+      const issuesPayload = payload as IssuesEventPayload;
+      return `${issuesPayload.action} issue in ${repo.name}`;
+    }
     case "IssueCommentEvent":
       return `Commented on issue in ${repo.name}`;
-    case "DeleteEvent":
-      return `Deleted ${payload.ref_type} in ${repo.name}`;
-    case "ReleaseEvent":
-      return `Released ${payload.release?.tag_name || "new version"} in ${repo.name}`;
+    case "DeleteEvent": {
+      const deletePayload = payload as DeleteEventPayload;
+      return `Deleted ${deletePayload.ref_type} in ${repo.name}`;
+    }
+    case "ReleaseEvent": {
+      const releasePayload = payload as ReleaseEventPayload;
+      return `Released ${releasePayload.release?.tag_name || "new version"} in ${repo.name}`;
+    }
     default:
       return `Activity in ${repo.name}`;
   }
@@ -92,7 +104,7 @@ function getRepoUrl(repoName: string): string {
 export function GitHubActivityList({ activities, isLoading = false }: GitHubActivityProps) {
   if (isLoading) {
     return (
-      <Card className="bg-[#1e2736] border-gray-800">
+      <Card className="bg-black border-grayBorders">
         <CardHeader>
           <CardTitle className="text-white text-lg">GitHub Activity</CardTitle>
         </CardHeader>

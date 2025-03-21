@@ -2,7 +2,7 @@
 
 import { GitHubData } from "@/types/github";
 import { ContributionActivity } from "./contribution-activity";
-import { GitHubHeatmap } from "./github-heatmap";
+import { MergedPullRequests } from "./merged-pull-requests";
 import { AlertCircle } from "lucide-react";
 import { Card } from "@/components/ui/card";
 
@@ -37,9 +37,9 @@ export function GitHubClientSection({
         activities={githubData?.activities || []} 
         isLoading={isLoading} 
       />
-      <GitHubHeatmap 
-        stats={githubData?.stats} 
-        isLoading={isLoading} 
+      <MergedPullRequests
+        activities={githubData?.activities || []}
+        isLoading={isLoading}
       />
     </div>
   );

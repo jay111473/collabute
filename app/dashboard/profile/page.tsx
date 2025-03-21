@@ -341,13 +341,13 @@ function Achievements({ experienceLevel, hourlyRate }: AchievementsProps) {
     <div>
       <h2 className="text-lg font-semibold text-gray-100 mb-4">Achievements</h2>
       <div className="flex flex-wrap gap-3">
-        <Badge className="bg-gray-900 hover:bg-gray-800 text-gray-200 border-none px-5 py-3 rounded-full flex items-center gap-2 text-sm">
+        <Badge className="bg-black border-grayBorders text-gray-200 px-5 py-3 rounded-full flex items-center gap-2 text-sm">
           <span className="text-amber-500 text-xl">🏆</span>
           Pro developer
         </Badge>
 
         {isPremium && (
-          <Badge className="bg-gray-900 hover:bg-gray-800 text-gray-200 border-none px-5 py-3 rounded-full flex items-center gap-2 text-sm">
+          <Badge className="bg-black border-grayBorders text-gray-200 border-none px-5 py-3 rounded-full flex items-center gap-2 text-sm">
             <span className="text-green-500 text-xl">💰</span> Premium Rate
           </Badge>
         )}

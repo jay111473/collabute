@@ -61,7 +61,7 @@ export function MergedPullRequests({ activities, isLoading = false }: MergedPull
 
   if (isLoading) {
     return (
-      <Card className="bg-[#1e2736] border-gray-800">
+      <Card className="bg-black border-grayBorders">
         <CardHeader>
           <CardTitle className="text-white text-lg">Merged Pull Requests</CardTitle>
         </CardHeader>
@@ -84,7 +84,7 @@ export function MergedPullRequests({ activities, isLoading = false }: MergedPull
 
   if (!mergedPullRequests || mergedPullRequests.length === 0) {
     return (
-      <Card className="bg-[#1e2736] border-gray-800">
+      <Card className="bg-black border-grayBorders">
         <CardHeader>
           <CardTitle className="text-white text-lg">Merged Pull Requests</CardTitle>
         </CardHeader>

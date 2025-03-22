@@ -596,6 +596,7 @@ export interface Project {
   id: number;
   title: string;
   description: string;
+  logo: (number | Media) | null;
   slug?: string | null;
   lead?: (number | null) | Lead;
   projectType?: ("normal" | "urgent" | "featured" | "trending") | null;

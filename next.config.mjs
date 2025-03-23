@@ -10,7 +10,14 @@ const nextConfig = {
             value: '*',
         },
     ],
-
+    images: {
+        remotePatterns: [
+            {
+                protocol: 'https',
+                hostname: 'admin.collabute.com',
+            },
+        ],
+    },
 };
 
 export default nextConfig;

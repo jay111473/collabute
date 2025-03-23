@@ -5,7 +5,7 @@ import { Project } from "@/types/dashboard";
 import { useState, useMemo } from "react";
 import { ProjectCard } from "./project-card";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Flame, FolderOpen, Star, TrendingUp } from "lucide-react";
+import { Flame, FolderOpen, Star, TimerReset, TrendingUp } from "lucide-react";
 import { CustomPagination } from "./custom-pagination";
 import Header from "../Header";
 
@@ -22,27 +22,31 @@ interface ExploreComponentProps {
 }
 
 const projectTypeFilters = [
-  { label: "Normal", value: "normal" },
+  { label: "Normal", value: "normal",
+    bgColor: "",
+    borderColor: "border-grayBorders",
+    icon: <TimerReset size={16} />,
+  },
   {
     label: "Urgent",
     value: "urgent",
-    bgColor: "bg-orange-100 bg-opacity-50",
-    borderColor: "border-orange-200",
-    icon: <Flame size={20} className="text-orange-500" />,
+    bgColor: "",
+    borderColor: "border-grayBorders",
+    icon: <Flame size={16} />,
   },
   {
     label: "Featured",
     value: "featured",
-    bgColor: "bg-blue-100 bg-opacity-50",
-    borderColor: "border-blue-200",
-    icon: <Star size={20} className="text-blue-500" />,
+    bgColor: "",
+    borderColor: "border-grayBorders",
+    icon: <Star size={16} />,
   },
   {
     label: "Trending",
     value: "trending",
-    bgColor: "bg-green-100 bg-opacity-50",
-    borderColor: "border-green-200",
-    icon: <TrendingUp size={20} className="text-green-500" />,
+    bgColor: "",
+    borderColor: "border-grayBorders",
+    icon: <TrendingUp size={16} />,
   },
 ];
 
@@ -103,7 +107,7 @@ export const ExploreComponent = ({
   };
 
   return (
-    <div className="flex flex-col gap-3 p-6 w-full">
+    <div className="flex flex-col gap-3 p-6 w-full bg-black">
       <Header />
       <SearchFilterBar
         placeholder="Search projects..."

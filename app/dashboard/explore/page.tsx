@@ -16,7 +16,7 @@ const Explore = async ({
   const user = data?.user;
 
   return (
-    <div className="flex">
+    <div className="flex bg-black">
       <Sidebar user={user} />
       <ExploreComponent 
         projects={projectsData.docs}

@@ -8,9 +8,8 @@ import Sidebar from "@/components/dashboard/Sidebar";
 
 const MyProjects = async () => {
   const token = (await cookies()).get("token")?.value;
-  const userId = (await cookies()).get("userid")?.value;
 
-  if (!token || !userId) {
+  if (!token) {
     redirect("/auth");
   }
 

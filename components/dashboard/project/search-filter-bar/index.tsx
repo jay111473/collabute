@@ -10,6 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Search, TimerIcon } from "lucide-react";
 
 type SearchFilterBarProps = {
   placeholder: string;
@@ -45,21 +46,30 @@ const SearchFilterBar = ({
 }: SearchFilterBarProps) => {
   return (
     <div className="flex flex-col gap-4 w-full">
-      <div className={cn("flex justify-start items-center gap-2", className)}>
-        <Input
-          className="w-2/5 p-2 text-black placeholder:text-gray-400 rounded-3xl"
-          placeholder={placeholder}
-          onChange={(e) => onChange(e.target.value)}
-        />
-        <div className="flex gap-2">
+      <div
+        className={cn(
+          "flex flex-col justify-start items-start gap-4 w-full",
+          className
+        )}
+      >
+        <div className="relative flex-1 flex items-center gap-x-2 px-4 bg-darkGray rounded-[18px] py-3 w-1/2">
+          <div className="flex items-center pointer-events-none z-10">
+            <Search className="w-4 h-4 text-gray-400" />
+          </div>
+          <Input
+            className="p-0 text-white placeholder:text-gray-400 placeholder:bg-darkGray border-none outline-none placeholder:border-none focus:border-none focus:bg-darkGray focus:outline-none focus:ring-0 w-full"
+            placeholder={placeholder}
+            onChange={(e) => onChange(e.target.value)}
+          />
+        </div>
+        <div className="flex gap-2 w-full">
           {filters?.map((filter) => (
             <Badge
               variant="outline"
               key={filter.value}
               className={cn(
-                `rounded-3xl font-medium text-xs cursor-pointer py-2 px-3 flex items-center gap-1 ${filter.bgColor} ${filter.borderColor}`,
-                selectedFilter === filter.value &&
-                  "border-primary text-primary"
+                `rounded-full font-medium text-sm cursor-pointer py-3 px-3 flex items-center gap-x-[6px] ${filter.bgColor} ${filter.borderColor} hover:bg-white/10`,
+                selectedFilter === filter.value && "border-darkPrimary"
               )}
               onClick={() => onFilterChange(filter.value)}
             >
@@ -67,19 +77,26 @@ const SearchFilterBar = ({
               {filter.label}
             </Badge>
           ))}
+          <Select value={selectedSort} onValueChange={onSortChange}>
+            <SelectTrigger className="rounded-full font-medium text-sm cursor-pointer !py-4 px-3 flex items-center gap-x-[6px] w-max">
+              <div className="flex items-center gap-2 h-full">
+                <TimerIcon className="w-4 h-4" />
+                <span className="text-sm">Sort:</span>
+                <SelectValue
+                  className="text-sm"
+                  placeholder="Sort by"
+                />
+              </div>
+            </SelectTrigger>
+            <SelectContent>
+              {sortOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
-        <Select value={selectedSort} onValueChange={onSortChange}>
-          <SelectTrigger className="w-[180px] rounded-3xl">
-            <SelectValue placeholder="Sort by" />
-          </SelectTrigger>
-          <SelectContent>
-            {sortOptions.map((option) => (
-              <SelectItem key={option.value} value={option.value}>
-                {option.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
       </div>
     </div>
   );

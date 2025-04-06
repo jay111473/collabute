@@ -172,7 +172,7 @@ const DashboardContent = ({ user }: DashboardContentProps) => {
           )}
           {user.type === "developer" && (
             <div className="grid gap-6 md:grid-cols-2">
-              <Card className="border border-white/10 bg-darkGray rounded-lg">
+              <Card className="bg-darkGray rounded-lg border-none">
                 <CardHeader>
                   <CardTitle className="text-white">Recent Projects</CardTitle>
                 </CardHeader>
@@ -180,7 +180,7 @@ const DashboardContent = ({ user }: DashboardContentProps) => {
                   <ProjectsTable projects={user.projects as Project[]} />
                 </CardContent>
               </Card>
-              <Card className="border border-white/10 bg-darkGray rounded-lg">
+              <Card className="bg-darkGray rounded-lg border-none">
                 <CardHeader>
                   <CardTitle className="text-white">Recent Issues</CardTitle>
                 </CardHeader>

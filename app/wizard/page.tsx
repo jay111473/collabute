@@ -10,7 +10,7 @@ import { ProjectInfo } from "@/components/wizard/project-info";
 import { ProjectCompetitors } from "@/components/wizard/project-competitors";
 import { ProjectFeatures } from "@/components/wizard/project-features";
 import { ProjectTimeline } from "@/components/wizard/project-timeline";
-import { ProjectScope, ProjectSide, Stack, Project, Feature } from "@/types/wizard";
+import { ProjectScope, Stack, Project, Feature } from "@/types/wizard";
 import { ProjectLeader } from "@/components/wizard/project-leader";
 import { IndustrySelection } from "@/components/wizard/industry-selection";
 import { Loader2 } from "lucide-react";

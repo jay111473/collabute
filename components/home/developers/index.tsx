@@ -37,7 +37,7 @@ function Developers() {
               ode Your Way
             </h2>
             <h2 className="text-2xl md:text-[36px] font-bold mb-4 md:mb-0 flex justify-center items-center capitalize text-darkPrimary">
-             out of the matrix
+              out of the matrix
             </h2>
           </div>
           <p className="text-gray-400 max-w-2xl mx-auto mb-6 md:mb-8 px-4">
@@ -65,7 +65,8 @@ function Developers() {
             description={
               "Collaborate efficiently with familiar tools and access AI-powered features."
             }
-            image={"/git.png"}
+            imageClassName="mb-10"
+            image={"/gits.png"}
           />
           <DevelopersCard
             title={"Team Up with the Best"}
@@ -73,14 +74,6 @@ function Developers() {
               "Team up with exceptional developers and like-minded people to create impactful solutions."
             }
             image={"/teamup.png"}
-          />
-          <DevelopersCard
-            title={"Professional Growth"}
-            description={
-              "Build your portfolio and enhance your skills."
-            }
-            image={"/growth.png"}
-            imageClassName="w-full"
           />
         </div>
         <div className="grid grid-cols-1 gap-4 w-full md:w-1/2">
@@ -96,10 +89,20 @@ function Developers() {
             image={"/payment.png"}
             imageClassName="w-full md:-mr-36"
           />
+        </div>
+        <div className="grid grid-cols-1 gap-4 w-full md:w-1/2">
+          <DevelopersCard
+            title={"Professional Growth"}
+            description={"Build your portfolio and enhance your skills."}
+            image={"/growth.png"}
+            imageClassName="ml-20"
+          />
           <DevelopersCard
             title={"Earn Based on Contribution"}
-            description={"Collaborate efficiently with familiar tools and access AI-powered features."}
-            image={"/earn.png"}
+            description={
+              "Collaborate efficiently with familiar tools and access AI-powered features."
+            }
+            image={"/earn-2.png"}
             imageClassName="w-full md:-mr-28"
           />
         </div>

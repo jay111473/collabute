@@ -7,6 +7,7 @@ import {
   Compass,
   Settings,
   CompassIcon,
+  Plus,
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -73,11 +74,19 @@ export default function Sidebar({ user }: { user: User }) {
           </Link>
         </div>
         <div className="flex-1">
-          <nav className="grid items-start px-2 text-sm font-medium lg:px-4 gap-y-2">
+          <nav className="grid items-start p-2 text-sm font-medium lg:px-4 gap-y-2">
+            <Link
+              href={"/wizard"}
+              className={`flex items-center gap-3 rounded-lg p-3 transition-all text-sm bg-darkPrimary text-white`}
+            >
+              <Plus className="h-4 w-4" />
+              New Project
+            </Link>
             {filteredNavItems.map((item) => (
               <Link
                 key={item.name}
                 href={item.path}
+                prefetch={true}
                 className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all text-sm
                 ${
                   pathname === item.path

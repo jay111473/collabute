@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -11,11 +11,15 @@ const navigationLinks = [
   { href: "/", label: "Home" },
   { href: "/our-solution", label: "Our Solution" },
   { href: "/how-it-works", label: "How it works" },
-  { href: "/about", label: "About" },
+  { href: "/about-us", label: "About" },
   { href: "/contact-us", label: "Contact us" },
 ];
 
-export function Header() {
+type HeaderProps = {
+  isAuthenticated: boolean;
+};
+
+export function Header({ isAuthenticated }: HeaderProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
@@ -53,21 +57,26 @@ export function Header() {
                 ))}
               </div>
             </nav>
-
-            {/* Desktop Buttons */}
-            <div className="hidden md:flex flex-[0.7] items-center justify-end space-x-4">
-              <Button
-                variant="outline"
-                className="px-4 py-2 bg-transparent border-white/20 text-white hover:bg-white/10"
-                asChild
-              >
-                <Link href="/auth">Login</Link>
-              </Button>
-              <Button className="px-4 py-2" asChild>
-                <Link href="/auth/onboarding">Sign up</Link>
-              </Button>
-            </div>
-
+            {!isAuthenticated ? (
+              <div className="hidden md:flex flex-[0.7] items-center justify-end space-x-4">
+                <Button
+                  variant="outline"
+                  className="px-4 py-2 bg-transparent border-white/20 text-white hover:bg-white/10"
+                  asChild
+                >
+                  <Link href="/auth">Login</Link>
+                </Button>
+                <Button className="px-4 py-2" asChild>
+                  <Link href="/auth/onboarding">Sign up</Link>
+                </Button>
+              </div>
+            ) : (
+              <div className="hidden md:flex flex-[0.7] items-center justify-end space-x-4">
+                <Button variant="primary" className="px-4 py-2" asChild>
+                  <Link href="/dashboard">Dashboard</Link>
+                </Button>
+              </div>
+            )}
             {/* Mobile Menu Button */}
             <button
               onClick={() => setIsMobileMenuOpen(true)}

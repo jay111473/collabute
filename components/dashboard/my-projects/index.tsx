@@ -33,16 +33,6 @@ const MyProjectsComponent = ({
   if (!hasProjects && !hasIssues) {
     return (
       <div className="flex flex-col w-full bg-black">
-        <header className="flex h-14 justify-between items-center gap-4 border-b bg-muted/40 px-4 lg:h-[60px] lg:px-6">
-          <h3 className="text-lg ">My Projects</h3>
-          <Button
-            variant="outline"
-            size="icon"
-            className="rounded-full border-opacity-50"
-          >
-            <CircleUser className="h-5 w-5" />
-          </Button>
-        </header>
         <main className="flex flex-1 flex-col">
           <EmptyState />
         </main>
@@ -52,16 +42,6 @@ const MyProjectsComponent = ({
 
   return (
     <div className="flex flex-col w-full bg-black">
-      <header className="flex h-14 justify-between items-center gap-4 border-b bg-muted/40 px-4 lg:h-[60px] lg:px-6">
-        <h3 className="text-lg ">My Projects</h3>
-        <Button
-          variant="outline"
-          size="icon"
-          className="rounded-full border-opacity-50"
-        >
-          <CircleUser className="h-5 w-5" />
-        </Button>
-      </header>
       <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
         <Tabs defaultValue="projects" className="w-full">
           <TabsList className="grid w-[400px] grid-cols-2 mb-6 ">

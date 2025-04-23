@@ -16,52 +16,26 @@ import {
 import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
 import { Toaster } from "sonner";
-import axios from "axios";
 import { useEmail } from "@/app/providers/EmailContext";
 import { Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
-import { setCookie } from "cookies-next";
 import Image from "next/image";
-const formSchema = z.object({
-  email: z.string().email({ message: "Invalid email address" }),
-  password: z
-    .string()
-    .min(8, { message: "Password must be at least 8 characters" }),
-});
-
-const login = async (values: z.infer<typeof formSchema>, router: any) => {
-  await axios
-    .post(`${process.env.NEXT_PUBLIC_API_URL}/api/users/login`, values)
-    .then((res) => {
-      // Assuming the server sets HttpOnly cookies for us
-      setCookie("token", res.data.token);
-      setCookie("userid", res.data.user.id);
-      // Set a flag in a cookie to indicate the user is logged in
-      setCookie("isLoggedIn", "true");
-      console.log(res.data);
-      router.push("/dashboard");
-      return "Successfully logged in!";
-    })
-    .catch((err) => {
-      console.log(err);
-      return "Failed to log in. Please try again.";
-    });
-};
+import { login, loginformSchema } from "@/lib/login";
 
 const Password = () => {
   const [showPassword, setShowPassword] = useState(false);
   const { email } = useEmail();
   const router = useRouter();
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<z.infer<typeof loginformSchema>>({
+    resolver: zodResolver(loginformSchema),
     defaultValues: {
       email: email,
       password: "",
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  function onSubmit(values: z.infer<typeof loginformSchema>) {
     toast.promise(login(values, router), {
       loading: "Logging in...",
       success: "Successfully logged in!",
@@ -75,12 +49,12 @@ const Password = () => {
       <div className="flex flex-col items-center justify-center gap-y-16 px-[80px] w-[500px] py-[90px] text-center rounded-md">
         <div className="flex flex-col items-center justify-center gap-y-2">
           <Image src="/logo.svg" alt="logo" width={66} height={66} />
-          <h1 className="text-3xl font-bold">Collabute</h1>
+          <h1 className="text-3xl font-bold text-white">Collabute</h1>
         </div>
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
-            className="space-y-3 w-full"
+            className="space-y-3 w-full text-white"
           >
             <FormField
               control={form.control}
@@ -125,7 +99,7 @@ const Password = () => {
                 </FormItem>
               )}
             />
-            <Button variant="secondary" type="submit" className="w-full">
+            <Button variant="primary" type="submit" className="w-full">
               Log In
             </Button>
           </form>

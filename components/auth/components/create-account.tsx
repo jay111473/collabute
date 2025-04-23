@@ -15,14 +15,18 @@ import { AccountTypeSelector } from "../AccountTypeSelector";
 import { DeveloperFields } from "../DeveloperFields";
 import { StartupFields } from "../StartupFields";
 import { useCreateAccount } from "@/components/auth/hooks/useCreateAccount";
-import { useRouter } from "next/navigation";
 import type { CreateAccountFormData } from "@/types/auth.types";
 import { useUser } from "@/app/providers/UserContext";
 import React from "react";
 
 interface CreateAccountProps {
   formRef?: React.RefObject<HTMLFormElement>;
-  onSuccessfulSubmit?: () => void;
+  onSuccessfulSubmit?: (
+    accountType: "developer" | "startup", 
+    userId: string,
+    email: string,
+    password: string
+  ) => void;
 }
 
 const CreateAccount = ({ formRef, onSuccessfulSubmit }: CreateAccountProps = {}) => {
@@ -32,7 +36,7 @@ const CreateAccount = ({ formRef, onSuccessfulSubmit }: CreateAccountProps = {})
 
   const onSubmitHandler = async (data: CreateAccountFormData) => {
     try {
-      const response = await fetch("/api/auth/signup", {
+      const response = await fetch("/api/auth/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -51,7 +55,7 @@ const CreateAccount = ({ formRef, onSuccessfulSubmit }: CreateAccountProps = {})
 
       // If we're in the onboarding flow and have a callback
       if (onSuccessfulSubmit) {
-        onSuccessfulSubmit();
+        onSuccessfulSubmit(data.type, result.userId, data.email, data.password);
         return;
       }
     } catch (error) {

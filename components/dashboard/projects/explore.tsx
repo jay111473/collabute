@@ -7,7 +7,6 @@ import { ProjectCard } from "./project-card";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Flame, FolderOpen, Star, TimerReset, TrendingUp } from "lucide-react";
 import { CustomPagination } from "./custom-pagination";
-import Header from "../Header";
 
 interface PaginationProps {
   currentPage: number;
@@ -108,7 +107,6 @@ export const ExploreComponent = ({
 
   return (
     <div className="flex flex-col gap-3 p-6 w-full bg-black">
-      <Header />
       <SearchFilterBar
         placeholder="Search projects..."
         filters={projectTypeFilters}

@@ -3,7 +3,7 @@
 import { FC } from "react";
 import { User } from "@/types/dashboard";
 import { useLeadFilters } from "./hooks/useLeadFilters";
-import { LeadHeader, LeadSectionHeader } from "./LeadHeader";
+import { LeadSectionHeader } from "./LeadHeader";
 import { LeadFilterBar } from "./LeadFilterBar";
 import { LeadGrid } from "./LeadGrid";
 
@@ -36,9 +36,6 @@ const ProjectLeadsClient: FC<ProjectLeadsClientProps> = ({ leads }) => {
 
   return (
     <div className="flex-1">
-      {/* Header */}
-      <LeadHeader title="Explore Project leads" />
-
       <div className="p-6">
         {/* Filters */}
         <LeadFilterBar

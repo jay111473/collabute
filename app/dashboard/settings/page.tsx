@@ -1,8 +1,8 @@
 import { cookies } from "next/headers";
 import { getUser } from "@/lib/get-user";
-import Sidebar from "@/components/dashboard/Sidebar";
 import AccountSettings from "./components/AccountSettings";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import DashboardLayout from "@/components/dashboard/dashboard-layout";
 
 export default async function SettingsPage() {
   const cookieStore = await cookies();
@@ -11,13 +11,9 @@ export default async function SettingsPage() {
   const user = data?.user;
 
   return (
-    <div className="flex min-h-screen w-full">
-      <Sidebar user={user} />
+    <DashboardLayout user={user} title="Settings">
       <div className="flex flex-col bg-black text-white flex-1">
-        <div className="flex items-center justify-between p-6">
-          <h1 className="text-2xl font-semibold">Settings</h1>
-        </div>
-        <div className="px-6">
+        <div className="p-6">
           <div className="bg-darkGray rounded-lg p-4">
             <Tabs defaultValue="account" className="w-full">
               <TabsList className="bg-transparent p-0 w-full justify-start ">
@@ -61,6 +57,6 @@ export default async function SettingsPage() {
           </div>
         </div>
       </div>
-    </div>
+    </DashboardLayout>
   );
 }

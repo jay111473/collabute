@@ -1,9 +1,9 @@
 import { Issue } from "@/types/dashboard";
 import axios from "axios";
 import { cookies } from "next/headers";
-import Sidebar from "@/components/dashboard/Sidebar";
 import { getUser } from "@/lib/get-user";
 import IssueDetails from "@/components/dashboard/issues/IssueDetails";
+import DashboardLayout from "@/components/dashboard/dashboard-layout";
 
 async function getIssueDetails(id: string): Promise<Issue> {
   const cookieStore = await cookies();
@@ -33,9 +33,8 @@ export default async function IssueDetailsPage({
   const issue = await getIssueDetails(id);
 
   return (
-    <div className="flex">
-      <Sidebar user={user} />
+    <DashboardLayout user={user} title="Issue Details">
       <IssueDetails issue={issue} />
-    </div>
+    </DashboardLayout>
   );
 }

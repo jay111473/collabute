@@ -4,7 +4,7 @@ import { Issue, Project } from "@/types/dashboard";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import React from "react";
-import Sidebar from "@/components/dashboard/Sidebar";
+import DashboardLayout from "@/components/dashboard/dashboard-layout";
 
 const MyProjects = async () => {
   const token = (await cookies()).get("token")?.value;
@@ -16,13 +16,12 @@ const MyProjects = async () => {
   const data = await getUser(token || "");
   const user = data?.user;
   return (
-    <div className="flex">
-      <Sidebar user={user} />
+    <DashboardLayout user={user} title="My Projects">
       <MyProjectsComponent
         projects={user?.projects as Project[]}
         issues={user?.developerFields?.issues as Issue[]}
       />
-    </div>
+    </DashboardLayout>
   );
 };
 

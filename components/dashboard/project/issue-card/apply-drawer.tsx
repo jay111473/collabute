@@ -52,9 +52,9 @@ export function ApplyDrawer({
     <Drawer open={isOpen} onOpenChange={setIsOpen}>
       <DrawerTrigger asChild onClick={(e) => e.stopPropagation()}>
         <Button
-          variant="outline"
+          variant="primary"
           size="sm"
-          className="text-primary border-primary hover:text-white hover:border-primary hover:bg-primary py-2"
+          className="py-2 px-5 text-black"
         >
           Apply
         </Button>
@@ -63,13 +63,13 @@ export function ApplyDrawer({
         <div className="mx-auto w-full px-4 flex flex-col gap-4 pb-8">
           <div className="flex justify-between items-center">
             <div className="flex justify-start items-center gap-1">
-              <button className="p-2 hover:bg-gray-100">
+              <button className="p-2 hover:bg-white">
                 <ChevronLeft size={20} color="black" />
               </button>
               <h3 className="text-lg font-medium">Apply</h3>
             </div>
             <DrawerClose asChild>
-              <button className="p-2 hover:bg-gray-100 ">
+              <button className="p-2 hover:bg-white ">
                 <X size={20} color="black" />
               </button>
             </DrawerClose>
@@ -78,25 +78,25 @@ export function ApplyDrawer({
           {/* Issue Details Card */}
           <div className="border rounded-lg p-4 flex flex-col gap-4">
             <div className="flex justify-start items-center gap-4 text-sm">
-              <Layers size={20} className="text-primary" />
+              <Layers size={20} className="text-darkPrimary" />
               <p className="font-medium">Project:</p>
               <p className="underline">{projectTitle}</p>
             </div>
             <div className="flex justify-start items-center gap-3 text-sm">
-              <CircleDot size={24} className="text-primary" />
+              <CircleDot size={24} className="text-darkPrimary" />
               <p className="text-lg font-medium">{issue.title}</p>
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
               <Badge
-                icon={<Clock className="h-4 w-4 text-primary2" />}
+                icon={<Clock className="h-4 w-4 text-darkPrimary" />}
                 className="font-medium text-xs"
                 variant="outline"
               >
                 {format(new Date(issue.createdAt), "MMM dd, yyyy")}
               </Badge>
               <Badge
-                icon={<DollarSign className="text-primary2" size={14} />}
+                icon={<DollarSign className="text-darkPrimary" size={14} />}
                 className="font-medium text-xs"
                 variant="outline"
               >
@@ -127,7 +127,7 @@ export function ApplyDrawer({
               </Badge>
             </div>
 
-            <p className="text-sm text-gray-700">{issue.description}</p>
+            <p className="text-sm text-white">{issue.description}</p>
           </div>
 
           {/* Application Section */}
@@ -136,7 +136,7 @@ export function ApplyDrawer({
             <div className="space-y-2">
               <Label htmlFor="proposal">
                 Write your proposal
-                <span className="text-xs text-gray-500 ml-1">
+                <span className="text-xs text-white ml-1">
                   (Explain how you plan to solve this issue)
                 </span>
               </Label>
@@ -149,7 +149,7 @@ export function ApplyDrawer({
             <div className="space-y-2">
               <Label>
                 Attachments
-                <span className="text-xs text-gray-500 ml-1">
+                <span className="text-xs text-white ml-1">
                   (Optional: Add relevant files or documents)
                 </span>
               </Label>

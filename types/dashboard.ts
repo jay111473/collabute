@@ -338,6 +338,7 @@ export interface User {
     | null;
   role?: ("admin" | "user") | null;
   githubId?: string | null;
+  githubUsername?: string | null;
   wallet?: number | null;
   transactions?:
     | {
@@ -433,87 +434,6 @@ export interface User {
     stripeAccountStatus?:
       | ("pending" | "active" | "restricted" | "disabled")
       | null;
-    assessment?: {
-      languages?:
-        | {
-            language?:
-              | (
-                  | "typescript"
-                  | "javascript"
-                  | "python"
-                  | "java"
-                  | "ruby"
-                  | "go"
-                  | "rust"
-                  | "c++"
-                  | "c#"
-                  | "php"
-                  | "swift"
-                  | "kotlin"
-                  | "dart"
-                  | "elixir"
-                  | "erlang"
-                  | "haskell"
-                  | "scala"
-                  | "ocaml"
-                )
-              | null;
-            id?: string | null;
-          }[]
-        | null;
-      categories?:
-        | {
-            category?:
-              | (
-                  | "web3"
-                  | "fintech"
-                  | "saas"
-                  | "ai/ml"
-                  | "mobile"
-                  | "devops"
-                  | "security"
-                  | "ecommerce"
-                )
-              | null;
-            id?: string | null;
-          }[]
-        | null;
-      timeManagement?: {
-        selectedOption?: string | null;
-        style?: string | null;
-        strengths?:
-          | {
-              strength?: string | null;
-              id?: string | null;
-            }[]
-          | null;
-        weaks?:
-          | {
-              weak?: string | null;
-              id?: string | null;
-            }[]
-          | null;
-        recommendation?: string | null;
-      };
-      technical?: {
-        title?: string | null;
-        diff?: ("easy" | "medium" | "hard") | null;
-        estTime?: number | null;
-        context?: string | null;
-        requirements?:
-          | {
-              requirement?: string | null;
-              id?: string | null;
-            }[]
-          | null;
-        code?: string | null;
-        challengeId?: string | null;
-        submittedAt?: string | null;
-        timeSpent?: number | null;
-        passed?: boolean | null;
-        score?: number | null;
-      };
-    };
   };
   startupFields?: {
     companyName?: string | null;
@@ -558,6 +478,27 @@ export interface User {
     address?: string | null;
   };
   projects?: (number | Project)[] | null;
+  githubRepositories?:
+    | {
+        repoId?: string | null;
+        name?: string | null;
+        fullName?: string | null;
+        url?: string | null;
+        isPrivate?: boolean | null;
+        description?: string | null;
+        language?: string | null;
+        defaultBranch?: string | null;
+        createdAt?: string | null;
+        updatedAt?: string | null;
+        pushedAt?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  githubInstallationId?: string | null;
+  githubAccessToken?: string | null;
+  githubLastFetch?: string | null;
+  githubConnected?: boolean | null;
+  githubConnectedAt?: string | null;
   updatedAt: string;
   createdAt: string;
   email: string;

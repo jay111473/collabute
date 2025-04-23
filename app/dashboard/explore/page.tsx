@@ -3,7 +3,8 @@ import { ExploreComponent } from "@/components/dashboard/projects/explore";
 import { getProjects } from "@/lib/get-projects";
 import { getUser } from "@/lib/get-user";
 import { cookies } from "next/headers";
-import Sidebar from "@/components/dashboard/Sidebar";
+import DashboardLayout from "@/components/dashboard/dashboard-layout";
+
 const Explore = async ({
   searchParams,
 }: {
@@ -16,8 +17,7 @@ const Explore = async ({
   const user = data?.user;
 
   return (
-    <div className="flex bg-black">
-      <Sidebar user={user} />
+    <DashboardLayout user={user} title="Explore">
       <ExploreComponent 
         projects={projectsData.docs}
         pagination={{
@@ -27,7 +27,7 @@ const Explore = async ({
           hasPrevPage: projectsData.hasPrevPage
         }}
       />
-    </div>
+    </DashboardLayout>
   );
 };
 

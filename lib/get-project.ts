@@ -25,7 +25,6 @@ export async function getProject(slug: string): Promise<Projects> {
     );
     return response?.data;
   } catch (error) {
-    console.error("Error fetching project:", error);
     throw new Error("Failed to fetch project data");
   }
 }

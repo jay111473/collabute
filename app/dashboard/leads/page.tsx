@@ -1,11 +1,11 @@
 import { Metadata } from "next";
 import { User } from "@/types/dashboard";
-import Sidebar from "@/components/dashboard/Sidebar";
+import ProjectLeadsClient from "@/components/leads/ProjectLeadsClient";
 import { cookies } from "next/headers";
 import { getUser } from "@/lib/get-user";
-import ProjectLeadsClient from "@/components/leads/ProjectLeadsClient";
 import qs from "qs";
 import { FILTERS } from "@/types/filters";
+import DashboardLayout from "@/components/dashboard/dashboard-layout";
 
 export const metadata: Metadata = {
   title: "Project Leads | Dashboard | Contribunation",
@@ -133,11 +133,10 @@ export default async function DashboardLeadsPage({
   const leads = await getLeads(token || "", search);
 
   return (
-    <div className="flex min-h-screen bg-black">
-      <Sidebar user={user} />
+    <DashboardLayout user={user} title="Project Leads">
       <div className="flex-1 flex flex-col">
         <ProjectLeadsClient leads={leads} />
       </div>
-    </div>
+    </DashboardLayout>
   );
 }

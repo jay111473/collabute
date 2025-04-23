@@ -21,7 +21,7 @@ const DetailRow = ({ icon, label, value }: DetailRowProps) => (
   <div className="flex justify-between items-center gap-2 py-2">
     <div className="flex items-center gap-2">
       {icon}
-      <p className="text-sm text-gray-400">{label}</p>
+      <p className="text-sm text-white">{label}</p>
     </div>
     <p className="text-sm text-gray-200">{value}</p>
   </div>
@@ -47,7 +47,7 @@ export default function IssueDetails({ issue }: IssueDetailsProps) {
       <div className="flex items-center gap-3 px-4">
         <Link
           href="/dashboard/issues"
-          className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors text-sm"
+          className="flex items-center gap-2 text-white hover:text-white transition-colors text-sm"
         >
           <ArrowLeft size={16} />
           Back to Issues
@@ -61,7 +61,7 @@ export default function IssueDetails({ issue }: IssueDetailsProps) {
         </h1>
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
-            <span className="text-gray-400 text-sm">Budget</span>
+            <span className="text-white text-sm">Budget</span>
             <span className="text-primary-light font-semibold">
               ${issue.budget}
             </span>
@@ -106,7 +106,7 @@ export default function IssueDetails({ issue }: IssueDetailsProps) {
       <div className="flex flex-col gap-4 bg-black p-4">
         <div className="flex flex-col gap-2">
           <h2 className="text-base font-medium">Description</h2>
-          <p className="text-sm text-gray-400 leading-relaxed">
+          <p className="text-sm text-white leading-relaxed">
             {issue.description}
           </p>
         </div>

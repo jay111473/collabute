@@ -29,7 +29,7 @@ export const AccountTypeSelector = ({ form }: AccountTypeSelectorProps) => {
             </FormControl>
             <Label
               htmlFor="developer"
-              className="flex items-center justify-center gap-2 rounded-md border-2 border-grayBorders bg-popover py-4 px-4 peer-data-[state=checked]:border-purple peer-data-[state=checked]:bg-purple/10 peer-data-[state=checked]:font-bold [&:has([data-state=checked])]:border-purple [&:has([data-state=checked])]:bg-purple/10 [&:has([data-state=checked])]:font-bold"
+              className="flex items-center justify-center gap-2 rounded-md border-2 border-grayBorders bg-popover py-4 px-4 peer-data-[state=checked]:border-darkPrimary peer-data-[state=checked]:bg-purple/10 peer-data-[state=checked]:font-bold [&:has([data-state=checked])]:border-darkPrimary [&:has([data-state=checked])]:bg-purple/10 [&:has([data-state=checked])]:font-bold"
             >
               <Code2 className="h-4 w-4" />
               <div className="text-center text-sm">Developer</div>
@@ -45,10 +45,10 @@ export const AccountTypeSelector = ({ form }: AccountTypeSelectorProps) => {
             </FormControl>
             <Label
               htmlFor="startup"
-              className="flex items-center justify-center gap-2 rounded-md border-2 border-grayBorders bg-popover py-4 px-4 peer-data-[state=checked]:border-purple peer-data-[state=checked]:bg-purple/10 peer-data-[state=checked]:font-bold [&:has([data-state=checked])]:border-purple [&:has([data-state=checked])]:bg-purple/10 [&:has([data-state=checked])]:font-bold"
+              className="flex items-center justify-center gap-2 rounded-md border-2 border-grayBorders bg-popover py-4 px-4 peer-data-[state=checked]:border-darkPrimary peer-data-[state=checked]:bg-purple/10 peer-data-[state=checked]:font-bold [&:has([data-state=checked])]:border-darkPrimary [&:has([data-state=checked])]:bg-purple/10 [&:has([data-state=checked])]:font-bold"
             >
               <Building className="h-4 w-4" />
-              <div className="text-center text-sm">Startup</div>
+              <div className="text-center text-sm">Founder</div>
             </Label>
           </FormItem>
         </RadioGroup>

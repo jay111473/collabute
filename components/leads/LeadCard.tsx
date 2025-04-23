@@ -43,17 +43,6 @@ const getStackNames = (lead: User): string => {
 };
 
 /**
- * Gets industry categories from a lead
- */
-const getIndustryCategories = (lead: User): string => {
-  return (
-    lead.developerFields?.assessment?.categories
-      ?.map((cat) => cat.category)
-      .join(", ") || "Not specified"
-  );
-};
-
-/**
  * Gets skills from a lead (stack names or skills)
  */
 const getSkills = (lead: User): string => {
@@ -178,7 +167,7 @@ const LeadCard: FC<LeadCardProps> = ({ lead }) => {
     ? formatDate(new Date(lead.createdAt))
     : "Unknown";
   const projectCount = lead.projects?.length || 0;
-  const industry = getIndustryCategories(lead);
+  const industry = "Not specified";
   const skills = getSkills(lead);
 
   return (

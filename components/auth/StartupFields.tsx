@@ -50,7 +50,7 @@ export const StartupFields = ({ form }: StartupFieldsProps) => {
                     className={cn(
                       "flex items-center justify-center px-2 py-3 text-xs rounded-md border cursor-pointer",
                       field.value === option.value
-                        ? "border-purple border-2 bg-purple/10 font-bold"
+                        ? "border-darkPrimary border-2 bg-darkPrimary/10 font-bold"
                         : "border-grayBorders bg-popover"
                     )}
                     onClick={() => field.onChange(option.value)}

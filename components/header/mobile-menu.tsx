@@ -68,13 +68,13 @@ export function MobileMenu({ isOpen, onClose, navigationLinks }: MobileMenuProps
               className="w-full bg-transparent border-white/20 text-white hover:bg-white/10" 
               asChild
             >
-              <Link href="/login">Login</Link>
+              <Link href="/auth">Login</Link>
             </Button>
             <Button 
               className="w-full" 
               asChild
             >
-              <Link href="/start-project">Start your project</Link>
+              <Link href="/auth/onboarding">Sign up</Link>
             </Button>
           </div>
         </div>

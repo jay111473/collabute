@@ -10,12 +10,36 @@ interface AccountTypeSelectorProps {
 }
 
 export const AccountTypeSelector = ({ form }: AccountTypeSelectorProps) => {
+  const handleAccountTypeChange = (value: string) => {
+    console.log("Account type selected:", value);
+    form.setValue("type", value as "developer" | "startup");
+    
+    // Ensure the appropriate fields structure is initialized
+    if (value === "startup") {
+      console.log("Setting startup fields structure");
+      // Initialize startup fields if they don't exist
+      if (!form.getValues("startupFields")) {
+        form.setValue("startupFields", { companyName: "", teamSize: null });
+      }
+      // Reset developer fields
+      form.setValue("developerFields", undefined);
+    } else if (value === "developer") {
+      console.log("Setting developer fields structure");
+      // Initialize developer fields if they don't exist
+      if (!form.getValues("developerFields")) {
+        form.setValue("developerFields", { primaryRole: null });
+      }
+      // Reset startup fields
+      form.setValue("startupFields", undefined);
+    }
+  };
+
   return (
     <FormItem className="col-span-full">
       <FormLabel>Account Type</FormLabel>
       <FormControl>
         <RadioGroup
-          onValueChange={(value) => form.setValue("type", value as "developer" | "startup")}
+          onValueChange={handleAccountTypeChange}
           defaultValue={form.getValues("type")}
           className="grid grid-cols-2 gap-4"
         >

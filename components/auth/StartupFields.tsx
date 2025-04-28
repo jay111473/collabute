@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { UseFormReturn } from "react-hook-form";
 import type { CreateAccountFormData, TeamSize } from "@/types/auth.types";
+import { useEffect } from "react";
 
 const TEAM_SIZES: { label: string; value: TeamSize }[] = [
   { label: "1-10", value: "1-10" },
@@ -16,6 +17,17 @@ interface StartupFieldsProps {
 }
 
 export const StartupFields = ({ form }: StartupFieldsProps) => {
+  // When this component mounts, ensure startup fields are initialized
+  useEffect(() => {
+    console.log("StartupFields mounted");
+    if (!form.getValues("startupFields")) {
+      console.log("Initializing startup fields in StartupFields component");
+      form.setValue("startupFields", { companyName: "", teamSize: null });
+    } else {
+      console.log("Existing startup fields:", form.getValues("startupFields"));
+    }
+  }, [form]);
+
   return (
     <>
       <FormField
@@ -30,6 +42,10 @@ export const StartupFields = ({ form }: StartupFieldsProps) => {
                 {...field}
                 className="bg-transparent placeholder:bg-transparent border-grayBorders"
                 value={field.value ?? ""}
+                onChange={(e) => {
+                  console.log("Company name changed:", e.target.value);
+                  field.onChange(e);
+                }}
               />
             </FormControl>
             <FormMessage />
@@ -53,7 +69,10 @@ export const StartupFields = ({ form }: StartupFieldsProps) => {
                         ? "border-darkPrimary border-2 bg-darkPrimary/10 font-bold"
                         : "border-grayBorders bg-popover"
                     )}
-                    onClick={() => field.onChange(option.value)}
+                    onClick={() => {
+                      console.log("Team size selected:", option.value);
+                      field.onChange(option.value);
+                    }}
                   >
                     {option.label}
                   </div>

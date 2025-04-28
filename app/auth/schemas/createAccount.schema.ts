@@ -26,7 +26,8 @@ export const createAccountSchema = z.object({
         "Other",
       ] as const),
     })
-    .optional(),
+    .optional()
+    .nullable(),
   startupFields: z
     .object({
       companyName: z
@@ -38,5 +39,19 @@ export const createAccountSchema = z.object({
         .optional()
         .nullable(),
     })
-    .optional(),
-});
+    .optional()
+    .nullable(),
+}).refine(
+  (data) => {
+    // If user type is startup, startupFields and companyName should be provided
+    if (data.type === "startup") {
+      return !!data.startupFields?.companyName;
+    }
+    // If user type is developer, no refinement needed
+    return true;
+  },
+  {
+    message: "Company name is required for startup accounts",
+    path: ["startupFields.companyName"],
+  }
+);

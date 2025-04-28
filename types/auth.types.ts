@@ -37,6 +37,18 @@ export interface CreateAccountFormData {
   startupFields?: StartupFields;
 }
 
+export interface LoginFormData {
+  email: string;
+  password: string;
+}
+
+export interface LoginResponse {
+  success: boolean;
+  message: string;
+  user?: string;
+  token?: string;
+}
+
 export interface CreateAccountResponse {
   success: boolean;
   message: string;

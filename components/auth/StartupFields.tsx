@@ -19,12 +19,8 @@ interface StartupFieldsProps {
 export const StartupFields = ({ form }: StartupFieldsProps) => {
   // When this component mounts, ensure startup fields are initialized
   useEffect(() => {
-    console.log("StartupFields mounted");
     if (!form.getValues("startupFields")) {
-      console.log("Initializing startup fields in StartupFields component");
       form.setValue("startupFields", { companyName: "", teamSize: null });
-    } else {
-      console.log("Existing startup fields:", form.getValues("startupFields"));
     }
   }, [form]);
 
@@ -42,10 +38,7 @@ export const StartupFields = ({ form }: StartupFieldsProps) => {
                 {...field}
                 className="bg-transparent placeholder:bg-transparent border-grayBorders"
                 value={field.value ?? ""}
-                onChange={(e) => {
-                  console.log("Company name changed:", e.target.value);
-                  field.onChange(e);
-                }}
+                onChange={field.onChange}
               />
             </FormControl>
             <FormMessage />
@@ -70,9 +63,22 @@ export const StartupFields = ({ form }: StartupFieldsProps) => {
                         : "border-grayBorders bg-popover"
                     )}
                     onClick={() => {
-                      console.log("Team size selected:", option.value);
                       field.onChange(option.value);
+                      // Add a hidden input with the team size value for FormData
+                      const hiddenInput = document.createElement('input');
+                      hiddenInput.type = 'hidden';
+                      hiddenInput.name = 'teamSize';
+                      hiddenInput.value = option.value;
+                      
+                      // Remove any existing hidden inputs with the same name
+                      document.querySelectorAll('input[name="teamSize"]').forEach(el => el.remove());
+                      
+                      // Add the new hidden input to the form
+                      document.querySelector('form')?.appendChild(hiddenInput);
                     }}
+                    data-value={option.value}
+                    role="button"
+                    aria-pressed={field.value === option.value}
                   >
                     {option.label}
                   </div>

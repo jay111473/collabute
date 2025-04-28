@@ -41,17 +41,31 @@ export const createAccountSchema = z.object({
     })
     .optional()
     .nullable(),
-}).refine(
-  (data) => {
-    // If user type is startup, startupFields and companyName should be provided
-    if (data.type === "startup") {
-      return !!data.startupFields?.companyName;
+}).superRefine((data, ctx) => {
+  if (data.type === "developer") {
+    if (!data.developerFields?.primaryRole) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Primary role is required for developer accounts",
+        path: ["developerFields", "primaryRole"],
+      });
     }
-    // If user type is developer, no refinement needed
-    return true;
-  },
-  {
-    message: "Company name is required for startup accounts",
-    path: ["startupFields.companyName"],
   }
-);
+    if (data.type === "startup") {
+    const companyName = data.startupFields?.companyName;
+    if (typeof companyName !== "string" || companyName.length < 2) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Company name is required for startup accounts and must be at least 2 characters",
+        path: ["startupFields", "companyName"],
+      });
+    }
+    if (!data.startupFields?.teamSize) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Team size is required for startup accounts",
+        path: ["startupFields", "teamSize"],
+      });
+    }
+  }
+});

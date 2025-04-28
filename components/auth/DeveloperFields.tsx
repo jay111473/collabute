@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/select";
 import { UseFormReturn } from "react-hook-form";
 import type { CreateAccountFormData, DeveloperRole } from "@/types/auth.types";
+import { useEffect } from "react";
 
 const DEVELOPER_ROLES: DeveloperRole[] = [
   "Frontend Developer",
@@ -26,6 +27,14 @@ interface DeveloperFieldsProps {
 }
 
 export const DeveloperFields = ({ form }: DeveloperFieldsProps) => {
+  // Remove initialization with default role
+  useEffect(() => {
+    // Only initialize the structure if missing, but don't set a default value
+    if (!form.getValues("developerFields")) {
+      form.setValue("developerFields", { primaryRole: null });
+    }
+  }, [form]);
+
   return (
     <FormField
       control={form.control}
@@ -35,12 +44,12 @@ export const DeveloperFields = ({ form }: DeveloperFieldsProps) => {
           <FormLabel>Primary Role</FormLabel>
           <Select
             onValueChange={field.onChange}
-            defaultValue={field?.value || ""}
-            
+            defaultValue={field.value || ""}
+            name="primaryRole"
           >
             <FormControl>
               <SelectTrigger>
-                <SelectValue placeholder="Select your primary role" />
+                <SelectValue placeholder="Select your primary role (required)" />
               </SelectTrigger>
             </FormControl>
             <SelectContent>
@@ -51,6 +60,7 @@ export const DeveloperFields = ({ form }: DeveloperFieldsProps) => {
               ))}
             </SelectContent>
           </Select>
+          <p className="text-xs text-muted-foreground mt-1">Select the role that best describes your expertise</p>
         </FormItem>
       )}
     />

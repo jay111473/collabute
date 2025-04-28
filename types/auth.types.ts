@@ -1,3 +1,5 @@
+import { User } from "./dashboard";
+
 export type DeveloperRole =
   | "Frontend Developer"
   | "Backend Developer"
@@ -45,7 +47,7 @@ export interface LoginFormData {
 export interface LoginResponse {
   success: boolean;
   message: string;
-  user?: string;
+  user?: User;
   token?: string;
 }
 

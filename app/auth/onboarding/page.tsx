@@ -1,6 +1,5 @@
 import React from "react";
 import CreateAccount from "@/components/auth/components/create-account";
-import { Button } from "@/components/ui/button";
 import { Toaster } from "sonner";
 import Image from "next/image";
 

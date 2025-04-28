@@ -1,38 +1,49 @@
 "use server";
 
-import type { CreateAccountResponse } from "@/types/auth.types";
+import type {
+  AccountType,
+  CreateAccountFormData,
+  CreateAccountResponse,
+  DeveloperRole,
+  TeamSize,
+} from "@/types/auth.types";
+import { signinAction } from "./signin-action";
+import { signup } from "../auth-server";
 
 export const signupAction = async (
   _prevState: unknown,
   formData: FormData
 ): Promise<CreateAccountResponse | { error: string }> => {
-  const email = formData.get("email") as string | null;
-  const password = formData.get("password") as string | null;
-  const name = formData.get("name") as string | null;
-  const type = formData.get("type") as string | null;
+  // Extract basic user data
+  const email = formData.get("email") as string;
+  const password = formData.get("password") as string;
+  const name = formData.get("name") as string;
+  const type = formData.get("type") as AccountType;
 
-  // Debug: log all formData entries
-  for (const [key, value] of formData.entries()) {
-    console.log(`formData entry: ${key} =`, value);
+  // Prepare API payload based on account type
+  const payload: Partial<CreateAccountFormData> = {
+    email,
+    password,
+    name,
+    type,
+  };
+
+  if (type === "developer") {
+    payload.developerFields = {
+      primaryRole: formData.get("developerFields.primaryRole") as DeveloperRole,
+    };
+  } else if (type === "startup") {
+    payload.startupFields = {
+      companyName: formData.get("startupFields.companyName") as string,
+      teamSize: formData.get("startupFields.teamSize") as TeamSize,
+    };
   }
 
   try {
-    const res = await fetch(process.env.NEXT_PUBLIC_API_URL + "/api/users", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password, name, type }),
-    });
-    const data = await res.json();
-    if (!res.ok || !data.success) {
-      return { error: data.message || "Failed to sign up" };
-    }
-    return {
-      success: true,
-      message: data.message || "Account created successfully!",
-      userId: data.userId,
-    };
+    await signup(payload);
+    signinAction(null, formData);
+    return { success: true, message: "Signed up successfully!" };
   } catch (error) {
-    console.log("error", error);
     return { error: "Failed to sign up" };
   }
 };

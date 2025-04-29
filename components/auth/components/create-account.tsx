@@ -53,7 +53,7 @@ const SubmitButton = () => {
       size="lg"
       disabled={pending}
       type="submit"
-      className="w-1/2"
+      className="w-full sm:w-2/3 md:w-1/2"
     >
       {pending ? (
         <span className="flex items-center gap-2">
@@ -168,7 +168,7 @@ const CreateAccount = () => {
   return (
     <Form {...form}>
       <form
-        className="w-full min-w-[600px]"
+        className="w-full max-w-full sm:max-w-[600px] md:max-w-[700px]"
         action={async (formData: FormData) => {
           // Ensure type is set before validation
           if (!formData.get("type")) {
@@ -211,7 +211,7 @@ const CreateAccount = () => {
         )}
         
         {/* Fields */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
           <AccountTypeSelector form={form} />
 
           <FormField
@@ -332,7 +332,7 @@ const CreateAccount = () => {
         </div>
 
         {/* Navigation Buttons */}
-        <div className="flex gap-4 mt-8 w-full justify-center">
+        <div className="flex gap-4 mt-6 md:mt-8 w-full justify-center px-2 sm:px-0">
           <SubmitButton />
         </div>
       </form>

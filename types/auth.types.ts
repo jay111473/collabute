@@ -54,5 +54,5 @@ export interface LoginResponse {
 export interface CreateAccountResponse {
   success: boolean;
   message: string;
-  userId?: string;
+  userId?: number;
 } 

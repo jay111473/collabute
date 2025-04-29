@@ -60,7 +60,7 @@ export const signupAction = async (
     return { 
       success: true, 
       message: "Signed up and logged in successfully!", 
-      userId: loginResult.user
+      userId: loginResult.user?.id 
     };
   } catch (error) {
     console.error("Signup error:", error);

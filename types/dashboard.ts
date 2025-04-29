@@ -337,6 +337,8 @@ export interface User {
       )
     | null;
   role?: ("admin" | "user") | null;
+  isVerified?: boolean | null;
+  kycStatus?: ("pending" | "verified" | "rejected") | null;
   githubId?: string | null;
   githubUsername?: string | null;
   wallet?: number | null;

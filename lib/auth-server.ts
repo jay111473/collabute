@@ -21,24 +21,26 @@ const COOKIE_OPTIONS = {
   maxAge: 30 * 24 * 60 * 60, // 30 days in seconds
 };
 
-export async function login(payload: LoginFormData): Promise<User> {
+export async function login({
+  email,
+  password,
+}: LoginFormData): Promise<AuthResponse> {
   const response = await fetch(`${API_URL}/api/users/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
+    body: JSON.stringify({ email, password }),
   });
+  console.log(response);
 
   if (!response.ok) {
     const error = await response.json();
     throw new Error(error.message || "Failed to login");
   }
   const data: AuthResponse = await response.json();
-
-  // Set the auth token cookie
-  const cookiesInstance = await cookies();
-  cookiesInstance.set(TOKEN_COOKIE_NAME, data.token, COOKIE_OPTIONS);
-
-  return data.user;
+  return {
+    user: data.user,
+    token: data.token,
+  };
 }
 
 export async function signup(
@@ -56,11 +58,6 @@ export async function signup(
   }
 
   const data: AuthResponse = await response.json();
-
-  // Set the auth token cookie
-  const cookiesInstance = await cookies();
-  cookiesInstance.set(TOKEN_COOKIE_NAME, data.token, COOKIE_OPTIONS);
-
   return data.user;
 }
 

@@ -164,7 +164,7 @@ const CreateAccount = () => {
   // Sync primary role to hidden input
   const primaryRole = form.watch("developerFields.primaryRole");
   const teamSize = form.watch("startupFields.teamSize");
-  
+
   return (
     <Form {...form}>
       <form
@@ -175,7 +175,7 @@ const CreateAccount = () => {
             formData.set("type", "developer");
           }
           if (validateForm(formData)) {
-            formAction(formData);
+          formAction(formData);
           }
         }}
       >
@@ -234,7 +234,7 @@ const CreateAccount = () => {
                     {formErrors.name}
                   </div>
                 ) : (
-                  <FormMessage />
+                <FormMessage />
                 )}
               </FormItem>
             )}
@@ -260,7 +260,7 @@ const CreateAccount = () => {
                     {formErrors.email}
                   </div>
                 ) : (
-                  <FormMessage />
+                <FormMessage />
                 )}
               </FormItem>
             )}
@@ -302,7 +302,7 @@ const CreateAccount = () => {
                     {formErrors.password}
                   </div>
                 ) : (
-                  <FormMessage />
+                <FormMessage />
                 )}
               </FormItem>
             )}

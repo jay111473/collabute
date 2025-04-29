@@ -30,20 +30,41 @@ export const signupAction = async (
 
   if (type === "developer") {
     payload.developerFields = {
-      primaryRole: formData.get("developerFields.primaryRole") as DeveloperRole,
+      primaryRole: (formData.get("developerFields.primaryRole") || formData.get("primaryRole")) as DeveloperRole,
     };
   } else if (type === "startup") {
     payload.startupFields = {
-      companyName: formData.get("startupFields.companyName") as string,
-      teamSize: formData.get("startupFields.teamSize") as TeamSize,
+      companyName: (formData.get("startupFields.companyName") || formData.get("companyName")) as string,
+      teamSize: (formData.get("startupFields.teamSize") || formData.get("teamSize")) as TeamSize,
     };
   }
 
   try {
+    // First sign up the user
     await signup(payload);
-    signinAction(null, formData);
-    return { success: true, message: "Signed up successfully!" };
+    
+    // Then sign in with the new credentials
+    const loginResult = await signinAction(null, formData);
+    
+    // Check login result
+    if ('error' in loginResult) {
+      console.error("Auto-login failed after signup:", loginResult.error);
+      // Still return success for signup, but note login failed
+      return { 
+        success: true, 
+        message: "Account created successfully, but auto-login failed. Please log in manually."
+      };
+    }
+    
+    // Successful signup and login
+    return { 
+      success: true, 
+      message: "Signed up and logged in successfully!", 
+      userId: loginResult.user
+    };
   } catch (error) {
-    return { error: "Failed to sign up" };
+    console.error("Signup error:", error);
+    const errorMessage = error instanceof Error ? error.message : "Failed to sign up";
+    return { error: errorMessage };
   }
 };

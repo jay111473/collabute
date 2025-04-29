@@ -1,3 +1,5 @@
+import { User } from "./dashboard";
+
 export type DeveloperRole =
   | "Frontend Developer"
   | "Backend Developer"
@@ -37,8 +39,20 @@ export interface CreateAccountFormData {
   startupFields?: StartupFields;
 }
 
+export interface LoginFormData {
+  email: string;
+  password: string;
+}
+
+export interface LoginResponse {
+  success: boolean;
+  message: string;
+  user?: User;
+  token?: string;
+}
+
 export interface CreateAccountResponse {
   success: boolean;
   message: string;
-  userId?: string;
+  userId?: number;
 } 

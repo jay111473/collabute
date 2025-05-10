@@ -1,11 +1,15 @@
-import { cookies } from "next/headers";
 import { getUser } from "@/lib/get-user";
 import DashboardContent from "@/components/dashboard/dashboard-content";
+import { redirect } from "next/navigation";
+
+export const dynamic = "force-dynamic";
 
 const Dashboard = async () => {
-  const token = (await cookies()).get("token")?.value;
-  const data = await getUser(token || "");
-  const user = data?.user;  
+  const data = await getUser();
+  const user = data;
+  if (!user) {
+    redirect("/auth");
+  }
 
   return <DashboardContent user={user} />;
 };

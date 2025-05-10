@@ -2,8 +2,10 @@ import React from "react";
 import { ExploreComponent } from "@/components/dashboard/projects/explore";
 import { getProjects } from "@/lib/get-projects";
 import { getUser } from "@/lib/get-user";
-import { cookies } from "next/headers";
 import DashboardLayout from "@/components/dashboard/dashboard-layout";
+import { redirect } from "next/navigation";
+
+export const dynamic = "force-dynamic";
 
 const Explore = async ({
   searchParams,
@@ -12,10 +14,10 @@ const Explore = async ({
 }) => {
   const { page } = await searchParams;
   const projectsData = await getProjects(page);
-  const token = (await cookies()).get("token")?.value;
-  const data = await getUser(token || "");
-  const user = data?.user;
-
+  const user = await getUser(2);
+  if (!user) {
+    redirect("/auth");
+  }
   return (
     <DashboardLayout user={user} title="Explore">
       <ExploreComponent 

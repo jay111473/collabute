@@ -77,33 +77,22 @@ const Footer = () => {
     {
       title: "Products",
       links: [
-        { href: "/lending", label: "Lending" },
-        { href: "/borrowing", label: "Borrowing" },
-        { href: "/markets", label: "Markets" },
-      ],
-    },
-    {
-      title: "Tools",
-      links: [
-        { href: "/tokens", label: "Tokens" },
-        { href: "/convert", label: "Convert" },
-        { href: "/explore-traders", label: "Explore Traders" },
-        { href: "/pricing", label: "Pricing" },
+        { href: "/about-us", label: "About Us" },
+        { href: "/contact-us", label: "Contact Us" },
+        { href: "/terms-of-service", label: "Terms of Service" },
       ],
     },
     {
       title: "Support",
       links: [
-        { href: "/beginners-guide", label: "Beginners Guide" },
-        { href: "/help-center", label: "Help Center" },
+        { href: "/docs", label: "Docs" },
         { href: "/feedbacks", label: "Feedbacks" },
-        { href: "/api-doc", label: "API Doc" },
       ],
     },
   ];
 
   return (
-    <footer className="w-screen bg-black py-16 mx-0 px-0">
+    <footer className="w-screen bg-black pt-16 mx-0 px-0">
       <div className=" z-10 w-full footer-container">
         <div className="relative footer-content w-full">
           <FooterBackgroundEffects />

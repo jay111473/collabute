@@ -87,16 +87,6 @@ const EarlyBird = () => {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen py-2 bg-black">
-      <style jsx global>{`
-        input, select {
-          font-size: 16px !important; /* Prevent iOS zoom */
-        }
-        @media (min-width: 768px) {
-          input, select {
-            font-size: 14px !important; /* Return to normal size on desktop */
-          }
-        }
-      `}</style>
       <Toaster />
 
       {submissionSuccess && userData ? (

@@ -35,11 +35,14 @@ const Onboarding = () => {
       <div className="w-full sm:w-4/5 md:w-3/4 lg:w-2/3 xl:w-1/2 flex justify-center items-center mt-4 md:mt-6 overflow-x-auto">
         <CreateAccount />
       </div>
-      
+
       {/* Sign In Link */}
       <div className="mt-6 text-center text-sm text-zinc-400">
         Already have an account?{" "}
-        <Link href="/auth" className="text-blue-400 hover:text-blue-300 hover:underline">
+        <Link
+          href="/auth"
+          className="text-blue-400 hover:text-blue-300 hover:underline"
+        >
           Sign in here
         </Link>
       </div>

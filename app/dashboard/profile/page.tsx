@@ -30,8 +30,7 @@ async function ProfilePage() {
   }
 
   try {
-    const data = await getUser(token || "");
-    const user = data?.user;
+    const user = await getUser(1);
     if (user.type !== "developer") {
       return <NonDeveloperMessage />;
     }
@@ -362,7 +361,7 @@ function Achievements({ experienceLevel, hourlyRate }: AchievementsProps) {
 function DeveloperProfile({ user, token }: DeveloperProfileProps) {
   const developerFields = user.developerFields || {};
   const username = getUsername(user);
-  
+
   // Use real data from user object
   const joinedDate = formatJoinedDate(user.createdAt);
   const profilePictureUrl = getProfilePictureUrl(
@@ -371,10 +370,10 @@ function DeveloperProfile({ user, token }: DeveloperProfileProps) {
 
   // Count projects from projects array
   const projectsCount = user.projects?.length || 0;
-  
+
   // Count issues applied from issues array
   const issuesApplied = developerFields.issues?.length || 0;
-  
+
   // Count issues done/resolved
   const issuesDone = countResolvedIssues(developerFields.issues);
 

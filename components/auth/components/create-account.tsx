@@ -112,8 +112,6 @@ const CreateAccount = () => {
       const companyName = formData.get("startupFields.companyName") || formData.get("companyName");
       const teamSize = formData.get("startupFields.teamSize") || formData.get("teamSize");
       
-      console.log("Found teamSize:", teamSize); // Log for debugging
-      
       formValues.startupFields = {
         companyName: companyName as string,
         teamSize: teamSize as TeamSize,

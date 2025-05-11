@@ -104,8 +104,8 @@ export function FileUpload({
   return (
     <div className="w-full space-y-4">
       <div
-        className={`relative border-2 border-dashed rounded-lg p-6 transition-colors
-          ${isDragging ? "border-primary bg-primary/5" : "border-gray-200"}
+        className={`relative border-2 border rounded-lg p-6 transition-colors
+          ${isDragging ? "border-primary bg-primary/5" : "border-white/10 bg-darkGray"}
           hover:border-primary hover:bg-primary/5`}
         onDragEnter={handleDragIn}
         onDragLeave={handleDragOut}

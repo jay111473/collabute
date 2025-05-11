@@ -87,7 +87,7 @@ export interface User {
   id: number;
   name: string;
   profilePicture?: (number | null) | Media;
-  type: "developer" | "startup" | "lead";
+  type: "developer" | "startup" | "designer" | "lead";
   phoneNumber?: string | null;
   country?:
     | (
@@ -456,7 +456,7 @@ export interface User {
   };
   leadFields?: {
     experience?: number | null;
-    stack: (number | Stack)[];
+    stack?: (number | Stack)[] | null;
     title?: string | null;
     location?: string | null;
     availability?: boolean | null;

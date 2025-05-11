@@ -99,7 +99,12 @@ const Password = () => {
                 </FormItem>
               )}
             />
-            <Button variant="primary" type="submit" className="w-full">
+            <Button
+              disabled={form.formState.isSubmitting || !form.formState.isValid}
+              variant="primary"
+              type="submit"
+              className="w-full"
+            >
               Log In
             </Button>
           </form>

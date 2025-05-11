@@ -3,12 +3,12 @@ import { getUser } from "@/lib/get-user";
 import AccountSettings from "./components/AccountSettings";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import DashboardLayout from "@/components/dashboard/dashboard-layout";
-
+import { redirect } from "next/navigation";
 export default async function SettingsPage() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("token")?.value;
-  const data = await getUser(token || "");
-  const user = data?.user;
+  const user = await getUser(0);
+  if (!user) {
+    redirect("/auth");
+  }
 
   return (
     <DashboardLayout user={user} title="Settings">

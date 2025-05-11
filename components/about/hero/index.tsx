@@ -25,14 +25,11 @@ const AboutUsComponent = () => {
               A New Way to Build{" "}
               <span className="text-purple-400">Together</span>
             </h2>
-            <p className="text-[#A091B9]">
-              This is the &ldquo;WHY&rdquo; that we made collabute
-            </p>
           </div>
 
           {/* Quote at the bottom */}
           <p className="text-white text-xl text-center mt-auto mb-6 z-10">
-            &ldquo; When People Gather They Build Greatest &rdquo;
+            &ldquo; When People Gather They Build The Greatests &rdquo;
           </p>
         </div>
       </div>

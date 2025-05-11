@@ -1,17 +1,13 @@
 import DashboardCard from "@/components/uikit/dashboard-card";
 import { getUser } from "@/lib/get-user";
-import { cookies } from "next/headers";
 import { DollarSign } from "lucide-react";
 import React from "react";
-import { TransactionBox } from "@/components/dashboard/payments/transaction-box";
 import DashboardLayout from "@/components/dashboard/dashboard-layout";
 import { redirect } from "next/navigation";
 
 const Payments = async () => {
-  const token = (await cookies()).get("token")?.value;
-  const data = await getUser(token || "");
-  const user = data?.user;
-  if (!token) {
+  const user = await getUser(2);
+  if (!user) {
     redirect("/auth");
   }
   return (

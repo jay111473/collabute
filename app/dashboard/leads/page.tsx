@@ -13,14 +13,17 @@ export const metadata: Metadata = {
 };
 
 // Make this function dynamic to handle search params
-async function getLeads(token: string, searchParams: { [key: string]: string }): Promise<User[]> {
+async function getLeads(
+  token: string,
+  searchParams: { [key: string]: string }
+): Promise<User[]> {
   // Base query - always filter by type=lead
   const query: Record<string, any> = {
     type: {
       equals: "lead",
     },
   };
-  
+
   // Process search parameter
   if (searchParams.search) {
     query.or = [
@@ -43,26 +46,26 @@ async function getLeads(token: string, searchParams: { [key: string]: string }):
   }
 
   // Process filter parameters
-  FILTERS.forEach(filter => {
+  FILTERS.forEach((filter) => {
     const value = searchParams[filter.id];
     if (!value || !filter.apiField) return;
 
-    if (filter.id === 'experience') {
+    if (filter.id === "experience") {
       // For experience, use greater than or equal on leadFields.experience
       query[filter.apiField] = {
         greater_than_equal: parseInt(value),
       };
-    } else if (filter.id === 'availability') {
+    } else if (filter.id === "availability") {
       // For availability, convert string to boolean on leadFields.availability
       query[filter.apiField] = {
-        equals: value === 'true',
+        equals: value === "true",
       };
-    } else if (filter.id === 'stack') {
+    } else if (filter.id === "stack") {
       // For stack, search in array of stack objects by name
       query[filter.apiField] = {
         contains: value,
       };
-    } else if (filter.id === 'role') {
+    } else if (filter.id === "role") {
       // For role, exact match on primaryRole
       query[filter.apiField] = {
         equals: value,
@@ -73,14 +76,14 @@ async function getLeads(token: string, searchParams: { [key: string]: string }):
   // Process sort parameter
   let sortOptions = {};
   if (searchParams.sort) {
-    const [field, direction] = searchParams.sort.split('_');
+    const [field, direction] = searchParams.sort.split("_");
     sortOptions = {
       [field]: direction,
     };
   } else {
     // Default sort by experience (most experienced first)
     sortOptions = {
-      'leadFields.experience': 'desc',
+      "leadFields.experience": "desc",
     };
   }
 
@@ -126,9 +129,8 @@ export default async function DashboardLeadsPage({
   const { search } = await searchParams;
   const cookieStore = await cookies();
   const token = cookieStore.get("token")?.value;
-  const data = await getUser(token || "");
-  const user = data?.user;
-  
+  const user = await getUser();
+
   // Pass search params to getLeads
   const leads = await getLeads(token || "", search);
 

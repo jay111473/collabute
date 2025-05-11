@@ -42,12 +42,15 @@ const ProjectsTable = ({ projects }: { projects: Project[] }) => (
         >
           <TableCell className="flex justify-center items-center space-x-4 py-2">
             <div className="bg-neutral-800 p-2 rounded-lg">
-              <Image
-                src={(project.logo as Media)?.url || ""}
-                alt={project.title}
-                width={24}
-                height={24}
-              />
+              {typeof (project.logo as Media)?.url === "string" &&
+              (project.logo as Media).url ? (
+                <Image
+                  src={(project.logo as Media).url as string}
+                  alt={project.title}
+                  width={24}
+                  height={24}
+                />
+              ) : null}
             </div>
             <div className="flex flex-col">
               <span className="font-medium text-white" title={project.title}>
@@ -135,8 +138,6 @@ const IssuesTable = ({ issues }: { issues: Issue[] }) => (
 const DashboardContent = ({ user }: DashboardContentProps) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const router = useRouter();
-
   const showVerificationCalendar = () => {
     toast.success("Opening verification calendar...", {
       description: "Our team will contact you soon for verification.",
@@ -270,7 +271,9 @@ const DashboardContent = ({ user }: DashboardContentProps) => {
               <div className="grid gap-6 md:grid-cols-2">
                 <Card className="bg-darkGray rounded-lg border-none">
                   <CardHeader>
-                    <CardTitle className="text-white">Recent Projects</CardTitle>
+                    <CardTitle className="text-white">
+                      Recent Projects
+                    </CardTitle>
                   </CardHeader>
                   <CardContent className="p-0 px-2 pb-4">
                     <ProjectsTable projects={user.projects as Project[]} />
@@ -290,7 +293,9 @@ const DashboardContent = ({ user }: DashboardContentProps) => {
             )}
             {user.type === "startup" && (
               <div className="flex flex-col gap-4">
-                <h3 className="text-white text-lg font-semibold">My Projects</h3>
+                <h3 className="text-white text-lg font-semibold">
+                  My Projects
+                </h3>
                 <div className="grid gap-4 md:grid-cols-2 md:gap-6 lg:grid-cols-2">
                   {user?.projects?.map(
                     (project: number | Project, index: number) => (

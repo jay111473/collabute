@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertCircle, Calendar } from "lucide-react";
+import { AlertCircle, Calendar, UserPen } from "lucide-react";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
@@ -53,7 +53,7 @@ export const VerificationAlerts = ({ user }: VerificationAlertsProps) => {
           </div>
           <Button
             size="sm"
-            className="ml-0 md:ml-2 h-8 text-black bg-white w-full md:w-auto"
+            className="ml-0 md:ml-2 h-8 text-black bg-white hover:bg-white/70 w-full md:w-auto text-xs"
             onClick={showVerificationCalendar}
             data-cal-namespace="interview-with-behrooz-evans"
             data-cal-link="behevans/interview-with-behrooz-evans"
@@ -76,9 +76,10 @@ export const VerificationAlerts = ({ user }: VerificationAlertsProps) => {
           </div>
           <Button
             variant="outline"
-            className="ml-0 md:ml-2 h-8 bg-darkPrimary text-white hover:bg-darkPrimary/80 w-full md:w-auto"
+            className="ml-0 md:ml-2 h-8 bg-darkPrimary text-white hover:bg-darkPrimary/80 w-full md:w-auto text-xs"
             onClick={() => router.push("/dashboard/settings")}
           >
+            <UserPen className="mr-2 h-3 w-3" />
             Complete KYC
           </Button>
         </Alert>

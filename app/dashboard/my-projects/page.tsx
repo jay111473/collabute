@@ -1,20 +1,17 @@
 import MyProjectsComponent from "@/components/dashboard/my-projects";
 import { getUser } from "@/lib/get-user";
 import { Issue, Project } from "@/types/dashboard";
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import React from "react";
 import DashboardLayout from "@/components/dashboard/dashboard-layout";
 
-const MyProjects = async () => {
-  const token = (await cookies()).get("token")?.value;
+export const dynamic = "force-dynamic";
 
-  if (!token) {
+const MyProjects = async () => {
+  const user = await getUser(2);
+  if (!user) {
     redirect("/auth");
   }
-
-  const data = await getUser(token || "");
-  const user = data?.user;
   return (
     <DashboardLayout user={user} title="My Projects">
       <MyProjectsComponent

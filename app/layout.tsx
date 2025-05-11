@@ -16,6 +16,12 @@ const plusJakarta = Plus_Jakarta_Sans({
 export const metadata: Metadata = {
   title: `Collabute`,
   description: "Shake hands with startups and earn like never before!",
+  viewport: {
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
+  },
 };
 
 export default function RootLayout({

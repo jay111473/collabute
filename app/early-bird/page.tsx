@@ -87,6 +87,16 @@ const EarlyBird = () => {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen py-2 bg-black">
+      <style jsx global>{`
+        input, select {
+          font-size: 16px !important; /* Prevent iOS zoom */
+        }
+        @media (min-width: 768px) {
+          input, select {
+            font-size: 14px !important; /* Return to normal size on desktop */
+          }
+        }
+      `}</style>
       <Toaster />
 
       {submissionSuccess && userData ? (
@@ -200,7 +210,11 @@ const EarlyBird = () => {
                   <FormItem className="flex flex-col items-start justify-center">
                     <FormLabel>Email</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter your email" {...field} />
+                      <Input 
+                        placeholder="Enter your email" 
+                        {...field} 
+                        className="text-base md:text-sm" 
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -214,7 +228,11 @@ const EarlyBird = () => {
                   <FormItem className="flex flex-col items-start justify-center">
                     <FormLabel>Name</FormLabel>
                     <FormControl>
-                      <Input placeholder="John" {...field} />
+                      <Input 
+                        placeholder="John" 
+                        {...field} 
+                        className="text-base md:text-sm" 
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -232,13 +250,13 @@ const EarlyBird = () => {
                       defaultValue={field.value}
                     >
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className="text-base md:text-sm">
                           <SelectValue placeholder="Select what best describes you" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
                         <SelectItem value="developer">Developer</SelectItem>
-                        <SelectItem value="designer">Designer</SelectItem>
+                        <SelectItem value="designer">Product Designer</SelectItem>
                         <SelectItem value="startup">Founder</SelectItem>
                       </SelectContent>
                     </Select>

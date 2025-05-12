@@ -37,10 +37,14 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
+type UserData = FormValues & {
+  id?: number;
+};
+
 const EarlyBird = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submissionSuccess, setSubmissionSuccess] = useState(false);
-  const [userData, setUserData] = useState<FormValues | null>(null);
+  const [userData, setUserData] = useState<UserData | null>(null);
   const badgeRef = useRef<HTMLDivElement>(null);
 
   const form = useForm<FormValues>({
@@ -56,25 +60,38 @@ const EarlyBird = () => {
     setIsSubmitting(true);
 
     try {
-      toast.promise(createUser(values), {
+      const promise = createUser(values);
+      
+      toast.promise(promise, {
         loading: "Submitting...",
-        success: () => {
+        success: (response) => {
+          // Extract user ID from response
+          const userId = response?.doc?.id;
+          
           // Save user data for badge generation
-          setUserData(values);
+          setUserData({
+            ...values,
+            id: userId,
+          });
           setSubmissionSuccess(true);
           form.reset();
           return "Successfully submitted! Your badge is ready.";
         },
-        error: "Failed to submit. Please try again.",
+        error: (err) => {
+          console.error("Submission error:", err);
+          return err.message || "Failed to submit. Please try again.";
+        },
         finally: () => {
           setIsSubmitting(false);
         },
       });
     } catch (error) {
-      console.error(error);
+      console.error("Form submission error:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to submit. Please try again.");
       setIsSubmitting(false);
     }
   }
+
   // Format date for the badge
   const formatDate = () => {
     const date = new Date();
@@ -112,10 +129,10 @@ const EarlyBird = () => {
               className="object-cover"
             />
           </div>
-
+          
           {/* Dark overlay for better visibility */}
           <div className="absolute inset-0 bg-black/40 z-10"></div>
-
+          
           {/* Badge content */}
           <div className="relative z-20 flex flex-col items-center justify-center min-h-screen gap-10">
             {/* Badge */}
@@ -144,9 +161,12 @@ const EarlyBird = () => {
                     height={54}
                     className="mb-4"
                   />
-                  <h3 className="text-xl font-bold text-white mb-3">
+                  <h3 className="text-xl font-bold text-white mb-1">
                     EARLY BIRD
                   </h3>
+                  {userData.id && (
+                    <div className="text-sm text-purple-300 mb-2">#{userData.id}</div>
+                  )}
                   <div className="w-40 h-[1px] bg-white/30 mb-5"></div>
                   <h2 className="text-2xl font-bold text-white mb-4">
                     {userData.name}
@@ -246,7 +266,7 @@ const EarlyBird = () => {
                       </FormControl>
                       <SelectContent>
                         <SelectItem value="developer">Developer</SelectItem>
-                        <SelectItem value="designer">Product Designer</SelectItem>
+                        <SelectItem value="designer">Designer</SelectItem>
                         <SelectItem value="startup">Founder</SelectItem>
                       </SelectContent>
                     </Select>

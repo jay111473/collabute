@@ -1,53 +1,41 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Play } from "lucide-react";
-import { useRef, useState } from "react";
+import { motion } from "framer-motion";
 
 export function WizardVideoPreview() {
-  const [isPlaying, setIsPlaying] = useState(false);
-  const videoRef = useRef<HTMLVideoElement>(null);
-
-  const handlePlayPause = () => {
-    if (videoRef.current) {
-      if (isPlaying) {
-        videoRef.current.pause();
-      } else {
-        videoRef.current.play();
-      }
-      setIsPlaying(!isPlaying);
-    }
-  };
-
   return (
-    <div className="w-[580px] mx-auto flex flex-col items-start h-full justify-center">
-      <p className="text-center mt-3 text-xs text-gray-400">
-        Watch this intro video to learn about who we are.
-      </p>
-      <div className="relative w-full mt-4">
-        <div className="aspect-video bg-[#141414] rounded-lg overflow-hidden">
-          <video
-            ref={videoRef}
-            className="w-full h-full object-cover"
-            src="/intro.mp4"
-            onEnded={() => setIsPlaying(false)}
-            onPause={() => setIsPlaying(false)}
-            onPlay={() => setIsPlaying(true)}
-          />
-          {!isPlaying && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-              <Button
-                variant="secondary"
-                size="icon"
-                onClick={handlePlayPause}
-                className="w-16 h-16 rounded-full bg-primary2/90 hover:bg-primary2 hover:scale-105 transition-all duration-200"
-              >
-                <Play className="h-8 w-8 text-white" />
-              </Button>
-            </div>
-          )}
+    <div className="relative rounded-xl overflow-hidden">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+        className="aspect-video bg-black/50 rounded-xl relative flex items-center justify-center"
+      >
+        <div className="absolute inset-0 bg-gradient-to-br from-darkPrimary/20 to-transparent rounded-xl" />
+        <div className="text-center z-10 space-y-4 p-8">
+          <h3 className="text-xl md:text-2xl font-semibold text-white">
+            How the Wizard Works
+          </h3>
+          <p className="text-gray-300 max-w-md mx-auto">
+            This project wizard will guide you through 7 simple steps to define your project, 
+            analyze competitors, plan features, and build your development team.
+          </p>
+          <div className="mx-auto w-16 h-16 bg-white/10 backdrop-blur rounded-full flex items-center justify-center cursor-pointer hover:bg-white/20 transition-colors">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-8 w-8 text-white"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fillRule="evenodd"
+                d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"
+                clipRule="evenodd"
+              />
+            </svg>
+          </div>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }

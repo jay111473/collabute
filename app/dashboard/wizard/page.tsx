@@ -10,16 +10,14 @@ import { ProjectInfo } from "@/components/wizard/project-info";
 import { ProjectCompetitors } from "@/components/wizard/project-competitors";
 import { ProjectFeatures } from "@/components/wizard/project-features";
 import { ProjectTimeline } from "@/components/wizard/project-timeline";
-import {
-  Stack,
-  Project,
-  Feature,
-  ProjectType,
-} from "@/types/wizard";
+import { Stack, Project, Feature, ProjectType } from "@/types/wizard";
 import { ProjectLeader } from "@/components/wizard/project-leader";
 import { IndustrySelection } from "@/components/wizard/industry-selection";
 import { ProjectType as ProjectTypeComponent } from "@/components/wizard/project-type";
 import { Loader2 } from "lucide-react";
+import { GitHubImport } from "@/components/wizard/github-import";
+import { useSearchParams } from "next/navigation";
+import { getCookie } from "cookies-next";
 
 interface Industry {
   label: string;
@@ -64,6 +62,16 @@ interface WizardData {
   competitors: Competitor[];
   features: Feature[];
   leader: Lead | null;
+  githubRepository?: {
+    repoId: string;
+    name: string;
+    fullName: string;
+    url: string;
+    isPrivate: boolean;
+    description?: string;
+    language?: string;
+    defaultBranch?: string;
+  } | null;
 }
 
 function LoadingOverlay({ step }: { step: number }) {
@@ -119,7 +127,18 @@ function LoadingOverlay({ step }: { step: number }) {
 }
 
 export default function Wizard() {
-  const [currentStep, setCurrentStep] = useState(0);
+  const searchParams = useSearchParams();
+  const stepParam = searchParams.get("step");
+
+  // Parse step from URL or default to 0
+  const getInitialStep = () => {
+    if (stepParam) {
+      const parsedStep = parseFloat(stepParam);
+      return !isNaN(parsedStep) ? parsedStep : 0;
+    }
+    return 0;
+  };
+  const [currentStep, setCurrentStep] = useState<number>(getInitialStep());
   const [isLoading, setIsLoading] = useState(false);
   const [suggestedIndustries, setSuggestedIndustries] = useState<Industry[]>(
     []
@@ -152,6 +171,7 @@ export default function Wizard() {
       competitors: [],
       features: [],
       leader: null,
+      githubRepository: null,
     };
   });
   const [hasCalledAI, setHasCalledAI] = useState(false);
@@ -159,23 +179,74 @@ export default function Wizard() {
   const [hasCalledFeaturesAI, setHasCalledFeaturesAI] = useState(false);
   const [previousData, setPreviousData] = useState<WizardData | null>(null);
 
+  const userid = getCookie("userid") as string;
+  const token = getCookie("token") as string;
+  // Check for GitHub auth success and update step accordingly
+  useEffect(() => {
+    const githubAuthSuccess = searchParams.get("github_auth_success");
+    if (githubAuthSuccess === "true") {
+      // If we have successfully authenticated with GitHub
+
+      // First ensure the step is set to GitHub import
+      const step = searchParams.get("step") || "1.5";
+      setCurrentStep(parseFloat(step));
+
+      // Clean up URL by removing github_auth_success parameter
+      // while preserving the step parameter
+      const params = new URLSearchParams(searchParams.toString());
+      params.delete("github_auth_success");
+
+      // Update the URL without reloading the page
+      const url = `${window.location.pathname}?${params.toString()}`;
+      window.history.replaceState({ path: url }, "", url);
+    }
+  }, [searchParams]);
+
+  // Update URL when step changes
+  useEffect(() => {
+    // Don't update URL on initial render if we already have a step param
+    if (stepParam && parseFloat(stepParam) === currentStep) {
+      return;
+    }
+    updateStep(currentStep);
+  }, [currentStep]);
+
+  // Function to update URL with current step
+  const updateStep = (step: number) => {
+    // Create a new URLSearchParams object and set the step
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("step", step.toString());
+
+    // Update the URL without reloading the page
+    const url = `${window.location.pathname}?${params.toString()}`;
+    window.history.pushState({ path: url }, "", url);
+  };
+
   // Save data to localStorage whenever it changes
   useEffect(() => {
     localStorage.setItem("wizardData", JSON.stringify(wizardData));
   }, [wizardData]);
 
-  // Load saved step if available
+  // Ensure that when we skip from GitHub import to industry selection,
+  // we have proper project info data populated
   useEffect(() => {
-    const savedStep = localStorage.getItem("currentStep");
-    if (savedStep) {
-      setCurrentStep(parseInt(savedStep));
+    // When we move from step 1.5 (GitHub import) to step 3 (industries)
+    // Make sure we have populated project info from the GitHub repository
+    if (
+      currentStep === 3 &&
+      wizardData.githubRepository &&
+      (!wizardData.projectInfo?.name || wizardData.projectInfo.name === "")
+    ) {
+      setWizardData((prev) => ({
+        ...prev,
+        projectInfo: {
+          ...prev.projectInfo!,
+          name: wizardData.githubRepository?.name || "",
+          description: wizardData.githubRepository?.description || "",
+        },
+      }));
     }
-  }, []);
-
-  // Save current step
-  useEffect(() => {
-    localStorage.setItem("currentStep", currentStep.toString());
-  }, [currentStep]);
+  }, [currentStep, wizardData.githubRepository]);
 
   // Check if data has changed from previous state
   const hasDataChanged = (step: number) => {
@@ -228,6 +299,21 @@ export default function Wizard() {
       if (currentStep === 4) setHasCalledFeaturesAI(false);
     }
 
+    // Handle branching flow based on project type
+    if (currentStep === 1 && wizardData.projectType === "existing") {
+      // If user selected existing project, go to GitHub import step
+      setCurrentStep(1.5); // Using a decimal step number to represent the GitHub import step
+      return;
+    }
+
+    // If we're at GitHub import step and moving forward, go to step 3 (industry selection)
+    // Skip project info for existing projects since we already have GitHub repository details
+    if (currentStep === 1.5) {
+      setCurrentStep(3);
+      return;
+    }
+
+    // Regular step processing for other steps
     // If we're on step 2 and haven't called AI yet but have valid inputs
     if (
       currentStep === 2 &&
@@ -376,9 +462,10 @@ export default function Wizard() {
       // Don't automatically increment step if we're calling competitors AI
       if (!(currentStep === 3 && !hasCalledCompetitorsAI)) {
         setCurrentStep(currentStep + 1);
-        if (currentStep === 2) {
-          setHasCalledAI(false);
-        }
+      }
+
+      if (currentStep === 2) {
+        setHasCalledAI(false);
       }
     }
   };
@@ -387,6 +474,24 @@ export default function Wizard() {
     if (currentStep > 0) {
       // Store current state before going back
       setPreviousData({ ...wizardData });
+
+      // Special handling for GitHub import step
+      if (currentStep === 1.5) {
+        setCurrentStep(1); // Go back to project type selection
+        return;
+      }
+
+      // Special handling when going back from industry selection (step 3)
+      // to either project info (step 2) or GitHub import (step 1.5)
+      if (
+        currentStep === 3 &&
+        wizardData.projectType === "existing" &&
+        wizardData.githubRepository
+      ) {
+        setCurrentStep(1.5);
+        return;
+      }
+
       setCurrentStep(currentStep - 1);
     }
   };
@@ -456,9 +561,33 @@ export default function Wizard() {
     }));
   };
 
+  const handleGitHubImport = (repository: any) => {
+    // If repository name is available, prefill project info
+    if (repository.name) {
+      setWizardData((prev) => ({
+        ...prev,
+        githubRepository: repository,
+        projectInfo: {
+          ...prev.projectInfo!,
+          name: repository.name,
+          description:
+            repository.description || prev.projectInfo?.description || "",
+        },
+      }));
+    } else {
+      setWizardData((prev) => ({
+        ...prev,
+        githubRepository: repository,
+      }));
+    }
+  };
+
   const canProceedToNextStep = () => {
     if (currentStep === 1) {
       return !!wizardData.projectType;
+    } else if (currentStep === 1.5) {
+      // Can proceed from GitHub import if a repo is selected
+      return !!wizardData.githubRepository;
     } else if (currentStep === 2) {
       if (!hasCalledAI) {
         const hasPlatforms =
@@ -497,6 +626,16 @@ export default function Wizard() {
             <ProjectTypeComponent
               onProjectTypeChange={handleProjectTypeChange}
               selectedType={wizardData.projectType}
+            />
+          </div>
+        );
+      case 1.5: // GitHub Import step
+        return (
+          <div className="col-span-2">
+            <GitHubImport
+              userid={userid}
+              token={token}
+              onImportComplete={handleGitHubImport}
             />
           </div>
         );

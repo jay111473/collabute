@@ -11,6 +11,7 @@ import { calculateProgressPercentage } from "@/lib/utils";
 import { Issue, Project } from "@/types/dashboard";
 import IssueCard from "../project/issue-card";
 import { Skeleton } from "@/components/ui/skeleton";
+import ProjectChat from "@/components/chat/ProjectChat";
 
 type StatusType = "open" | "in_progress" | "resolved" | "closed";
 
@@ -33,35 +34,44 @@ const sortOptions = [
 
 type SortOption = "newest" | "oldest" | "priority";
 
-function ProjectHeader({ project, progressPercentage }: { project: Project, progressPercentage: number }) {
+function ProjectHeader({ project, progressPercentage, currentUser }: { project: Project, progressPercentage: number, currentUser?: any }) {
   return (
     <>
-      <div className="flex items-center justify-start gap-2 px-4">
-        <h3 className="font-medium text-white text-lg">{project?.title}</h3>
-        <Badge
-          className="font-medium !text-xs"
-          icon={<GitPullRequest className="h-4 w-4 text-primary2" />}
-          variant="outline"
-        >
-          {project.issues?.length} issues
-        </Badge>
-        <Badge
-          className="font-medium !text-xs"
-          icon={<DollarSign className="h-4 w-4 text-primary2" />}
-          variant="outline"
-        >
-          budget
-          <span className="text-xs">${project.budget}</span>
-        </Badge>
-        <Badge
-          className="font-medium !text-xs"
-          icon={<Clock9 className="h-4 w-4 text-primary2" />}
-          variant="outline"
-        >
-          Progress
-          <Progress className="w-20 ml-2" value={progressPercentage} />
-          <span className="text-xs">{progressPercentage}%</span>
-        </Badge>
+      <div className="flex items-center justify-between px-4">
+        <div className="flex items-center gap-2">
+          <h3 className="font-medium text-white text-lg">{project?.title}</h3>
+          <Badge
+            className="font-medium !text-xs"
+            icon={<GitPullRequest className="h-4 w-4 text-primary2" />}
+            variant="outline"
+          >
+            {project.issues?.length} issues
+          </Badge>
+          <Badge
+            className="font-medium !text-xs"
+            icon={<DollarSign className="h-4 w-4 text-primary2" />}
+            variant="outline"
+          >
+            budget
+            <span className="text-xs">${project.budget}</span>
+          </Badge>
+          <Badge
+            className="font-medium !text-xs"
+            icon={<Clock9 className="h-4 w-4 text-primary2" />}
+            variant="outline"
+          >
+            Progress
+            <Progress className="w-20 ml-2" value={progressPercentage} />
+            <span className="text-xs">{progressPercentage}%</span>
+          </Badge>
+        </div>
+        {currentUser && project.lead && (
+          <ProjectChat 
+            project={project} 
+            currentUser={currentUser} 
+            lead={project.lead}
+          />
+        )}
       </div>
       <p className="text-white font-light text-sm px-4 py-2">
         {project.description}
@@ -185,9 +195,11 @@ function IssuesLoadingSkeleton() {
 const MyProjectCard = ({
   project,
   isMyProject,
+  currentUser,
 }: {
   project: Project;
   isMyProject?: boolean;
+  currentUser?: any;
 }) => {
   const progressPercentage = calculateProgressPercentage(
     project.issues as Issue[]
@@ -198,7 +210,11 @@ const MyProjectCard = ({
       <main className="flex flex-1 flex-col gap-4 lg:gap-6 w-full">
         <Card className="flex flex-col gap-2 py-4 bg-darkGray text-white w-full border-none">
           <Suspense fallback={<Skeleton className="h-20 w-full" />}>
-            <ProjectHeader project={project} progressPercentage={progressPercentage} />
+            <ProjectHeader 
+              project={project} 
+              progressPercentage={progressPercentage}
+              currentUser={currentUser} 
+            />
           </Suspense>
           <span className="w-full h-px"></span>
           <Tabs defaultValue={!isMyProject ? "issues" : "open-issues"}>

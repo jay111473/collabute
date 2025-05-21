@@ -24,7 +24,7 @@ function Step({ number, title, description }: StepProps) {
 
 export function WizardSteps() {
   return (
-    <div className="space-y-8 p-4">
+    <div className="space-y-8 p-4 w-full">
       <div className="space-y-4">
         <h2 className="text-2xl md:text-3xl font-bold text-white">Project Wizard</h2>
         <p className="text-gray-400">
@@ -32,41 +32,31 @@ export function WizardSteps() {
         </p>
       </div>
 
-      <div className="space-y-6">
+      <div className="space-y-6 grid grid-cols-3 gap-4 w-full">
         <Step
           number={1}
-          title="Project Type"
-          description="Tell us if you're working with an existing project or starting a new idea."
-        />
-        <Step
-          number={2}
           title="Project Information"
           description="Provide basic details about your project and its scope."
         />
         <Step
-          number={3}
-          title="Industry Selection"
-          description="Select industries relevant to your project."
-        />
-        <Step
-          number={4}
+          number={2}
           title="Competitor Analysis"
           description="Identify key competitors to benchmark against."
         />
         <Step
+          number={3}
+          title="Feature List"
+          description="Select the core features of your project."
+        />
+        <Step
+          number={4}
+          title="Team Lead Selection"
+          description="Choose your project lead."
+        />
+        <Step
           number={5}
-          title="Feature Planning"
-          description="Define the core features for your project."
-        />
-        <Step
-          number={6}
-          title="Team Selection"
-          description="Choose your project lead and team composition."
-        />
-        <Step
-          number={7}
-          title="Timeline & Budget"
-          description="Review development timeline and budget allocation."
+          title="Timeline"
+          description="Review development timeline."
         />
       </div>
     </div>

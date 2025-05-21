@@ -18,6 +18,7 @@ import { Loader2 } from "lucide-react";
 import { GitHubImport } from "@/components/wizard/github-import";
 import { useSearchParams } from "next/navigation";
 import { getCookie } from "cookies-next";
+import { cn } from "@/lib/utils";
 
 interface Industry {
   label: string;
@@ -615,10 +616,10 @@ export default function Wizard() {
     switch (currentStep) {
       case 0:
         return (
-          <>
+          <div className="flex flex-col gap-4 w-full">
             <WizardSteps />
-            <WizardVideoPreview />
-          </>
+            {/* <WizardVideoPreview /> */}
+          </div>
         );
       case 1:
         return (
@@ -708,15 +709,22 @@ export default function Wizard() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A] flex flex-col overflow-x-hidden">
+    <div className="min-h-screen bg-[#0A0A0A] flex flex-col overflow-x-hidden w-full">
       {isLoading && <LoadingOverlay step={currentStep} />}
-      <div className="container mx-auto px-4 py-6 flex-1 flex flex-col">
+      <div className="container mx-auto px-4 py-6 flex-1 flex flex-col w-full">
         <WizardLogo />
-        <div className="p-2 border border-darkPrimary/20 rounded-xl">
-          <div className="mx-auto flex-1 flex flex-col border-2 border-darkPrimary/40 p-9 rounded-xl">
+        <div className="p-2 border border-darkPrimary/20 rounded-xl w-full">
+          <div className="mx-auto flex-1 flex flex-col border-2 border-darkPrimary/40 p-9 rounded-xl w-full">
             <StepIndicator currentStep={currentStep} totalSteps={7} />
 
-            <div className="grid md:grid-cols-2 gap-12 flex-1 pb-24">
+            <div
+              className={cn(
+                "flex-1 pb-24 w-full",
+                currentStep === 0
+                  ? "flex flex-col" // For step 0, use flex column layout
+                  : "grid md:grid-cols-2 gap-12" // For other steps, use grid
+              )}
+            >
               {renderStep()}
             </div>
           </div>
@@ -738,7 +746,7 @@ export default function Wizard() {
           <Button
             onClick={handleNext}
             disabled={!canProceedToNextStep() || isLoading}
-            className="px-6 py-2.5 text-sm dark:bg-darkPrimary hover:dark:bg-darkPrimary/90 hover:text-white dark:text-black text-black rounded-lg"
+            className="px-6 py-2.5 text-sm dark:bg-darkPrimary bg-darkPrimary hover:dark:bg-darkPrimary/90 hover:text-white dark:text-black text-black rounded-lg"
           >
             {isLoading ? (
               <>

@@ -456,8 +456,8 @@ export function ProjectInfo({
                             )}
                           />
                         </div>
-                      </div>
-
+                      </div
+>
                       {/* Generate Platforms Button */}
                       <div className="flex justify-center !mt-10">
                         <Button

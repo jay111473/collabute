@@ -17,7 +17,7 @@ export const EmptyState: FC<EmptyStateProps> = ({
   title = "No projects yet",
   description = "Create your first project to get started with Collabute",
   actionLabel = "Create Project",
-  actionHref = "/wizard",
+  actionHref = "/dashboard/wizard",
 }) => {
   return (
     <div className="flex flex-col items-center justify-center h-[calc(100vh-200px)] p-6">

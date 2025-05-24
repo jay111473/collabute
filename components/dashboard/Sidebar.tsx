@@ -105,7 +105,7 @@ export default function Sidebar({ user }: { user: User }) {
       <div className="flex-1">
         <nav className="grid items-start p-2 text-sm font-medium lg:px-4 gap-y-2">
           <Link
-            href={"/wizard"}
+            href={"/dashboard/wizard"}
             className={`flex items-center gap-3 rounded-lg p-3 transition-all text-sm bg-darkPrimary text-white`}
           >
             <Plus className="h-4 w-4" />

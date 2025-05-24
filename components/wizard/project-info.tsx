@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -10,20 +11,44 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { Loader2, X, HelpCircle, CheckIcon, InfoIcon } from "lucide-react";
 import {
-  Industry,
-  ProjectScope,
-  ProjectPlatform,
-  PROJECT_PLATFORMS,
-} from "@/types/wizard";
-import { ALL_INDUSTRIES } from "@/utils/industries";
+  Loader2,
+  X,
+  HelpCircle,
+  CheckIcon,
+  Sparkles,
+  Globe,
+  Smartphone,
+  Monitor,
+  Brain,
+  Laptop,
+  Plus,
+  LockIcon,
+  ArrowLeftIcon,
+} from "lucide-react";
+import { Industry } from "@/types/wizard";
+import { ALL_INDUSTRIES } from "@/lib/utils/industries";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { motion, AnimatePresence } from "framer-motion";
+
+// Add CSS for the shake animation
+const shakeAnimation = `
+@keyframes shake {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  50% { transform: translateX(4px); }
+  75% { transform: translateX(-4px); }
+  100% { transform: translateX(0); }
+}
+.animate-shake {
+  animation: shake 0.4s ease-in-out;
+}
+`;
 
 // Types
 interface ProjectInfoProps {
@@ -36,43 +61,66 @@ interface ProjectInfo {
   name: string;
   description: string;
   industries: string[];
-  projectScope: ProjectScope;
   projectPlatforms: { value: string; isCore?: boolean }[];
 }
 
-interface IndustryBadgeProps {
-  industry: Industry;
-  isSelected: boolean;
-  onRemove: () => void;
+interface PlatformSuggestion {
+  type: "website" | "ios" | "android" | "desktop" | "ai";
+  isOptional: boolean;
+  priority: number;
+  description: string;
 }
+
+// Available platforms for manual selection
+const AVAILABLE_PLATFORMS = [
+  {
+    value: "website",
+    label: "Website",
+    description: "A responsive web application accessible on browsers",
+  },
+  {
+    value: "ios",
+    label: "iOS App",
+    description: "Native mobile application for Apple iOS devices",
+  },
+  {
+    value: "android",
+    label: "Android App",
+    description: "Native mobile application for Android devices",
+  },
+  {
+    value: "desktop",
+    label: "Desktop App",
+    description: "Native application for Windows, MacOS, or Linux",
+  },
+  {
+    value: "ai",
+    label: "AI Integration",
+    description: "Integration with AI services and capabilities",
+  },
+];
 
 // Styles
 const INPUT_BASE_STYLES =
-  "bg-[#141414] border border-darkPrimary/40 shadow-[0_0_15px_rgba(123,97,255,0.15)] hover:shadow-[0_0_20px_rgba(123,97,255,0.25)] focus:shadow-[0_0_25px_rgba(123,97,255,0.35)] hover:border-darkPrimary/60 focus:border-darkPrimary transition-all duration-200 text-white";
+  "border border-darkPrimary/40 shadow-[0_0_15px_rgba(123,97,255,0.15)] hover:shadow-[0_0_20px_rgba(123,97,255,0.25)] focus:shadow-[0_0_25px_rgba(123,97,255,0.35)] hover:border-darkPrimary/60 focus:border-darkPrimary transition-all duration-200 text-white";
 
-// Sub-components
-function IndustryBadge({ industry, isSelected, onRemove }: IndustryBadgeProps) {
-  return (
-    <Badge
-      variant="outline"
-      className={cn(
-        "cursor-default transition-all duration-200 rounded-lg border-darkPrimary/40 shadow-[0_0_15px_rgba(123,97,255,0.15)] flex items-center gap-2",
-        isSelected
-          ? "bg-darkPrimary/20 text-darkPrimary border-darkPrimary shadow-[0_0_20px_rgba(123,97,255,0.25)]"
-          : "text-darkPrimary hover:bg-darkPrimary/10 hover:border-darkPrimary hover:shadow-[0_0_20px_rgba(123,97,255,0.25)]"
-      )}
-    >
-      {industry.label}
-      <X
-        className="h-3 w-3 hover:text-red-400 cursor-pointer transition-colors"
-        onClick={(e) => {
-          e.stopPropagation();
-          onRemove();
-        }}
-      />
-    </Badge>
-  );
-}
+// Platform Icons
+const getPlatformIcon = (type: string) => {
+  switch (type) {
+    case "website":
+      return <Globe className="h-5 w-5 text-blue-400" />;
+    case "ios":
+      return <Smartphone className="h-5 w-5 text-gray-300" />;
+    case "android":
+      return <Smartphone className="h-5 w-5 text-green-400" />;
+    case "desktop":
+      return <Monitor className="h-5 w-5 text-purple-400" />;
+    case "ai":
+      return <Brain className="h-5 w-5 text-yellow-400" />;
+    default:
+      return <Laptop className="h-5 w-5 text-gray-400" />;
+  }
+};
 
 function LoadingState() {
   return (
@@ -83,295 +131,82 @@ function LoadingState() {
   );
 }
 
-function IndustrySelector({
-  selectedIndustries,
-  onIndustryAdd,
-  hasReachedLimit,
+function PlatformCard({
+  platform,
+  isSelected,
+  isCore,
+  onToggle,
 }: {
-  selectedIndustries: string[];
-  onIndustryAdd: (value: string) => void;
-  hasReachedLimit: boolean;
+  platform: {
+    type: string;
+    description: string;
+    isOptional: boolean;
+  };
+  isSelected: boolean;
+  isCore?: boolean;
+  onToggle: () => void;
 }) {
-  const availableIndustries = ALL_INDUSTRIES.filter(
-    (industry) => !selectedIndustries.includes(industry.value)
-  );
+  const platformLabel =
+    platform.type === "ios"
+      ? "iOS App"
+      : platform.type === "android"
+      ? "Android App"
+      : platform.type.charAt(0).toUpperCase() + platform.type.slice(1);
 
   return (
-    <div>
-      <h3 className="text-sm text-gray-400 mb-2">Add more industries</h3>
-      <Select onValueChange={onIndustryAdd} disabled={hasReachedLimit}>
-        <SelectTrigger
-          className={cn(
-            INPUT_BASE_STYLES,
-            "w-[300px]",
-            hasReachedLimit && "opacity-50 cursor-not-allowed"
-          )}
-        >
-          <SelectValue
-            placeholder={
-              hasReachedLimit ? "Maximum industries reached" : "Add industry"
-            }
-          />
-        </SelectTrigger>
-        <SelectContent>
-          {availableIndustries.map((industry) => (
-            <SelectItem key={industry.value} value={industry.value}>
-              {industry.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-      {hasReachedLimit && (
-        <p className="text-yellow-500 text-sm mt-2">
-          You&apos;ve reached the maximum limit of 5 industries
-        </p>
+    <motion.div
+      whileHover={{ scale: 1.02 }}
+      className={cn(
+        "flex flex-col p-4 rounded-xl border cursor-pointer transition-all h-full",
+        isSelected
+          ? "border-darkPrimary bg-darkPrimary/10 hover:bg-darkPrimary/20"
+          : "border-white/10 hover:bg-zinc-800/50 hover:border-white/20"
       )}
-    </div>
-  );
-}
+      onClick={onToggle}
+      data-platform-id={platform.type}
+    >
+      <div className="flex items-start justify-between mb-2">
+        <div className="flex items-center">
+          {getPlatformIcon(platform.type)}
+          <span className="ml-2 font-medium text-white">{platformLabel}</span>
+        </div>
 
-function ProjectPlatformSelect({
-  values,
-  onValuesChange,
-  scope,
-  projectDescription,
-}: {
-  values: { value: string; isCore?: boolean }[];
-  onValuesChange: (values: { value: string; isCore?: boolean }[]) => void;
-  scope: ProjectScope;
-  projectDescription: string;
-}) {
-  const [suggestedPlatforms, setSuggestedPlatforms] = useState<ProjectPlatform[]>([]);
+        <div className="flex items-center space-x-2">
+          {isCore && (
+            <Badge
+              variant="outline"
+              className="text-[10px] h-4 bg-darkPrimary/10 border-darkPrimary/20 text-darkPrimary"
+            >
+              Core
+            </Badge>
+          )}
 
-  useEffect(() => {
-    if (scope === "unknown" && projectDescription) {
-      // Find suggested platforms based on project description keywords
-      const suggestions = PROJECT_PLATFORMS.filter((platform) =>
-        platform.suggestedFor?.some((keyword) =>
-          projectDescription.toLowerCase().includes(keyword.toLowerCase())
-        )
-      );
-
-      // Add core platforms first
-      const corePlatforms = suggestions.filter((p) => p.isCore);
-      const optionalPlatforms = suggestions.filter((p) => !p.isCore);
-
-      setSuggestedPlatforms([...corePlatforms, ...optionalPlatforms]);
-
-      // Automatically select core platforms
-      if (values.length === 0) {
-        onValuesChange(
-          corePlatforms.map((p) => ({ value: p.value, isCore: true }))
-        );
-      }
-    }
-  }, [scope, projectDescription, values.length, onValuesChange]);
-
-  const availablePlatforms =
-    scope === "unknown"
-      ? suggestedPlatforms
-      : PROJECT_PLATFORMS.filter((platform) => platform.scopes.includes(scope));
-
-  const groupedPlatforms = availablePlatforms.reduce((acc, platform) => {
-    const category = platform.category || "unknown";
-    if (!acc[category]) {
-      acc[category] = [];
-    }
-    acc[category].push(platform);
-    return acc;
-  }, {} as Record<string, ProjectPlatform[]>);
-
-  const getCategoryLabel = (category: string) => {
-    switch (category) {
-      case "web":
-        return "Web Applications";
-      case "mobile":
-        return "Mobile Applications";
-      case "desktop":
-        return "Desktop Applications";
-      case "ai":
-        return "AI/ML Applications";
-      default:
-        return "Other";
-    }
-  };
-
-  const handleValueChange = (platformValue: string) => {
-    const platform = PROJECT_PLATFORMS.find((p) => p.value === platformValue);
-    if (!platform) return;
-
-    const isSelected = values.some((v) => v.value === platformValue);
-    let newValues;
-
-    if (isSelected) {
-      // Don't allow removing core platforms in 'unknown' scope
-      if (
-        scope === "unknown" &&
-        values.find((v) => v.value === platformValue)?.isCore
-      ) {
-        return;
-      }
-      newValues = values.filter((v) => v.value !== platformValue);
-    } else {
-      newValues = [
-        ...values,
-        {
-          value: platformValue,
-          isCore: scope === "unknown" && platform.isCore,
-        },
-      ];
-    }
-
-    onValuesChange(newValues);
-  };
-
-  return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-2">
-        <h2 className="text-sm text-gray-400">Project platforms</h2>
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <HelpCircle className="h-4 w-4 text-gray-400 cursor-help" />
-            </TooltipTrigger>
-            <TooltipContent className="max-w-[300px] p-4 bg-[#1A1A1A] border-white/10">
-              <p className="text-sm text-white/80">
-                {scope === "unknown"
-                  ? "Based on your project description, we've suggested the platforms you'll need. Core platforms can't be removed as they're essential for your project."
-                  : "Select the platforms you want to include in your project."}
-              </p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+          <div
+            className={cn(
+              "flex h-5 w-5 items-center justify-center rounded-full border transition-colors",
+              isSelected
+                ? "border-darkPrimary bg-darkPrimary"
+                : "border-zinc-700"
+            )}
+          >
+            {isSelected && <CheckIcon className="h-3 w-3 text-black" />}
+          </div>
+        </div>
       </div>
 
-      {scope !== "unknown" && (
-        <div className="space-y-4 rounded-lg border border-zinc-800 bg-black/50 p-4">
-          {Object.entries(groupedPlatforms).map(([category, platforms], index, array) => (
-            <div key={category}>
-              <div className="space-y-2">
-                <div className="text-sm font-semibold text-gray-400">
-                  {getCategoryLabel(category)}
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                  {platforms.map((platform) => {
-                    const isSelected = values.some((v) => v.value === platform.value);
-                    const isCore = platform.isCore;
-                    
-                    return (
-                      <div
-                        key={platform.value}
-                        className={cn(
-                          "group relative flex items-start gap-3 rounded-lg p-3 cursor-pointer transition-all",
-                          isSelected
-                            ? "bg-darkPrimary/10 hover:bg-darkPrimary/20"
-                            : "hover:bg-zinc-800/50"
-                        )}
-                        onClick={() => handleValueChange(platform.value)}
-                      >
-                        <div className={cn(
-                          "flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors mt-1",
-                          isSelected
-                            ? "border-darkPrimary bg-darkPrimary"
-                            : "border-zinc-700 group-hover:border-zinc-500"
-                        )}>
-                          {isSelected && <CheckIcon className="h-3 w-3 text-black" />}
-                        </div>
-                        <div className="flex flex-col gap-1">
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm text-white">{platform.label}</span>
-                            {isCore && (
-                              <Badge
-                                variant="outline"
-                                className="text-[10px] h-4 bg-darkPrimary/10 border-darkPrimary/20 text-darkPrimary"
-                              >
-                                Core
-                              </Badge>
-                            )}
-                          </div>
-                          {platform.description && (
-                            <p className="text-xs text-gray-400 line-clamp-2">
-                              {platform.description}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-              {index < array.length - 1 && (
-                <div className="h-px bg-zinc-800 my-4" />
-              )}
-            </div>
-          ))}
-        </div>
-      )}
+      <p className="text-xs text-gray-400 mt-1 flex-grow">
+        {platform.description}
+      </p>
 
-      {values.length > 0 && (
-        <div className="flex flex-wrap gap-2 mt-2">
-          {values.map(({ value, isCore }) => {
-            const platform = PROJECT_PLATFORMS.find((p) => p.value === value)!;
-            return (
-              <div
-                key={value}
-                className={cn(
-                  "group relative flex items-center gap-2 px-3 py-1.5 rounded-lg transition-colors",
-                  isCore
-                    ? "bg-darkPrimary/20"
-                    : "bg-darkPrimary/10 hover:bg-darkPrimary/20"
-                )}
-              >
-                <span className="text-sm text-white">{platform.label}</span>
-                {isCore && (
-                  <Badge
-                    variant="outline"
-                    className="text-xs bg-darkPrimary/20 border-darkPrimary"
-                  >
-                    Core
-                  </Badge>
-                )}
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <InfoIcon className="h-4 w-4 text-white/60 hover:text-white/80 cursor-help" />
-                    </TooltipTrigger>
-                    <TooltipContent
-                      side="top"
-                      className="max-w-[300px] p-4 bg-[#1A1A1A] border-white/10"
-                    >
-                      <p className="text-sm text-white/80 whitespace-pre-line">
-                        {platform.description}
-                        {isCore &&
-                          "\n\nThis is a core platform required for your project type."}
-                      </p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-                {!isCore && (
-                  <button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handleValueChange(value);
-                    }}
-                    className="text-white/60 hover:text-white/80 transition-colors"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                )}
-              </div>
-            );
-          })}
-        </div>
+      {platform.isOptional && (
+        <Badge
+          variant="outline"
+          className="text-[10px] mt-2 w-fit bg-gray-800/50 border-gray-700 text-gray-400"
+        >
+          Optional
+        </Badge>
       )}
-
-      {scope === "unknown" && suggestedPlatforms.length > 0 && (
-        <p className="text-sm text-gray-500">
-          Based on your project description, we&apos;ve suggested the platforms
-          you&apos;ll need. Core platforms are essential and can&apos;t be removed.
-        </p>
-      )}
-    </div>
+    </motion.div>
   );
 }
 
@@ -385,11 +220,14 @@ export function ProjectInfo({
     name: "",
     description: "",
     industries: [],
-    projectScope: "unknown",
     projectPlatforms: [],
   });
-  const [hasInteractedWithIndustries, setHasInteractedWithIndustries] =
-    useState(false);
+  const [generatingPlatforms, setGeneratingPlatforms] = useState(false);
+  const [platformSuggestions, setPlatformSuggestions] = useState<
+    PlatformSuggestion[]
+  >([]);
+  const [showPlatforms, setShowPlatforms] = useState(false);
+  const cardContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (suggestedIndustries.length > 0) {
@@ -413,158 +251,424 @@ export function ProjectInfo({
     updateProjectInfo({ [field]: value });
   };
 
-  const handleIndustryRemove = (industryValue: string) => {
-    setHasInteractedWithIndustries(true);
-    const newIndustries = projectInfo.industries.filter(
-      (i) => i !== industryValue
-    );
-    updateProjectInfo({ industries: newIndustries });
-  };
+  const handleGeneratePlatforms = async () => {
+    if (!projectInfo.name || !projectInfo.description) return;
 
-  const handleIndustryAdd = (value: string) => {
-    setHasInteractedWithIndustries(true);
-    if (
-      !projectInfo.industries.includes(value) &&
-      projectInfo.industries.length < 5
-    ) {
-      updateProjectInfo({ industries: [...projectInfo.industries, value] });
+    setGeneratingPlatforms(true);
+    try {
+      const response = await fetch("/api/wizard-platform-generator", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          title: projectInfo.name,
+          description: projectInfo.description,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.platforms) {
+        setPlatformSuggestions(data.platforms);
+        setShowPlatforms(true);
+
+        // Set initial platforms based on priority
+        const initialPlatforms = data.platforms
+          .filter((p: PlatformSuggestion) => !p.isOptional)
+          .map((p: PlatformSuggestion) => ({
+            value: p.type,
+            isCore: !p.isOptional,
+          }));
+
+        updateProjectInfo({ projectPlatforms: initialPlatforms });
+      }
+    } catch (error) {
+      console.error("Error generating platforms:", error);
+    } finally {
+      setGeneratingPlatforms(false);
     }
   };
 
-  const hasReachedLimit = projectInfo.industries.length >= 5;
-  const showValidationMessage =
-    hasInteractedWithIndustries && projectInfo.industries.length === 0;
+  const goBackToDetails = () => {
+    setShowPlatforms(false);
+  };
+
+  const togglePlatform = (platformType: string) => {
+    const isSelected = projectInfo.projectPlatforms.some(
+      (p) => p.value === platformType
+    );
+    const platform = platformSuggestions.find((p) => p.type === platformType);
+
+    if (isSelected) {
+      // Don't allow removing core platforms
+      if (
+        projectInfo.projectPlatforms.find((p) => p.value === platformType)
+          ?.isCore
+      ) {
+        // Show visual feedback for core platforms that can't be removed
+        const platformElement = document.querySelector(
+          `[data-platform-id="${platformType}"]`
+        );
+        if (platformElement) {
+          platformElement.classList.add("animate-shake");
+          setTimeout(() => {
+            platformElement.classList.remove("animate-shake");
+          }, 500);
+        }
+        return;
+      }
+      updateProjectInfo({
+        projectPlatforms: projectInfo.projectPlatforms.filter(
+          (p) => p.value !== platformType
+        ),
+      });
+    } else {
+      updateProjectInfo({
+        projectPlatforms: [
+          ...projectInfo.projectPlatforms,
+          {
+            value: platformType,
+            isCore: platform ? !platform.isOptional : false,
+          },
+        ],
+      });
+    }
+  };
+
+  const wordCount = projectInfo.description.trim().split(/\s+/).length;
+  const hasEnoughWords = wordCount >= 20;
+  const canGeneratePlatforms = !!projectInfo.name && wordCount >= 3;
+
+  // Card variants for animation
+  const cardVariants = {
+    hidden: (direction: number) => ({
+      x: direction > 0 ? "100%" : "-100%",
+      opacity: 0,
+    }),
+    visible: {
+      x: 0,
+      opacity: 1,
+      transition: {
+        type: "spring",
+        damping: 25,
+        stiffness: 300,
+      },
+    },
+    exit: (direction: number) => ({
+      x: direction > 0 ? "-100%" : "100%",
+      opacity: 0,
+      transition: {
+        type: "spring",
+        damping: 30,
+        stiffness: 300,
+      },
+    }),
+  };
 
   return (
-    <div className="space-y-6 w-1/2">
-      <div className="space-y-2">
-        <h2 className="text-sm text-gray-400">Project name</h2>
-        <Input
-          value={projectInfo.name}
-          onChange={(e) => handleInputChange(e.target.value, "name")}
-          placeholder="Enter your project name (it's editable later) ..."
-          className={cn(
-            INPUT_BASE_STYLES,
-            "placeholder:text-gray-500 rounded-lg"
-          )}
-        />
-      </div>
+    <div className="relative min-h-[500px] flex flex-col items-center justify-center">
+      {/* Add style tag for shake animation */}
+      <style dangerouslySetInnerHTML={{ __html: shakeAnimation }} />
+      <div className="w-full max-w-4xl mx-auto">
+        <div className="text-center mb-6 space-y-2">
+          <h2 className="text-2xl font-bold text-white">
+            Tell Us About Your Project
+          </h2>
+          <p className="text-gray-400 max-w-2xl mx-auto text-sm">
+            Share the details of your project so we can help you build it
+            better.
+          </p>
+        </div>
 
-      <div className="space-y-2">
-        <h2 className="text-sm text-gray-400">Project scope</h2>
-        <Select
-          value={projectInfo.projectScope}
-          onValueChange={(value: ProjectScope) => {
-            updateProjectInfo({
-              projectScope: value,
-              projectPlatforms: [], // Reset project platforms when scope changes
-            });
-          }}
+        {/* Card Container */}
+        <div
+          className="relative w-full h-[600px] overflow-hidden"
+          ref={cardContainerRef}
         >
-          <SelectTrigger className={cn(INPUT_BASE_STYLES, "w-full")}>
-            <SelectValue placeholder="Select project scope" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="full">
-              New Project (Build from scratch)
-            </SelectItem>
-            <SelectItem value="partial">
-              Already have a project (Add a new feature)
-            </SelectItem>
-            <SelectItem value="unknown">I&apos;m not sure yet</SelectItem>
-          </SelectContent>
-        </Select>
-        <p className="text-sm text-gray-500 mt-1">
-          {projectInfo.projectScope === "full" &&
-            "We'll help you plan and build a complete solution from start to finish."}
-          {projectInfo.projectScope === "partial" &&
-            "We'll focus on building a specific part of your project."}
-          {projectInfo.projectScope === "unknown" &&
-            "Don't worry if you're not sure. We'll help you figure out what you need based on your requirements."}
-        </p>
-      </div>
+          <AnimatePresence initial={false} custom={1}>
+            {!showPlatforms ? (
+              /* Project Details Card */
+              <motion.div
+                key="details"
+                className="absolute w-full h-full"
+                custom={1}
+                variants={cardVariants}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+              >
+                <div className="group h-full">
+                  <div className="relative h-full">
+                    <div className="absolute -inset-0.5 bg-gradient-to-r from-darkPrimary/20 to-primary/20 rounded-xl blur opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
+                    <div className="relative p-5 bg-black rounded-xl space-y-4 h-full flex flex-col">
+                      <div className="flex items-center space-x-3 text-xl font-semibold text-white mb-4">
+                        <span className="flex h-7 w-7 rounded-full bg-darkPrimary/20 items-center justify-center text-sm">
+                          1
+                        </span>
+                        <h3 className="text-lg">Project Details</h3>
+                      </div>
 
-      <div className="space-y-2">
-        <h2 className="text-sm text-gray-400">Project description</h2>
-        <Textarea
-          value={projectInfo.description}
-          onChange={(e) => handleInputChange(e.target.value, "description")}
-          placeholder="Describe your project ..."
-          className={cn(
-            INPUT_BASE_STYLES,
-            "placeholder:text-gray-500 min-h-[100px] rounded-lg focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none"
-          )}
-        />
-      </div>
+                      <div className="space-y-3 ">
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium text-gray-400">
+                            Project Name
+                          </label>
+                          <Input
+                            value={projectInfo.name}
+                            onChange={(e) =>
+                              handleInputChange(e.target.value, "name")
+                            }
+                            placeholder="Enter your project name..."
+                            className={cn(
+                              INPUT_BASE_STYLES,
+                              "placeholder:text-gray-500 rounded-lg p-4"
+                            )}
+                          />
+                        </div>
 
-      {projectInfo.projectScope !== "unknown" && (
-        <div className="animate-in fade-in slide-in-from-top-4 duration-500">
-          <ProjectPlatformSelect
-            values={projectInfo.projectPlatforms}
-            onValuesChange={(values) =>
-              updateProjectInfo({ projectPlatforms: values })
-            }
-            scope={projectInfo.projectScope}
-            projectDescription={projectInfo.description}
+                        <div className="space-y-2">
+                          <div className="flex justify-between items-center">
+                            <label className="text-sm font-medium text-gray-400">
+                              Project Description
+                            </label>
+                            <span
+                              className={cn(
+                                "text-xs font-medium",
+                                hasEnoughWords
+                                  ? "text-green-500"
+                                  : "text-gray-500"
+                              )}
+                            >
+                              {wordCount} words (minimum 20 words){" "}
+                              {hasEnoughWords && "✓"}
+                            </span>
+                          </div>
+                          <Textarea
+                            value={projectInfo.description}
+                            onChange={(e) =>
+                              handleInputChange(e.target.value, "description")
+                            }
+                            placeholder="Describe your project in detail..."
+                            className={cn(
+                              INPUT_BASE_STYLES,
+                              "placeholder:text-gray-500 bg-black dark:bg-black min-h-[150px] rounded-lg p-4 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none"
+                            )}
+                          />
+                        </div>
+                      </div
+>
+                      {/* Generate Platforms Button */}
+                      <div className="flex justify-center !mt-10">
+                        <Button
+                          onClick={handleGeneratePlatforms}
+                          disabled={
+                            !canGeneratePlatforms || generatingPlatforms
+                          }
+                          className={cn(
+                            "px-8 py-5 text-sm rounded-lg flex items-center gap-2",
+                            "bg-darkPrimary hover:dark:bg-darkPrimary/90 hover:dark:text-white dark:bg-darkPrimary text-black dark:text-black"
+                          )}
+                        >
+                          {generatingPlatforms ? (
+                            <>
+                              <Loader2 className="h-4 w-4 animate-spin mr-1" />
+                              Generating...
+                            </>
+                          ) : (
+                            <>Continue to Platform Selection</>
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            ) : (
+              /* Platforms Card */
+              <motion.div
+                key="platforms"
+                className="absolute w-full h-full"
+                custom={-1}
+                variants={cardVariants}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+              >
+                <div className="group h-full">
+                  <div className="relative h-full">
+                    <div className="absolute -inset-0.5 bg-gradient-to-r from-darkPrimary/20 to-primary/20 rounded-xl blur opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
+                    <div className="relative p-5 bg-black rounded-xl space-y-4 h-full flex flex-col">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center space-x-3 text-xl font-semibold text-white">
+                          <span className="flex h-7 w-7 rounded-full bg-darkPrimary/20 items-center justify-center text-sm">
+                            2
+                          </span>
+                          <h3 className="text-lg">Project Platforms</h3>
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <HelpCircle className="h-4 w-4 text-gray-400 cursor-help" />
+                              </TooltipTrigger>
+                              <TooltipContent className="max-w-[300px] p-4 bg-[#1A1A1A] border-white/10">
+                                <p className="text-sm text-white/80">
+                                  Based on your project description, we&apos;ve
+                                  suggested the right platforms for your needs.
+                                  Core platforms cannot be removed.
+                                </p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        </div>
+
+                        <div className="flex items-center space-x-2">
+                          <Button
+                            onClick={goBackToDetails}
+                            variant="outline"
+                            size="sm"
+                            className="text-xs bg-zinc-800 border-zinc-700 hover:bg-zinc-700 flex items-center gap-1"
+                          >
+                            <ArrowLeftIcon className="h-3 w-3" />
+                            Back
+                          </Button>
+
+                          <Button
+                            onClick={handleGeneratePlatforms}
+                            variant="outline"
+                            size="sm"
+                            disabled={generatingPlatforms}
+                            className="text-xs bg-zinc-800 border-zinc-700 hover:bg-zinc-700"
+                          >
+                            {generatingPlatforms ? (
+                              <>
+                                <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                                Regenerating...
+                              </>
+                            ) : (
+                              "Regenerate"
+                            )}
+                          </Button>
+                        </div>
+                      </div>
+
+                      {generatingPlatforms ? (
+                        <div className="flex items-center justify-center py-16 h-full">
+                          <LoadingState />
+                        </div>
+                      ) : platformSuggestions.length > 0 ? (
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 flex-grow">
+                          {platformSuggestions
+                            .sort((a, b) => b.priority - a.priority)
+                            .map((platform) => (
+                              <PlatformCard
+                                key={platform.type}
+                                platform={platform}
+                                isSelected={projectInfo.projectPlatforms.some(
+                                  (p) => p.value === platform.type
+                                )}
+                                isCore={!platform.isOptional}
+                                onToggle={() => togglePlatform(platform.type)}
+                              />
+                            ))}
+
+                          {/* Add additional platforms option */}
+                          {AVAILABLE_PLATFORMS.some(
+                            (p) =>
+                              !platformSuggestions.some(
+                                (ps) => ps.type === p.value
+                              )
+                          ) && (
+                            <motion.div
+                              whileHover={{ scale: 1.02 }}
+                              className="flex flex-col items-center justify-center p-4 rounded-xl border border-dashed border-white/10 cursor-pointer transition-all h-full hover:border-white/20 hover:bg-zinc-800/50"
+                              onClick={() => {
+                                // Find first available platform not in suggestions
+                                const availablePlatform =
+                                  AVAILABLE_PLATFORMS.find(
+                                    (p) =>
+                                      !platformSuggestions.some(
+                                        (ps) => ps.type === p.value
+                                      )
+                                  );
+                                if (availablePlatform) {
+                                  // Add this platform to suggestions
+                                  setPlatformSuggestions([
+                                    ...platformSuggestions,
+                                    {
+                                      type: availablePlatform.value as any,
+                                      isOptional: true,
+                                      priority: 0,
+                                      description:
+                                        availablePlatform.description,
+                                    },
+                                  ]);
+                                }
+                              }}
+                            >
+                              <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center mb-2">
+                                <Plus className="h-4 w-4 text-white" />
+                              </div>
+                              <p className="text-sm text-center text-gray-400">
+                                Add Platform
+                              </p>
+                            </motion.div>
+                          )}
+                        </div>
+                      ) : null}
+
+                      {/* Footer summary */}
+                      <div className="bg-zinc-900/50 p-3 rounded-lg border border-zinc-800/50 mt-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h4 className="text-sm font-medium text-white">
+                              {projectInfo.name}
+                            </h4>
+                            <p className="text-xs text-gray-400 line-clamp-1 max-w-sm">
+                              {projectInfo.description}
+                            </p>
+                          </div>
+
+                          <div className="flex items-center gap-1">
+                            {projectInfo.projectPlatforms.length > 0 && (
+                              <Badge className="bg-darkPrimary/30 text-[10px]">
+                                {projectInfo.projectPlatforms.length} platform
+                                {projectInfo.projectPlatforms.length !== 1
+                                  ? "s"
+                                  : ""}
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* Progress indicator at the bottom */}
+        <div className="mt-6 flex justify-center items-center space-x-2">
+          <div
+            className={cn(
+              "w-2.5 h-2.5 rounded-full transition-colors duration-300",
+              !!projectInfo.name ? "bg-darkPrimary" : "bg-gray-700"
+            )}
+          />
+          <div
+            className={cn(
+              "w-2.5 h-2.5 rounded-full transition-colors duration-300",
+              hasEnoughWords ? "bg-darkPrimary" : "bg-gray-700"
+            )}
+          />
+          <div
+            className={cn(
+              "w-2.5 h-2.5 rounded-full transition-colors duration-300",
+              showPlatforms ? "bg-darkPrimary" : "bg-gray-700"
+            )}
           />
         </div>
-      )}
-
-      <div className="space-y-4">
-        {isLoading ? (
-          <LoadingState />
-        ) : suggestedIndustries.length > 0 ? (
-          <div className="space-y-4">
-            <div>
-              <h2 className="text-white text-lg mb-2">
-                Suggested industries for your project
-              </h2>
-              <p className="text-gray-400 text-sm mb-4">
-                We&apos;ve analyzed your project and suggested these industries.
-                You can remove any of them or add more from the selection below.{" "}
-                <span className="text-darkPrimary">
-                  ({projectInfo.industries.length}/5 selected)
-                </span>
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {[
-                  ...suggestedIndustries,
-                  ...ALL_INDUSTRIES.filter(
-                    (ind) =>
-                      projectInfo.industries.includes(ind.value) &&
-                      !suggestedIndustries.some((s) => s.value === ind.value)
-                  ),
-                ]
-                  .filter((industry) =>
-                    projectInfo.industries.includes(industry.value)
-                  )
-                  .map((industry) => (
-                    <IndustryBadge
-                      key={industry.value}
-                      industry={industry}
-                      isSelected={true}
-                      onRemove={() => handleIndustryRemove(industry.value)}
-                    />
-                  ))}
-              </div>
-              {showValidationMessage && (
-                <p className="text-red-400 text-sm mt-2">
-                  Please select at least one industry for your project
-                </p>
-              )}
-            </div>
-
-            <IndustrySelector
-              selectedIndustries={projectInfo.industries}
-              onIndustryAdd={handleIndustryAdd}
-              hasReachedLimit={hasReachedLimit}
-            />
-          </div>
-        ) : (
-          <p className="text-sm text-gray-500">
-            We will analyze your project and suggest industries for you
-          </p>
-        )}
       </div>
     </div>
   );

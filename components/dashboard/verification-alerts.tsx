@@ -77,7 +77,7 @@ export const VerificationAlerts = ({ user }: VerificationAlertsProps) => {
           <Button
             variant="outline"
             className="ml-0 md:ml-2 h-8 bg-darkPrimary text-white hover:bg-darkPrimary/80 w-full md:w-auto text-xs"
-            onClick={() => router.push("/dashboard/settings")}
+            onClick={() => router.push("/dashboard/kyc")}
           >
             <UserPen className="mr-2 h-3 w-3" />
             Complete KYC

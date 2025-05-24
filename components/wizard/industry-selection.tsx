@@ -15,7 +15,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Plus } from "lucide-react";
-import { ALL_INDUSTRIES } from "@/utils/industries";
+import { ALL_INDUSTRIES } from "@/lib/utils/industries";
 
 interface Industry {
   label: string;

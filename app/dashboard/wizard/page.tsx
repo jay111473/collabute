@@ -10,10 +10,15 @@ import { ProjectInfo } from "@/components/wizard/project-info";
 import { ProjectCompetitors } from "@/components/wizard/project-competitors";
 import { ProjectFeatures } from "@/components/wizard/project-features";
 import { ProjectTimeline } from "@/components/wizard/project-timeline";
-import { ProjectScope, Stack, Project, Feature } from "@/types/wizard";
+import { Stack, Project, Feature, ProjectType } from "@/types/wizard";
 import { ProjectLeader } from "@/components/wizard/project-leader";
 import { IndustrySelection } from "@/components/wizard/industry-selection";
+import { ProjectType as ProjectTypeComponent } from "@/components/wizard/project-type";
 import { Loader2 } from "lucide-react";
+import { GitHubImport } from "@/components/wizard/github-import";
+import { useSearchParams } from "next/navigation";
+import { getCookie } from "cookies-next";
+import { cn } from "@/lib/utils";
 
 interface Industry {
   label: string;
@@ -25,7 +30,7 @@ interface Competitor {
   url: string;
   slogan?: string;
   yearFounded?: number;
-  businessScale?: 'Startup' | 'SMB' | 'Enterprise' | 'Global Enterprise';
+  businessScale?: "Startup" | "SMB" | "Enterprise" | "Global Enterprise";
   marketShare?: {
     percentage: number;
     region: string;
@@ -45,11 +50,11 @@ interface Lead {
 }
 
 interface WizardData {
+  projectType: ProjectType | null;
   projectInfo: {
     name: string;
     description: string;
     industries: string[];
-    projectScope: ProjectScope;
     projectPlatforms: {
       value: string;
       isCore?: boolean;
@@ -58,35 +63,49 @@ interface WizardData {
   competitors: Competitor[];
   features: Feature[];
   leader: Lead | null;
+  githubRepository?: {
+    repoId: string;
+    name: string;
+    fullName: string;
+    url: string;
+    isPrivate: boolean;
+    description?: string;
+    language?: string;
+    defaultBranch?: string;
+  } | null;
 }
 
 function LoadingOverlay({ step }: { step: number }) {
   const getMessage = () => {
     switch (step) {
-      case 1:
-        return {
-          title: "Analyzing Your Project",
-          description: "Our AI is processing your project details to suggest relevant industries. This may take a few moments..."
-        };
       case 2:
         return {
-          title: "Finding Competitors",
-          description: "Analyzing your industry and project scope to identify relevant competitors..."
+          title: "Analyzing Your Project",
+          description:
+            "Our AI is processing your project details to suggest relevant industries. This may take a few moments...",
         };
       case 3:
         return {
-          title: "Generating Features",
-          description: "Creating a comprehensive feature list based on your project requirements and competitor analysis..."
+          title: "Finding Competitors",
+          description:
+            "Analyzing your industry and project scope to identify relevant competitors...",
         };
       case 4:
         return {
+          title: "Generating Features",
+          description:
+            "Creating a comprehensive feature list based on your project requirements and competitor analysis...",
+        };
+      case 5:
+        return {
           title: "Planning Development",
-          description: "Organizing features and creating a development timeline..."
+          description:
+            "Organizing features and creating a development timeline...",
         };
       default:
         return {
           title: "Processing",
-          description: "Please wait while we process your request..."
+          description: "Please wait while we process your request...",
         };
     }
   };
@@ -101,9 +120,7 @@ function LoadingOverlay({ step }: { step: number }) {
         </div>
         <div className="text-center space-y-2">
           <h3 className="text-xl font-medium text-white">{message.title}</h3>
-          <p className="text-sm text-gray-400">
-            {message.description}
-          </p>
+          <p className="text-sm text-gray-400">{message.description}</p>
         </div>
       </div>
     </div>
@@ -111,35 +128,51 @@ function LoadingOverlay({ step }: { step: number }) {
 }
 
 export default function Wizard() {
-  const [currentStep, setCurrentStep] = useState(0);
+  const searchParams = useSearchParams();
+  const stepParam = searchParams.get("step");
+
+  // Parse step from URL or default to 0
+  const getInitialStep = () => {
+    if (stepParam) {
+      const parsedStep = parseFloat(stepParam);
+      return !isNaN(parsedStep) ? parsedStep : 0;
+    }
+    return 0;
+  };
+  const [currentStep, setCurrentStep] = useState<number>(getInitialStep());
   const [isLoading, setIsLoading] = useState(false);
-  const [suggestedIndustries, setSuggestedIndustries] = useState<Industry[]>([]);
-  const [suggestedCompetitors, setSuggestedCompetitors] = useState<Competitor[]>([]);
+  const [suggestedIndustries, setSuggestedIndustries] = useState<Industry[]>(
+    []
+  );
+  const [suggestedCompetitors, setSuggestedCompetitors] = useState<
+    Competitor[]
+  >([]);
   const [suggestedFeatures, setSuggestedFeatures] = useState<Feature[]>([]);
   const [wizardData, setWizardData] = useState<WizardData>(() => {
     // Try to load saved data from localStorage
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('wizardData');
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("wizardData");
       if (saved) {
         try {
           return JSON.parse(saved);
         } catch (e) {
-          console.error('Failed to parse saved wizard data:', e);
+          console.error("Failed to parse saved wizard data:", e);
         }
       }
     }
     // Default initial state
     return {
+      projectType: null,
       projectInfo: {
         name: "",
         description: "",
         industries: [],
-        projectScope: "unknown",
         projectPlatforms: [],
       },
       competitors: [],
       features: [],
       leader: null,
+      githubRepository: null,
     };
   });
   const [hasCalledAI, setHasCalledAI] = useState(false);
@@ -147,49 +180,110 @@ export default function Wizard() {
   const [hasCalledFeaturesAI, setHasCalledFeaturesAI] = useState(false);
   const [previousData, setPreviousData] = useState<WizardData | null>(null);
 
+  const userid = getCookie("userid") as string;
+  const token = getCookie("token") as string;
+  // Check for GitHub auth success and update step accordingly
+  useEffect(() => {
+    const githubAuthSuccess = searchParams.get("github_auth_success");
+    if (githubAuthSuccess === "true") {
+      // If we have successfully authenticated with GitHub
+
+      // First ensure the step is set to GitHub import
+      const step = searchParams.get("step") || "1.5";
+      setCurrentStep(parseFloat(step));
+
+      // Clean up URL by removing github_auth_success parameter
+      // while preserving the step parameter
+      const params = new URLSearchParams(searchParams.toString());
+      params.delete("github_auth_success");
+
+      // Update the URL without reloading the page
+      const url = `${window.location.pathname}?${params.toString()}`;
+      window.history.replaceState({ path: url }, "", url);
+    }
+  }, [searchParams]);
+
+  // Update URL when step changes
+  useEffect(() => {
+    // Don't update URL on initial render if we already have a step param
+    if (stepParam && parseFloat(stepParam) === currentStep) {
+      return;
+    }
+    updateStep(currentStep);
+  }, [currentStep]);
+
+  // Function to update URL with current step
+  const updateStep = (step: number) => {
+    // Create a new URLSearchParams object and set the step
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("step", step.toString());
+
+    // Update the URL without reloading the page
+    const url = `${window.location.pathname}?${params.toString()}`;
+    window.history.pushState({ path: url }, "", url);
+  };
+
   // Save data to localStorage whenever it changes
   useEffect(() => {
-    localStorage.setItem('wizardData', JSON.stringify(wizardData));
+    localStorage.setItem("wizardData", JSON.stringify(wizardData));
   }, [wizardData]);
 
-  // Load saved step if available
+  // Ensure that when we skip from GitHub import to industry selection,
+  // we have proper project info data populated
   useEffect(() => {
-    const savedStep = localStorage.getItem('currentStep');
-    if (savedStep) {
-      setCurrentStep(parseInt(savedStep));
+    // When we move from step 1.5 (GitHub import) to step 3 (industries)
+    // Make sure we have populated project info from the GitHub repository
+    if (
+      currentStep === 3 &&
+      wizardData.githubRepository &&
+      (!wizardData.projectInfo?.name || wizardData.projectInfo.name === "")
+    ) {
+      setWizardData((prev) => ({
+        ...prev,
+        projectInfo: {
+          ...prev.projectInfo!,
+          name: wizardData.githubRepository?.name || "",
+          description: wizardData.githubRepository?.description || "",
+        },
+      }));
     }
-  }, []);
-
-  // Save current step
-  useEffect(() => {
-    localStorage.setItem('currentStep', currentStep.toString());
-  }, [currentStep]);
+  }, [currentStep, wizardData.githubRepository]);
 
   // Check if data has changed from previous state
   const hasDataChanged = (step: number) => {
     if (!previousData) return false;
-    
+
     switch (step) {
       case 1:
+        return previousData.projectType !== wizardData.projectType;
+      case 2:
         return (
           previousData.projectInfo?.name !== wizardData.projectInfo?.name ||
-          previousData.projectInfo?.description !== wizardData.projectInfo?.description ||
-          previousData.projectInfo?.projectScope !== wizardData.projectInfo?.projectScope ||
-          JSON.stringify(previousData.projectInfo?.projectPlatforms) !== 
-          JSON.stringify(wizardData.projectInfo?.projectPlatforms)
+          previousData.projectInfo?.description !==
+            wizardData.projectInfo?.description ||
+          JSON.stringify(previousData.projectInfo?.projectPlatforms) !==
+            JSON.stringify(wizardData.projectInfo?.projectPlatforms)
         );
-      case 2:
-        return JSON.stringify(previousData.projectInfo?.industries) !== 
-               JSON.stringify(wizardData.projectInfo?.industries);
       case 3:
-        return JSON.stringify(previousData.competitors) !== 
-               JSON.stringify(wizardData.competitors);
+        return (
+          JSON.stringify(previousData.projectInfo?.industries) !==
+          JSON.stringify(wizardData.projectInfo?.industries)
+        );
       case 4:
-        return JSON.stringify(previousData.features) !== 
-               JSON.stringify(wizardData.features);
+        return (
+          JSON.stringify(previousData.competitors) !==
+          JSON.stringify(wizardData.competitors)
+        );
       case 5:
-        return JSON.stringify(previousData.leader) !== 
-               JSON.stringify(wizardData.leader);
+        return (
+          JSON.stringify(previousData.features) !==
+          JSON.stringify(wizardData.features)
+        );
+      case 6:
+        return (
+          JSON.stringify(previousData.leader) !==
+          JSON.stringify(wizardData.leader)
+        );
       default:
         return false;
     }
@@ -201,14 +295,29 @@ export default function Wizard() {
 
     // Reset AI states if data has changed
     if (hasDataChanged(currentStep)) {
-      if (currentStep === 1) setHasCalledAI(false);
-      if (currentStep === 2) setHasCalledCompetitorsAI(false);
-      if (currentStep === 3) setHasCalledFeaturesAI(false);
+      if (currentStep === 2) setHasCalledAI(false);
+      if (currentStep === 3) setHasCalledCompetitorsAI(false);
+      if (currentStep === 4) setHasCalledFeaturesAI(false);
     }
 
-    // If we're on step 1 and haven't called AI yet but have valid inputs
+    // Handle branching flow based on project type
+    if (currentStep === 1 && wizardData.projectType === "existing") {
+      // If user selected existing project, go to GitHub import step
+      setCurrentStep(1.5); // Using a decimal step number to represent the GitHub import step
+      return;
+    }
+
+    // If we're at GitHub import step and moving forward, go to step 3 (industry selection)
+    // Skip project info for existing projects since we already have GitHub repository details
+    if (currentStep === 1.5) {
+      setCurrentStep(3);
+      return;
+    }
+
+    // Regular step processing for other steps
+    // If we're on step 2 and haven't called AI yet but have valid inputs
     if (
-      currentStep === 1 &&
+      currentStep === 2 &&
       !hasCalledAI &&
       wizardData.projectInfo?.name &&
       wizardData.projectInfo?.description
@@ -251,9 +360,9 @@ export default function Wizard() {
       return;
     }
 
-    // Call competitors AI when moving from step 2 to 3
+    // Call competitors AI when moving from step 3 to 4
     if (
-      currentStep === 2 &&
+      currentStep === 3 &&
       wizardData.projectInfo?.industries &&
       wizardData.projectInfo.industries.length > 0
     ) {
@@ -275,7 +384,11 @@ export default function Wizard() {
         const data = await response.json();
 
         if (data.error) {
-          console.error('Competitors API error:', data.error, data.missingFields);
+          console.error(
+            "Competitors API error:",
+            data.error,
+            data.missingFields
+          );
           return;
         }
 
@@ -297,9 +410,9 @@ export default function Wizard() {
       return;
     }
 
-    // Call features AI when moving from step 3 to 4
+    // Call features AI when moving from step 4 to 5
     if (
-      currentStep === 3 &&
+      currentStep === 4 &&
       !hasCalledFeaturesAI &&
       wizardData.projectInfo &&
       wizardData.competitors.length > 0
@@ -317,7 +430,6 @@ export default function Wizard() {
             industries: wizardData.projectInfo.industries,
             competitors: wizardData.competitors,
             projectPlatforms: wizardData.projectInfo.projectPlatforms,
-            projectScope: wizardData.projectInfo.projectScope,
           }),
         });
 
@@ -339,7 +451,7 @@ export default function Wizard() {
 
     // Only proceed to next step if we have features selected after AI call
     if (
-      currentStep === 3 &&
+      currentStep === 4 &&
       hasCalledFeaturesAI &&
       (!wizardData.features || wizardData.features.length === 0)
     ) {
@@ -347,13 +459,14 @@ export default function Wizard() {
     }
 
     // Proceed to next step
-    if (currentStep < 6) {
+    if (currentStep < 7) {
       // Don't automatically increment step if we're calling competitors AI
-      if (!(currentStep === 2 && !hasCalledCompetitorsAI)) {
+      if (!(currentStep === 3 && !hasCalledCompetitorsAI)) {
         setCurrentStep(currentStep + 1);
-        if (currentStep === 1) {
-          setHasCalledAI(false);
-        }
+      }
+
+      if (currentStep === 2) {
+        setHasCalledAI(false);
       }
     }
   };
@@ -362,22 +475,46 @@ export default function Wizard() {
     if (currentStep > 0) {
       // Store current state before going back
       setPreviousData({ ...wizardData });
+
+      // Special handling for GitHub import step
+      if (currentStep === 1.5) {
+        setCurrentStep(1); // Go back to project type selection
+        return;
+      }
+
+      // Special handling when going back from industry selection (step 3)
+      // to either project info (step 2) or GitHub import (step 1.5)
+      if (
+        currentStep === 3 &&
+        wizardData.projectType === "existing" &&
+        wizardData.githubRepository
+      ) {
+        setCurrentStep(1.5);
+        return;
+      }
+
       setCurrentStep(currentStep - 1);
     }
+  };
+
+  const handleProjectTypeChange = (type: ProjectType) => {
+    setWizardData((prev) => ({
+      ...prev,
+      projectType: type,
+    }));
   };
 
   const handleProjectInfoChange = (info: {
     name: string;
     description: string;
     industries: string[];
-    projectScope: ProjectScope;
-    projectPlatforms: { value: string; isCore?: boolean; }[];
+    projectPlatforms: { value: string; isCore?: boolean }[];
   }) => {
-    const hasSignificantChanges = 
+    const hasSignificantChanges =
       info.name !== wizardData.projectInfo?.name ||
       info.description !== wizardData.projectInfo?.description ||
-      info.projectScope !== wizardData.projectInfo?.projectScope ||
-      JSON.stringify(info.projectPlatforms) !== JSON.stringify(wizardData.projectInfo?.projectPlatforms);
+      JSON.stringify(info.projectPlatforms) !==
+        JSON.stringify(wizardData.projectInfo?.projectPlatforms);
 
     if (hasSignificantChanges) {
       setHasCalledAI(false);
@@ -388,7 +525,7 @@ export default function Wizard() {
       setSuggestedFeatures([]);
     }
 
-    setWizardData(prev => ({
+    setWizardData((prev) => ({
       ...prev,
       projectInfo: info,
     }));
@@ -425,30 +562,47 @@ export default function Wizard() {
     }));
   };
 
+  const handleGitHubImport = (repository: any) => {
+    // If repository name is available, prefill project info
+    if (repository.name) {
+      setWizardData((prev) => ({
+        ...prev,
+        githubRepository: repository,
+        projectInfo: {
+          ...prev.projectInfo!,
+          name: repository.name,
+          description:
+            repository.description || prev.projectInfo?.description || "",
+        },
+      }));
+    } else {
+      setWizardData((prev) => ({
+        ...prev,
+        githubRepository: repository,
+      }));
+    }
+  };
+
   const canProceedToNextStep = () => {
     if (currentStep === 1) {
-      const wordCount =
-        wizardData.projectInfo?.description?.trim().split(/\s+/).length || 0;
-
+      return !!wizardData.projectType;
+    } else if (currentStep === 1.5) {
+      // Can proceed from GitHub import if a repo is selected
+      return !!wizardData.githubRepository;
+    } else if (currentStep === 2) {
       if (!hasCalledAI) {
         const hasPlatforms =
-          wizardData.projectInfo?.projectScope === "unknown" ||
           (wizardData.projectInfo?.projectPlatforms.length ?? 0) > 0;
 
-        return (
-          !!wizardData.projectInfo?.name &&
-          wordCount >= 20 &&
-          !!wizardData.projectInfo?.projectScope &&
-          hasPlatforms
-        );
+        return !!wizardData.projectInfo?.name && hasPlatforms;
       }
       return true;
-    } else if (currentStep === 2) {
+    } else if (currentStep === 3) {
       return (
         wizardData.projectInfo?.industries &&
         wizardData.projectInfo.industries.length > 0
       );
-    } else if (currentStep === 3) {
+    } else if (currentStep === 4) {
       if (!hasCalledFeaturesAI) {
         return wizardData.competitors.length > 0;
       } else {
@@ -462,12 +616,31 @@ export default function Wizard() {
     switch (currentStep) {
       case 0:
         return (
-          <>
+          <div className="flex flex-col gap-4 w-full">
             <WizardSteps />
-            <WizardVideoPreview />
-          </>
+            {/* <WizardVideoPreview /> */}
+          </div>
         );
       case 1:
+        return (
+          <div className="col-span-2">
+            <ProjectTypeComponent
+              onProjectTypeChange={handleProjectTypeChange}
+              selectedType={wizardData.projectType}
+            />
+          </div>
+        );
+      case 1.5: // GitHub Import step
+        return (
+          <div className="col-span-2">
+            <GitHubImport
+              userid={userid}
+              token={token}
+              onImportComplete={handleGitHubImport}
+            />
+          </div>
+        );
+      case 2:
         return (
           <div className="col-span-2">
             <ProjectInfo
@@ -477,7 +650,7 @@ export default function Wizard() {
             />
           </div>
         );
-      case 2:
+      case 3:
         return (
           <div className="col-span-2">
             <IndustrySelection
@@ -488,7 +661,7 @@ export default function Wizard() {
             />
           </div>
         );
-      case 3:
+      case 4:
         return (
           <div className="col-span-2">
             <ProjectCompetitors
@@ -500,7 +673,7 @@ export default function Wizard() {
             />
           </div>
         );
-      case 4:
+      case 5:
         return (
           <div className="col-span-2">
             <ProjectFeatures
@@ -512,7 +685,7 @@ export default function Wizard() {
             />
           </div>
         );
-      case 5:
+      case 6:
         return (
           <div className="col-span-2">
             <ProjectLeader
@@ -521,7 +694,7 @@ export default function Wizard() {
             />
           </div>
         );
-      case 6:
+      case 7:
         return (
           <div className="col-span-2">
             <ProjectTimeline
@@ -536,15 +709,22 @@ export default function Wizard() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A] flex flex-col overflow-x-hidden">
+    <div className="min-h-screen bg-[#0A0A0A] flex flex-col overflow-x-hidden w-full">
       {isLoading && <LoadingOverlay step={currentStep} />}
-      <div className="container mx-auto px-4 py-6 flex-1 flex flex-col">
+      <div className="container mx-auto px-4 py-6 flex-1 flex flex-col w-full">
         <WizardLogo />
-        <div className="p-2 border border-darkPrimary/20 rounded-xl">
-          <div className="mx-auto flex-1 flex flex-col border-2 border-darkPrimary/40 p-9 rounded-xl">
-            <StepIndicator currentStep={currentStep} totalSteps={6} />
+        <div className="p-2 border border-darkPrimary/20 rounded-xl w-full">
+          <div className="mx-auto flex-1 flex flex-col border-2 border-darkPrimary/40 p-9 rounded-xl w-full">
+            <StepIndicator currentStep={currentStep} totalSteps={7} />
 
-            <div className="grid md:grid-cols-2 gap-12 flex-1 pb-24">
+            <div
+              className={cn(
+                "flex-1 pb-24 w-full",
+                currentStep === 0
+                  ? "flex flex-col" // For step 0, use flex column layout
+                  : "grid md:grid-cols-2 gap-12" // For other steps, use grid
+              )}
+            >
               {renderStep()}
             </div>
           </div>
@@ -566,7 +746,7 @@ export default function Wizard() {
           <Button
             onClick={handleNext}
             disabled={!canProceedToNextStep() || isLoading}
-            className="px-6 py-2.5 text-sm bg-primary2 hover:bg-primary2/90 text-white rounded-lg"
+            className="px-6 py-2.5 text-sm dark:bg-darkPrimary bg-darkPrimary hover:dark:bg-darkPrimary/90 hover:text-white dark:text-black text-black rounded-lg"
           >
             {isLoading ? (
               <>

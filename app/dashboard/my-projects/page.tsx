@@ -17,6 +17,7 @@ const MyProjects = async () => {
       <MyProjectsComponent
         projects={user?.projects as Project[]}
         issues={user?.developerFields?.issues as Issue[]}
+        currentUser={user}
       />
     </DashboardLayout>
   );

@@ -1,69 +1,63 @@
 import { FileText, Users, Zap } from "lucide-react";
 import { WizardWelcome } from "./welcome";
+import { cn } from "@/lib/utils";
 
-interface Step {
+interface StepProps {
+  number: number;
   title: string;
   description: string;
-  subDescription: string;
-  icon: React.ReactNode;
 }
 
-const steps: Step[] = [
-  {
-    title: "Sketch Your Vision, We'll Fill in the Gaps",
-    description:
-      "Paint your big picture and let our wizard turn it into actionable goals.",
-    subDescription:
-      "Sit back as AI structures your tasks, smooths out workflows, and clarifies your plan.",
-    icon: <FileText className="w-4 h-4 text-primary2" />,
-  },
-  {
-    title: "Team Up & Build Big",
-    description: "Meet your perfect developer match from our global community.",
-    subDescription:
-      "Stay in sync with GitHub-powered updates, commits, and real-time tracking.",
-    icon: <Users className="w-4 h-4 text-primary2" />,
-  },
-  {
-    title: "Begin. Pivot. Win",
-    description: "Crush milestones, adapt fast, and keep innovation alive.",
-    subDescription:
-      "Take your idea to market with speed, agility, and endless possibilities.",
-    icon: <Zap className="w-4 h-4 text-primary2" />,
-  },
-];
+function Step({ number, title, description }: StepProps) {
+  return (
+    <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
+      <div className="flex-shrink-0 w-10 h-10 rounded-full bg-darkPrimary/20 flex items-center justify-center text-darkPrimary font-semibold">
+        {number}
+      </div>
+      <div>
+        <h3 className="text-lg md:text-xl font-medium text-white">{title}</h3>
+        <p className="text-sm text-gray-400">{description}</p>
+      </div>
+    </div>
+  );
+}
 
 export function WizardSteps() {
   return (
-    <div className="relative">
-      <WizardWelcome />
+    <div className="space-y-8 p-4 w-full">
+      <div className="space-y-4">
+        <h2 className="text-2xl md:text-3xl font-bold text-white">Project Wizard</h2>
+        <p className="text-gray-400">
+          Follow these steps to create your project outline and get matched with the perfect development team.
+        </p>
+      </div>
 
-      {/* Vertical Line */}
-      <div className="absolute left-4 top-32 bottom-4 w-[1px] bg-[#d7d4d4]" />
-
-      {/* Steps */}
-      <div className="space-y-10 relative">
-        {steps.map((step, index) => (
-          <div key={index} className="flex gap-4">
-            <div className="flex-shrink-0 relative">
-              {/* Step Circle */}
-              <div className="w-8 h-8 bg-[#141414] rounded-lg flex items-center justify-center relative z-10">
-                {step.icon}
-              </div>
-              {/* Active Step Indicator */}
-              {index === 0 && (
-                <div className="absolute left-4 top-4 w-[1px] h-12 bg-primary2" />
-              )}
-            </div>
-            <div>
-              <h3 className="text-md font-semibold mb-1.5 text-white">
-                {step.title}
-              </h3>
-              <p className="text-xs mb-1.5 text-gray-400">{step.description}</p>
-              <p className="text-xs text-gray-400">{step.subDescription}</p>
-            </div>
-          </div>
-        ))}
+      <div className="space-y-6 grid grid-cols-3 gap-4 w-full">
+        <Step
+          number={1}
+          title="Project Information"
+          description="Provide basic details about your project and its scope."
+        />
+        <Step
+          number={2}
+          title="Competitor Analysis"
+          description="Identify key competitors to benchmark against."
+        />
+        <Step
+          number={3}
+          title="Feature List"
+          description="Select the core features of your project."
+        />
+        <Step
+          number={4}
+          title="Team Lead Selection"
+          description="Choose your project lead."
+        />
+        <Step
+          number={5}
+          title="Timeline"
+          description="Review development timeline."
+        />
       </div>
     </div>
   );

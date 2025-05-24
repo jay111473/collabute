@@ -3,6 +3,8 @@ export interface Industry {
   value: string;
 }
 
+export type ProjectType = 'existing' | 'new';
+
 export type ProjectScope = 'full' | 'partial' | 'unknown';
 
 export interface ProjectPlatform {
@@ -30,18 +32,16 @@ export type ProjectSide =
 export interface Feature {
   title: string;
   description: string;
-  estimatedTimeline: string;
   estimatedPrice: string;
-  complexity: "simple" | "medium" | "complex";
-  platform: "web" | "mobile" | "desktop" | "ai";
-  projectSide: ProjectSide;
+  platform: "website" | "ios" | "android" | "desktop" | "ai";
+  isCore?: boolean;
+  order?: number; // Implementation order, lower numbers should be implemented first
 }
 
 export interface ProjectInfo {
   name: string;
   description: string;
   industries: string[];
-  projectScope: ProjectScope;
   projectPlatforms: {
     value: string;
     isCore?: boolean;

@@ -1,6 +1,21 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { PlusIcon, XIcon, InfoIcon, RefreshCcw, Loader2, ClockIcon } from "lucide-react";
+import {
+  PlusIcon,
+  XIcon,
+  InfoIcon,
+  Loader2,
+  ChevronDownIcon,
+  ChevronUpIcon,
+  PlusCircleIcon,
+  Globe,
+  Smartphone,
+  Monitor,
+  Brain,
+  StarIcon,
+  ShieldAlertIcon,
+  HashIcon,
+} from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -15,7 +30,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select,
   SelectContent,
@@ -23,8 +37,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Feature, ProjectSide, ProjectInfo, Competitor } from "@/types/wizard";
+import { Feature, ProjectInfo, Competitor } from "@/types/wizard";
 import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "../ui/scroll-area";
 
 // Types
 interface ProjectFeaturesProps {
@@ -45,99 +61,105 @@ interface AddFeatureDialogProps {
   onClose: () => void;
   onAdd: (feature: Feature) => void;
   defaultFeature: Partial<Feature>;
-  projectPlatforms: ProjectInfo['projectPlatforms'];
+  projectPlatforms: ProjectInfo["projectPlatforms"];
+  nextOrderNumber: number;
 }
 
 interface FeaturesSectionProps {
   features: Feature[];
-  projectSide: ProjectSide;
+  platform: string;
   onRemove: (feature: Feature) => void;
-  onAddNew: (side: ProjectSide) => void;
+  onAddNew: (platform: string) => void;
+}
+
+interface PlatformSectionProps {
+  platform: string;
+  features: Feature[];
+  onRemove: (feature: Feature) => void;
+  onAddNew: (platform: string) => void;
 }
 
 // Utility Functions
-const getProjectSideLabel = (side: ProjectSide): string => {
-  const labels: Record<ProjectSide, string> = {
-    frontend: "Frontend",
-    backend: "Backend",
-    ios: "iOS",
-    android: "Android",
-    windows: "Windows",
-    macos: "macOS",
-    "cross-platform": "Cross-Platform",
-    ai: "AI/ML",
-    devops: "DevOps",
-    linux: "Linux",
+const getPlatformLabel = (platform: string): string => {
+  const labels: Record<string, string> = {
+    website: "Website",
+    ios: "iOS App",
+    android: "Android App",
+    desktop: "Desktop App",
+    ai: "AI Integration",
   };
-  return labels[side] || "Unknown";
+  return labels[platform] || platform;
 };
 
-const getProjectSides = (platforms: ProjectInfo['projectPlatforms']): ProjectSide[] => {
-  const sideMap: Record<string, ProjectSide[]> = {
-    fullstack: ["frontend", "backend"],
-    frontend: ["frontend"],
-    backend: ["backend"],
-    ios: ["ios", "backend"],
-    android: ["android", "backend"],
-    "cross-platform-mobile": ["cross-platform", "backend"],
-    windows: ["windows", "backend"],
-    macos: ["macos", "backend"],
-    "cross-platform-desktop": ["cross-platform", "backend"],
-    ai: ["ai", "backend", "frontend"],
-    unknown: ["frontend", "backend"],
+const getPlatformColor = (platform: string): string => {
+  const colors: Record<string, string> = {
+    website: "from-blue-500 to-blue-600",
+    ios: "from-gray-400 to-gray-500",
+    android: "from-green-500 to-green-600",
+    desktop: "from-purple-500 to-purple-600",
+    ai: "from-yellow-500 to-yellow-600",
   };
-
-  return Array.from(
-    new Set(
-      platforms.flatMap(platform => sideMap[platform.value] || [])
-    )
-  );
+  return colors[platform] || "from-gray-500 to-gray-600";
 };
 
 // Components
 const FeatureCard: React.FC<FeatureCardProps> = ({ feature, onRemove }) => (
-  <div className="group relative p-5 rounded-xl transition-all duration-300 h-full
-    bg-[#141414] border border-zinc-800 hover:border-darkPrimary/50 hover:shadow-[0_0_20px_rgba(123,97,255,0.15)]">
+  <div
+    className={cn(
+      "group relative p-4 rounded-xl transition-all duration-300 h-full",
+      "bg-[#141414] border border-zinc-800 hover:border-darkPrimary/50 hover:shadow-[0_0_20px_rgba(123,97,255,0.15)]",
+      feature.isCore && "ring-1 ring-darkPrimary/40"
+    )}
+  >
     <div className="flex flex-col h-full">
-      <div className="flex items-start justify-between gap-4">
-        <h3 className="text-base font-medium text-white">
-          {feature.title}
-        </h3>
-        <Button
-          variant="outline"
-          size="icon"
-          className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity duration-200 -mt-1 -mr-2 shrink-0"
-          onClick={onRemove}
-        >
-          <XIcon className="h-3.5 w-3.5" />
-        </Button>
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <h3 className="text-base font-medium text-white">{feature.title}</h3>
+          {feature.isCore && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="flex">
+                    <StarIcon className="h-4 w-4 text-darkPrimary" />
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent side="top">
+                  Core feature (cannot be removed)
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
+        </div>
+        {!feature.isCore && (
+          <Button
+            variant="outline"
+            size="icon"
+            className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity duration-200 -mt-1 -mr-2 shrink-0"
+            onClick={onRemove}
+          >
+            <XIcon className="h-3.5 w-3.5" />
+          </Button>
+        )}
       </div>
-      
-      <p className="text-sm text-white/60 mt-2 line-clamp-2">
+
+      <p className="text-sm text-white/60 mt-2 line-clamp-3 flex-grow">
         {feature.description}
       </p>
 
-      <div className="flex items-center gap-3 text-xs text-white/60 mt-4 pt-4 border-t border-zinc-800">
+      <div className="flex items-center gap-3 text-xs text-white/60 mt-4 pt-2 border-t border-zinc-800">
         <div className="flex items-center gap-1.5">
-          <ClockIcon className="h-3.5 w-3.5" />
-          {feature.estimatedTimeline}
+          <HashIcon className="h-3.5 w-3.5" />
+          <span>Order: {feature.order}</span>
         </div>
-        <div className="flex items-center gap-1.5">
-          <span className={cn(
-            "w-2 h-2 rounded-full",
-            feature.complexity === 'simple' && "bg-emerald-500",
-            feature.complexity === 'medium' && "bg-blue-500",
-            feature.complexity === 'complex' && "bg-violet-500"
-          )} />
-          <span className={cn(
-            "capitalize",
-            feature.complexity === 'simple' && "text-emerald-400",
-            feature.complexity === 'medium' && "text-blue-400",
-            feature.complexity === 'complex' && "text-violet-400"
-          )}>
-            {feature.complexity}
-          </span>
-        </div>
+        {feature.isCore ? (
+          <Badge className="bg-darkPrimary/20 text-darkPrimary border-none">
+            Core Feature
+          </Badge>
+        ) : (
+          <Badge className="bg-zinc-800/50 text-zinc-400 border-zinc-700">
+            Optional
+          </Badge>
+        )}
       </div>
     </div>
   </div>
@@ -151,13 +173,16 @@ const FeatureTooltip: React.FC<{ feature: Feature }> = ({ feature }) => (
           <InfoIcon className="h-3 w-3 text-white/60" />
         </div>
       </TooltipTrigger>
-      <TooltipContent side="top" className="max-w-[400px] bg-[#1A1A1A] border-white/10">
+      <TooltipContent
+        side="top"
+        className="max-w-[400px] bg-[#1A1A1A] border-white/10"
+      >
         <div className="space-y-3">
           <p className="text-sm text-white/80 mb-2">{feature.description}</p>
           <div className="flex items-center gap-4 text-xs text-white/60">
-            <span>Timeline: {feature.estimatedTimeline}</span>
-            <span>Complexity: {feature.complexity}</span>
-            <span>Platform: {feature.platform}</span>
+            <span>Platform: {getPlatformLabel(feature.platform)}</span>
+            <span>Type: {feature.isCore ? "Core" : "Optional"}</span>
+            <span>Order: {feature.order}</span>
           </div>
         </div>
       </TooltipContent>
@@ -165,37 +190,119 @@ const FeatureTooltip: React.FC<{ feature: Feature }> = ({ feature }) => (
   </TooltipProvider>
 );
 
-const FeaturesSection: React.FC<FeaturesSectionProps> = ({
+// Platform Section Component
+const PlatformSection: React.FC<PlatformSectionProps> = ({
+  platform,
   features,
-  projectSide,
   onRemove,
   onAddNew,
-}) => (
-  <div className="space-y-4">
-    <div className="flex items-center justify-between">
-      <h3 className="text-lg font-medium text-white capitalize">
-        {getProjectSideLabel(projectSide)} Features
-      </h3>
-      <Button
-        variant="outline"
-        className="gap-2"
-        onClick={() => onAddNew(projectSide)}
-      >
-        <PlusIcon className="h-4 w-4" />
-        Add {getProjectSideLabel(projectSide)} Feature
-      </Button>
+}) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  // Sort features by order
+  const sortedFeatures = [...features].sort((a, b) => {
+    const orderA = a.order !== undefined ? a.order : Number.MAX_SAFE_INTEGER;
+    const orderB = b.order !== undefined ? b.order : Number.MAX_SAFE_INTEGER;
+    return orderA - orderB;
+  });
+
+  const visibleFeatures = isExpanded
+    ? sortedFeatures
+    : sortedFeatures.slice(0, 6);
+  const hasMoreFeatures = sortedFeatures.length > 6;
+
+  // Count core features
+  const coreFeatures = features.filter((f) => f.isCore).length;
+
+  return (
+    <div className="space-y-4 pb-6 mb-6 border-b border-zinc-800/50 last:border-0 last:mb-0 last:pb-0">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
+        <div className="flex items-center gap-3 mb-2 md:mb-0">
+          <div
+            className={`h-8 w-8 rounded-md flex items-center justify-center bg-gradient-to-br ${getPlatformColor(
+              platform
+            )}`}
+          >
+            {platform === "website" && <Globe className="h-4 w-4 text-white" />}
+            {platform === "ios" && (
+              <Smartphone className="h-4 w-4 text-white" />
+            )}
+            {platform === "android" && (
+              <Smartphone className="h-4 w-4 text-white" />
+            )}
+            {platform === "desktop" && (
+              <Monitor className="h-4 w-4 text-white" />
+            )}
+            {platform === "ai" && <Brain className="h-4 w-4 text-white" />}
+          </div>
+          <div>
+            <h3 className="text-lg font-medium text-white">
+              {getPlatformLabel(platform)}
+            </h3>
+            <div className="flex items-center gap-2">
+              <Badge
+                variant="outline"
+                className="text-xs bg-zinc-800/50 text-zinc-400 border-zinc-700"
+              >
+                {features.length} feature{features.length !== 1 ? "s" : ""}
+              </Badge>
+              {coreFeatures > 0 && (
+                <Badge
+                  variant="outline"
+                  className="text-xs bg-darkPrimary/20 text-darkPrimary border-none"
+                >
+                  {coreFeatures} core
+                </Badge>
+              )}
+            </div>
+          </div>
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          className="gap-2 bg-darkPrimary/10 border-darkPrimary/20 hover:bg-darkPrimary/20 text-darkPrimary"
+          onClick={() => onAddNew(platform)}
+        >
+          <PlusIcon className="h-3.5 w-3.5" />
+          Add Feature
+        </Button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {visibleFeatures.map((feature) => (
+          <FeatureCard
+            key={feature.title}
+            feature={feature}
+            onRemove={() => onRemove(feature)}
+          />
+        ))}
+      </div>
+
+      {hasMoreFeatures && (
+        <div className="flex justify-center mt-4">
+          <Button
+            variant="outline"
+            size="sm"
+            className="text-zinc-400 hover:text-white flex items-center gap-2"
+            onClick={() => setIsExpanded(!isExpanded)}
+          >
+            {isExpanded ? (
+              <>
+                <ChevronUpIcon className="h-4 w-4" />
+                <span>Show less</span>
+              </>
+            ) : (
+              <>
+                <ChevronDownIcon className="h-4 w-4" />
+                <span>Show {sortedFeatures.length - 6} more features</span>
+              </>
+            )}
+          </Button>
+        </div>
+      )}
     </div>
-    <div className="grid grid-cols-1 gap-4">
-      {features.map((feature) => (
-        <FeatureCard
-          key={feature.title}
-          feature={feature}
-          onRemove={() => onRemove(feature)}
-        />
-      ))}
-    </div>
-  </div>
-);
+  );
+};
 
 const AddFeatureDialog: React.FC<AddFeatureDialogProps> = ({
   isOpen,
@@ -203,118 +310,212 @@ const AddFeatureDialog: React.FC<AddFeatureDialogProps> = ({
   onAdd,
   defaultFeature,
   projectPlatforms,
+  nextOrderNumber,
 }) => {
   const [feature, setFeature] = useState<Partial<Feature>>(defaultFeature);
 
+  // Reset form when dialog opens
+  useEffect(() => {
+    if (isOpen) {
+      setFeature({
+        ...defaultFeature,
+        order: nextOrderNumber,
+      });
+    }
+  }, [isOpen, defaultFeature, nextOrderNumber]);
+
   const handleSubmit = () => {
-    if (feature.title && feature.description) {
-      onAdd(feature as Feature);
+    if (feature.title && feature.description && feature.platform) {
+      // Add placeholder price and isCore default values if not provided
+      const completeFeature = {
+        ...feature,
+        estimatedPrice: feature.estimatedPrice || "0",
+        isCore: feature.isCore || false,
+        order: feature.order || nextOrderNumber,
+      } as Feature;
+
+      onAdd(completeFeature);
       onClose();
     }
   };
 
-  // Map technical platforms to business platforms
-  const mapToPlatform = (value: string): "web" | "mobile" | "desktop" | "ai" => {
-    const platformMap: Record<string, "web" | "mobile" | "desktop" | "ai"> = {
-      'frontend': 'web',
-      'backend': 'web',
-      'ios': 'mobile',
-      'android': 'mobile',
-      'windows': 'desktop',
-      'macos': 'desktop',
-      'cross-platform-mobile': 'mobile',
-      'cross-platform-desktop': 'desktop',
-      'ai': 'ai',
-      'fullstack': 'web'
-    };
-    return platformMap[value] || 'web';
-  };
-
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent>
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Add New Feature</DialogTitle>
         </DialogHeader>
-        <div className="space-y-4">
-          <Input
-            placeholder="Feature Title"
-            value={feature.title}
-            onChange={(e) => setFeature(prev => ({ ...prev, title: e.target.value }))}
-          />
-          <Textarea
-            placeholder="Feature Description"
-            value={feature.description}
-            onChange={(e) => setFeature(prev => ({ ...prev, description: e.target.value }))}
-          />
-          <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-4 mt-4">
+          <div className="space-y-2">
+            <label className="text-sm text-white/60 font-medium">
+              Feature Title
+            </label>
+            <Input
+              placeholder="Enter feature title"
+              value={feature.title}
+              onChange={(e) =>
+                setFeature((prev) => ({ ...prev, title: e.target.value }))
+              }
+              className="bg-zinc-900 border-zinc-700"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm text-white/60 font-medium">
+              Description
+            </label>
+            <Textarea
+              placeholder="Describe what this feature does"
+              value={feature.description}
+              onChange={(e) =>
+                setFeature((prev) => ({ ...prev, description: e.target.value }))
+              }
+              className="bg-zinc-900 border-zinc-700 min-h-[100px]"
+            />
+          </div>
+
+          <div className="grid grid-cols-3 gap-4">
             <div className="space-y-2">
-              <label className="text-sm text-white/60">Platform</label>
+              <label className="text-sm text-white/60 font-medium">
+                Platform
+              </label>
               <Select
                 value={feature.platform}
-                onValueChange={(value) => setFeature(prev => ({ 
-                  ...prev, 
-                  platform: mapToPlatform(value)
-                }))}
+                onValueChange={(value) =>
+                  setFeature((prev) => ({
+                    ...prev,
+                    platform: value as Feature["platform"],
+                  }))
+                }
               >
-                <SelectTrigger>
+                <SelectTrigger className="bg-zinc-900 border-zinc-700">
                   <SelectValue placeholder="Select Platform" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-zinc-900 border-zinc-800">
                   {projectPlatforms.map((platform) => (
                     <SelectItem key={platform.value} value={platform.value}>
-                      {platform.value}
+                      <div className="flex items-center gap-2">
+                        <div
+                          className={`h-5 w-5 rounded-sm flex items-center justify-center bg-gradient-to-br ${getPlatformColor(
+                            platform.value
+                          )}`}
+                        >
+                          {platform.value === "website" && (
+                            <Globe className="h-3 w-3 text-white" />
+                          )}
+                          {platform.value === "ios" && (
+                            <Smartphone className="h-3 w-3 text-white" />
+                          )}
+                          {platform.value === "android" && (
+                            <Smartphone className="h-3 w-3 text-white" />
+                          )}
+                          {platform.value === "desktop" && (
+                            <Monitor className="h-3 w-3 text-white" />
+                          )}
+                          {platform.value === "ai" && (
+                            <Brain className="h-3 w-3 text-white" />
+                          )}
+                        </div>
+                        {getPlatformLabel(platform.value)}
+                      </div>
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <label className="text-sm text-white/60">Complexity</label>
+              <label className="text-sm text-white/60 font-medium">Type</label>
               <Select
-                value={feature.complexity}
-                onValueChange={(value) => 
-                  setFeature(prev => ({
+                value={feature.isCore ? "core" : "optional"}
+                onValueChange={(value) =>
+                  setFeature((prev) => ({
                     ...prev,
-                    complexity: value as "simple" | "medium" | "complex"
+                    isCore: value === "core",
                   }))
                 }
               >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select Complexity" />
+                <SelectTrigger className="bg-zinc-900 border-zinc-700">
+                  <SelectValue placeholder="Select Type" />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="simple">Simple</SelectItem>
-                  <SelectItem value="medium">Medium</SelectItem>
-                  <SelectItem value="complex">Complex</SelectItem>
+                <SelectContent className="bg-zinc-900 border-zinc-800">
+                  <SelectItem value="core">
+                    <div className="flex items-center gap-2">
+                      <StarIcon className="h-4 w-4 text-darkPrimary" />
+                      Core Feature
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="optional">
+                    <div className="flex items-center gap-2">
+                      Optional Feature
+                    </div>
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
+            <div className="space-y-2">
+              <label className="text-sm text-white/60 font-medium">
+                Order Number
+              </label>
+              <Input
+                type="number"
+                placeholder="Implementation order"
+                value={
+                  feature.order !== undefined ? feature.order : nextOrderNumber
+                }
+                onChange={(e) =>
+                  setFeature((prev) => ({
+                    ...prev,
+                    order: parseInt(e.target.value) || nextOrderNumber,
+                  }))
+                }
+                className="bg-zinc-900 border-zinc-700"
+              />
+            </div>
           </div>
-          <div className="space-y-2">
-            <label className="text-sm text-white/60">Timeline</label>
-            <Input
-              placeholder="e.g., 2 weeks"
-              value={feature.estimatedTimeline}
-              onChange={(e) => 
-                setFeature(prev => ({
-                  ...prev,
-                  estimatedTimeline: e.target.value
-                }))
-              }
-            />
-          </div>
-          <div className="flex justify-end gap-4">
+
+          <div className="flex justify-end gap-4 pt-2">
             <Button variant="outline" onClick={onClose}>
               Cancel
             </Button>
-            <Button onClick={handleSubmit}>Add Feature</Button>
+            <Button
+              onClick={handleSubmit}
+              className="bg-darkPrimary text-black hover:bg-darkPrimary/90"
+            >
+              Add Feature
+            </Button>
           </div>
         </div>
       </DialogContent>
     </Dialog>
   );
 };
+
+// Empty State
+const EmptyFeaturesState = ({
+  onAddNew,
+}: {
+  onAddNew: (platform: string) => void;
+}) => (
+  <div className="flex flex-col items-center justify-center p-8 text-center rounded-xl border border-dashed border-zinc-700 bg-zinc-900/50">
+    <div className="h-12 w-12 rounded-full bg-darkPrimary/20 flex items-center justify-center mb-4">
+      <PlusCircleIcon className="h-6 w-6 text-darkPrimary" />
+    </div>
+    <h3 className="text-lg font-medium text-white mb-2">
+      No Features Added Yet
+    </h3>
+    <p className="text-white/60 mb-6 max-w-md">
+      Features help define what your MVP will include. Add your first feature to
+      get started.
+    </p>
+    <Button
+      className="bg-darkPrimary text-black hover:bg-darkPrimary/90"
+      onClick={() => onAddNew("website")}
+    >
+      <PlusIcon className="h-4 w-4 mr-2" />
+      Add First Feature
+    </Button>
+  </div>
+);
 
 // Main Component
 export function ProjectFeatures({
@@ -326,23 +527,45 @@ export function ProjectFeatures({
 }: ProjectFeaturesProps) {
   const [features, setFeatures] = useState<Feature[]>(suggestedFeatures);
   const [showAddFeatureDialog, setShowAddFeatureDialog] = useState(false);
-  const [newFeatureSide, setNewFeatureSide] = useState<ProjectSide>("frontend");
+  const [selectedPlatform, setSelectedPlatform] =
+    useState<Feature["platform"]>("website");
+
+  // Calculate next order number for new features
+  const nextOrderNumber =
+    features.length > 0
+      ? Math.max(
+          ...features.map((f) => (f.order !== undefined ? f.order : 0))
+        ) + 1
+      : 1;
 
   const defaultNewFeature: Partial<Feature> = {
     title: "",
     description: "",
-    estimatedTimeline: "",
-    complexity: "simple",
-    platform: "web",
-    projectSide: newFeatureSide,
+    platform: selectedPlatform,
+    isCore: false,
+    order: nextOrderNumber,
   };
 
   useEffect(() => {
-    setFeatures(suggestedFeatures);
+    // Ensure all features have an order number
+    const processedFeatures = suggestedFeatures.map((feature, index) => {
+      if (feature.order === undefined) {
+        return {
+          ...feature,
+          order: index + 1,
+        };
+      }
+      return feature;
+    });
+
+    setFeatures(processedFeatures);
   }, [suggestedFeatures]);
 
   const handleFeatureRemove = (feature: Feature) => {
-    const newFeatures = features.filter(f => f.title !== feature.title);
+    // If it's a core feature, don't remove it
+    if (feature.isCore) return;
+
+    const newFeatures = features.filter((f) => f.title !== feature.title);
     setFeatures(newFeatures);
     onFeaturesChange(newFeatures);
   };
@@ -354,8 +577,8 @@ export function ProjectFeatures({
     setShowAddFeatureDialog(false);
   };
 
-  const handleAddNewFeature = (side: ProjectSide) => {
-    setNewFeatureSide(side);
+  const handleAddNewFeature = (platform: string) => {
+    setSelectedPlatform(platform as Feature["platform"]);
     setShowAddFeatureDialog(true);
   };
 
@@ -363,115 +586,88 @@ export function ProjectFeatures({
     return <LoadingState />;
   }
 
-  if (!features.length) {
-    return (
-      <div className="flex flex-col items-center justify-center p-8 text-center">
-        <p className="text-white/60 mb-4">No features have been added yet.</p>
-      </div>
-    );
-  }
-
-  // Group features by platform for business view
+  // Group features by platform
   const featuresByPlatform = features.reduce((acc, feature) => {
-    const platformMap: Record<string, string> = {
-      'frontend': 'Web',
-      'backend': 'Web',
-      'ios': 'Mobile',
-      'android': 'Mobile',
-      'windows': 'Desktop',
-      'macos': 'Desktop',
-      'cross-platform-mobile': 'Mobile',
-      'cross-platform-desktop': 'Desktop',
-      'ai': 'AI',
-      'fullstack': 'Web'
-    };
-    
-    const businessPlatform = platformMap[feature.platform] || feature.platform;
-    if (!acc[businessPlatform]) {
-      acc[businessPlatform] = [];
+    if (!acc[feature.platform]) {
+      acc[feature.platform] = [];
     }
-    acc[businessPlatform].push(feature);
+    acc[feature.platform].push(feature);
     return acc;
   }, {} as Record<string, Feature[]>);
 
+  // No features added yet
+  if (!features.length) {
+    return <EmptyFeaturesState onAddNew={handleAddNewFeature} />;
+  }
+
+  // Count core features
+  const coreFeatures = features.filter((f) => f.isCore).length;
+
   return (
-    <div className="space-y-8">
-      <Tabs defaultValue="mvp" className="w-full">
-        <div className="flex flex-col items-center justify-center text-center mb-8">
-          <TabsList className="relative inline-flex mb-6 bg-[#1A1A1A] p-1">
-            <TabsTrigger value="mvp" className="relative z-10 px-8">
-              <div className="flex flex-col items-center gap-1">
-                <span className="text-sm font-medium">MVP Features</span>
-                <div className="h-1 w-full bg-darkPrimary rounded-full" />
-              </div>
-            </TabsTrigger>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <TabsTrigger value="roadmap" disabled className="relative z-10 px-8 opacity-50 cursor-not-allowed">
-                    <div className="flex flex-col items-center gap-1">
-                      <span className="text-sm font-medium">Product Roadmap</span>
-                      <div className="h-1 w-full bg-zinc-700 rounded-full" />
-                    </div>
-                  </TabsTrigger>
-                </TooltipTrigger>
-                <TooltipContent side="top" className="max-w-[300px] bg-[#1A1A1A] border-white/10 p-4">
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-darkPrimary animate-pulse" />
-                      <p className="text-sm font-medium text-white">Locked: Complete MVP First</p>
-                    </div>
-                    <p className="text-sm text-white/80">
-                      Focus on your core features! Once you&apos;ve built your MVP, we&apos;ll unlock an exciting roadmap with advanced features and future possibilities.
-                    </p>
-                  </div>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-            <div className="absolute top-1/2 left-0 w-full h-[1px] bg-zinc-800 -translate-y-1/2" />
-          </TabsList>
-          
-          <div className="flex items-center gap-2 text-sm text-white/60">
-            <div className="w-2 h-2 rounded-full bg-darkPrimary" />
-            <span>Current Phase: MVP Development</span>
-          </div>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold text-white mb-1">MVP Features</h2>
+          <p className="text-gray-400 text-sm">
+            Define the core features for your minimum viable product
+          </p>
         </div>
 
-        <TabsContent value="mvp" className="space-y-6">
-          {Object.entries(featuresByPlatform).map(([platform, platformFeatures]) => (
-            <div key={platform}>
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <h3 className="text-lg font-medium text-white">
-                    {platform}
-                  </h3>
-                  <span className="text-sm text-white/60">
-                    {platformFeatures.length} feature{platformFeatures.length !== 1 ? 's' : ''}
-                  </span>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="gap-2"
-                  onClick={() => handleAddNewFeature(platformFeatures[0]?.projectSide || "frontend")}
-                >
-                  <PlusIcon className="h-4 w-4" />
-                  Add Feature
-                </Button>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {platformFeatures.map((feature) => (
-                  <FeatureCard
-                    key={feature.title}
-                    feature={feature}
-                    onRemove={() => handleFeatureRemove(feature)}
-                  />
-                ))}
-              </div>
+        <div className="flex gap-2">
+          <Badge className="bg-zinc-800/50 text-zinc-400 border-zinc-700 py-1.5 px-3">
+            {features.length} Total
+          </Badge>
+          {coreFeatures > 0 && (
+            <Badge className="bg-darkPrimary/20 text-darkPrimary border-none py-1.5 px-3">
+              {coreFeatures} Core
+            </Badge>
+          )}
+        </div>
+      </div>
+
+      <div className="rounded-xl border border-zinc-800 bg-zinc-900/30 overflow-hidden">
+        <div className="p-4 bg-zinc-800/30 border-b border-zinc-800 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="h-6 w-6 rounded-full bg-darkPrimary/20 flex items-center justify-center">
+              <StarIcon className="h-3.5 w-3.5 text-darkPrimary" />
             </div>
-          ))}
-        </TabsContent>
-      </Tabs>
+            <span className="text-sm font-medium text-white">MVP Features</span>
+          </div>
+
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="flex items-center gap-1 text-xs text-gray-400 cursor-help">
+                  <HashIcon className="h-3.5 w-3.5 text-darkPrimary mr-1" />
+                  Implementation order indicates feature dependencies
+                </div>
+              </TooltipTrigger>
+              <TooltipContent side="left">
+                <p className="text-sm">
+                  Features are ordered by their technical implementation
+                  sequence. Lower numbers should be implemented first.
+                </p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
+
+        <ScrollArea className="h-[calc(100vh-320px)] min-h-[400px]">
+          <div className="p-6">
+            {Object.entries(featuresByPlatform).map(
+              ([platform, platformFeatures]) => (
+                <PlatformSection
+                  key={platform}
+                  platform={platform}
+                  features={platformFeatures}
+                  onRemove={handleFeatureRemove}
+                  onAddNew={handleAddNewFeature}
+                />
+              )
+            )}
+          </div>
+        </ScrollArea>
+      </div>
 
       <AddFeatureDialog
         isOpen={showAddFeatureDialog}
@@ -479,9 +675,10 @@ export function ProjectFeatures({
         onAdd={handleAddFeature}
         defaultFeature={{
           ...defaultNewFeature,
-          projectSide: newFeatureSide,
+          platform: selectedPlatform,
         }}
         projectPlatforms={projectInfo.projectPlatforms}
+        nextOrderNumber={nextOrderNumber}
       />
     </div>
   );
@@ -492,7 +689,9 @@ const LoadingState = () => (
     <div className="max-w-md w-full">
       <div className="space-y-6">
         <div className="space-y-2 text-center">
-          <h2 className="text-2xl font-semibold text-white">Generating Features</h2>
+          <h2 className="text-2xl font-semibold text-white">
+            Generating Features
+          </h2>
           <p className="text-base text-gray-400">
             Please wait while we create your feature list...
           </p>

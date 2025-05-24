@@ -33,35 +33,45 @@ const sortOptions = [
 
 type SortOption = "newest" | "oldest" | "priority";
 
-function ProjectHeader({ project, progressPercentage }: { project: Project, progressPercentage: number }) {
+function ProjectHeader({
+  project,
+  progressPercentage,
+  currentUser,
+}: {
+  project: Project;
+  progressPercentage: number;
+  currentUser?: any;
+}) {
   return (
     <>
-      <div className="flex items-center justify-start gap-2 px-4">
-        <h3 className="font-medium text-white text-lg">{project?.title}</h3>
-        <Badge
-          className="font-medium !text-xs"
-          icon={<GitPullRequest className="h-4 w-4 text-primary2" />}
-          variant="outline"
-        >
-          {project.issues?.length} issues
-        </Badge>
-        <Badge
-          className="font-medium !text-xs"
-          icon={<DollarSign className="h-4 w-4 text-primary2" />}
-          variant="outline"
-        >
-          budget
-          <span className="text-xs">${project.budget}</span>
-        </Badge>
-        <Badge
-          className="font-medium !text-xs"
-          icon={<Clock9 className="h-4 w-4 text-primary2" />}
-          variant="outline"
-        >
-          Progress
-          <Progress className="w-20 ml-2" value={progressPercentage} />
-          <span className="text-xs">{progressPercentage}%</span>
-        </Badge>
+      <div className="flex items-center justify-between px-4">
+        <div className="flex items-center gap-2">
+          <h3 className="font-medium text-white text-lg">{project?.title}</h3>
+          <Badge
+            className="font-medium !text-xs"
+            icon={<GitPullRequest className="h-4 w-4 text-primary2" />}
+            variant="outline"
+          >
+            {project.issues?.length} issues
+          </Badge>
+          <Badge
+            className="font-medium !text-xs"
+            icon={<DollarSign className="h-4 w-4 text-primary2" />}
+            variant="outline"
+          >
+            budget
+            <span className="text-xs">${project.budget}</span>
+          </Badge>
+          <Badge
+            className="font-medium !text-xs"
+            icon={<Clock9 className="h-4 w-4 text-primary2" />}
+            variant="outline"
+          >
+            Progress
+            <Progress className="w-20 ml-2" value={progressPercentage} />
+            <span className="text-xs">{progressPercentage}%</span>
+          </Badge>
+        </div>
       </div>
       <p className="text-white font-light text-sm px-4 py-2">
         {project.description}
@@ -70,14 +80,14 @@ function ProjectHeader({ project, progressPercentage }: { project: Project, prog
   );
 }
 
-function IssuesList({ 
-  filteredIssues, 
-  projectTitle, 
-  isMyProject 
-}: { 
-  filteredIssues: Issue[], 
-  projectTitle: string, 
-  isMyProject?: boolean 
+function IssuesList({
+  filteredIssues,
+  projectTitle,
+  isMyProject,
+}: {
+  filteredIssues: Issue[];
+  projectTitle: string;
+  isMyProject?: boolean;
 }) {
   return (
     <div className="flex flex-col gap-4">
@@ -96,7 +106,7 @@ function IssuesList({
 function IssuesContent({
   project,
   isMyProject,
-  tabValue
+  tabValue,
 }: {
   project: Project;
   isMyProject?: boolean;
@@ -155,10 +165,10 @@ function IssuesContent({
         selectedSort={sortBy}
       />
       <Suspense fallback={<IssuesLoadingSkeleton />}>
-        <IssuesList 
-          filteredIssues={filteredAndSortedIssues as Issue[]} 
+        <IssuesList
+          filteredIssues={filteredAndSortedIssues as Issue[]}
           projectTitle={project.title}
-          isMyProject={isMyProject} 
+          isMyProject={isMyProject}
         />
       </Suspense>
     </div>
@@ -169,7 +179,10 @@ function IssuesLoadingSkeleton() {
   return (
     <div className="flex flex-col gap-4">
       {[1, 2, 3].map((i) => (
-        <div key={i} className="w-full p-4 border border-grayBorders rounded-md">
+        <div
+          key={i}
+          className="w-full p-4 border border-grayBorders rounded-md"
+        >
           <Skeleton className="h-6 w-3/4 mb-2" />
           <Skeleton className="h-4 w-1/2 mb-2" />
           <div className="flex gap-2 mt-2">
@@ -185,9 +198,11 @@ function IssuesLoadingSkeleton() {
 const MyProjectCard = ({
   project,
   isMyProject,
+  currentUser,
 }: {
   project: Project;
   isMyProject?: boolean;
+  currentUser?: any;
 }) => {
   const progressPercentage = calculateProgressPercentage(
     project.issues as Issue[]
@@ -198,7 +213,11 @@ const MyProjectCard = ({
       <main className="flex flex-1 flex-col gap-4 lg:gap-6 w-full">
         <Card className="flex flex-col gap-2 py-4 bg-darkGray text-white w-full border-none">
           <Suspense fallback={<Skeleton className="h-20 w-full" />}>
-            <ProjectHeader project={project} progressPercentage={progressPercentage} />
+            <ProjectHeader
+              project={project}
+              progressPercentage={progressPercentage}
+              currentUser={currentUser}
+            />
           </Suspense>
           <span className="w-full h-px"></span>
           <Tabs defaultValue={!isMyProject ? "issues" : "open-issues"}>
@@ -223,26 +242,50 @@ const MyProjectCard = ({
             {!isMyProject ? (
               <TabsContent value="issues">
                 <Suspense fallback={<IssuesLoadingSkeleton />}>
-                  <IssuesContent project={project} isMyProject={isMyProject} tabValue="issues" />
+                  <IssuesContent
+                    project={project}
+                    isMyProject={isMyProject}
+                    tabValue="issues"
+                  />
                 </Suspense>
               </TabsContent>
             ) : (
               <TabsContent value="open-issues">
                 <Suspense fallback={<IssuesLoadingSkeleton />}>
-                  <IssuesContent project={project} isMyProject={isMyProject} tabValue="open-issues" />
+                  <IssuesContent
+                    project={project}
+                    isMyProject={isMyProject}
+                    tabValue="open-issues"
+                  />
                 </Suspense>
               </TabsContent>
             )}
             {!isMyProject && (
               <>
                 <TabsContent value="collabuters">
-                  <Suspense fallback={<div className="p-4"><Skeleton className="h-32 w-full" /></div>}>
-                    <div className="p-4">Collabuters content will be loaded here</div>
+                  <Suspense
+                    fallback={
+                      <div className="p-4">
+                        <Skeleton className="h-32 w-full" />
+                      </div>
+                    }
+                  >
+                    <div className="p-4">
+                      Collabuters content will be loaded here
+                    </div>
                   </Suspense>
                 </TabsContent>
                 <TabsContent value="latest-activity">
-                  <Suspense fallback={<div className="p-4"><Skeleton className="h-32 w-full" /></div>}>
-                    <div className="p-4">Latest activity content will be loaded here</div>
+                  <Suspense
+                    fallback={
+                      <div className="p-4">
+                        <Skeleton className="h-32 w-full" />
+                      </div>
+                    }
+                  >
+                    <div className="p-4">
+                      Latest activity content will be loaded here
+                    </div>
                   </Suspense>
                 </TabsContent>
               </>

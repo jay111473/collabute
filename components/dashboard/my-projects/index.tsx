@@ -1,9 +1,7 @@
 "use client";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Issue, Project } from "@/types/dashboard";
-import { CircleUser } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Issue, Project, User } from "@/types/dashboard";
 import SearchFilterBar from "@/components/dashboard/project/search-filter-bar";
 import IssueCard from "../project/issue-card";
 import MyProjectCard from "../projects";
@@ -22,9 +20,11 @@ const sortOptions = [
 const MyProjectsComponent = ({
   projects,
   issues,
+  currentUser,
 }: {
   projects: Project[];
   issues: Issue[];
+  currentUser: User;
 }) => {
   const hasProjects = projects.length > 0;
   const hasIssues = issues.length > 0;
@@ -55,6 +55,7 @@ const MyProjectsComponent = ({
                   key={project.id}
                   project={project}
                   isMyProject={true}
+                  currentUser={currentUser}
                 />
               ))
             ) : (

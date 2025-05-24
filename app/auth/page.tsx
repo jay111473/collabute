@@ -21,7 +21,7 @@ const Auth = () => {
         <div className="flex flex-col items-center justify-center w-full mt-4 gap-y-2">
           <Button
             onClick={() =>
-              router.push(process.env.NEXT_PUBLIC_API_URL + "/api/oauth/github")
+              router.push(process.env.NEXT_PUBLIC_API_URL + "/api/oauth/github/login")
             }
             className="w-full gap-x-2 border border-white hover:scale-[1.02] transition-all duration-200 hover:shadow-lg bg-black"
           >

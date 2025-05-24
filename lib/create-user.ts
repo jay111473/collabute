@@ -1,5 +1,5 @@
 import { User } from "@/types/dashboard";
-import { generateSecurePassword } from "@/utils/crypto";
+import { generateSecurePassword } from "@/lib/utils/crypto";
 
 export async function createUser(user: Partial<User>) {
   try {

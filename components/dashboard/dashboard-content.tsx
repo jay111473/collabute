@@ -138,13 +138,6 @@ const IssuesTable = ({ issues }: { issues: Issue[] }) => (
 const DashboardContent = ({ user }: DashboardContentProps) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const showVerificationCalendar = () => {
-    toast.success("Opening verification calendar...", {
-      description: "Our team will contact you soon for verification.",
-      icon: <Calendar className="h-4 w-4" />,
-    });
-  };
-
   useEffect(() => {
     const checkIfMobile = () => {
       setIsMobile(window.innerWidth < 768);

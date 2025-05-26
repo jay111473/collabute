@@ -7,12 +7,11 @@ import { WizardSteps } from "@/components/wizard/steps";
 import { WizardVideoPreview } from "@/components/wizard/video-preview";
 import { StepIndicator } from "@/components/wizard/step-indicator";
 import { ProjectInfo } from "@/components/wizard/project-info";
-import { ProjectCompetitors } from "@/components/wizard/project-competitors";
 import { ProjectFeatures } from "@/components/wizard/project-features";
 import { ProjectTimeline } from "@/components/wizard/project-timeline";
 import { Stack, Project, Feature, ProjectType } from "@/types/wizard";
 import { ProjectLeader } from "@/components/wizard/project-leader";
-import { IndustrySelection } from "@/components/wizard/industry-selection";
+import { IndustryCompetitors } from "@/components/wizard/industry-competitors";
 import { ProjectType as ProjectTypeComponent } from "@/components/wizard/project-type";
 import { Loader2 } from "lucide-react";
 import { GitHubImport } from "@/components/wizard/github-import";
@@ -82,21 +81,15 @@ function LoadingOverlay({ step }: { step: number }) {
         return {
           title: "Analyzing Your Project",
           description:
-            "Our AI is processing your project details to suggest relevant industries. This may take a few moments...",
+            "Our AI is processing your project details to suggest relevant industries and competitors. This may take a few moments...",
         };
       case 3:
-        return {
-          title: "Finding Competitors",
-          description:
-            "Analyzing your industry and project scope to identify relevant competitors...",
-        };
-      case 4:
         return {
           title: "Generating Features",
           description:
             "Creating a comprehensive feature list based on your project requirements and competitor analysis...",
         };
-      case 5:
+      case 4:
         return {
           title: "Planning Development",
           description:
@@ -148,6 +141,7 @@ export default function Wizard() {
     Competitor[]
   >([]);
   const [suggestedFeatures, setSuggestedFeatures] = useState<Feature[]>([]);
+  const [hasCalledIndustryCompetitorsAI, setHasCalledIndustryCompetitorsAI] = useState(false);
   const [wizardData, setWizardData] = useState<WizardData>(() => {
     // Try to load saved data from localStorage
     if (typeof window !== "undefined") {
@@ -295,9 +289,11 @@ export default function Wizard() {
 
     // Reset AI states if data has changed
     if (hasDataChanged(currentStep)) {
-      if (currentStep === 2) setHasCalledAI(false);
-      if (currentStep === 3) setHasCalledCompetitorsAI(false);
-      if (currentStep === 4) setHasCalledFeaturesAI(false);
+      if (currentStep === 2) {
+        setHasCalledAI(false);
+        setHasCalledIndustryCompetitorsAI(false);
+      }
+      if (currentStep === 3) setHasCalledFeaturesAI(false);
     }
 
     // Handle branching flow based on project type
@@ -314,61 +310,16 @@ export default function Wizard() {
       return;
     }
 
-    // Regular step processing for other steps
-    // If we're on step 2 and haven't called AI yet but have valid inputs
+    // Call combined industry-competitors AI when moving from step 2 to 3
     if (
       currentStep === 2 &&
-      !hasCalledAI &&
+      !hasCalledIndustryCompetitorsAI &&
       wizardData.projectInfo?.name &&
       wizardData.projectInfo?.description
     ) {
       setIsLoading(true);
       try {
-        const response = await fetch("/api/wizard-industry-ai", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            prompt: `Project Name: ${wizardData.projectInfo.name}\nDescription: ${wizardData.projectInfo.description}`,
-          }),
-        });
-
-        const data = await response.json();
-        setSuggestedIndustries(data.industries);
-        setHasCalledAI(true);
-
-        // Set all suggested industries
-        if (data.industries?.length > 0) {
-          setWizardData((prev) => ({
-            ...prev,
-            projectInfo: {
-              ...prev.projectInfo!,
-              industries: data.industries.map(
-                (industry: Industry) => industry.value
-              ),
-            },
-          }));
-          // Move to next step after getting AI suggestions
-          setCurrentStep(currentStep + 1);
-        }
-      } catch (error) {
-        console.error("Error fetching industries:", error);
-      } finally {
-        setIsLoading(false);
-      }
-      return;
-    }
-
-    // Call competitors AI when moving from step 3 to 4
-    if (
-      currentStep === 3 &&
-      wizardData.projectInfo?.industries &&
-      wizardData.projectInfo.industries.length > 0
-    ) {
-      setIsLoading(true);
-      try {
-        const response = await fetch("/api/wizard-competitors-ai", {
+        const response = await fetch("/api/wizard-industry-competitors-ai", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -376,8 +327,6 @@ export default function Wizard() {
           body: JSON.stringify({
             projectName: wizardData.projectInfo.name,
             description: wizardData.projectInfo.description,
-            industries: wizardData.projectInfo.industries,
-            industry: wizardData.projectInfo.industries[0],
           }),
         });
 
@@ -385,34 +334,42 @@ export default function Wizard() {
 
         if (data.error) {
           console.error(
-            "Competitors API error:",
+            "Industry-Competitors API error:",
             data.error,
             data.missingFields
           );
           return;
         }
 
-        if (data.competitors?.length > 0) {
+        if (data.industries?.length > 0 && data.competitors?.length > 0) {
+          setSuggestedIndustries(data.industries);
           setSuggestedCompetitors(data.competitors);
-          setHasCalledCompetitorsAI(true);
+          setHasCalledIndustryCompetitorsAI(true);
+          
+          // Set initial industries and competitors
           setWizardData((prev) => ({
             ...prev,
+            projectInfo: {
+              ...prev.projectInfo!,
+              industries: data.industries.map((industry: Industry) => industry.value),
+            },
             competitors: data.competitors,
           }));
-          // Move to next step after getting competitors
+          
+          // Move to next step after getting both industries and competitors
           setCurrentStep(currentStep + 1);
         }
       } catch (error) {
-        console.error("Error fetching competitors:", error);
+        console.error("Error fetching industries and competitors:", error);
       } finally {
         setIsLoading(false);
       }
       return;
     }
 
-    // Call features AI when moving from step 4 to 5
+    // Call features AI when moving from step 3 to 4
     if (
-      currentStep === 4 &&
+      currentStep === 3 &&
       !hasCalledFeaturesAI &&
       wizardData.projectInfo &&
       wizardData.competitors.length > 0
@@ -451,7 +408,7 @@ export default function Wizard() {
 
     // Only proceed to next step if we have features selected after AI call
     if (
-      currentStep === 4 &&
+      currentStep === 3 &&
       hasCalledFeaturesAI &&
       (!wizardData.features || wizardData.features.length === 0)
     ) {
@@ -459,9 +416,9 @@ export default function Wizard() {
     }
 
     // Proceed to next step
-    if (currentStep < 7) {
-      // Don't automatically increment step if we're calling competitors AI
-      if (!(currentStep === 3 && !hasCalledCompetitorsAI)) {
+    if (currentStep < 6) {
+      // Don't automatically increment step if we're calling industry-competitors AI
+      if (!(currentStep === 2 && !hasCalledIndustryCompetitorsAI)) {
         setCurrentStep(currentStep + 1);
       }
 
@@ -518,7 +475,7 @@ export default function Wizard() {
 
     if (hasSignificantChanges) {
       setHasCalledAI(false);
-      setHasCalledCompetitorsAI(false);
+      setHasCalledIndustryCompetitorsAI(false);
       setHasCalledFeaturesAI(false);
       setSuggestedIndustries([]);
       setSuggestedCompetitors([]);
@@ -590,7 +547,7 @@ export default function Wizard() {
       // Can proceed from GitHub import if a repo is selected
       return !!wizardData.githubRepository;
     } else if (currentStep === 2) {
-      if (!hasCalledAI) {
+      if (!hasCalledIndustryCompetitorsAI) {
         const hasPlatforms =
           (wizardData.projectInfo?.projectPlatforms.length ?? 0) > 0;
 
@@ -600,7 +557,8 @@ export default function Wizard() {
     } else if (currentStep === 3) {
       return (
         wizardData.projectInfo?.industries &&
-        wizardData.projectInfo.industries.length > 0
+        wizardData.projectInfo.industries.length > 0 &&
+        wizardData.competitors.length > 0
       );
     } else if (currentStep === 4) {
       if (!hasCalledFeaturesAI) {
@@ -653,27 +611,19 @@ export default function Wizard() {
       case 3:
         return (
           <div className="col-span-2">
-            <IndustrySelection
+            <IndustryCompetitors
+              projectInfo={wizardData.projectInfo!}
               onIndustriesChange={handleIndustriesChange}
+              onCompetitorsChange={handleCompetitorsChange}
               isLoading={isLoading}
               suggestedIndustries={suggestedIndustries}
+              suggestedCompetitors={suggestedCompetitors}
               selectedIndustries={wizardData.projectInfo?.industries || []}
+              selectedCompetitors={wizardData.competitors}
             />
           </div>
         );
       case 4:
-        return (
-          <div className="col-span-2">
-            <ProjectCompetitors
-              projectInfo={wizardData.projectInfo!}
-              competitors={wizardData.competitors}
-              onCompetitorsChange={handleCompetitorsChange}
-              isLoading={isLoading}
-              suggestedCompetitors={suggestedCompetitors}
-            />
-          </div>
-        );
-      case 5:
         return (
           <div className="col-span-2">
             <ProjectFeatures
@@ -685,7 +635,7 @@ export default function Wizard() {
             />
           </div>
         );
-      case 6:
+      case 5:
         return (
           <div className="col-span-2">
             <ProjectLeader
@@ -694,7 +644,7 @@ export default function Wizard() {
             />
           </div>
         );
-      case 7:
+      case 6:
         return (
           <div className="col-span-2">
             <ProjectTimeline
@@ -715,7 +665,7 @@ export default function Wizard() {
         <WizardLogo />
         <div className="p-2 border border-darkPrimary/20 rounded-xl w-full">
           <div className="mx-auto flex-1 flex flex-col border-2 border-darkPrimary/40 p-9 rounded-xl w-full">
-            <StepIndicator currentStep={currentStep} totalSteps={7} />
+            <StepIndicator currentStep={currentStep} totalSteps={6} />
 
             <div
               className={cn(
@@ -732,7 +682,7 @@ export default function Wizard() {
       </div>
 
       {/* Fixed Navigation Bar */}
-      <div className="fixed bottom-0 left-0 right-0 bg-[#0A0A0A]/80 backdrop-blur-md border-t border-darkPrimary/20 py-4">
+      <div className="fixed bottom-0 left-0 right-0 bg-[#0A0A0A]/80 backdrop-blur-md border-t border-darkPrimary/20 py-4 z-20">
         <div className="max-w-[100vw] w-full mx-auto px-4 flex justify-end gap-4 overflow-x-hidden">
           {currentStep > 0 && (
             <Button

@@ -17,15 +17,12 @@ import {
   HelpCircle,
   CheckIcon,
   Sparkles,
-  Globe,
-  Smartphone,
+  Plus,
+  ArrowLeftIcon,
   Monitor,
   Brain,
-  Laptop,
-  Plus,
-  LockIcon,
-  ArrowLeftIcon,
 } from "lucide-react";
+import { PlatformIcon, getPlatformLabel } from "@/lib/utils/platform-utils";
 import { Industry } from "@/types/wizard";
 import { ALL_INDUSTRIES } from "@/lib/utils/industries";
 import {
@@ -148,38 +145,9 @@ const AVAILABLE_BACKEND_PLATFORMS = [
 const INPUT_BASE_STYLES =
   "border border-darkPrimary/40 shadow-[0_0_15px_rgba(123,97,255,0.15)] hover:shadow-[0_0_20px_rgba(123,97,255,0.25)] focus:shadow-[0_0_25px_rgba(123,97,255,0.35)] hover:border-darkPrimary/60 focus:border-darkPrimary transition-all duration-200 text-white";
 
-// Platform Icons
+// Platform Icons - now using platform-utils
 const getPlatformIcon = (type: string) => {
-  switch (type) {
-    case "website":
-      return <Globe className="h-5 w-5 text-blue-400" />;
-    case "ios":
-      return <Smartphone className="h-5 w-5 text-gray-300" />;
-    case "android":
-      return <Smartphone className="h-5 w-5 text-green-400" />;
-    case "desktop":
-      return <Monitor className="h-5 w-5 text-purple-400" />;
-    case "pwa":
-      return <Globe className="h-5 w-5 text-indigo-400" />;
-    case "rest-api":
-      return <Brain className="h-5 w-5 text-green-400" />;
-    case "graphql-api":
-      return <Brain className="h-5 w-5 text-pink-400" />;
-    case "database":
-      return <Brain className="h-5 w-5 text-blue-400" />;
-    case "auth-service":
-      return <LockIcon className="h-5 w-5 text-yellow-400" />;
-    case "file-storage":
-      return <Brain className="h-5 w-5 text-orange-400" />;
-    case "real-time":
-      return <Brain className="h-5 w-5 text-red-400" />;
-    case "ai-service":
-      return <Brain className="h-5 w-5 text-yellow-400" />;
-    case "payment-service":
-      return <Brain className="h-5 w-5 text-green-500" />;
-    default:
-      return <Laptop className="h-5 w-5 text-gray-400" />;
-  }
+  return <PlatformIcon platform={type} size="lg" useDefaultColor={false} />;
 };
 
 function LoadingState() {
@@ -206,21 +174,7 @@ function PlatformCard({
   isCore?: boolean;
   onToggle: () => void;
 }) {
-  const getPlatformLabel = (type: string) => {
-    switch (type) {
-      case "ios": return "iOS App";
-      case "android": return "Android App";
-      case "pwa": return "PWA";
-      case "rest-api": return "REST API";
-      case "graphql-api": return "GraphQL API";
-      case "auth-service": return "Authentication";
-      case "file-storage": return "File Storage";
-      case "real-time": return "Real-time";
-      case "ai-service": return "AI Service";
-      case "payment-service": return "Payment Service";
-      default: return type.charAt(0).toUpperCase() + type.slice(1);
-    }
-  };
+  // Using getPlatformLabel from platform-utils
 
   const platformLabel = getPlatformLabel(platform.type);
 
@@ -533,8 +487,8 @@ export function ProjectInfo({
                             )}
                           />
                         </div>
-                      </div
->
+                      </div>
+
                       {/* Generate Platforms Button */}
                       <div className="flex justify-center !mt-10">
                         <Button

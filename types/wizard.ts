@@ -33,7 +33,7 @@ export interface Feature {
   title: string;
   description: string;
   estimatedPrice: string;
-  platform: "website" | "ios" | "android" | "desktop" | "ai";
+  platform: "website" | "ios" | "android" | "desktop" | "pwa" | "rest-api" | "graphql-api" | "database" | "auth-service" | "file-storage" | "real-time" | "ai-service" | "payment-service";
   isCore?: boolean;
   order?: number; // Implementation order, lower numbers should be implemented first
 }

@@ -8,10 +8,6 @@ import {
   ChevronDownIcon,
   ChevronUpIcon,
   PlusCircleIcon,
-  Globe,
-  Smartphone,
-  Monitor,
-  Brain,
   StarIcon,
   ShieldAlertIcon,
   HashIcon,
@@ -41,6 +37,12 @@ import { Feature, ProjectInfo, Competitor } from "@/types/wizard";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "../ui/scroll-area";
+import {
+  getPlatformLabel,
+  getPlatformColor,
+  PlatformIcon,
+  PlatformBadge,
+} from "@/lib/utils/platform-utils";
 
 // Types
 interface ProjectFeaturesProps {
@@ -79,28 +81,7 @@ interface PlatformSectionProps {
   onAddNew: (platform: string) => void;
 }
 
-// Utility Functions
-const getPlatformLabel = (platform: string): string => {
-  const labels: Record<string, string> = {
-    website: "Website",
-    ios: "iOS App",
-    android: "Android App",
-    desktop: "Desktop App",
-    ai: "AI Integration",
-  };
-  return labels[platform] || platform;
-};
-
-const getPlatformColor = (platform: string): string => {
-  const colors: Record<string, string> = {
-    website: "from-blue-500 to-blue-600",
-    ios: "from-gray-400 to-gray-500",
-    android: "from-green-500 to-green-600",
-    desktop: "from-purple-500 to-purple-600",
-    ai: "from-yellow-500 to-yellow-600",
-  };
-  return colors[platform] || "from-gray-500 to-gray-600";
-};
+// Utility Functions - now imported from platform-utils
 
 // Components
 const FeatureCard: React.FC<FeatureCardProps> = ({ feature, onRemove }) => (
@@ -223,17 +204,7 @@ const PlatformSection: React.FC<PlatformSectionProps> = ({
               platform
             )}`}
           >
-            {platform === "website" && <Globe className="h-4 w-4 text-white" />}
-            {platform === "ios" && (
-              <Smartphone className="h-4 w-4 text-white" />
-            )}
-            {platform === "android" && (
-              <Smartphone className="h-4 w-4 text-white" />
-            )}
-            {platform === "desktop" && (
-              <Monitor className="h-4 w-4 text-white" />
-            )}
-            {platform === "ai" && <Brain className="h-4 w-4 text-white" />}
+            <PlatformIcon platform={platform} className="text-white" />
           </div>
           <div>
             <h3 className="text-lg font-medium text-white">
@@ -400,21 +371,11 @@ const AddFeatureDialog: React.FC<AddFeatureDialogProps> = ({
                             platform.value
                           )}`}
                         >
-                          {platform.value === "website" && (
-                            <Globe className="h-3 w-3 text-white" />
-                          )}
-                          {platform.value === "ios" && (
-                            <Smartphone className="h-3 w-3 text-white" />
-                          )}
-                          {platform.value === "android" && (
-                            <Smartphone className="h-3 w-3 text-white" />
-                          )}
-                          {platform.value === "desktop" && (
-                            <Monitor className="h-3 w-3 text-white" />
-                          )}
-                          {platform.value === "ai" && (
-                            <Brain className="h-3 w-3 text-white" />
-                          )}
+                          <PlatformIcon
+                            platform={platform.value}
+                            className="text-white"
+                            size="sm"
+                          />
                         </div>
                         {getPlatformLabel(platform.value)}
                       </div>

@@ -8,7 +8,21 @@ interface ProjectPlatformInput {
   value: string;
   isCore?: boolean;
 }
-const platformEnum = z.enum(["website", "ios", "android", "desktop", "ai"]);
+const platformEnum = z.enum([
+  "website", 
+  "ios", 
+  "android", 
+  "desktop", 
+  "pwa", 
+  "rest-api", 
+  "graphql-api", 
+  "database", 
+  "auth-service", 
+  "file-storage", 
+  "real-time", 
+  "ai-service", 
+  "payment-service"
+]);
 
 export async function POST(request: Request) {
   try {
@@ -116,7 +130,25 @@ When describing features:
 - DON'T: "Implement elasticsearch with faceted search functionality"
 
 For each feature, assign it to one of these platforms based on where the feature would primarily be used:
-${platforms.map((p: string) => `- ${p}`).join('\n')}
+
+FRONTEND PLATFORMS:
+- website: Web application features accessible via browsers
+- ios: Native iOS mobile application features
+- android: Native Android mobile application features
+- desktop: Native desktop application features
+- pwa: Progressive Web App features with offline capabilities
+
+BACKEND PLATFORMS:
+- rest-api: RESTful API service features
+- graphql-api: GraphQL API service features
+- database: Database storage and data management features
+- auth-service: Authentication and authorization features
+- file-storage: File upload and storage features
+- real-time: Real-time communication features (WebSocket, Server-Sent Events)
+- ai-service: AI/ML integration and processing features
+- payment-service: Payment processing and transaction features
+
+Available platforms for this project: ${platforms.join(", ")}
 
 Mark approximately 1/3 of the features as core (isCore: true) - these are absolutely essential for the MVP and cannot be removed.
 The remaining features should be marked as optional (isCore: false) - these enhance the product but aren't strictly necessary for the first version.

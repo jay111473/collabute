@@ -1,7 +1,7 @@
 import { generateObject } from "ai";
-import { openai } from "@ai-sdk/openai";
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { google } from "@ai-sdk/google";
 
 const industryCompetitorSchema = z.object({
   industries: z.array(
@@ -70,7 +70,7 @@ Focus on direct competitors in the same market space. Include both established p
 Ensure the data is accurate and up-to-date.`;
 
     const data = await generateObject({
-      model: openai("gpt-4o-mini"),
+      model: google("gemini-2.5-flash-preview-04-17"),
       prompt,
       schema: industryCompetitorSchema,
       system: `You are a market research expert with deep knowledge of various industries and competitors.

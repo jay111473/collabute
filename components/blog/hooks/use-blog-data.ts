@@ -1,8 +1,13 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { Blog, Category, Tag } from '@/types/blog';
-import { blogService } from '@/lib/services/blog-service';
+
+interface UseBlogDataProps {
+  initialBlogs: Blog[];
+  initialCategories: Category[];
+  initialTags: Tag[];
+}
 
 interface UseBlogDataReturn {
   blogs: Blog[];
@@ -10,101 +15,63 @@ interface UseBlogDataReturn {
   tags: Tag[];
   featuredBlogs: Blog[];
   filteredBlogs: Blog[];
-  isLoading: boolean;
-  error: string | null;
   activeFilter: string;
   setActiveFilter: (filter: string) => void;
-  refreshData: () => Promise<void>;
 }
 
-export const useBlogData = (): UseBlogDataReturn => {
-  const [blogs, setBlogs] = useState<Blog[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [tags, setTags] = useState<Tag[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+export const useBlogData = ({ 
+  initialBlogs, 
+  initialCategories, 
+  initialTags 
+}: UseBlogDataProps): UseBlogDataReturn => {
   const [activeFilter, setActiveFilter] = useState('All posts');
-
-  const fetchData = async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-
-      const [blogsData, categoriesData, tagsData] = await Promise.all([
-        blogService.getBlogs(),
-        blogService.getCategories(),
-        blogService.getTags(),
-      ]);
-
-      setBlogs(blogsData);
-      setCategories(categoriesData);
-      setTags(tagsData);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch blog data';
-      setError(errorMessage);
-      console.error('Error fetching blog data:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchData();
-  }, []);
 
   // Get featured blogs (first 5 published blogs)
   const featuredBlogs = useMemo(() => {
-    return blogs
+    return initialBlogs
       .filter(blog => blog.publishedAt)
       .sort((a, b) => new Date(b.publishedAt!).getTime() - new Date(a.publishedAt!).getTime())
       .slice(0, 5);
-  }, [blogs]);
+  }, [initialBlogs]);
 
   // Filter blogs based on active filter
   const filteredBlogs = useMemo(() => {
     if (activeFilter === 'All posts') {
-      return blogs.filter(blog => blog.publishedAt);
+      return initialBlogs.filter(blog => blog.publishedAt);
     }
 
     // If filter starts with #, it's a tag filter
     if (activeFilter.startsWith('#')) {
       const tagName = activeFilter.slice(1);
-      return blogs.filter(blog => {
+      return initialBlogs.filter(blog => {
         if (!blog.tags || !blog.publishedAt) return false;
         
         return blog.tags.some(tag => {
-          const tagObj = typeof tag === 'object' ? tag : tags.find(t => t.id === tag);
+          const tagObj = typeof tag === 'object' ? tag : initialTags.find(t => t.id === tag);
           return tagObj?.name.toLowerCase() === tagName.toLowerCase();
         });
       });
     }
 
     // Otherwise, it's a category filter
-    return blogs.filter(blog => {
+    return initialBlogs.filter(blog => {
       if (!blog.publishedAt) return false;
       
       const categoryObj = typeof blog.category === 'object' 
         ? blog.category 
-        : categories.find(c => c.id === blog.category);
+        : initialCategories.find(c => c.id === blog.category);
       
       return categoryObj?.name.toLowerCase() === activeFilter.toLowerCase();
     });
-  }, [blogs, categories, tags, activeFilter]);
-
-  const refreshData = async () => {
-    await fetchData();
-  };
+  }, [initialBlogs, initialCategories, initialTags, activeFilter]);
 
   return {
-    blogs,
-    categories,
-    tags,
+    blogs: initialBlogs,
+    categories: initialCategories,
+    tags: initialTags,
     featuredBlogs,
     filteredBlogs,
-    isLoading,
-    error,
     activeFilter,
     setActiveFilter,
-    refreshData,
   };
 }; 

@@ -28,8 +28,18 @@ const industryCompetitorSchema = z.object({
 
 export async function POST(request: Request) {
   try {
-    const { projectName, description } = await request.json();
-
+    let projectName, description;
+    try {
+      const body = await request.json();
+      projectName = body.projectName;
+      description = body.description;
+    } catch (parseError) {
+      return NextResponse.json(
+        { error: "Invalid JSON in request body" },
+        { status: 400 }
+      );
+    }
+    // …rest of your handler…
     // Validate required fields
     if (!projectName || !description) {
       return NextResponse.json(

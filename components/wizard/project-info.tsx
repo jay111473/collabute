@@ -17,15 +17,12 @@ import {
   HelpCircle,
   CheckIcon,
   Sparkles,
-  Globe,
-  Smartphone,
+  Plus,
+  ArrowLeftIcon,
   Monitor,
   Brain,
-  Laptop,
-  Plus,
-  LockIcon,
-  ArrowLeftIcon,
 } from "lucide-react";
+import { PlatformIcon, getPlatformLabel } from "@/lib/utils/platform-utils";
 import { Industry } from "@/types/wizard";
 import { ALL_INDUSTRIES } from "@/lib/utils/industries";
 import {
@@ -65,14 +62,15 @@ interface ProjectInfo {
 }
 
 interface PlatformSuggestion {
-  type: "website" | "ios" | "android" | "desktop" | "ai";
+  type: "website" | "ios" | "android" | "desktop" | "pwa" | "rest-api" | "graphql-api" | "database" | "auth-service" | "file-storage" | "real-time" | "ai-service" | "payment-service";
   isOptional: boolean;
   priority: number;
   description: string;
+  category: "frontend" | "backend";
 }
 
 // Available platforms for manual selection
-const AVAILABLE_PLATFORMS = [
+const AVAILABLE_FRONTEND_PLATFORMS = [
   {
     value: "website",
     label: "Website",
@@ -94,9 +92,52 @@ const AVAILABLE_PLATFORMS = [
     description: "Native application for Windows, MacOS, or Linux",
   },
   {
-    value: "ai",
-    label: "AI Integration",
-    description: "Integration with AI services and capabilities",
+    value: "pwa",
+    label: "PWA",
+    description: "Progressive Web App with offline capabilities",
+  },
+];
+
+const AVAILABLE_BACKEND_PLATFORMS = [
+  {
+    value: "rest-api",
+    label: "REST API",
+    description: "RESTful API service for data operations",
+  },
+  {
+    value: "graphql-api",
+    label: "GraphQL API",
+    description: "GraphQL API service with flexible queries",
+  },
+  {
+    value: "database",
+    label: "Database",
+    description: "Database storage system for data persistence",
+  },
+  {
+    value: "auth-service",
+    label: "Authentication",
+    description: "User authentication and authorization service",
+  },
+  {
+    value: "file-storage",
+    label: "File Storage",
+    description: "File upload and storage service",
+  },
+  {
+    value: "real-time",
+    label: "Real-time",
+    description: "Real-time communication via WebSocket or SSE",
+  },
+  {
+    value: "ai-service",
+    label: "AI Service",
+    description: "AI/ML integration and processing capabilities",
+  },
+  {
+    value: "payment-service",
+    label: "Payment Service",
+    description: "Payment processing and transaction handling",
   },
 ];
 
@@ -104,22 +145,9 @@ const AVAILABLE_PLATFORMS = [
 const INPUT_BASE_STYLES =
   "border border-darkPrimary/40 shadow-[0_0_15px_rgba(123,97,255,0.15)] hover:shadow-[0_0_20px_rgba(123,97,255,0.25)] focus:shadow-[0_0_25px_rgba(123,97,255,0.35)] hover:border-darkPrimary/60 focus:border-darkPrimary transition-all duration-200 text-white";
 
-// Platform Icons
+// Platform Icons - now using platform-utils
 const getPlatformIcon = (type: string) => {
-  switch (type) {
-    case "website":
-      return <Globe className="h-5 w-5 text-blue-400" />;
-    case "ios":
-      return <Smartphone className="h-5 w-5 text-gray-300" />;
-    case "android":
-      return <Smartphone className="h-5 w-5 text-green-400" />;
-    case "desktop":
-      return <Monitor className="h-5 w-5 text-purple-400" />;
-    case "ai":
-      return <Brain className="h-5 w-5 text-yellow-400" />;
-    default:
-      return <Laptop className="h-5 w-5 text-gray-400" />;
-  }
+  return <PlatformIcon platform={type} size="lg" useDefaultColor={false} />;
 };
 
 function LoadingState() {
@@ -146,12 +174,9 @@ function PlatformCard({
   isCore?: boolean;
   onToggle: () => void;
 }) {
-  const platformLabel =
-    platform.type === "ios"
-      ? "iOS App"
-      : platform.type === "android"
-      ? "Android App"
-      : platform.type.charAt(0).toUpperCase() + platform.type.slice(1);
+  // Using getPlatformLabel from platform-utils
+
+  const platformLabel = getPlatformLabel(platform.type);
 
   return (
     <motion.div
@@ -269,12 +294,18 @@ export function ProjectInfo({
 
       const data = await response.json();
 
-      if (data.platforms) {
-        setPlatformSuggestions(data.platforms);
+      if (data.frontendPlatforms && data.backendPlatforms) {
+        // Combine frontend and backend platforms with category labels
+        const allPlatforms: PlatformSuggestion[] = [
+          ...data.frontendPlatforms.map((p: any) => ({ ...p, category: "frontend" as const })),
+          ...data.backendPlatforms.map((p: any) => ({ ...p, category: "backend" as const })),
+        ];
+        
+        setPlatformSuggestions(allPlatforms);
         setShowPlatforms(true);
 
         // Set initial platforms based on priority
-        const initialPlatforms = data.platforms
+        const initialPlatforms = allPlatforms
           .filter((p: PlatformSuggestion) => !p.isOptional)
           .map((p: PlatformSuggestion) => ({
             value: p.type,
@@ -456,8 +487,8 @@ export function ProjectInfo({
                             )}
                           />
                         </div>
-                      </div
->
+                      </div>
+
                       {/* Generate Platforms Button */}
                       <div className="flex justify-center !mt-10">
                         <Button
@@ -556,8 +587,16 @@ export function ProjectInfo({
                           <LoadingState />
                         </div>
                       ) : platformSuggestions.length > 0 ? (
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 flex-grow">
+                        <div className="space-y-6 flex-grow">
+                          {/* Frontend Platforms */}
+                          <div>
+                            <h4 className="text-sm font-medium text-white mb-3 flex items-center gap-2">
+                              <Monitor className="h-4 w-4 text-blue-400" />
+                              Frontend Platforms
+                            </h4>
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                           {platformSuggestions
+                                .filter((p) => p.category === "frontend")
                             .sort((a, b) => b.priority - a.priority)
                             .map((platform) => (
                               <PlatformCard
@@ -570,49 +609,32 @@ export function ProjectInfo({
                                 onToggle={() => togglePlatform(platform.type)}
                               />
                             ))}
-
-                          {/* Add additional platforms option */}
-                          {AVAILABLE_PLATFORMS.some(
-                            (p) =>
-                              !platformSuggestions.some(
-                                (ps) => ps.type === p.value
-                              )
-                          ) && (
-                            <motion.div
-                              whileHover={{ scale: 1.02 }}
-                              className="flex flex-col items-center justify-center p-4 rounded-xl border border-dashed border-white/10 cursor-pointer transition-all h-full hover:border-white/20 hover:bg-zinc-800/50"
-                              onClick={() => {
-                                // Find first available platform not in suggestions
-                                const availablePlatform =
-                                  AVAILABLE_PLATFORMS.find(
-                                    (p) =>
-                                      !platformSuggestions.some(
-                                        (ps) => ps.type === p.value
-                                      )
-                                  );
-                                if (availablePlatform) {
-                                  // Add this platform to suggestions
-                                  setPlatformSuggestions([
-                                    ...platformSuggestions,
-                                    {
-                                      type: availablePlatform.value as any,
-                                      isOptional: true,
-                                      priority: 0,
-                                      description:
-                                        availablePlatform.description,
-                                    },
-                                  ]);
-                                }
-                              }}
-                            >
-                              <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center mb-2">
-                                <Plus className="h-4 w-4 text-white" />
+                            </div>
                               </div>
-                              <p className="text-sm text-center text-gray-400">
-                                Add Platform
-                              </p>
-                            </motion.div>
-                          )}
+
+                          {/* Backend Platforms */}
+                          <div>
+                            <h4 className="text-sm font-medium text-white mb-3 flex items-center gap-2">
+                              <Brain className="h-4 w-4 text-green-400" />
+                              Backend Platforms
+                            </h4>
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                              {platformSuggestions
+                                .filter((p) => p.category === "backend")
+                                .sort((a, b) => b.priority - a.priority)
+                                .map((platform) => (
+                                  <PlatformCard
+                                    key={platform.type}
+                                    platform={platform}
+                                    isSelected={projectInfo.projectPlatforms.some(
+                                      (p) => p.value === platform.type
+                                    )}
+                                    isCore={!platform.isOptional}
+                                    onToggle={() => togglePlatform(platform.type)}
+                                  />
+                                ))}
+                            </div>
+                          </div>
                         </div>
                       ) : null}
 
@@ -630,12 +652,18 @@ export function ProjectInfo({
 
                           <div className="flex items-center gap-1">
                             {projectInfo.projectPlatforms.length > 0 && (
-                              <Badge className="bg-darkPrimary/30 text-[10px]">
-                                {projectInfo.projectPlatforms.length} platform
-                                {projectInfo.projectPlatforms.length !== 1
-                                  ? "s"
-                                  : ""}
+                              <>
+                                <Badge className="bg-blue-500/30 text-[10px]">
+                                  {projectInfo.projectPlatforms.filter(p => 
+                                    platformSuggestions.find(ps => ps.type === p.value)?.category === "frontend"
+                                  ).length} frontend
+                                </Badge>
+                                <Badge className="bg-green-500/30 text-[10px]">
+                                  {projectInfo.projectPlatforms.filter(p => 
+                                    platformSuggestions.find(ps => ps.type === p.value)?.category === "backend"
+                                  ).length} backend
                               </Badge>
+                              </>
                             )}
                           </div>
                         </div>

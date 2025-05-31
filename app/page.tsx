@@ -36,10 +36,10 @@ export default async function Home() {
             className="object-cover"
           />
         </div>
-        
+
         {/* Dark overlay for better text visibility */}
         <div className="absolute inset-0 bg-black/40 z-10"></div>
-        
+
         <main className="relative z-20 flex min-h-screen min-w-screen flex-col items-center justify-center px-2 py-8 lg:px-24 lg:py-4 h-full font-sans gap-y-24 bg-transparent">
           {/* <div className="fixed -top-[1px] left-1/2 -translate-x-1/2 w-[800px] h-[90px] bg-gradient-to-r from-transparent via-[#c99dfe]/25 to-transparent z-20" /> */}
           {/* <Header isAuthenticated={isAuthenticated } />
@@ -49,7 +49,7 @@ export default async function Home() {
           <Developers />
           <HowItWorks />
           <FAQ /> */}
-          
+
           {/* Countdown Timer */}
           <div className="w-full h-full flex items-center justify-center">
             <CountdownTimer />

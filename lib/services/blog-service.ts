@@ -45,7 +45,6 @@ export const blogService = {
         );
       }
       const data = await response.json();
-      console.log(data);
       return data.docs;
     } catch (error) {
       console.error("Error fetching blogs:", error);
@@ -98,7 +97,7 @@ export const blogService = {
         },
         next: { revalidate: 3600 }, // Categories change less frequently
       });
-
+      console.log(response);
       if (!response.ok) {
         throw new Error(
           `Failed to fetch categories: ${response.status} ${response.statusText}`

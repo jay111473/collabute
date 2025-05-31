@@ -3,54 +3,20 @@ import { Metadata } from "next";
 import { BlogHeroServer } from "@/components/blog/blog-hero-server";
 import { BlogClientWrapper } from "@/components/blog/blog-client-wrapper";
 import { blogService } from "@/lib/services/blog-service";
-import { Blog, Category, Tag } from "@/types/blog";
-
-// Generate metadata for SEO
-export const metadata: Metadata = {
-  title: "Blog | Engineering Insights & Stories",
-  description:
-    "Discover our latest engineering insights, product updates, and technical stories. Stay updated with the latest trends and best practices in software development.",
-  keywords: [
-    "blog",
-    "engineering",
-    "software development",
-    "technical articles",
-    "insights",
-  ],
-  openGraph: {
-    title: "Blog | Engineering Insights & Stories",
-    description:
-      "Discover our latest engineering insights, product updates, and technical stories.",
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Blog | Engineering Insights & Stories",
-    description:
-      "Discover our latest engineering insights, product updates, and technical stories.",
-  },
-};
-
-// Helper function to get featured blogs
-const getFeaturedBlogs = (blogs: Blog[]): Blog[] => {
-  return blogs
-    .filter((blog) => blog.publishedAt)
-    .sort(
-      (a, b) =>
-        new Date(b.publishedAt!).getTime() - new Date(a.publishedAt!).getTime()
-    )
-    .slice(0, 5);
-};
+import {
+  extractCategoriesFromBlogs,
+  extractTagsFromBlogs,
+  getFeaturedBlogs,
+} from "@/lib/utils/blog-utils";
 
 const BlogPage = async () => {
   try {
-    // Fetch all data on the server
-    const [blogs, categories, tags] = await Promise.all([
-      blogService.getBlogs(),
-      blogService.getCategories(),
-      blogService.getTags(),
-    ]);
+    // Fetch blog data - categories and tags are included
+    const blogs = await blogService.getBlogs();
 
+    // Extract data using utility functions
+    const categories = extractCategoriesFromBlogs(blogs);
+    const tags = extractTagsFromBlogs(blogs);
     const featuredBlogs = getFeaturedBlogs(blogs);
 
     return (

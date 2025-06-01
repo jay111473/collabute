@@ -3,28 +3,17 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import {
   Loader2,
-  X,
   HelpCircle,
   CheckIcon,
-  Sparkles,
-  Plus,
   ArrowLeftIcon,
   Monitor,
   Brain,
 } from "lucide-react";
 import { PlatformIcon, getPlatformLabel } from "@/lib/utils/platform-utils";
 import { Industry } from "@/types/wizard";
-import { ALL_INDUSTRIES } from "@/lib/utils/industries";
 import {
   Tooltip,
   TooltipContent,
@@ -62,84 +51,25 @@ interface ProjectInfo {
 }
 
 interface PlatformSuggestion {
-  type: "website" | "ios" | "android" | "desktop" | "pwa" | "rest-api" | "graphql-api" | "database" | "auth-service" | "file-storage" | "real-time" | "ai-service" | "payment-service";
+  type:
+    | "website"
+    | "ios"
+    | "android"
+    | "desktop"
+    | "pwa"
+    | "rest-api"
+    | "graphql-api"
+    | "database"
+    | "auth-service"
+    | "file-storage"
+    | "real-time"
+    | "ai-service"
+    | "payment-service";
   isOptional: boolean;
   priority: number;
   description: string;
   category: "frontend" | "backend";
 }
-
-// Available platforms for manual selection
-const AVAILABLE_FRONTEND_PLATFORMS = [
-  {
-    value: "website",
-    label: "Website",
-    description: "A responsive web application accessible on browsers",
-  },
-  {
-    value: "ios",
-    label: "iOS App",
-    description: "Native mobile application for Apple iOS devices",
-  },
-  {
-    value: "android",
-    label: "Android App",
-    description: "Native mobile application for Android devices",
-  },
-  {
-    value: "desktop",
-    label: "Desktop App",
-    description: "Native application for Windows, MacOS, or Linux",
-  },
-  {
-    value: "pwa",
-    label: "PWA",
-    description: "Progressive Web App with offline capabilities",
-  },
-];
-
-const AVAILABLE_BACKEND_PLATFORMS = [
-  {
-    value: "rest-api",
-    label: "REST API",
-    description: "RESTful API service for data operations",
-  },
-  {
-    value: "graphql-api",
-    label: "GraphQL API",
-    description: "GraphQL API service with flexible queries",
-  },
-  {
-    value: "database",
-    label: "Database",
-    description: "Database storage system for data persistence",
-  },
-  {
-    value: "auth-service",
-    label: "Authentication",
-    description: "User authentication and authorization service",
-  },
-  {
-    value: "file-storage",
-    label: "File Storage",
-    description: "File upload and storage service",
-  },
-  {
-    value: "real-time",
-    label: "Real-time",
-    description: "Real-time communication via WebSocket or SSE",
-  },
-  {
-    value: "ai-service",
-    label: "AI Service",
-    description: "AI/ML integration and processing capabilities",
-  },
-  {
-    value: "payment-service",
-    label: "Payment Service",
-    description: "Payment processing and transaction handling",
-  },
-];
 
 // Styles
 const INPUT_BASE_STYLES =
@@ -297,10 +227,16 @@ export function ProjectInfo({
       if (data.frontendPlatforms && data.backendPlatforms) {
         // Combine frontend and backend platforms with category labels
         const allPlatforms: PlatformSuggestion[] = [
-          ...data.frontendPlatforms.map((p: any) => ({ ...p, category: "frontend" as const })),
-          ...data.backendPlatforms.map((p: any) => ({ ...p, category: "backend" as const })),
+          ...data.frontendPlatforms.map((p: any) => ({
+            ...p,
+            category: "frontend" as const,
+          })),
+          ...data.backendPlatforms.map((p: any) => ({
+            ...p,
+            category: "backend" as const,
+          })),
         ];
-        
+
         setPlatformSuggestions(allPlatforms);
         setShowPlatforms(true);
 
@@ -414,7 +350,7 @@ export function ProjectInfo({
 
         {/* Card Container */}
         <div
-          className="relative w-full h-[600px] overflow-hidden"
+          className="relative w-full min-h-[600px]"
           ref={cardContainerRef}
         >
           <AnimatePresence initial={false} custom={1}>
@@ -422,17 +358,16 @@ export function ProjectInfo({
               /* Project Details Card */
               <motion.div
                 key="details"
-                className="absolute w-full h-full"
+                className="absolute w-full"
                 custom={1}
                 variants={cardVariants}
                 initial="hidden"
                 animate="visible"
                 exit="exit"
               >
-                <div className="group h-full">
-                  <div className="relative h-full">
-                    <div className="absolute -inset-0.5 bg-gradient-to-r from-darkPrimary/20 to-primary/20 rounded-xl blur opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
-                    <div className="relative p-5 bg-black rounded-xl space-y-4 h-full flex flex-col">
+                <div className="group">
+                  <div className="relative">
+                    <div className="relative p-5  rounded-xl space-y-4 h-full flex flex-col bg-transparent">
                       <div className="flex items-center space-x-3 text-xl font-semibold text-white mb-4">
                         <span className="flex h-7 w-7 rounded-full bg-darkPrimary/20 items-center justify-center text-sm">
                           1
@@ -519,17 +454,16 @@ export function ProjectInfo({
               /* Platforms Card */
               <motion.div
                 key="platforms"
-                className="absolute w-full h-full"
+                className="w-full"
                 custom={-1}
                 variants={cardVariants}
                 initial="hidden"
                 animate="visible"
                 exit="exit"
               >
-                <div className="group h-full">
-                  <div className="relative h-full">
-                    <div className="absolute -inset-0.5 bg-gradient-to-r from-darkPrimary/20 to-primary/20 rounded-xl blur opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
-                    <div className="relative p-5 bg-black rounded-xl space-y-4 h-full flex flex-col">
+                <div className="group">
+                  <div className="relative">
+                    <div className="relative p-5 rounded-xl space-y-4 flex flex-col">
                       <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center space-x-3 text-xl font-semibold text-white">
                           <span className="flex h-7 w-7 rounded-full bg-darkPrimary/20 items-center justify-center text-sm">
@@ -583,11 +517,11 @@ export function ProjectInfo({
                       </div>
 
                       {generatingPlatforms ? (
-                        <div className="flex items-center justify-center py-16 h-full">
+                        <div className="flex items-center justify-center py-16">
                           <LoadingState />
                         </div>
                       ) : platformSuggestions.length > 0 ? (
-                        <div className="space-y-6 flex-grow">
+                        <div className="space-y-6">
                           {/* Frontend Platforms */}
                           <div>
                             <h4 className="text-sm font-medium text-white mb-3 flex items-center gap-2">
@@ -595,22 +529,24 @@ export function ProjectInfo({
                               Frontend Platforms
                             </h4>
                             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                          {platformSuggestions
+                              {platformSuggestions
                                 .filter((p) => p.category === "frontend")
-                            .sort((a, b) => b.priority - a.priority)
-                            .map((platform) => (
-                              <PlatformCard
-                                key={platform.type}
-                                platform={platform}
-                                isSelected={projectInfo.projectPlatforms.some(
-                                  (p) => p.value === platform.type
-                                )}
-                                isCore={!platform.isOptional}
-                                onToggle={() => togglePlatform(platform.type)}
-                              />
-                            ))}
+                                .sort((a, b) => b.priority - a.priority)
+                                .map((platform) => (
+                                  <PlatformCard
+                                    key={platform.type}
+                                    platform={platform}
+                                    isSelected={projectInfo.projectPlatforms.some(
+                                      (p) => p.value === platform.type
+                                    )}
+                                    isCore={!platform.isOptional}
+                                    onToggle={() =>
+                                      togglePlatform(platform.type)
+                                    }
+                                  />
+                                ))}
                             </div>
-                              </div>
+                          </div>
 
                           {/* Backend Platforms */}
                           <div>
@@ -630,7 +566,9 @@ export function ProjectInfo({
                                       (p) => p.value === platform.type
                                     )}
                                     isCore={!platform.isOptional}
-                                    onToggle={() => togglePlatform(platform.type)}
+                                    onToggle={() =>
+                                      togglePlatform(platform.type)
+                                    }
                                   />
                                 ))}
                             </div>
@@ -654,15 +592,27 @@ export function ProjectInfo({
                             {projectInfo.projectPlatforms.length > 0 && (
                               <>
                                 <Badge className="bg-blue-500/30 text-[10px]">
-                                  {projectInfo.projectPlatforms.filter(p => 
-                                    platformSuggestions.find(ps => ps.type === p.value)?.category === "frontend"
-                                  ).length} frontend
+                                  {
+                                    projectInfo.projectPlatforms.filter(
+                                      (p) =>
+                                        platformSuggestions.find(
+                                          (ps) => ps.type === p.value
+                                        )?.category === "frontend"
+                                    ).length
+                                  }{" "}
+                                  frontend
                                 </Badge>
                                 <Badge className="bg-green-500/30 text-[10px]">
-                                  {projectInfo.projectPlatforms.filter(p => 
-                                    platformSuggestions.find(ps => ps.type === p.value)?.category === "backend"
-                                  ).length} backend
-                              </Badge>
+                                  {
+                                    projectInfo.projectPlatforms.filter(
+                                      (p) =>
+                                        platformSuggestions.find(
+                                          (ps) => ps.type === p.value
+                                        )?.category === "backend"
+                                    ).length
+                                  }{" "}
+                                  backend
+                                </Badge>
                               </>
                             )}
                           </div>
@@ -674,28 +624,6 @@ export function ProjectInfo({
               </motion.div>
             )}
           </AnimatePresence>
-        </div>
-
-        {/* Progress indicator at the bottom */}
-        <div className="mt-6 flex justify-center items-center space-x-2">
-          <div
-            className={cn(
-              "w-2.5 h-2.5 rounded-full transition-colors duration-300",
-              !!projectInfo.name ? "bg-darkPrimary" : "bg-gray-700"
-            )}
-          />
-          <div
-            className={cn(
-              "w-2.5 h-2.5 rounded-full transition-colors duration-300",
-              hasEnoughWords ? "bg-darkPrimary" : "bg-gray-700"
-            )}
-          />
-          <div
-            className={cn(
-              "w-2.5 h-2.5 rounded-full transition-colors duration-300",
-              showPlatforms ? "bg-darkPrimary" : "bg-gray-700"
-            )}
-          />
         </div>
       </div>
     </div>

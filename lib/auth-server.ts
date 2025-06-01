@@ -30,7 +30,6 @@ export async function login({
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password }),
   });
-  console.log(response);
 
   if (!response.ok) {
     const error = await response.json();

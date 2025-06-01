@@ -1,97 +1,95 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ChevronDownIcon, StarIcon, DollarSignIcon, HashIcon } from "lucide-react";
+import { ChevronDownIcon, StarIcon, DollarSignIcon, HashIcon, Clock, Code, Layers } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Feature } from "@/types/wizard";
+import { GeneratedProject } from "@/types/wizard";
 
 interface ProjectTimelineProps {
-  features: Feature[];
-  onFeaturesChange: (features: Feature[]) => void;
+  features: GeneratedProject[];
+  onFeaturesChange: (projects: GeneratedProject[]) => void;
 }
 
-export function ProjectTimeline({ features, onFeaturesChange }: ProjectTimelineProps) {
-  const [selectedFeatures, setSelectedFeatures] = useState<Feature[]>(features);
+export function ProjectTimeline({ features: projects, onFeaturesChange }: ProjectTimelineProps) {
+  const [selectedProjects, setSelectedProjects] = useState<GeneratedProject[]>(projects);
 
-  // Group features by platform
-  const featuresByPlatform = features.reduce((acc, feature) => {
-    if (!acc[feature.platform]) {
-      acc[feature.platform] = [];
+  // Group projects by platform type
+  const projectsByPlatform = projects.reduce((acc, project) => {
+    if (!acc[project.platform]) {
+      acc[project.platform] = [];
     }
-    acc[feature.platform].push(feature);
+    acc[project.platform].push(project);
     return acc;
-  }, {} as Record<string, Feature[]>);
-
-  // Platform display names
-  const platformNames: Record<string, string> = {
-    website: "Website",
-    ios: "iOS App",
-    android: "Android App",
-    desktop: "Desktop App",
-    ai: "AI Integration"
-  };
+  }, {} as Record<string, GeneratedProject[]>);
 
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-xl font-semibold text-white mb-2">MVP Feature Overview</h2>
+        <h2 className="text-xl font-semibold text-white mb-2">Development Projects Overview</h2>
         <p className="text-sm text-white/60">
-          Review the features included in your MVP across different platforms.
+          Review the development projects that will be created for your idea.
         </p>
       </div>
 
-      {Object.entries(featuresByPlatform).map(([platform, platformFeatures]) => {
-        // Count core features for this platform
-        const coreFeatures = platformFeatures.filter(f => f.isCore).length;
-        
-        // Sort features by order
-        const sortedFeatures = [...platformFeatures].sort((a, b) => {
-          const orderA = a.order !== undefined ? a.order : Number.MAX_SAFE_INTEGER;
-          const orderB = b.order !== undefined ? b.order : Number.MAX_SAFE_INTEGER;
-          return orderA - orderB;
-        });
-        
+      {Object.entries(projectsByPlatform).map(([platform, platformProjects]) => {
         return (
           <div key={platform} className="space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-medium text-white">
-                {platformNames[platform] || platform}
+                {platform}
               </h3>
               <div className="flex items-center gap-4 text-sm text-white/60">
                 <Badge
                   variant="outline"
                   className="text-xs bg-zinc-800/50 text-zinc-400 border-zinc-700"
                 >
-                  {platformFeatures.length} feature{platformFeatures.length !== 1 ? "s" : ""}
+                  {platformProjects.length} project{platformProjects.length !== 1 ? "s" : ""}
                 </Badge>
-                {coreFeatures > 0 && (
-                  <Badge
-                    variant="outline"
-                    className="text-xs bg-darkPrimary/20 text-darkPrimary border-none"
-                  >
-                    {coreFeatures} core
-                  </Badge>
-                )}
               </div>
             </div>
 
             <div className="space-y-4">
-              {sortedFeatures.map((feature) => (
+              {platformProjects.map((project, index) => (
                 <div
-                  key={feature.title}
+                  key={index}
                   className="flex items-center justify-between p-4 rounded-lg bg-zinc-900/50 border border-zinc-800"
                 >
-                  <div className="space-y-1">
+                  <div className="space-y-2 flex-1">
                     <div className="flex items-center gap-2">
-                      <div className="flex items-center gap-2 mr-2">
-                        <HashIcon className="h-3.5 w-3.5 text-white/60" />
-                        <span className="text-xs text-white/60">{feature.order}</span>
-                      </div>
-                      <h4 className="text-sm font-medium text-white">{feature.title}</h4>
-                      {feature.isCore && (
-                        <StarIcon className="h-4 w-4 text-darkPrimary" />
-                      )}
+                      <Layers className="h-4 w-4 text-darkPrimary" />
+                      <h4 className="text-sm font-medium text-white">{project.name}</h4>
                     </div>
-                    <p className="text-sm text-white/60">{feature.description}</p>
+                    
+                    <div className="grid grid-cols-3 gap-4 mt-3">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-1 text-xs text-gray-400">
+                          <Layers className="h-3 w-3" />
+                          Framework
+                        </div>
+                        <Badge variant="outline" className="border-gray-600 text-gray-300 text-xs">
+                          {project.framework}
+                        </Badge>
+                      </div>
+                      
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-1 text-xs text-gray-400">
+                          <Code className="h-3 w-3" />
+                          Language
+                        </div>
+                        <Badge variant="outline" className="border-gray-600 text-gray-300 text-xs">
+                          {project.language}
+                        </Badge>
+                      </div>
+                      
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-1 text-xs text-gray-400">
+                          <Clock className="h-3 w-3" />
+                          Timeline
+                        </div>
+                        <Badge variant="outline" className="border-green-600 text-green-400 text-xs">
+                          {project.estimatedTimeline}
+                        </Badge>
+                      </div>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -103,24 +101,24 @@ export function ProjectTimeline({ features, onFeaturesChange }: ProjectTimelineP
       <div className="mt-8 p-4 rounded-lg bg-zinc-900/50 border border-zinc-800">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-lg font-medium text-white">Feature Summary</h3>
-            <p className="text-sm text-white/60">Overview of your MVP features</p>
+            <h3 className="text-lg font-medium text-white">Project Summary</h3>
+            <p className="text-sm text-white/60">Overview of your development projects</p>
           </div>
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-2">
-              <StarIcon className="h-5 w-5 text-darkPrimary" />
+              <Layers className="h-5 w-5 text-darkPrimary" />
               <div className="text-right">
                 <p className="text-sm font-medium text-white">
-                  {features.filter(f => f.isCore).length} core features
+                  {Object.keys(projectsByPlatform).length} platform{Object.keys(projectsByPlatform).length !== 1 ? "s" : ""}
                 </p>
-                <p className="text-xs text-white/60">Essential functionality</p>
+                <p className="text-xs text-white/60">Different technologies</p>
               </div>
             </div>
             <div className="text-right">
               <p className="text-sm font-medium text-white">
-                {features.length} total features
+                {projects.length} total projects
               </p>
-              <p className="text-xs text-white/60">Complete MVP scope</p>
+              <p className="text-xs text-white/60">Ready for development</p>
             </div>
           </div>
         </div>

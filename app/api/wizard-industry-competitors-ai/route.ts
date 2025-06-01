@@ -1,7 +1,7 @@
 import { generateObject } from "ai";
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { google } from "@ai-sdk/google";
+import { openai } from "@ai-sdk/openai";
 
 const industryCompetitorSchema = z.object({
   industries: z.array(
@@ -16,14 +16,18 @@ const industryCompetitorSchema = z.object({
       url: z.string(),
       slogan: z.string().optional(),
       yearFounded: z.number().optional(),
-      businessScale: z.enum(['Startup', 'SMB', 'Enterprise', 'Global Enterprise']).optional(),
-      marketShare: z.object({
-        percentage: z.number(),
-        region: z.string()
-      }).optional(),
-      description: z.string().optional()
+      businessScale: z
+        .enum(["Startup", "SMB", "Enterprise", "Global Enterprise"])
+        .optional(),
+      marketShare: z
+        .object({
+          percentage: z.number(),
+          region: z.string(),
+        })
+        .optional(),
+      description: z.string().optional(),
     })
-  )
+  ),
 });
 
 export async function POST(request: Request) {
@@ -80,7 +84,7 @@ Focus on direct competitors in the same market space. Include both established p
 Ensure the data is accurate and up-to-date.`;
 
     const data = await generateObject({
-      model: google("gemini-2.5-flash-preview-04-17"),
+      model: openai("gpt-4o"),
       prompt,
       schema: industryCompetitorSchema,
       system: `You are a market research expert with deep knowledge of various industries and competitors.
@@ -99,8 +103,8 @@ Ensure the data is accurate and up-to-date.`;
       - Include a mix of established companies and innovative startups
       - Focus on direct competitors in the same market space
       - Provide comprehensive details for each competitor`,
-      temperature: 0.7,
-      maxTokens: 3000,
+      temperature: 0.5,
+      maxTokens: 4000,
     });
 
     return NextResponse.json(data.object);
@@ -111,4 +115,4 @@ Ensure the data is accurate and up-to-date.`;
       { status: 500 }
     );
   }
-} 
+}

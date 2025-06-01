@@ -7,10 +7,12 @@ import { Stack, Project } from "@/types/wizard";
 import { Badge } from "@/components/ui/badge";
 import {
   Loader2,
-  BriefcaseIcon,
-  ClockIcon,
   CheckIcon,
-  XIcon,
+  MapPinIcon,
+  CalendarIcon,
+  GithubIcon,
+  StarIcon,
+  CodeIcon,
 } from "lucide-react";
 import axios from "axios";
 
@@ -70,6 +72,20 @@ export function ProjectLeader({
 
   const handleLeaderSelect = (leader: Lead) => {
     onLeaderChange(leader);
+  };
+
+  const formatJoinedDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+      month: 'long', 
+      year: 'numeric' 
+    });
+  };
+
+  const getSkillsText = (stack: (number | Stack)[]) => {
+    return stack
+      .map(tech => typeof tech === "number" ? tech.toString() : tech.name)
+      .join(", ");
   };
 
   return (
@@ -167,75 +183,109 @@ export function ProjectLeader({
                 <Loader2 className="h-8 w-8 animate-spin text-darkPrimary" />
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {leads?.map((lead) => (
                   <div
                     key={lead.id}
                     onClick={() => handleLeaderSelect(lead)}
                     className={cn(
-                      "group relative p-5 rounded-xl transition-all duration-300 h-full",
-                      "bg-[#141414] border border-zinc-800 hover:border-darkPrimary/50 hover:shadow-[0_0_20px_rgba(123,97,255,0.15)]",
+                      "group relative p-8 rounded-2xl transition-all duration-300 cursor-pointer",
+                      "bg-[#1a1a1a] border border-zinc-800 hover:border-darkPrimary/50 hover:shadow-[0_0_30px_rgba(123,97,255,0.15)]",
                       selectedLeader?.id === lead.id &&
-                        "border-darkPrimary/50 bg-white/5"
+                        "border-darkPrimary/50 bg-white/5 shadow-[0_0_30px_rgba(123,97,255,0.15)]"
                     )}
                   >
-                    <div className="flex flex-col h-full">
-                      <div className="flex items-start gap-4">
-                        <Avatar className="h-12 w-12 rounded-lg border-2 border-white/10">
-                          <AvatarImage
-                            src={`https://avatar.vercel.sh/${lead.name}.png`}
-                            alt={lead.name}
-                          />
-                        </Avatar>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <h4 className="text-base font-medium text-white truncate">
-                              {lead.name}
-                            </h4>
-                            {selectedLeader?.id === lead.id && (
-                              <CheckIcon className="h-4 w-4 text-darkPrimary shrink-0" />
-                            )}
+                    {/* Header Section */}
+                    <div className="flex items-start gap-6 mb-8">
+                      <Avatar className="h-20 w-20 rounded-full border-4 border-white/10">
+                        <AvatarImage
+                          src={`https://avatar.vercel.sh/${lead.name}.png`}
+                          alt={lead.name}
+                          className="rounded-full"
+                        />
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-3 mb-2">
+                          <h4 className="text-2xl font-semibold text-white truncate">
+                            {lead.name}
+                          </h4>
+                          {selectedLeader?.id === lead.id && (
+                            <CheckIcon className="h-5 w-5 text-darkPrimary shrink-0" />
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2 mb-4">
+                          <div className="flex items-center gap-2 bg-zinc-800/50 px-3 py-1.5 rounded-full">
+                            <CodeIcon className="h-4 w-4 text-white/60" />
+                            <span className="text-sm text-white/80">Technical product manager</span>
                           </div>
-                          <p className="text-sm text-white/60">
-                            Technical Product Manager
-                          </p>
                         </div>
-                      </div>
-
-                      <div className="flex flex-wrap gap-2 mt-4">
-                        {lead.stack.map((tech, index) => (
-                          <Badge
-                            key={index}
-                            variant="outline"
-                            className="bg-[#141414] text-xs border-zinc-800 px-2 py-1 flex items-center gap-1.5 text-white/60"
-                          >
-                            {typeof tech === "number" ? tech : tech.name}
-                            <button className="hover:bg-white/5 rounded-sm p-0.5">
-                              <XIcon className="h-3 w-3 text-white/40" />
-                            </button>
-                          </Badge>
-                        ))}
-                      </div>
-
-                      <div className="flex items-center gap-4 mt-4 pt-4 border-t border-zinc-800">
-                        <div className="flex items-center gap-1.5 text-xs text-white/60">
-                          <ClockIcon className="h-3.5 w-3.5" />
-                          {lead.experience}+ years
-                        </div>
-                        <div className="flex items-center gap-1.5 text-xs text-white/60">
-                          <BriefcaseIcon className="h-3.5 w-3.5" />
-                          {lead.projects?.length || 0} projects
-                        </div>
-                        {lead.availability && (
-                          <Badge
-                            variant="outline"
-                            className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20 text-xs ml-auto"
-                          >
-                            Available
-                          </Badge>
-                        )}
                       </div>
                     </div>
+
+                    {/* Info Row */}
+                    <div className="flex items-center gap-8 mb-8 text-sm text-white/60">
+                      <div className="flex items-center gap-2">
+                        <MapPinIcon className="h-4 w-4" />
+                        <span>United States</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <CalendarIcon className="h-4 w-4" />
+                        <span>Joined: {formatJoinedDate(lead.createdAt)}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <GithubIcon className="h-4 w-4" />
+                        <span>Github.com/@{lead.name.toLowerCase().replace(' ', '_')}</span>
+                      </div>
+                    </div>
+
+                    {/* Stats Section */}
+                    <div className="grid grid-cols-3 gap-8 mb-8">
+                      <div>
+                        <div className="text-3xl font-bold text-white mb-1">
+                          {lead.projects?.length || 0}
+                        </div>
+                        <div className="text-sm text-white/60">Current Projects</div>
+                      </div>
+                      <div>
+                        <div className="text-3xl font-bold text-white mb-1">
+                          +{lead.experience}
+                        </div>
+                        <div className="text-sm text-white/60">Years Experience</div>
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <StarIcon className="h-6 w-6 text-purple-400 fill-current" />
+                          <span className="text-3xl font-bold text-purple-400">4.9</span>
+                        </div>
+                        <div className="text-sm text-white/60">Rating</div>
+                      </div>
+                    </div>
+
+                    {/* Details Section */}
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center">
+                        <span className="text-white/60">Industry</span>
+                        <span className="text-white text-right">Web3, Crypto, Finance</span>
+                      </div>
+                      <div className="flex justify-between items-start">
+                        <span className="text-white/60 shrink-0 mr-4">Skills</span>
+                        <span className="text-white text-right">
+                          {getSkillsText(lead.stack)}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Availability Badge */}
+                    {lead.availability && (
+                      <div className="absolute top-6 right-6">
+                        <Badge
+                          variant="outline"
+                          className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20 text-xs"
+                        >
+                          Available
+                        </Badge>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>

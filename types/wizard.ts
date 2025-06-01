@@ -81,6 +81,14 @@ export interface Lead {
   createdAt: string;
 }
 
+export interface GeneratedProject {
+  name: string;
+  platform: string; // e.g., "Frontend Application", "Backend API", "iOS App"
+  framework: string; // e.g., "React", "Node.js", "Swift"
+  language: string; // e.g., "TypeScript", "JavaScript", "Swift"
+  estimatedTimeline: string; // e.g., "2-3 weeks", "1 month"
+}
+
 export const PROJECT_PLATFORMS: ProjectPlatform[] = [
   {
     label: 'Frontend Application',

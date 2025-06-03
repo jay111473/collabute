@@ -384,7 +384,7 @@ function DeveloperProfile({ user, token }: DeveloperProfileProps) {
           name={user.name}
           username={username}
           profilePictureUrl={profilePictureUrl}
-          primaryRole={developerFields.primaryRole}
+          primaryRole={developerFields.primaryRole?.[0] || null}
         />
 
         <ProfileInfo

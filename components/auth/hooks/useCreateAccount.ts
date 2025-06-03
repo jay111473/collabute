@@ -41,6 +41,11 @@ export const useCreateAccount = () => {
     defaultValues: {
       email: email || "",
       type: "developer",
+      phoneNumber: "",
+      countryCode: "",
+      developerFields: {
+        primaryRole: [],
+      },
     },
   });
 
@@ -49,10 +54,11 @@ export const useCreateAccount = () => {
     try {
       await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/users`, values);
       setEmail(values.email);
+      
+      // Use the first selected role for navigation, or 'developer' as fallback
+      const primaryRole = values.developerFields?.primaryRole?.[0] || 'developer';
       router.push(
-        `/auth/create-account/challenge?role=${form.getValues(
-          "developerFields.primaryRole"
-        )}`
+        `/auth/create-account/challenge?role=${encodeURIComponent(primaryRole)}`
       );
     } catch (error) {
       handleApiError(error);

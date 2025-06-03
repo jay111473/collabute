@@ -651,10 +651,11 @@ const LoadingState = () => (
       <div className="space-y-6">
         <div className="space-y-2 text-center">
           <h2 className="text-2xl font-semibold text-white">
-            Generating Features
+            Wrapping up your project
           </h2>
           <p className="text-base text-gray-400">
-            Please wait while we create your feature list...
+            We&apos;re wrapping up your project and preparing the final
+            details...
           </p>
         </div>
         <div className="flex items-center justify-center">

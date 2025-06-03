@@ -10,6 +10,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { CountrySelect } from "@/components/ui/country-select";
 import { AccountTypeSelector } from "../AccountTypeSelector";
 import { DeveloperFields } from "../DeveloperFields";
 import { StartupFields } from "../StartupFields";
@@ -97,38 +98,60 @@ const CreateAccount = () => {
       type: (formData.get("type") as AccountType) || "developer",
       email: formData.get("email") as string,
       password: formData.get("password") as string,
-      phoneNumber: (formData.get("phoneNumber") as string) || null,
+      countryCode: (formData.get("countryCode") as string) || "",
+      phoneNumber: (formData.get("phoneNumber") as string) || "",
     };
 
     // Add nested fields based on account type
     if (formValues.type === "developer") {
-      // Check both formats of field names - with and without dots
-      const primaryRole = formData.get("developerFields.primaryRole") || formData.get("primaryRole");
+      // Get primary roles from form data
+      const primaryRolesData = formData.get("developerFields.primaryRole");
+      console.log("Primary roles raw data:", primaryRolesData);
+      let primaryRoles: DeveloperRole[] = [];
+
+      if (primaryRolesData) {
+        try {
+          primaryRoles = JSON.parse(primaryRolesData as string);
+          console.log("Parsed primary roles:", primaryRoles);
+        } catch {
+          // If parsing fails, treat as empty array
+          primaryRoles = [];
+          console.log("Failed to parse primary roles, using empty array");
+        }
+      }
+
       formValues.developerFields = {
-        primaryRole: primaryRole as DeveloperRole || null,
+        primaryRole: primaryRoles,
       };
     } else if (formValues.type === "startup") {
       // Check both formats of field names
-      const companyName = formData.get("startupFields.companyName") || formData.get("companyName");
-      const teamSize = formData.get("startupFields.teamSize") || formData.get("teamSize");
-      
+      const companyName =
+        formData.get("startupFields.companyName") ||
+        formData.get("companyName");
+      const teamSize =
+        formData.get("startupFields.teamSize") || formData.get("teamSize");
+
       formValues.startupFields = {
         companyName: companyName as string,
         teamSize: teamSize as TeamSize,
       };
     }
 
+    console.log("Final form values for validation:", formValues);
+
     try {
       createAccountSchema.parse(formValues);
       setFormErrors({});
       return true;
     } catch (error) {
+      console.log("Validation error:", error);
       if (error instanceof z.ZodError) {
         const errors: FormErrors = {};
         error.errors.forEach((err) => {
           // Convert path array to dot notation for error keys
           const errorKey = err.path.join(".");
           errors[errorKey] = err.message;
+          console.log(`Validation error at ${errorKey}:`, err.message);
         });
         setFormErrors(errors);
 
@@ -159,9 +182,11 @@ const CreateAccount = () => {
     }
   }, [state, form, router]);
 
-  // Sync primary role to hidden input
+  // Watch form values for hidden inputs
   const primaryRole = form.watch("developerFields.primaryRole");
   const teamSize = form.watch("startupFields.teamSize");
+  const countryCode = form.watch("countryCode");
+  const phoneNumber = form.watch("phoneNumber");
 
   return (
     <Form {...form}>
@@ -173,7 +198,7 @@ const CreateAccount = () => {
             formData.set("type", "developer");
           }
           if (validateForm(formData)) {
-          formAction(formData);
+            formAction(formData);
           }
         }}
       >
@@ -189,144 +214,197 @@ const CreateAccount = () => {
           name="type"
           value={form.watch("type") || "developer"}
         />
-        
-        {/* Add direct field for primary role if developer */}
-        {accountType === "developer" && primaryRole && (
+
+        {/* Add direct field for primary roles if developer */}
+        {accountType === "developer" && (
           <input
             type="hidden"
-            name="primaryRole"
-            value={primaryRole}
+            name="developerFields.primaryRole"
+            value={JSON.stringify(primaryRole || [])}
           />
         )}
-        
+
         {/* Add direct field for team size if startup */}
-        {accountType === "startup" && teamSize && (
-          <input
-            type="hidden"
-            name="teamSize"
-            value={teamSize}
-          />
+        {accountType === "startup" && (
+          <input type="hidden" name="teamSize" value={teamSize || ""} />
         )}
-        
+
+        {/* Add direct fields for phone number and country code */}
+        <input type="hidden" name="phoneNumber" value={phoneNumber || ""} />
+        <input type="hidden" name="countryCode" value={countryCode || ""} />
+
         {/* Fields */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+        <div className="space-y-4 md:space-y-6">
           <AccountTypeSelector form={form} />
 
-          <FormField
-            control={form.control}
-            name="name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Name</FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="Enter your full name"
-                    className={`bg-transparent placeholder:bg-transparent ${
-                      formErrors.name ? "border-red-500" : "border-grayBorders"
-                    }`}
-                    {...field}
-                  />
-                </FormControl>
-                {formErrors.name ? (
-                  <div className="text-red-500 text-xs mt-1">
-                    {formErrors.name}
-                  </div>
-                ) : (
-                <FormMessage />
-                )}
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Email</FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="Enter your email"
-                    className={`bg-transparent placeholder:bg-transparent ${
-                      formErrors.email ? "border-red-500" : "border-grayBorders"
-                    }`}
-                    {...field}
-                  />
-                </FormControl>
-                {formErrors.email ? (
-                  <div className="text-red-500 text-xs mt-1">
-                    {formErrors.email}
-                  </div>
-                ) : (
-                <FormMessage />
-                )}
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="password"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Password</FormLabel>
-                <FormControl>
-                  <div className="relative">
+          {/* Row 1: Name, Country Code + Phone Number */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Name</FormLabel>
+                  <FormControl>
                     <Input
-                      type={showPassword ? "text" : "password"}
-                      placeholder="Enter your password"
+                      placeholder="Enter your full name"
                       className={`bg-transparent placeholder:bg-transparent ${
-                        formErrors.password
+                        formErrors.name
                           ? "border-red-500"
                           : "border-grayBorders"
                       }`}
                       {...field}
                     />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute inset-y-0 right-0 pr-3 flex items-center bg-transparent"
-                    >
-                      {showPassword ? (
-                        <EyeOff className="h-4 w-4 text-gray-400" />
-                      ) : (
-                        <Eye className="h-4 w-4 text-gray-400" />
+                  </FormControl>
+                  {formErrors.name ? (
+                    <div className="text-red-500 text-xs mt-1">
+                      {formErrors.name}
+                    </div>
+                  ) : (
+                    <FormMessage />
+                  )}
+                </FormItem>
+              )}
+            />
+
+            <div>
+              <FormLabel>Phone Number</FormLabel>
+              <div className="flex gap-2 mt-2">
+                <FormField
+                  control={form.control}
+                  name="countryCode"
+                  render={({ field }) => (
+                    <FormItem className="w-1/3">
+                      <FormControl>
+                        <CountrySelect
+                          value={field.value}
+                          onValueChange={field.onChange}
+                          placeholder="Country"
+                          className={`w-full ${
+                            formErrors.countryCode ? "border-red-500" : ""
+                          }`}
+                        />
+                      </FormControl>
+                      {formErrors.countryCode && (
+                        <div className="text-red-500 text-xs mt-1">
+                          {formErrors.countryCode}
+                        </div>
                       )}
-                    </button>
-                  </div>
-                </FormControl>
-                {formErrors.password ? (
-                  <div className="text-red-500 text-xs mt-1">
-                    {formErrors.password}
-                  </div>
-                ) : (
-                <FormMessage />
-                )}
-              </FormItem>
-            )}
-          />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="phoneNumber"
+                  render={({ field }) => (
+                    <FormItem className="flex-1">
+                      <FormControl>
+                        <Input
+                          placeholder="Enter your phone number"
+                          className={`bg-transparent placeholder:bg-transparent ${
+                            formErrors.phoneNumber
+                              ? "border-red-500"
+                              : "border-grayBorders"
+                          }`}
+                          {...field}
+                        />
+                      </FormControl>
+                      {formErrors.phoneNumber && (
+                        <div className="text-red-500 text-xs mt-1">
+                          {formErrors.phoneNumber}
+                        </div>
+                      )}
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
+          </div>
 
-          <FormField
-            control={form.control}
-            name="phoneNumber"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Phone Number (Optional)</FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="Enter your phone number"
-                    className="bg-transparent placeholder:bg-transparent border-grayBorders"
-                    {...field}
-                    value={field.value ?? ""}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          {/* Row 2: Email and Password */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Enter your email"
+                      className={`bg-transparent placeholder:bg-transparent ${
+                        formErrors.email
+                          ? "border-red-500"
+                          : "border-grayBorders"
+                      }`}
+                      {...field}
+                    />
+                  </FormControl>
+                  {formErrors.email ? (
+                    <div className="text-red-500 text-xs mt-1">
+                      {formErrors.email}
+                    </div>
+                  ) : (
+                    <FormMessage />
+                  )}
+                </FormItem>
+              )}
+            />
 
-          {accountType === "developer" && <DeveloperFields form={form} />}
-          {accountType === "startup" && <StartupFields form={form} />}
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Password</FormLabel>
+                  <FormControl>
+                    <div className="relative">
+                      <Input
+                        type={showPassword ? "text" : "password"}
+                        placeholder="Enter your password"
+                        className={`bg-transparent placeholder:bg-transparent ${
+                          formErrors.password
+                            ? "border-red-500"
+                            : "border-grayBorders"
+                        }`}
+                        {...field}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute inset-y-0 right-0 pr-3 flex items-center bg-transparent"
+                      >
+                        {showPassword ? (
+                          <EyeOff className="h-4 w-4 text-gray-400" />
+                        ) : (
+                          <Eye className="h-4 w-4 text-gray-400" />
+                        )}
+                      </button>
+                    </div>
+                  </FormControl>
+                  {formErrors.password ? (
+                    <div className="text-red-500 text-xs mt-1">
+                      {formErrors.password}
+                    </div>
+                  ) : (
+                    <FormMessage />
+                  )}
+                </FormItem>
+              )}
+            />
+          </div>
+
+          {/* Role-specific fields */}
+          {accountType === "developer" && (
+            <div className="grid grid-cols-1">
+              <DeveloperFields form={form} errors={formErrors} />
+            </div>
+          )}
+          {accountType === "startup" && (
+            <div className="grid grid-cols-1">
+              <StartupFields form={form} errors={formErrors} />
+            </div>
+          )}
         </div>
 
         {/* Navigation Buttons */}

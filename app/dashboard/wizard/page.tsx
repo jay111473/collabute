@@ -92,9 +92,9 @@ function LoadingOverlay({ step }: { step: number }) {
         };
       case 3:
         return {
-          title: "Generating Features",
+          title: "Wrapping up your project",
           description:
-            "Creating a comprehensive feature list based on your project requirements and competitor analysis...",
+            "We're wrapping up your project and preparing the final details...",
         };
       case 4:
         return {

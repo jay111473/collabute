@@ -11,10 +11,17 @@ export const createAccountSchema = z.object({
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
       "Password must contain at least one uppercase letter, one lowercase letter, and one number"
     ),
-  phoneNumber: z.string().optional().nullable(),
+  phoneNumber: z
+    .string()
+    .min(1, "Phone number is required")
+    .regex(
+      /^[\+]?[1-9][\d]{0,15}$/,
+      "Please enter a valid phone number (7-16 digits)"
+    ),
+  countryCode: z.string().min(1, "Country code is required"),
   developerFields: z
     .object({
-      primaryRole: z.enum([
+      primaryRole: z.array(z.enum([
         "Frontend Developer",
         "Backend Developer",
         "Full Stack Developer",
@@ -23,8 +30,13 @@ export const createAccountSchema = z.object({
         "Data Scientist",
         "UI/UX Designer",
         "QA Engineer",
+        "Game Developer",
+        "Embedded Developer",
+        "Scientific Computing",
+        "Systems Engineer",
+        "Data Engineer",
         "Other",
-      ] as const),
+      ] as const)).min(1, "At least one primary role must be selected"),
     })
     .optional()
     .nullable(),
@@ -43,15 +55,15 @@ export const createAccountSchema = z.object({
     .nullable(),
 }).superRefine((data, ctx) => {
   if (data.type === "developer") {
-    if (!data.developerFields?.primaryRole) {
+    if (!data.developerFields?.primaryRole || data.developerFields.primaryRole.length === 0) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "Primary role is required for developer accounts",
+        message: "At least one primary role must be selected for developer accounts",
         path: ["developerFields", "primaryRole"],
       });
     }
   }
-    if (data.type === "startup") {
+  if (data.type === "startup") {
     const companyName = data.startupFields?.companyName;
     if (typeof companyName !== "string" || companyName.length < 2) {
       ctx.addIssue({

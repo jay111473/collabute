@@ -4,34 +4,29 @@ import {
   Loader2,
   CheckIcon,
   X,
-  Star,
   Trophy,
   Rocket,
   Building2,
   DollarSign,
   Target,
-  BarChart3,
   Info,
+  TrendingUp,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import * as LucideIcons from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import {
-  Feature,
-  Category,
-  Competitor,
-  FeatureComparisonData,
+  BusinessAspect,
+  BusinessCategory,
+  BusinessCompetitor,
+  UserBusinessProject,
+  BusinessComparisonData,
 } from "@/types/wizard";
 
-interface UserProject {
-  name: string;
-  features: Record<string, boolean>;
-}
-
-interface FeatureComparisonMatrixProps {
-  onDataChange?: (data: FeatureComparisonData) => void;
+interface BusinessComparisonProps {
+  onDataChange?: (data: BusinessComparisonData) => void;
   isLoading?: boolean;
-  comparisonData?: FeatureComparisonData;
+  comparisonData?: BusinessComparisonData;
   onRetry?: () => void;
 }
 
@@ -44,9 +39,11 @@ function LoadingState() {
           <Loader2 className="relative h-10 w-10 animate-spin text-primary2 mx-auto" />
         </div>
         <div className="space-y-2">
-          <p className="text-white font-medium">AI is analyzing your project</p>
+          <p className="text-white font-medium">
+            AI is analyzing business models
+          </p>
           <p className="text-gray-400 text-sm">
-            Generating comprehensive feature comparison...
+            Generating comprehensive business comparison...
           </p>
         </div>
       </div>
@@ -148,16 +145,16 @@ function getCompetitorTypeColor(type: string) {
   }
 }
 
-function getFeatureIcon(iconName: string) {
-  const IconComponent = (LucideIcons as any)[iconName] || Building2;
+function getBusinessIcon(iconName: string) {
+  const IconComponent = (LucideIcons as any)[iconName] || DollarSign;
   return <IconComponent className="h-4 w-4 text-zinc-300" />;
 }
 
-function CategoryHeader({
+function BusinessCategoryHeader({
   category,
   competitorCount,
 }: {
-  category: Category;
+  category: BusinessCategory;
   competitorCount: number;
 }) {
   return (
@@ -173,7 +170,7 @@ function CategoryHeader({
           </h3>
           <div className="flex-1 h-px bg-gradient-to-r from-zinc-700/50 to-transparent"></div>
           <span className="text-xs text-gray-400 font-medium">
-            {category.features.length} features
+            {category.features.length} aspects
           </span>
         </div>
       </td>
@@ -181,14 +178,14 @@ function CategoryHeader({
   );
 }
 
-function FeatureRow({
-  feature,
+function BusinessAspectRow({
+  aspect,
   competitors,
   userProject,
 }: {
-  feature: Feature;
-  competitors: Competitor[];
-  userProject: UserProject;
+  aspect: BusinessAspect;
+  competitors: BusinessCompetitor[];
+  userProject: UserBusinessProject;
 }) {
   return (
     <motion.tr
@@ -199,14 +196,14 @@ function FeatureRow({
       <td className="px-8 py-6 text-left">
         <div className="flex items-center space-x-4">
           <div className="flex h-11 w-11 rounded-xl bg-gradient-to-br from-zinc-800/60 to-zinc-700/60 items-center justify-center border border-zinc-700/40 group-hover:border-zinc-600/60 transition-all duration-300 shadow-lg">
-            {getFeatureIcon(feature.icon)}
+            {getBusinessIcon(aspect.icon)}
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
               <span className="font-semibold text-white text-sm leading-tight">
-                {feature.name}
+                {aspect.name}
               </span>
-              <Tooltip content={feature.description}>
+              <Tooltip content={aspect.description}>
                 <Info className="h-3.5 w-3.5 text-gray-400 hover:text-gray-300 transition-colors cursor-help flex-shrink-0" />
               </Tooltip>
             </div>
@@ -214,32 +211,52 @@ function FeatureRow({
         </div>
       </td>
 
-      {competitors.map((competitor, index) => (
-        <td key={index} className="px-4 py-6 text-center">
+      {competitors.map((competitor) => (
+        <td key={competitor.name} className="px-3 py-6 text-center">
           <div className="flex justify-center">
-            {competitor.features?.[feature.name] ? (
-              <div className="flex h-7 w-7 rounded-full bg-gradient-to-br from-emerald-500/90 to-green-600/90 items-center justify-center shadow-lg shadow-emerald-500/25">
-                <CheckIcon className="h-4 w-4 text-white" />
-              </div>
+            {competitor.features[aspect.name] ? (
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                whileHover={{ scale: 1.1 }}
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500/25 to-green-500/25 border border-emerald-500/50 shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30 transition-all duration-300"
+              >
+                <CheckIcon className="h-4 w-4 text-emerald-300" />
+              </motion.div>
             ) : (
-              <div className="flex h-7 w-7 rounded-full bg-gradient-to-br from-red-500/90 to-rose-600/90 items-center justify-center shadow-lg shadow-red-500/25">
-                <X className="h-4 w-4 text-white" />
-              </div>
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                whileHover={{ scale: 1.1 }}
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-red-500/20 to-rose-500/20 border border-red-500/40 shadow-lg shadow-red-500/15 hover:shadow-red-500/25 transition-all duration-300"
+              >
+                <X className="h-3.5 w-3.5 text-red-300" />
+              </motion.div>
             )}
           </div>
         </td>
       ))}
 
-      <td className="px-4 py-6 text-center">
+      <td className="px-3 py-6 text-center">
         <div className="flex justify-center">
-          {userProject.features[feature.name] ? (
-            <div className="flex h-7 w-7 rounded-full bg-gradient-to-br from-primary2/90 to-darkPrimary/90 items-center justify-center shadow-lg shadow-primary2/25">
-              <CheckIcon className="h-4 w-4 text-white" />
-            </div>
+          {userProject.features[aspect.name] ? (
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              whileHover={{ scale: 1.1 }}
+              className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-primary2/25 to-darkPrimary/25 border border-primary2/50 shadow-lg shadow-primary2/20 hover:shadow-primary2/30 transition-all duration-300"
+            >
+              <CheckIcon className="h-4 w-4 text-primary2" />
+            </motion.div>
           ) : (
-            <div className="flex h-7 w-7 rounded-full bg-gradient-to-br from-red-500/90 to-rose-600/90 items-center justify-center shadow-lg shadow-red-500/25">
-              <X className="h-4 w-4 text-white" />
-            </div>
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              whileHover={{ scale: 1.1 }}
+              className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-red-500/20 to-rose-500/20 border border-red-500/40 shadow-lg shadow-red-500/15 hover:shadow-red-500/25 transition-all duration-300"
+            >
+              <X className="h-3.5 w-3.5 text-red-300" />
+            </motion.div>
           )}
         </div>
       </td>
@@ -247,23 +264,23 @@ function FeatureRow({
   );
 }
 
-export function IndustryCompetitors({
+export function BusinessComparison({
   onDataChange,
   isLoading = false,
   comparisonData,
   onRetry,
-}: FeatureComparisonMatrixProps) {
+}: BusinessComparisonProps) {
   if (!comparisonData && !isLoading) {
     return (
       <div className="flex items-center justify-center py-20 text-gray-400">
         <div className="text-center space-y-6">
           <div className="relative">
             <div className="absolute inset-0 bg-gradient-to-r from-zinc-700/20 to-zinc-600/20 rounded-full blur-xl"></div>
-            <Building2 className="relative h-16 w-16 mx-auto opacity-40" />
+            <TrendingUp className="relative h-16 w-16 mx-auto opacity-40" />
           </div>
           <div className="space-y-2">
             <p className="text-white font-medium">
-              No comparison data available
+              No business comparison data available
             </p>
             <p className="text-gray-500 text-sm">
               AI analysis failed or is not yet generated
@@ -295,9 +312,9 @@ export function IndustryCompetitors({
                   <th className="px-8 py-8 text-left text-sm font-bold text-white min-w-80">
                     <div className="flex items-center gap-3">
                       <div className="flex h-10 w-10 rounded-xl bg-gradient-to-br from-primary2/20 to-darkPrimary/20 items-center justify-center border border-primary2/30">
-                        <BarChart3 className="h-5 w-5 text-primary2" />
+                        <TrendingUp className="h-5 w-5 text-primary2" />
                       </div>
-                      <span className="text-base">Features</span>
+                      <span className="text-base">Business Aspects</span>
                     </div>
                   </th>
                   {comparisonData.competitors.map((competitor) => (
@@ -311,20 +328,16 @@ export function IndustryCompetitors({
                           <span className="text-lg font-bold text-white truncate max-w-36 leading-tight">
                             {competitor.name}
                           </span>
-                          {competitor.description && (
-                            <Tooltip content={competitor.description}>
-                              <Info className="h-4 w-4 text-gray-400 hover:text-gray-300 transition-colors cursor-help flex-shrink-0" />
-                            </Tooltip>
-                          )}
+                          <Tooltip content={competitor.description}>
+                            <Info className="h-4 w-4 text-gray-400 hover:text-gray-300 transition-colors cursor-help flex-shrink-0" />
+                          </Tooltip>
                         </div>
                         {/* Secondary: Type Badge */}
                         <div className="flex items-center justify-center">
                           <div
                             className={cn(
                               "inline-flex items-center px-2.5 py-1.5 rounded-md text-xs font-medium border shadow-sm transition-all duration-300",
-                              getCompetitorTypeColor(
-                                competitor.type || "Niche Player"
-                              )
+                              getCompetitorTypeColor(competitor.type)
                             )}
                           >
                             <span className="truncate">{competitor.type}</span>
@@ -354,14 +367,14 @@ export function IndustryCompetitors({
               <tbody>
                 {comparisonData.categories.map((category) => (
                   <React.Fragment key={category.name}>
-                    <CategoryHeader
+                    <BusinessCategoryHeader
                       category={category}
                       competitorCount={comparisonData.competitors.length}
                     />
-                    {category.features.map((feature) => (
-                      <FeatureRow
-                        key={feature.name}
-                        feature={feature}
+                    {category.features.map((aspect) => (
+                      <BusinessAspectRow
+                        key={aspect.name}
+                        aspect={aspect}
                         competitors={comparisonData.competitors}
                         userProject={comparisonData.userProject}
                       />
@@ -377,14 +390,14 @@ export function IndustryCompetitors({
             <div className="flex items-center justify-between flex-wrap gap-6">
               <div className="flex items-center space-x-5">
                 <div className="flex h-14 w-14 rounded-xl bg-gradient-to-br from-primary2/20 to-darkPrimary/20 items-center justify-center border border-primary2/30 shadow-lg shadow-primary2/10">
-                  <Trophy className="h-7 w-7 text-primary2" />
+                  <TrendingUp className="h-7 w-7 text-primary2" />
                 </div>
                 <div>
                   <h4 className="text-base font-bold text-white mb-2">
-                    Competitive Analysis Summary
+                    Business Strategy Analysis
                   </h4>
                   <p className="text-sm text-gray-400">
-                    Comprehensive feature comparison across{" "}
+                    Business model comparison across{" "}
                     {comparisonData.competitors.length} key market competitors
                   </p>
                 </div>
@@ -397,7 +410,7 @@ export function IndustryCompetitors({
                       (acc, cat) => acc + cat.features.length,
                       0
                     )}{" "}
-                    Features
+                    Aspects
                   </span>
                 </div>
                 <div className="flex items-center space-x-3 px-5 py-3 rounded-xl bg-gradient-to-r from-primary2/15 to-darkPrimary/15 border border-primary2/30 shadow-lg shadow-primary2/10">

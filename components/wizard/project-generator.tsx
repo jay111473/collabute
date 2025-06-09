@@ -1,17 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import {
-  Clock,
-  Code,
-  Layers,
-  CheckCircle,
-} from "lucide-react";
+import { Layers } from "lucide-react";
 import { GeneratedProject } from "@/types/wizard";
 import { motion } from "framer-motion";
-import { cn } from "@/lib/utils";
-import { PlatformIcon } from "@/lib/utils/platform-utils";
 import React from "react";
+import { GanttChart } from "./gantt-chart";
 
 interface ProjectGeneratorProps {
   projectInfo: {
@@ -23,6 +17,12 @@ interface ProjectGeneratorProps {
   onProjectsChange: (projects: GeneratedProject[]) => void;
   isLoading: boolean;
   suggestedProjects: GeneratedProject[];
+  totalEstimatedDuration?: number;
+  criticalPath?: string[];
+  parallelizationOpportunities?: Array<{
+    projectIds: string[];
+    description: string;
+  }>;
 }
 
 const getLanguageIcon = (language: string) => {
@@ -113,6 +113,9 @@ export function ProjectGenerator({
   onProjectsChange,
   isLoading,
   suggestedProjects,
+  totalEstimatedDuration = 0,
+  criticalPath = [],
+  parallelizationOpportunities = [],
 }: ProjectGeneratorProps) {
   const [projects, setProjects] =
     useState<GeneratedProject[]>(suggestedProjects);
@@ -132,7 +135,7 @@ export function ProjectGenerator({
 
   return (
     <div className="relative min-h-[600px] flex items-center justify-center">
-      <div className="w-full max-w-5xl mx-auto space-y-8">
+      <div className="w-full max-w-7xl mx-auto space-y-8">
         <div className="text-center space-y-4">
           <h2 className="text-3xl font-bold text-white">
             Development Projects
@@ -144,204 +147,101 @@ export function ProjectGenerator({
         </div>
 
         {isLoading ? (
-          <motion.div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {[1, 2, 3, 4].map((i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.1 }}
-                className="relative bg-zinc-900/50 backdrop-blur-sm rounded-3xl border border-zinc-800/50 p-8 min-h-[320px]"
-              >
-                <div className="animate-pulse space-y-6">
-                  <div className="flex items-center gap-4">
-                    <div className="h-12 w-12 bg-gray-700 rounded-2xl"></div>
-                    <div className="space-y-2 flex-1">
-                      <div className="h-5 bg-gray-700 rounded w-3/4"></div>
-                      <div className="h-3 bg-gray-700 rounded w-1/2"></div>
-                    </div>
-                  </div>
-                  <div className="space-y-4">
-                    <div className="h-4 bg-gray-700 rounded w-full"></div>
-                    <div className="h-4 bg-gray-700 rounded w-2/3"></div>
-                    <div className="h-4 bg-gray-700 rounded w-1/2"></div>
-                  </div>
+          <div className="text-center space-y-8">
+            <div className="space-y-4">
+              <h2 className="text-3xl font-bold text-white">
+                Generating Project Timeline
+              </h2>
+              <p className="text-gray-400 max-w-2xl mx-auto">
+                Creating a detailed project breakdown with dependencies and
+                timeline...
+              </p>
+            </div>
+
+            <motion.div className="bg-zinc-900/50 backdrop-blur-sm rounded-3xl border border-zinc-800/50 p-12">
+              <div className="space-y-8">
+                {/* Loading header */}
+                <div className="animate-pulse space-y-4">
+                  <div className="h-8 bg-gray-700 rounded w-1/3 mx-auto"></div>
+                  <div className="h-4 bg-gray-700 rounded w-1/2 mx-auto"></div>
                 </div>
-              </motion.div>
-            ))}
-          </motion.div>
-        ) : (
-          <motion.div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {projects.map((project, index) => {
-              const colors = getProjectTypeColors(project.platform);
 
-              return (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.15 }}
-                  whileHover={{
-                    y: -8,
-                    transition: { duration: 0.3, ease: "easeOut" },
-                  }}
-                  className={cn(
-                    "group relative bg-zinc-900/80 backdrop-blur-sm rounded-3xl border transition-all duration-500",
-                    "hover:shadow-2xl hover:shadow-black/20 cursor-pointer overflow-hidden min-h-[320px]",
-                    colors.border
-                  )}
-                >
-                  {/* Background Pattern */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-zinc-800/20 via-transparent to-zinc-900/40" />
-
-                  {/* Glow Effect */}
-                  <div
-                    className={cn(
-                      "absolute inset-0 rounded-3xl transition-all duration-500 opacity-0 group-hover:opacity-100",
-                      `shadow-2xl ${colors.glow}`
-                    )}
-                  />
-
-                  {/* Content Container */}
-                  <div className="relative z-10 p-8 h-full flex flex-col">
-                    {/* Header Section */}
-                    <div className="flex items-start justify-between mb-6">
-                      <div className="flex items-center gap-4">
-                        <div
-                          className={cn(
-                            "relative p-4 rounded-2xl shadow-lg",
-                            colors.primary
-                          )}
-                        >
-                          <PlatformIcon
-                            platform={project.platform
-                              .toLowerCase()
-                              .replace(" ", "-")}
-                            className="h-6 w-6 text-white drop-shadow-sm"
-                            size="lg"
-                            useDefaultColor={false}
-                          />
-
-                          {/* Shine effect */}
-                          <div className="absolute inset-0 rounded-2xl bg-gradient-to-tr from-white/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                        </div>
-
-                        <div>
-                          <h3 className="text-xl font-bold text-white mb-1 group-hover:text-white/90 transition-colors">
-                            {project.name}
-                          </h3>
-                          <div className="flex items-center gap-2">
-                            <CheckCircle className="h-4 w-4 text-green-400" />
-                            <span className="text-sm text-green-400 font-medium">
-                              Ready to develop
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div
-                        className={cn(
-                          "px-3 py-1 rounded-full text-xs font-bold",
-                          colors.secondary,
-                          colors.accent
-                        )}
-                      >
-                        #{index + 1}
-                      </div>
+                {/* Loading timeline */}
+                <div className="space-y-6">
+                  <div className="flex">
+                    <div className="w-80 flex-shrink-0 pr-6">
+                      <div className="h-6 bg-gray-700 rounded w-24 animate-pulse"></div>
                     </div>
-
-                    {/* Deliverable Section */}
-                    <div
-                      className={cn(
-                        "p-4 rounded-2xl mb-6 border",
-                        colors.secondary,
-                        colors.border
-                      )}
-                    >
-                      <div className="flex items-center gap-2 mb-2">
-                        <div
-                          className={cn("h-2 w-2 rounded-full", colors.dot)}
-                        />
-                        <span className="text-sm font-medium text-gray-300">
-                          Deliverable
-                        </span>
-                      </div>
-                      <p className="text-white font-semibold text-lg">
-                        {project.platform}
-                      </p>
-                    </div>
-
-                    {/* Tech Stack Section */}
-                    <div className="flex-1 space-y-4">
-                      <h4 className="text-sm font-semibold text-gray-300 uppercase tracking-wider">
-                        Tech Stack
-                      </h4>
-
-                      <div className="space-y-3">
-                        {/* Framework */}
-                        <div className="flex items-center justify-between p-3 rounded-xl bg-zinc-800/50 border border-zinc-700/50">
-                          <div className="flex items-center gap-3">
-                            <div className="p-2 rounded-lg bg-zinc-700/50">
-                              <Layers className="h-4 w-4 text-gray-300" />
-                            </div>
-                            <span className="text-sm text-gray-400">
-                              Framework
-                            </span>
-                          </div>
-                          <span className="text-sm font-semibold text-white">
-                            {project.framework}
-                          </span>
+                    <div className="flex-1 grid grid-cols-8 gap-1">
+                      {Array.from({ length: 8 }).map((_, i) => (
+                        <div key={i} className="space-y-2">
+                          <div className="h-4 bg-gray-700 rounded animate-pulse"></div>
+                          <div className="h-3 bg-gray-700 rounded animate-pulse"></div>
                         </div>
-
-                        {/* Language */}
-                        <div className="flex items-center justify-between p-3 rounded-xl bg-zinc-800/50 border border-zinc-700/50">
-                          <div className="flex items-center gap-3">
-                            <div className="p-2 rounded-lg bg-zinc-700/50">
-                              <Code className="h-4 w-4 text-gray-300" />
-                            </div>
-                            <span className="text-sm text-gray-400">
-                              Language
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <img
-                              src={getLanguageIcon(project.language)}
-                              alt={project.language}
-                              className="w-5 h-5 object-contain"
-                              onError={(e) => {
-                                e.currentTarget.style.display = "none";
-                              }}
-                            />
-                            <span className="text-sm font-semibold text-white">
-                              {project.language}
-                            </span>
-                          </div>
-                        </div>
-
-                        {/* Timeline */}
-                        <div className="flex items-center justify-between p-3 rounded-xl bg-zinc-800/50 border border-zinc-700/50">
-                          <div className="flex items-center gap-3">
-                            <div className="p-2 rounded-lg bg-zinc-700/50">
-                              <Clock className="h-4 w-4 text-gray-300" />
-                            </div>
-                            <span className="text-sm text-gray-400">
-                              Timeline
-                            </span>
-                          </div>
-                          <span className="text-sm font-semibold text-green-400">
-                            {project.estimatedTimeline}
-                          </span>
-                        </div>
-                      </div>
+                      ))}
                     </div>
                   </div>
-                </motion.div>
-              );
-            })}
-          </motion.div>
-        )}
 
-        {projects.length === 0 && !isLoading && (
+                  {/* Loading project rows */}
+                  {[1, 2, 3, 4].map((i) => (
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: i * 0.2 }}
+                      className="flex items-center"
+                    >
+                      <div className="w-80 flex-shrink-0 pr-6">
+                        <div className="p-4 rounded-2xl bg-zinc-800/50 border border-zinc-700/50">
+                          <div className="animate-pulse space-y-3">
+                            <div className="flex items-center gap-3">
+                              <div className="h-10 w-10 bg-gray-700 rounded-xl"></div>
+                              <div className="space-y-2 flex-1">
+                                <div className="h-4 bg-gray-700 rounded w-3/4"></div>
+                                <div className="h-3 bg-gray-700 rounded w-1/2"></div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex-1 relative h-16 flex items-center">
+                        <div className="w-full grid grid-cols-8 gap-1 relative">
+                          {Array.from({ length: 8 }).map((_, j) => (
+                            <div
+                              key={j}
+                              className="h-12 border-r border-zinc-800/30 last:border-r-0"
+                            />
+                          ))}
+                          <motion.div
+                            initial={{ scaleX: 0 }}
+                            animate={{ scaleX: 1 }}
+                            transition={{ delay: i * 0.2 + 0.5, duration: 0.8 }}
+                            className="absolute inset-y-0 flex items-center"
+                            style={{
+                              left: `${Math.random() * 30}%`,
+                              width: `${20 + Math.random() * 40}%`,
+                            }}
+                          >
+                            <div className="w-full h-8 rounded-xl bg-gradient-to-r from-gray-600 to-gray-500 animate-pulse">
+                              <div className="w-full h-full rounded-xl bg-gradient-to-r from-white/10 to-transparent" />
+                            </div>
+                          </motion.div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        ) : projects.length > 0 ? (
+          <GanttChart
+            projects={projects}
+            totalEstimatedDuration={totalEstimatedDuration}
+            criticalPath={criticalPath}
+            parallelizationOpportunities={parallelizationOpportunities}
+          />
+        ) : (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}

@@ -5,10 +5,6 @@ import {
   ArrowLeftRight,
   GitPullRequest,
   GitCommit,
-  Menu,
-  X,
-  Calendar,
-  AlertCircle,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
@@ -16,17 +12,16 @@ import { truncateToFourWords } from "@/lib/utils";
 import { Project, Issue, User, Media } from "@/types/dashboard";
 import DashboardCard from "@/components/uikit/dashboard-card";
 import { StartupProjectCard } from "@/components/dashboard/projects/startup-project-card";
+import FloatingBottomBar from "@/components/dashboard/floating-bottom-bar";
 import Sidebar from "@/components/dashboard/Sidebar";
 import Header from "@/components/dashboard/Header";
 import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+import { Menu, X } from "lucide-react";
 import { VerificationAlerts } from "@/components/dashboard/verification-alerts";
+import { useFloatingNav } from "@/lib/hooks/use-floating-nav";
 
 interface DashboardContentProps {
   user: User;
@@ -136,8 +131,10 @@ const IssuesTable = ({ issues }: { issues: Issue[] }) => (
 );
 
 const DashboardContent = ({ user }: DashboardContentProps) => {
+  const { isFloatingNavEnabled } = useFloatingNav();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+
   useEffect(() => {
     const checkIfMobile = () => {
       setIsMobile(window.innerWidth < 768);
@@ -164,6 +161,101 @@ const DashboardContent = ({ user }: DashboardContentProps) => {
     return null;
   }
 
+  // Render floating navigation layout
+  if (isFloatingNavEnabled) {
+    return (
+      <>
+        <div className="flex flex-col h-screen bg-black">
+          <Header />
+
+          <main className="flex-1 overflow-y-auto flex flex-col gap-4 p-4 lg:gap-6 lg:p-6 pb-24">
+          {/* Verification Alerts */}
+          <VerificationAlerts user={user} />
+          {user.type === "developer" && (
+            <div className="grid gap-4 md:grid-cols-2 md:gap-6 lg:grid-cols-3">
+              <DashboardCard
+                title="Issues"
+                value={user.developerFields?.issues?.length || 0}
+                icon={GitPullRequest}
+                subtext="+180.1% from last month"
+              />
+              <DashboardCard
+                title="Balance"
+                value={`$${user.wallet}`}
+                icon={DollarSign}
+                subtext="+19% from last month"
+              />
+              <DashboardCard
+                title="Total Payments"
+                value={`$${user.developerFields?.totalPayment || 0}`}
+                icon={ArrowLeftRight}
+                subtext="+20.1% from last month"
+              />
+            </div>
+          )}
+          {user.type === "startup" && (
+            <div className="grid gap-4 md:grid-cols-2 md:gap-6 lg:grid-cols-2">
+              <DashboardCard
+                title="Projects"
+                value={user?.projects?.length || 0}
+                icon={GitPullRequest}
+                subtext="+180.1% from last month"
+              />
+              <DashboardCard
+                title="My Funds"
+                value={`$${user.wallet}`}
+                icon={DollarSign}
+                subtext="+19% from last month"
+              />
+            </div>
+          )}
+          {user.type === "developer" && (
+            <div className="grid gap-6 md:grid-cols-2">
+              <Card className="bg-darkGray rounded-lg border-none">
+                <CardHeader>
+                  <CardTitle className="text-white">Recent Projects</CardTitle>
+                </CardHeader>
+                <CardContent className="p-0 px-2 pb-4">
+                  <ProjectsTable projects={user.projects as Project[]} />
+                </CardContent>
+              </Card>
+              <Card className="bg-darkGray rounded-lg border-none">
+                <CardHeader>
+                  <CardTitle className="text-white">Recent Issues</CardTitle>
+                </CardHeader>
+                <CardContent className="p-0 px-2 pb-4">
+                  <IssuesTable
+                    issues={user.developerFields?.issues as Issue[]}
+                  />
+                </CardContent>
+              </Card>
+            </div>
+          )}
+          {user.type === "startup" && (
+            <div className="flex flex-col gap-4">
+              <h3 className="text-white text-lg font-semibold">My Projects</h3>
+              <div className="grid gap-4 md:grid-cols-2 md:gap-6 lg:grid-cols-2">
+                {user?.projects?.map(
+                  (project: number | Project, index: number) => (
+                    <StartupProjectCard
+                      key={index}
+                      project={project as Project}
+                    />
+                  )
+                )}
+              </div>
+            </div>
+          )}
+                  </main>
+        </div>
+        
+        {/* Floating Bottom Bar */}
+        <FloatingBottomBar user={user} />
+      </>
+    );
+  }
+
+  // Render traditional sidebar layout
   return (
     <div className="flex flex-col">
       <div className="flex flex-1">
@@ -264,9 +356,7 @@ const DashboardContent = ({ user }: DashboardContentProps) => {
               <div className="grid gap-6 md:grid-cols-2">
                 <Card className="bg-darkGray rounded-lg border-none">
                   <CardHeader>
-                    <CardTitle className="text-white">
-                      Recent Projects
-                    </CardTitle>
+                    <CardTitle className="text-white">Recent Projects</CardTitle>
                   </CardHeader>
                   <CardContent className="p-0 px-2 pb-4">
                     <ProjectsTable projects={user.projects as Project[]} />
@@ -286,9 +376,7 @@ const DashboardContent = ({ user }: DashboardContentProps) => {
             )}
             {user.type === "startup" && (
               <div className="flex flex-col gap-4">
-                <h3 className="text-white text-lg font-semibold">
-                  My Projects
-                </h3>
+                <h3 className="text-white text-lg font-semibold">My Projects</h3>
                 <div className="grid gap-4 md:grid-cols-2 md:gap-6 lg:grid-cols-2">
                   {user?.projects?.map(
                     (project: number | Project, index: number) => (

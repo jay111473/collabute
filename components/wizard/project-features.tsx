@@ -161,7 +161,7 @@ const FeatureTooltip: React.FC<{ feature: Feature }> = ({ feature }) => (
         <div className="space-y-3">
           <p className="text-sm text-white/80 mb-2">{feature.description}</p>
           <div className="flex items-center gap-4 text-xs text-white/60">
-            <span>Platform: {getPlatformLabel(feature.platform)}</span>
+            <span>Platform: {getPlatformLabel(feature.platform || "website")}</span>
             <span>Type: {feature.isCore ? "Core" : "Optional"}</span>
             <span>Order: {feature.order}</span>
           </div>
@@ -549,10 +549,11 @@ export function ProjectFeatures({
 
   // Group features by platform
   const featuresByPlatform = features.reduce((acc, feature) => {
-    if (!acc[feature.platform]) {
-      acc[feature.platform] = [];
+    const platform = feature.platform || "website";
+    if (!acc[platform]) {
+      acc[platform] = [];
     }
-    acc[feature.platform].push(feature);
+    acc[platform].push(feature);
     return acc;
   }, {} as Record<string, Feature[]>);
 

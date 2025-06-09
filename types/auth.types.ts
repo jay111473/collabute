@@ -21,6 +21,10 @@ export type TeamSize = "1-10" | "10-50" | "50-100" | "100+";
 export type AccountType = "developer" | "startup";
 
 export interface DeveloperFields {
+  primaryRole?: DeveloperRole[] | null;
+}
+
+export interface DeveloperFieldsAPI {
   primaryRole?: DeveloperRole | null;
 }
 
@@ -34,8 +38,20 @@ export interface CreateAccountFormData {
   type: AccountType;
   email: string;
   password: string;
-  phoneNumber?: string | null;
+  phoneNumber: string;
+  countryCode: string;
   developerFields?: DeveloperFields;
+  startupFields?: StartupFields;
+}
+
+export interface CreateAccountAPIPayload {
+  name: string;
+  type: AccountType;
+  email: string;
+  password: string;
+  phoneNumber: string;
+  countryCode: string;
+  developerFields?: DeveloperFieldsAPI;
   startupFields?: StartupFields;
 }
 

@@ -19,6 +19,8 @@ export const signupAction = async (
   const password = formData.get("password") as string;
   const name = formData.get("name") as string;
   const type = formData.get("type") as AccountType;
+  const phoneNumber = formData.get("phoneNumber") as string;
+  const countryCode = formData.get("countryCode") as string;
 
   // Prepare API payload based on account type
   const payload: Partial<CreateAccountFormData> = {
@@ -26,11 +28,27 @@ export const signupAction = async (
     password,
     name,
     type,
+    phoneNumber,
+    countryCode,
   };
 
   if (type === "developer") {
+    // Handle the primaryRoles array format
+    const primaryRolesData = formData.get("developerFields.primaryRole");
+    let primaryRole: DeveloperRole[] = [];
+    
+    if (primaryRolesData) {
+      try {
+        primaryRole = JSON.parse(primaryRolesData as string);
+      } catch {
+        // Fallback to empty array if parsing fails
+        primaryRole = [];
+      }
+    }
+    
+    // Send primaryRole as array to match backend expectations
     payload.developerFields = {
-      primaryRole: (formData.get("developerFields.primaryRole") || formData.get("primaryRole")) as DeveloperRole,
+      primaryRole: primaryRole,
     };
   } else if (type === "startup") {
     payload.startupFields = {

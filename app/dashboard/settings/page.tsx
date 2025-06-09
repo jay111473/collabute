@@ -1,9 +1,9 @@
-import { cookies } from "next/headers";
 import { getUser } from "@/lib/get-user";
 import AccountSettings from "./components/AccountSettings";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import DashboardLayout from "@/components/dashboard/dashboard-layout";
 import { redirect } from "next/navigation";
+import PreferencesSettings from "./components/PreferencesSettings";
 export default async function SettingsPage() {
   const user = await getUser(0);
   if (!user) {
@@ -35,6 +35,12 @@ export default async function SettingsPage() {
                 >
                   Withdraw method
                 </TabsTrigger>
+                <TabsTrigger
+                  value="preferences"
+                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary2 data-[state=active]:bg-transparent px-6 py-4 !text-sm"
+                >
+                  Preferences
+                </TabsTrigger>
               </TabsList>
               <TabsContent value="account" className="p-6">
                 <AccountSettings user={user} />
@@ -52,6 +58,9 @@ export default async function SettingsPage() {
                   <h2 className="text-xl font-semibold">Withdraw Settings</h2>
                   <p className="text-gray-400 mt-2">Coming soon...</p>
                 </div>
+              </TabsContent>
+              <TabsContent value="preferences" className="p-6">
+                <PreferencesSettings />
               </TabsContent>
             </Tabs>
           </div>

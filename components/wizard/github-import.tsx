@@ -41,7 +41,7 @@ interface LanguageIconProps {
 function LanguageIcon({ language, className }: LanguageIconProps) {
   // Lowercase for case-insensitive matching
   const lang = language?.toLowerCase();
-  
+
   // Map language names to their icon files
   const iconMap: Record<string, string> = {
     javascript: "/languages/js.svg",
@@ -62,19 +62,19 @@ function LanguageIcon({ language, className }: LanguageIconProps) {
     java: "/languages/svg5.svg", // Assuming svg5 is Java
     webassembly: "/languages/wa.svg", // Assuming wa is WebAssembly
   };
-  
+
   if (!lang || !iconMap[lang]) {
     // Fallback for languages without icons
     return <Code className={cn("h-3.5 w-3.5 mr-1", className)} />;
   }
-  
+
   return (
     <div className={cn("relative h-3.5 w-3.5 mr-1", className)}>
-      <Image 
-        src={iconMap[lang]} 
-        alt={`${language} icon`} 
-        fill 
-        className="object-contain" 
+      <Image
+        src={iconMap[lang]}
+        alt={`${language} icon`}
+        fill
+        className="object-contain"
       />
     </div>
   );
@@ -133,7 +133,9 @@ export function GitHubImport({
     const authError = urlParams.get("github_auth_error");
 
     if (authError) {
-      setError(`GitHub authentication failed: ${decodeURIComponent(authError)}`);
+      setError(
+        `GitHub authentication failed: ${decodeURIComponent(authError)}`
+      );
       return;
     }
 
@@ -293,7 +295,11 @@ export function GitHubImport({
   ): Promise<string | null> => {
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/github/file-content?repoFullName=${encodeURIComponent(repoFullName)}&filePath=${encodeURIComponent(filePath)}`,
+        `${
+          process.env.NEXT_PUBLIC_API_URL
+        }/api/github/file-content?repoFullName=${encodeURIComponent(
+          repoFullName
+        )}&filePath=${encodeURIComponent(filePath)}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -307,7 +313,9 @@ export function GitHubImport({
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(
-          `Failed to fetch ${filePath}: ${errorData.error || response.statusText}`
+          `Failed to fetch ${filePath}: ${
+            errorData.error || response.statusText
+          }`
         );
       }
       const data = await response.json();
@@ -325,7 +333,10 @@ export function GitHubImport({
     setError(null);
 
     try {
-      const readmeContent = await getFileContent(repository.fullName, "README.md");
+      const readmeContent = await getFileContent(
+        repository.fullName,
+        "README.md"
+      );
       const packageJsonContent = await getFileContent(
         repository.fullName,
         "package.json"
@@ -349,7 +360,9 @@ export function GitHubImport({
       if (!projectDescriberResponse.ok) {
         const errorData = await projectDescriberResponse.json();
         throw new Error(
-          `Failed to get AI project description: ${errorData.error || projectDescriberResponse.statusText}`
+          `Failed to get AI project description: ${
+            errorData.error || projectDescriberResponse.statusText
+          }`
         );
       }
 
@@ -358,7 +371,8 @@ export function GitHubImport({
       onImportComplete({
         repository,
         aiGeneratedName: aiData.projectName || repository.name, // Fallback to repo name
-        aiGeneratedDescription: aiData.projectDescription || repository.description || "", // Fallback to repo desc
+        aiGeneratedDescription:
+          aiData.projectDescription || repository.description || "", // Fallback to repo desc
       });
     } catch (err) {
       console.error("Error processing repository for AI description:", err);
@@ -531,7 +545,9 @@ export function GitHubImport({
                             ? "opacity-50 cursor-not-allowed"
                             : ""
                         )}
-                        onClick={() => !isProcessingRepo && handleRepoSelect(repo)}
+                        onClick={() =>
+                          !isProcessingRepo && handleRepoSelect(repo)
+                        }
                       >
                         <div className="flex items-start justify-between">
                           <div className="space-y-1">
@@ -568,26 +584,27 @@ export function GitHubImport({
                               )}
                             </div>
                           </div>
-                          {selectedRepo === repo.repoId && !isProcessingRepo && (
-                            <div className="text-primary2">
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                className="h-5 w-5"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M5 13l4 4L19 7"
-                                />
-                              </svg>
-                            </div>
-                          )}
+                          {selectedRepo === repo.repoId &&
+                            !isProcessingRepo && (
+                              <div className="text-primary2">
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  className="h-5 w-5"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  stroke="currentColor"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M5 13l4 4L19 7"
+                                  />
+                                </svg>
+                              </div>
+                            )}
                           {selectedRepo === repo.repoId && isProcessingRepo && (
-                             <Loader2 className="h-5 w-5 animate-spin text-primary2" />
+                            <Loader2 className="h-5 w-5 animate-spin text-primary2" />
                           )}
                         </div>
                       </motion.div>
@@ -639,4 +656,3 @@ export function GitHubImport({
     </div>
   );
 }
- 

@@ -14,9 +14,10 @@ const TEAM_SIZES: { label: string; value: TeamSize }[] = [
 
 interface StartupFieldsProps {
   form: UseFormReturn<CreateAccountFormData>;
+  errors?: { [key: string]: string | undefined };
 }
 
-export const StartupFields = ({ form }: StartupFieldsProps) => {
+export const StartupFields = ({ form, errors }: StartupFieldsProps) => {
   // When this component mounts, ensure startup fields are initialized
   useEffect(() => {
     if (!form.getValues("startupFields")) {
@@ -31,17 +32,27 @@ export const StartupFields = ({ form }: StartupFieldsProps) => {
         name="startupFields.companyName"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Company Name</FormLabel>
+            <FormLabel className="text-sm font-medium">
+              Company Name <span className="text-red-500">*</span>
+            </FormLabel>
             <FormControl>
               <Input
                 placeholder="Enter your company name"
                 {...field}
-                className="bg-transparent placeholder:bg-transparent border-grayBorders"
+                className={`bg-transparent placeholder:bg-transparent ${
+                  errors?.["startupFields.companyName"] ? "border-red-500" : "border-grayBorders"
+                }`}
                 value={field.value ?? ""}
                 onChange={field.onChange}
               />
             </FormControl>
-            <FormMessage />
+            {errors?.["startupFields.companyName"] ? (
+              <div className="text-red-500 text-xs mt-1">
+                {errors["startupFields.companyName"]}
+              </div>
+            ) : (
+              <FormMessage />
+            )}
           </FormItem>
         )}
       />
@@ -50,17 +61,20 @@ export const StartupFields = ({ form }: StartupFieldsProps) => {
         name="startupFields.teamSize"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Company Size</FormLabel>
+            <FormLabel className="text-sm font-medium">
+              Company Size <span className="text-red-500">*</span>
+            </FormLabel>
             <FormControl>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                 {TEAM_SIZES.map((option) => (
                   <div
                     key={option.value}
                     className={cn(
-                      "flex items-center justify-center px-2 py-3 text-xs rounded-md border cursor-pointer",
+                      "flex items-center justify-center px-2 py-3 text-xs rounded-md border cursor-pointer transition-colors",
                       field.value === option.value
                         ? "border-darkPrimary border-2 bg-darkPrimary/10 font-bold"
-                        : "border-grayBorders bg-popover"
+                        : "border-grayBorders bg-popover hover:bg-muted/50",
+                      errors?.["startupFields.teamSize"] && "border-red-500"
                     )}
                     onClick={() => {
                       field.onChange(option.value);
@@ -85,7 +99,16 @@ export const StartupFields = ({ form }: StartupFieldsProps) => {
                 ))}
               </div>
             </FormControl>
-            <FormMessage />
+            {errors?.["startupFields.teamSize"] ? (
+              <div className="text-red-500 text-xs mt-1">
+                {errors["startupFields.teamSize"]}
+              </div>
+            ) : (
+              <FormMessage />
+            )}
+            <p className="text-xs text-muted-foreground mt-1">
+              Select the size that best describes your team.
+            </p>
           </FormItem>
         )}
       />

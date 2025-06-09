@@ -1,703 +1,577 @@
 import { useState, useEffect, useRef } from "react";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { motion, AnimatePresence } from "framer-motion";
 import {
+  ArrowUp,
   Loader2,
-  X,
-  HelpCircle,
-  CheckIcon,
-  Sparkles,
+  CheckCircle,
+  MessageCircle,
   Plus,
-  ArrowLeftIcon,
-  Monitor,
-  Brain,
+  Lightbulb,
+  HelpCircle,
+  Info,
 } from "lucide-react";
-import { PlatformIcon, getPlatformLabel } from "@/lib/utils/platform-utils";
-import { Industry } from "@/types/wizard";
-import { ALL_INDUSTRIES } from "@/lib/utils/industries";
+import { Industry, type ProjectInfo } from "@/types/wizard";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { motion, AnimatePresence } from "framer-motion";
 
-// Add CSS for the shake animation
-const shakeAnimation = `
-@keyframes shake {
-  0% { transform: translateX(0); }
-  25% { transform: translateX(-4px); }
-  50% { transform: translateX(4px); }
-  75% { transform: translateX(-4px); }
-  100% { transform: translateX(0); }
-}
-.animate-shake {
-  animation: shake 0.4s ease-in-out;
-}
-`;
-
-// Types
 interface ProjectInfoProps {
   onProjectInfoChange: (info: ProjectInfo) => void;
+  onNext?: () => void;
+  canProceed?: boolean;
   isLoading?: boolean;
   suggestedIndustries: Industry[];
 }
 
-interface ProjectInfo {
-  name: string;
-  description: string;
-  industries: string[];
-  projectPlatforms: { value: string; isCore?: boolean }[];
+interface ConversationMessage {
+  role: "user" | "ai";
+  content: string;
+  timestamp: number;
 }
 
-interface PlatformSuggestion {
-  type: "website" | "ios" | "android" | "desktop" | "pwa" | "rest-api" | "graphql-api" | "database" | "auth-service" | "file-storage" | "real-time" | "ai-service" | "payment-service";
-  isOptional: boolean;
-  priority: number;
-  description: string;
-  category: "frontend" | "backend";
-}
-
-// Available platforms for manual selection
-const AVAILABLE_FRONTEND_PLATFORMS = [
-  {
-    value: "website",
-    label: "Website",
-    description: "A responsive web application accessible on browsers",
-  },
-  {
-    value: "ios",
-    label: "iOS App",
-    description: "Native mobile application for Apple iOS devices",
-  },
-  {
-    value: "android",
-    label: "Android App",
-    description: "Native mobile application for Android devices",
-  },
-  {
-    value: "desktop",
-    label: "Desktop App",
-    description: "Native application for Windows, MacOS, or Linux",
-  },
-  {
-    value: "pwa",
-    label: "PWA",
-    description: "Progressive Web App with offline capabilities",
-  },
-];
-
-const AVAILABLE_BACKEND_PLATFORMS = [
-  {
-    value: "rest-api",
-    label: "REST API",
-    description: "RESTful API service for data operations",
-  },
-  {
-    value: "graphql-api",
-    label: "GraphQL API",
-    description: "GraphQL API service with flexible queries",
-  },
-  {
-    value: "database",
-    label: "Database",
-    description: "Database storage system for data persistence",
-  },
-  {
-    value: "auth-service",
-    label: "Authentication",
-    description: "User authentication and authorization service",
-  },
-  {
-    value: "file-storage",
-    label: "File Storage",
-    description: "File upload and storage service",
-  },
-  {
-    value: "real-time",
-    label: "Real-time",
-    description: "Real-time communication via WebSocket or SSE",
-  },
-  {
-    value: "ai-service",
-    label: "AI Service",
-    description: "AI/ML integration and processing capabilities",
-  },
-  {
-    value: "payment-service",
-    label: "Payment Service",
-    description: "Payment processing and transaction handling",
-  },
-];
-
-// Styles
-const INPUT_BASE_STYLES =
-  "border border-darkPrimary/40 shadow-[0_0_15px_rgba(123,97,255,0.15)] hover:shadow-[0_0_20px_rgba(123,97,255,0.25)] focus:shadow-[0_0_25px_rgba(123,97,255,0.35)] hover:border-darkPrimary/60 focus:border-darkPrimary transition-all duration-200 text-white";
-
-// Platform Icons - now using platform-utils
-const getPlatformIcon = (type: string) => {
-  return <PlatformIcon platform={type} size="lg" useDefaultColor={false} />;
-};
-
-function LoadingState() {
-  return (
-    <div className="flex items-center gap-2 text-primary2">
-      <Loader2 className="h-4 w-4 animate-spin" />
-      <span className="text-sm">AI is analyzing your project...</span>
-    </div>
-  );
-}
-
-function PlatformCard({
-  platform,
-  isSelected,
-  isCore,
-  onToggle,
-}: {
-  platform: {
-    type: string;
+interface AIResponse {
+  needsMoreInfo: boolean;
+  followUpQuestion?: string;
+  refinedIdea?: string;
+  readyToProceed: boolean;
+  reasoning: string;
+  suggestions?: Array<{
+    text: string;
     description: string;
-    isOptional: boolean;
-  };
-  isSelected: boolean;
-  isCore?: boolean;
-  onToggle: () => void;
-}) {
-  // Using getPlatformLabel from platform-utils
-
-  const platformLabel = getPlatformLabel(platform.type);
-
-  return (
-    <motion.div
-      whileHover={{ scale: 1.02 }}
-      className={cn(
-        "flex flex-col p-4 rounded-xl border cursor-pointer transition-all h-full",
-        isSelected
-          ? "border-darkPrimary bg-darkPrimary/10 hover:bg-darkPrimary/20"
-          : "border-white/10 hover:bg-zinc-800/50 hover:border-white/20"
-      )}
-      onClick={onToggle}
-      data-platform-id={platform.type}
-    >
-      <div className="flex items-start justify-between mb-2">
-        <div className="flex items-center">
-          {getPlatformIcon(platform.type)}
-          <span className="ml-2 font-medium text-white">{platformLabel}</span>
-        </div>
-
-        <div className="flex items-center space-x-2">
-          {isCore && (
-            <Badge
-              variant="outline"
-              className="text-[10px] h-4 bg-darkPrimary/10 border-darkPrimary/20 text-darkPrimary"
-            >
-              Core
-            </Badge>
-          )}
-
-          <div
-            className={cn(
-              "flex h-5 w-5 items-center justify-center rounded-full border transition-colors",
-              isSelected
-                ? "border-darkPrimary bg-darkPrimary"
-                : "border-zinc-700"
-            )}
-          >
-            {isSelected && <CheckIcon className="h-3 w-3 text-black" />}
-          </div>
-        </div>
-      </div>
-
-      <p className="text-xs text-gray-400 mt-1 flex-grow">
-        {platform.description}
-      </p>
-
-      {platform.isOptional && (
-        <Badge
-          variant="outline"
-          className="text-[10px] mt-2 w-fit bg-gray-800/50 border-gray-700 text-gray-400"
-        >
-          Optional
-        </Badge>
-      )}
-    </motion.div>
-  );
+  }>;
 }
 
-// Main component
+interface SuggestionBadge {
+  text: string;
+  description: string;
+  isSelected: boolean;
+}
+
 export function ProjectInfo({
   onProjectInfoChange,
-  isLoading = false,
+  onNext,
+  canProceed = false,
+  isLoading: externalLoading = false,
   suggestedIndustries,
 }: ProjectInfoProps) {
-  const [projectInfo, setProjectInfo] = useState<ProjectInfo>({
-    name: "",
-    description: "",
-    industries: [],
-    projectPlatforms: [],
-  });
-  const [generatingPlatforms, setGeneratingPlatforms] = useState(false);
-  const [platformSuggestions, setPlatformSuggestions] = useState<
-    PlatformSuggestion[]
-  >([]);
-  const [showPlatforms, setShowPlatforms] = useState(false);
-  const cardContainerRef = useRef<HTMLDivElement>(null);
+  const [idea, setIdea] = useState("");
+  const [originalIdea, setOriginalIdea] = useState("");
+  const [currentInput, setCurrentInput] = useState("");
+  const [conversation, setConversation] = useState<ConversationMessage[]>([]);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [isConversationMode, setIsConversationMode] = useState(false);
+  const [isApproved, setIsApproved] = useState(false);
+  const [suggestions, setSuggestions] = useState<SuggestionBadge[]>([]);
+  const [selectedSuggestions, setSelectedSuggestions] = useState<Set<string>>(
+    new Set()
+  );
+  const [hasNoIdea, setHasNoIdea] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
 
   useEffect(() => {
-    if (suggestedIndustries.length > 0) {
-      const industryValues = suggestedIndustries
-        .slice(0, 5)
-        .map((industry) => industry.value);
-      updateProjectInfo({ industries: industryValues });
+    scrollToBottom();
+  }, [conversation]);
+
+  const handleIdeaChange = (value: string) => {
+    if (!isConversationMode) {
+      setIdea(value);
+      setCurrentInput(value);
+    } else {
+      setCurrentInput(value);
     }
-  }, [suggestedIndustries]);
-
-  const updateProjectInfo = (updates: Partial<ProjectInfo>) => {
-    const newInfo = { ...projectInfo, ...updates };
-    setProjectInfo(newInfo);
-    onProjectInfoChange(newInfo);
   };
 
-  const handleInputChange = (
-    value: string,
-    field: keyof Pick<ProjectInfo, "name" | "description">
-  ) => {
-    updateProjectInfo({ [field]: value });
+  const checkForNoIdea = (text: string) => {
+    const lowerText = text.toLowerCase();
+    return lowerText.includes("i have no idea") || 
+           lowerText.includes("no idea") || 
+           lowerText.includes("don't know") ||
+           lowerText.includes("not sure");
   };
 
-  const handleGeneratePlatforms = async () => {
-    if (!projectInfo.name || !projectInfo.description) return;
+  const toggleSuggestion = (suggestion: SuggestionBadge) => {
+    const newSelected = new Set(selectedSuggestions);
 
-    setGeneratingPlatforms(true);
+    if (newSelected.has(suggestion.text)) {
+      newSelected.delete(suggestion.text);
+      const newInput = currentInput
+        .replace(new RegExp(`\\s*${suggestion.text}\\s*`, "g"), " ")
+        .trim();
+      setCurrentInput(newInput);
+    } else {
+      newSelected.add(suggestion.text);
+      const newInput = currentInput
+        ? `${currentInput} ${suggestion.text}`
+        : suggestion.text;
+      setCurrentInput(newInput);
+    }
+
+    setSelectedSuggestions(newSelected);
+
+    setSuggestions((prev) =>
+      prev.map((s) => ({
+        ...s,
+        isSelected: s.text === suggestion.text ? !s.isSelected : s.isSelected,
+      }))
+    );
+
+    if (suggestion.text === "I have no idea" && newSelected.has(suggestion.text)) {
+      setHasNoIdea(true);
+    }
+  };
+
+  const validateWithAI = async (userInput: string) => {
+    setIsProcessing(true);
+
+    if (!isConversationMode && !originalIdea) {
+      setOriginalIdea(userInput);
+      console.log("Storing original idea:", userInput);
+    }
+
+    const userHasNoIdea = checkForNoIdea(userInput);
+    if (userHasNoIdea) {
+      setHasNoIdea(true);
+    }
+
     try {
-      const response = await fetch("/api/wizard-platform-generator", {
+      const response = await fetch("/api/wizard", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          title: projectInfo.name,
-          description: projectInfo.description,
+          idea: isConversationMode ? idea : userInput,
+          conversation: isConversationMode
+            ? [
+                ...conversation,
+                { role: "user", content: userInput, timestamp: Date.now() },
+              ]
+            : [],
+          hasNoIdea: userHasNoIdea || hasNoIdea,
         }),
       });
 
-      const data = await response.json();
+      const data: AIResponse = await response.json();
 
-      if (data.frontendPlatforms && data.backendPlatforms) {
-        // Combine frontend and backend platforms with category labels
-        const allPlatforms: PlatformSuggestion[] = [
-          ...data.frontendPlatforms.map((p: any) => ({ ...p, category: "frontend" as const })),
-          ...data.backendPlatforms.map((p: any) => ({ ...p, category: "backend" as const })),
+      if (data.needsMoreInfo && data.followUpQuestion) {
+        const newConversation = [
+          ...conversation,
+          { role: "user" as const, content: userInput, timestamp: Date.now() },
+          {
+            role: "ai" as const,
+            content: data.followUpQuestion,
+            timestamp: Date.now() + 1,
+          },
         ];
-        
-        setPlatformSuggestions(allPlatforms);
-        setShowPlatforms(true);
 
-        // Set initial platforms based on priority
-        const initialPlatforms = allPlatforms
-          .filter((p: PlatformSuggestion) => !p.isOptional)
-          .map((p: PlatformSuggestion) => ({
-            value: p.type,
-            isCore: !p.isOptional,
-          }));
+        setConversation(newConversation);
+        setIsConversationMode(true);
+        setCurrentInput("");
+        setSelectedSuggestions(new Set());
 
-        updateProjectInfo({ projectPlatforms: initialPlatforms });
+        const allSuggestions = [
+          {
+            text: "I have no idea",
+            description:
+              "Let our AI guide you through building your system step by step",
+            isSelected: false,
+          },
+          ...(data.suggestions || []).map((s) => ({
+            text: s.text,
+            description: s.description,
+            isSelected: false,
+          })),
+        ];
+
+        setSuggestions(allSuggestions);
+
+        if (!isConversationMode) {
+          setIdea(userInput);
+        }
+      } else {
+        const finalIdea = data.refinedIdea || userInput || "User needs guidance with idea development";
+        setIdea(finalIdea);
+        setIsApproved(true);
+
+        const finalMessage = userHasNoIdea || hasNoIdea 
+          ? `Excellent work! 🎉 We've helped you discover a fantastic project idea: "${finalIdea}". Now let's turn this into reality with a complete project plan!`
+          : `Perfect! Your idea is clear and ready for project planning. Let's move forward with: "${finalIdea}"`;
+
+        const finalConversation = [
+          ...conversation,
+          { role: "user" as const, content: userInput, timestamp: Date.now() },
+          {
+            role: "ai" as const,
+            content: finalMessage,
+            timestamp: Date.now() + 1,
+          },
+        ];
+        setConversation(finalConversation);
+
+        const ideaToUse = originalIdea || finalIdea;
+        console.log("Final idea for next steps:", ideaToUse, "Original:", originalIdea, "Final:", finalIdea);
+
+        onProjectInfoChange({
+          idea: ideaToUse,
+          originalIdea: originalIdea,
+          name: "",
+          description: "",
+          industries: [],
+          projectPlatforms: [],
+        });
+
+        setTimeout(() => {
+          if (onNext) onNext();
+        }, 2000);
       }
     } catch (error) {
-      console.error("Error generating platforms:", error);
+      console.error("Error validating idea:", error);
     } finally {
-      setGeneratingPlatforms(false);
+      setIsProcessing(false);
     }
   };
 
-  const goBackToDetails = () => {
-    setShowPlatforms(false);
+  const handleSubmit = () => {
+    const inputToSubmit = currentInput.trim();
+    if (!inputToSubmit || isProcessing) return;
+
+    validateWithAI(inputToSubmit);
   };
 
-  const togglePlatform = (platformType: string) => {
-    const isSelected = projectInfo.projectPlatforms.some(
-      (p) => p.value === platformType
-    );
-    const platform = platformSuggestions.find((p) => p.type === platformType);
-
-    if (isSelected) {
-      // Don't allow removing core platforms
-      if (
-        projectInfo.projectPlatforms.find((p) => p.value === platformType)
-          ?.isCore
-      ) {
-        // Show visual feedback for core platforms that can't be removed
-        const platformElement = document.querySelector(
-          `[data-platform-id="${platformType}"]`
-        );
-        if (platformElement) {
-          platformElement.classList.add("animate-shake");
-          setTimeout(() => {
-            platformElement.classList.remove("animate-shake");
-          }, 500);
-        }
-        return;
-      }
-      updateProjectInfo({
-        projectPlatforms: projectInfo.projectPlatforms.filter(
-          (p) => p.value !== platformType
-        ),
-      });
-    } else {
-      updateProjectInfo({
-        projectPlatforms: [
-          ...projectInfo.projectPlatforms,
-          {
-            value: platformType,
-            isCore: platform ? !platform.isOptional : false,
-          },
-        ],
-      });
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+      e.preventDefault();
+      handleSubmit();
     }
   };
 
-  const wordCount = projectInfo.description.trim().split(/\s+/).length;
-  const hasEnoughWords = wordCount >= 20;
-  const canGeneratePlatforms = !!projectInfo.name && wordCount >= 3;
-
-  // Card variants for animation
-  const cardVariants = {
-    hidden: (direction: number) => ({
-      x: direction > 0 ? "100%" : "-100%",
-      opacity: 0,
-    }),
-    visible: {
-      x: 0,
-      opacity: 1,
-      transition: {
-        type: "spring",
-        damping: 25,
-        stiffness: 300,
-      },
-    },
-    exit: (direction: number) => ({
-      x: direction > 0 ? "-100%" : "100%",
-      opacity: 0,
-      transition: {
-        type: "spring",
-        damping: 30,
-        stiffness: 300,
-      },
-    }),
-  };
+  const canSubmit = currentInput.trim().length > 0 && !isProcessing;
 
   return (
-    <div className="relative min-h-[500px] flex flex-col items-center justify-center">
-      {/* Add style tag for shake animation */}
-      <style dangerouslySetInnerHTML={{ __html: shakeAnimation }} />
-      <div className="w-full max-w-4xl mx-auto">
-        <div className="text-center mb-6 space-y-2">
-          <h2 className="text-2xl font-bold text-white">
-            Tell Us About Your Project
-          </h2>
-          <p className="text-gray-400 max-w-2xl mx-auto text-sm">
-            Share the details of your project so we can help you build it
-            better.
-          </p>
-        </div>
+    <TooltipProvider>
+      <div className="min-h-[80vh] flex items-center justify-center px-4">
+        <style jsx>{`
+          .custom-scrollbar {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(123, 97, 255, 0.3) transparent;
+          }
+          .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+          }
+          .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+          }
+          .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(123, 97, 255, 0.3);
+            border-radius: 3px;
+          }
+          .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(123, 97, 255, 0.5);
+          }
+        `}</style>
 
-        {/* Card Container */}
-        <div
-          className="relative w-full h-[600px] overflow-hidden"
-          ref={cardContainerRef}
-        >
-          <AnimatePresence initial={false} custom={1}>
-            {!showPlatforms ? (
-              /* Project Details Card */
+        <div className="w-full max-w-4xl mx-auto">
+          <AnimatePresence mode="wait">
+            {!isConversationMode ? (
               <motion.div
-                key="details"
-                className="absolute w-full h-full"
-                custom={1}
-                variants={cardVariants}
-                initial="hidden"
-                animate="visible"
-                exit="exit"
+                key="initial"
+                initial={{ opacity: 1 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.4 }}
+                className="text-center space-y-8"
               >
-                <div className="group h-full">
-                  <div className="relative h-full">
-                    <div className="absolute -inset-0.5 bg-gradient-to-r from-darkPrimary/20 to-primary/20 rounded-xl blur opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
-                    <div className="relative p-5 bg-black rounded-xl space-y-4 h-full flex flex-col">
-                      <div className="flex items-center space-x-3 text-xl font-semibold text-white mb-4">
-                        <span className="flex h-7 w-7 rounded-full bg-darkPrimary/20 items-center justify-center text-sm">
-                          1
-                        </span>
-                        <h3 className="text-lg">Project Details</h3>
-                      </div>
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6 }}
+                  className="space-y-4"
+                >
+                  <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-white via-primary2 to-darkPrimary bg-clip-text text-transparent pb-4">
+                    Bring your idea to life
+                  </h1>
+                  <p className="text-base md:text-lg text-gray-400 max-w-2xl mx-auto p-0">
+                    Describe your vision and let AI help you build something
+                    amazing
+                  </p>
+                </motion.div>
 
-                      <div className="space-y-3 ">
-                        <div className="space-y-2">
-                          <label className="text-sm font-medium text-gray-400">
-                            Project Name
-                          </label>
-                          <Input
-                            value={projectInfo.name}
-                            onChange={(e) =>
-                              handleInputChange(e.target.value, "name")
-                            }
-                            placeholder="Enter your project name..."
-                            className={cn(
-                              INPUT_BASE_STYLES,
-                              "placeholder:text-gray-500 rounded-lg p-4"
-                            )}
-                          />
-                        </div>
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.2 }}
+                  className="relative max-w-3xl mx-auto"
+                >
+                  <div className="relative">
+                    <div className="absolute inset-0 bg-gradient-to-r from-primary2/20 to-darkPrimary/20 rounded-2xl blur-xl opacity-50" />
 
-                        <div className="space-y-2">
-                          <div className="flex justify-between items-center">
-                            <label className="text-sm font-medium text-gray-400">
-                              Project Description
-                            </label>
-                            <span
-                              className={cn(
-                                "text-xs font-medium",
-                                hasEnoughWords
-                                  ? "text-green-500"
-                                  : "text-gray-500"
-                              )}
-                            >
-                              {wordCount} words (minimum 20 words){" "}
-                              {hasEnoughWords && "✓"}
-                            </span>
-                          </div>
-                          <Textarea
-                            value={projectInfo.description}
-                            onChange={(e) =>
-                              handleInputChange(e.target.value, "description")
-                            }
-                            placeholder="Describe your project in detail..."
-                            className={cn(
-                              INPUT_BASE_STYLES,
-                              "placeholder:text-gray-500 bg-black dark:bg-black min-h-[150px] rounded-lg p-4 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none"
-                            )}
-                          />
-                        </div>
-                      </div>
+                    <div className="relative z-10">
+                      <Textarea
+                        value={currentInput}
+                        onChange={(e) => handleIdeaChange(e.target.value)}
+                        onKeyDown={handleKeyDown}
+                        placeholder="What is your idea?"
+                        className={cn(
+                          "min-h-[120px] md:min-h-[150px] md:text-sm p-6 md:p-8 pr-16",
+                          "bg-black/40 backdrop-blur-sm border-2 border-white/10",
+                          "rounded-xl resize-none",
+                          "text-white placeholder:text-gray-500",
+                          "hover:border-white/20 transition-all duration-300",
+                          "shadow-[0_0_30px_rgba(123,97,255,0.1)]",
+                          "focus:border-white/10 focus:ring-0 focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0",
+                          "focus:shadow-[0_0_40px_rgba(123,97,255,0.2)]"
+                        )}
+                        disabled={isProcessing}
+                        maxLength={500}
+                      />
 
-                      {/* Generate Platforms Button */}
-                      <div className="flex justify-center !mt-10">
-                        <Button
-                          onClick={handleGeneratePlatforms}
-                          disabled={
-                            !canGeneratePlatforms || generatingPlatforms
-                          }
-                          className={cn(
-                            "px-8 py-5 text-sm rounded-lg flex items-center gap-2",
-                            "bg-darkPrimary hover:dark:bg-darkPrimary/90 hover:dark:text-white dark:bg-darkPrimary text-black dark:text-black"
-                          )}
-                        >
-                          {generatingPlatforms ? (
-                            <>
-                              <Loader2 className="h-4 w-4 animate-spin mr-1" />
-                              Generating...
-                            </>
-                          ) : (
-                            <>Continue to Platform Selection</>
-                          )}
-                        </Button>
+                      <motion.button
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{
+                          opacity: canSubmit ? 1 : 0.3,
+                          scale: canSubmit ? 1 : 0.8,
+                        }}
+                        whileHover={{ scale: canSubmit ? 1.05 : 0.8 }}
+                        whileTap={{ scale: canSubmit ? 0.95 : 0.8 }}
+                        onClick={handleSubmit}
+                        disabled={!canSubmit}
+                        className={cn(
+                          "absolute bottom-4 right-4 w-10 h-10 rounded-full",
+                          "flex items-center justify-center",
+                          "bg-gradient-to-r from-primary2 to-darkPrimary",
+                          "shadow-[0_0_15px_rgba(123,97,255,0.4)]",
+                          "transition-all duration-300",
+                          canSubmit
+                            ? "hover:shadow-[0_0_25px_rgba(123,97,255,0.6)] cursor-pointer"
+                            : "cursor-not-allowed"
+                        )}
+                      >
+                        {isProcessing ? (
+                          <Loader2 className="h-4 w-4 text-white animate-spin" />
+                        ) : (
+                          <ArrowUp className="h-4 w-4 text-white" />
+                        )}
+                      </motion.button>
+
+                      <div className="absolute bottom-4 left-6 text-sm text-gray-500">
+                        {currentInput.length}/500
                       </div>
                     </div>
                   </div>
-                </div>
+                </motion.div>
               </motion.div>
             ) : (
-              /* Platforms Card */
               <motion.div
-                key="platforms"
-                className="absolute w-full h-full"
-                custom={-1}
-                variants={cardVariants}
-                initial="hidden"
-                animate="visible"
-                exit="exit"
+                key="conversation"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4 }}
+                className="space-y-6"
               >
-                <div className="group h-full">
-                  <div className="relative h-full">
-                    <div className="absolute -inset-0.5 bg-gradient-to-r from-darkPrimary/20 to-primary/20 rounded-xl blur opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
-                    <div className="relative p-5 bg-black rounded-xl space-y-4 h-full flex flex-col">
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center space-x-3 text-xl font-semibold text-white">
-                          <span className="flex h-7 w-7 rounded-full bg-darkPrimary/20 items-center justify-center text-sm">
-                            2
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-center space-y-4"
+                >
+                  <div className="flex items-center justify-center gap-2 text-primary2">
+                    <MessageCircle className="h-5 w-5" />
+                    <h2 className="text-xl font-semibold text-white">
+                      Let&apos;s refine your idea
+                    </h2>
+                  </div>
+                  <p className="text-sm text-gray-400">
+                    Our AI is asking follow-up questions to better understand
+                    your vision
+                  </p>
+
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="max-w-2xl mx-auto p-4 bg-gradient-to-r from-primary2/10 to-darkPrimary/10 rounded-xl border border-primary2/20"
+                  >
+                    <div className="flex items-center gap-2 mb-2">
+                      <Lightbulb className="h-4 w-4 text-primary2" />
+                      <span className="text-sm font-medium text-primary2">
+                        Your Idea
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-300 text-left">{originalIdea || idea}</p>
+                  </motion.div>
+                </motion.div>
+
+                <div className="max-w-3xl mx-auto space-y-4 max-h-[400px] overflow-y-auto custom-scrollbar pr-2">
+                  {conversation.map((message, index) => (
+                    <motion.div
+                      key={index}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                      className={cn(
+                        "flex",
+                        message.role === "user"
+                          ? "justify-end"
+                          : "justify-start"
+                      )}
+                    >
+                      <div
+                        className={cn(
+                          "max-w-[80%] p-4 rounded-2xl",
+                          message.role === "user"
+                            ? "bg-gradient-to-r from-primary2 to-darkPrimary text-white"
+                            : "bg-gray-800/50 text-gray-100 border border-gray-700"
+                        )}
+                      >
+                        <p className="text-sm">{message.content}</p>
+                      </div>
+                    </motion.div>
+                  ))}
+                  <div ref={messagesEndRef} />
+                </div>
+
+                {!isApproved && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="max-w-3xl mx-auto space-y-4"
+                  >
+                    <div className="relative">
+                      <div className="absolute inset-0 bg-gradient-to-r from-primary2/10 to-darkPrimary/10 rounded-xl blur-lg opacity-50" />
+
+                      <div className="relative z-10">
+                        <Textarea
+                          value={currentInput}
+                          onChange={(e) => handleIdeaChange(e.target.value)}
+                          onKeyDown={handleKeyDown}
+                          placeholder="Type your response..."
+                          className={cn(
+                            "min-h-[80px] text-base p-4 pr-14",
+                            "bg-black/40 backdrop-blur-sm border border-white/10",
+                            "rounded-xl resize-none",
+                            "text-white placeholder:text-gray-500",
+                            "hover:border-white/20 transition-all duration-300",
+                            "focus:border-white/10 focus:ring-0 focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                          )}
+                          disabled={isProcessing}
+                          maxLength={300}
+                        />
+
+                        <motion.button
+                          animate={{
+                            opacity: canSubmit ? 1 : 0.3,
+                            scale: canSubmit ? 1 : 0.8,
+                          }}
+                          whileHover={{ scale: canSubmit ? 1.05 : 0.8 }}
+                          whileTap={{ scale: canSubmit ? 0.95 : 0.8 }}
+                          onClick={handleSubmit}
+                          disabled={!canSubmit}
+                          className={cn(
+                            "absolute bottom-3 right-3 w-8 h-8 rounded-full",
+                            "flex items-center justify-center",
+                            "bg-gradient-to-r from-primary2 to-darkPrimary",
+                            "shadow-[0_0_10px_rgba(123,97,255,0.4)]",
+                            "transition-all duration-300",
+                            canSubmit
+                              ? "hover:shadow-[0_0_15px_rgba(123,97,255,0.6)] cursor-pointer"
+                              : "cursor-not-allowed"
+                          )}
+                        >
+                          {isProcessing ? (
+                            <Loader2 className="h-3 w-3 text-white animate-spin" />
+                          ) : (
+                            <ArrowUp className="h-3 w-3 text-white" />
+                          )}
+                        </motion.button>
+                      </div>
+                    </div>
+
+                    {suggestions.length > 0 && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="space-y-3"
+                      >
+                        <div className="flex items-center gap-2">
+                          <HelpCircle className="h-4 w-4 text-sky-400" />
+                          <span className="text-sm font-medium text-sky-400">
+                            Quick suggestions to help you
                           </span>
-                          <h3 className="text-lg">Project Platforms</h3>
-                          <TooltipProvider>
-                            <Tooltip>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {suggestions.map((suggestion, index) => (
+                            <Tooltip key={index}>
                               <TooltipTrigger asChild>
-                                <HelpCircle className="h-4 w-4 text-gray-400 cursor-help" />
+                                <motion.button
+                                  initial={{ opacity: 0, scale: 0.8 }}
+                                  animate={{ opacity: 1, scale: 1 }}
+                                  transition={{ delay: index * 0.1 }}
+                                  whileHover={{ scale: 1.05 }}
+                                  whileTap={{ scale: 0.95 }}
+                                  onClick={() => toggleSuggestion(suggestion)}
+                                  className={cn(
+                                    "group flex items-center gap-1.5 px-3 py-2 rounded-full text-sm transition-all duration-200",
+                                    suggestion.isSelected
+                                      ? "bg-gradient-to-r from-sky-500/30 to-blue-500/30 border border-sky-400/50 text-sky-200"
+                                      : "bg-gradient-to-r from-sky-500/10 to-blue-500/10 border border-sky-500/20 text-sky-300 hover:from-sky-500/20 hover:to-blue-500/20 hover:border-sky-500/40"
+                                  )}
+                                >
+                                  <Plus
+                                    className={cn(
+                                      "h-3 w-3 transition-transform duration-200",
+                                      suggestion.isSelected
+                                        ? "rotate-45"
+                                        : "group-hover:rotate-90"
+                                    )}
+                                  />
+                                  {suggestion.text}
+                                  <Info className="h-3 w-3 opacity-60" />
+                                </motion.button>
                               </TooltipTrigger>
-                              <TooltipContent className="max-w-[300px] p-4 bg-[#1A1A1A] border-white/10">
-                                <p className="text-sm text-white/80">
-                                  Based on your project description, we&apos;ve
-                                  suggested the right platforms for your needs.
-                                  Core platforms cannot be removed.
+                              <TooltipContent
+                                side="top"
+                                className="max-w-[200px] bg-gray-900 border-gray-700 text-gray-200"
+                              >
+                                <p className="text-xs">
+                                  {suggestion.description}
                                 </p>
                               </TooltipContent>
                             </Tooltip>
-                          </TooltipProvider>
+                          ))}
                         </div>
+                      </motion.div>
+                    )}
+                  </motion.div>
+                )}
 
-                        <div className="flex items-center space-x-2">
-                          <Button
-                            onClick={goBackToDetails}
-                            variant="outline"
-                            size="sm"
-                            className="text-xs bg-zinc-800 border-zinc-700 hover:bg-zinc-700 flex items-center gap-1"
-                          >
-                            <ArrowLeftIcon className="h-3 w-3" />
-                            Back
-                          </Button>
-
-                          <Button
-                            onClick={handleGeneratePlatforms}
-                            variant="outline"
-                            size="sm"
-                            disabled={generatingPlatforms}
-                            className="text-xs bg-zinc-800 border-zinc-700 hover:bg-zinc-700"
-                          >
-                            {generatingPlatforms ? (
-                              <>
-                                <Loader2 className="h-3 w-3 animate-spin mr-1" />
-                                Regenerating...
-                              </>
-                            ) : (
-                              "Regenerate"
-                            )}
-                          </Button>
-                        </div>
-                      </div>
-
-                      {generatingPlatforms ? (
-                        <div className="flex items-center justify-center py-16 h-full">
-                          <LoadingState />
-                        </div>
-                      ) : platformSuggestions.length > 0 ? (
-                        <div className="space-y-6 flex-grow">
-                          {/* Frontend Platforms */}
-                          <div>
-                            <h4 className="text-sm font-medium text-white mb-3 flex items-center gap-2">
-                              <Monitor className="h-4 w-4 text-blue-400" />
-                              Frontend Platforms
-                            </h4>
-                            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                          {platformSuggestions
-                                .filter((p) => p.category === "frontend")
-                            .sort((a, b) => b.priority - a.priority)
-                            .map((platform) => (
-                              <PlatformCard
-                                key={platform.type}
-                                platform={platform}
-                                isSelected={projectInfo.projectPlatforms.some(
-                                  (p) => p.value === platform.type
-                                )}
-                                isCore={!platform.isOptional}
-                                onToggle={() => togglePlatform(platform.type)}
-                              />
-                            ))}
-                            </div>
-                              </div>
-
-                          {/* Backend Platforms */}
-                          <div>
-                            <h4 className="text-sm font-medium text-white mb-3 flex items-center gap-2">
-                              <Brain className="h-4 w-4 text-green-400" />
-                              Backend Platforms
-                            </h4>
-                            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                              {platformSuggestions
-                                .filter((p) => p.category === "backend")
-                                .sort((a, b) => b.priority - a.priority)
-                                .map((platform) => (
-                                  <PlatformCard
-                                    key={platform.type}
-                                    platform={platform}
-                                    isSelected={projectInfo.projectPlatforms.some(
-                                      (p) => p.value === platform.type
-                                    )}
-                                    isCore={!platform.isOptional}
-                                    onToggle={() => togglePlatform(platform.type)}
-                                  />
-                                ))}
-                            </div>
-                          </div>
-                        </div>
-                      ) : null}
-
-                      {/* Footer summary */}
-                      <div className="bg-zinc-900/50 p-3 rounded-lg border border-zinc-800/50 mt-4">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <h4 className="text-sm font-medium text-white">
-                              {projectInfo.name}
-                            </h4>
-                            <p className="text-xs text-gray-400 line-clamp-1 max-w-sm">
-                              {projectInfo.description}
-                            </p>
-                          </div>
-
-                          <div className="flex items-center gap-1">
-                            {projectInfo.projectPlatforms.length > 0 && (
-                              <>
-                                <Badge className="bg-blue-500/30 text-[10px]">
-                                  {projectInfo.projectPlatforms.filter(p => 
-                                    platformSuggestions.find(ps => ps.type === p.value)?.category === "frontend"
-                                  ).length} frontend
-                                </Badge>
-                                <Badge className="bg-green-500/30 text-[10px]">
-                                  {projectInfo.projectPlatforms.filter(p => 
-                                    platformSuggestions.find(ps => ps.type === p.value)?.category === "backend"
-                                  ).length} backend
-                              </Badge>
-                              </>
-                            )}
-                          </div>
-                        </div>
-                      </div>
+                {isApproved && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="text-center space-y-4"
+                  >
+                    <div className="flex items-center justify-center gap-2 text-green-400">
+                      <CheckCircle className="h-6 w-6" />
+                      <span className="text-lg font-semibold">
+                        {hasNoIdea ? "Ready to Guide You!" : "Idea Approved!"}
+                      </span>
                     </div>
-                  </div>
-                </div>
+                    <p className="text-sm text-gray-400">
+                      Moving to the next step...
+                    </p>
+                  </motion.div>
+                )}
               </motion.div>
             )}
           </AnimatePresence>
         </div>
-
-        {/* Progress indicator at the bottom */}
-        <div className="mt-6 flex justify-center items-center space-x-2">
-          <div
-            className={cn(
-              "w-2.5 h-2.5 rounded-full transition-colors duration-300",
-              !!projectInfo.name ? "bg-darkPrimary" : "bg-gray-700"
-            )}
-          />
-          <div
-            className={cn(
-              "w-2.5 h-2.5 rounded-full transition-colors duration-300",
-              hasEnoughWords ? "bg-darkPrimary" : "bg-gray-700"
-            )}
-          />
-          <div
-            className={cn(
-              "w-2.5 h-2.5 rounded-full transition-colors duration-300",
-              showPlatforms ? "bg-darkPrimary" : "bg-gray-700"
-            )}
-          />
-        </div>
       </div>
-    </div>
+    </TooltipProvider>
   );
 }

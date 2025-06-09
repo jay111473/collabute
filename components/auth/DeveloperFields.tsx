@@ -1,14 +1,14 @@
-import { FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { UseFormReturn } from "react-hook-form";
 import type { CreateAccountFormData, DeveloperRole } from "@/types/auth.types";
 import { useEffect } from "react";
+import { MultiSelect, MultiSelectOption } from "@/components/ui/multi-select";
 
 const DEVELOPER_ROLES: DeveloperRole[] = [
   "Frontend Developer",
@@ -19,19 +19,29 @@ const DEVELOPER_ROLES: DeveloperRole[] = [
   "Data Scientist",
   "UI/UX Designer",
   "QA Engineer",
+  "Game Developer",
+  "Embedded Developer",
+  "Scientific Computing",
+  "Systems Engineer",
+  "Data Engineer",
   "Other",
 ];
 
+const ROLE_OPTIONS: MultiSelectOption[] = DEVELOPER_ROLES.map((role) => ({
+  label: role,
+  value: role,
+}));
+
 interface DeveloperFieldsProps {
   form: UseFormReturn<CreateAccountFormData>;
+  errors?: { [key: string]: string | undefined };
 }
 
-export const DeveloperFields = ({ form }: DeveloperFieldsProps) => {
-  // Remove initialization with default role
+export const DeveloperFields = ({ form, errors }: DeveloperFieldsProps) => {
+  // Initialize the structure if missing
   useEffect(() => {
-    // Only initialize the structure if missing, but don't set a default value
     if (!form.getValues("developerFields")) {
-      form.setValue("developerFields", { primaryRole: null });
+      form.setValue("developerFields", { primaryRole: [] });
     }
   }, [form]);
 
@@ -41,28 +51,33 @@ export const DeveloperFields = ({ form }: DeveloperFieldsProps) => {
       name="developerFields.primaryRole"
       render={({ field }) => (
         <FormItem className="col-span-full">
-          <FormLabel>Primary Role</FormLabel>
-          <Select
-            onValueChange={field.onChange}
-            defaultValue={field.value || ""}
-            name="primaryRole"
-          >
-            <FormControl>
-              <SelectTrigger>
-                <SelectValue placeholder="Select your primary role (required)" />
-              </SelectTrigger>
-            </FormControl>
-            <SelectContent>
-              {DEVELOPER_ROLES.map((role) => (
-                <SelectItem key={role} value={role}>
-                  {role}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <p className="text-xs text-muted-foreground mt-1">Select the role that best describes your expertise</p>
+          <FormLabel className="text-sm font-medium">Primary Roles</FormLabel>
+          <FormControl>
+            <MultiSelect
+              options={ROLE_OPTIONS}
+              selected={field.value || []}
+              onChange={field.onChange}
+              placeholder="Select your primary roles (at least one required)"
+              className={`bg-transparent ${
+                errors?.["developerFields.primaryRole"]
+                  ? "border-red-500"
+                  : "border-grayBorders"
+              }`}
+            />
+          </FormControl>
+          {errors?.["developerFields.primaryRole"] ? (
+            <div className="text-red-500 text-xs mt-1">
+              {errors["developerFields.primaryRole"]}
+            </div>
+          ) : (
+            <FormMessage />
+          )}
+          <p className="text-xs text-muted-foreground mt-1">
+            Select all roles that describe your expertise. You can choose
+            multiple options.
+          </p>
         </FormItem>
       )}
     />
   );
-}; 
+};

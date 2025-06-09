@@ -26,20 +26,10 @@ const getApiBaseUrl = (): string => {
   return apiUrl;
 };
 
-// Helper function to check if we're in build time
-const isBuildTime = (): boolean => {
-  return process.env.NODE_ENV === 'production' && !process.env.VERCEL_URL && !process.env.RUNTIME;
-};
 
 export const blogService = {
   async getBlogs(): Promise<Blog[]> {
     try {
-      // During build time, return empty array to prevent build failures
-      if (isBuildTime()) {
-        console.log('Build time detected, returning empty blogs array');
-        return [];
-      }
-
       const API_BASE_URL = getApiBaseUrl();
       const response = await fetch(`${API_BASE_URL}/api/blogs`, {
         method: "GET",
@@ -59,13 +49,7 @@ export const blogService = {
       return data.docs;
     } catch (error) {
       console.error("Error fetching blogs:", error);
-      
-      // During build time, return empty array instead of throwing
-      if (isBuildTime()) {
-        console.log('Build time error handled, returning empty blogs array');
-        return [];
-      }
-      
+
       throw error;
     }
   },
@@ -79,12 +63,6 @@ export const blogService = {
       },
     };
     try {
-      // During build time, return null to prevent build failures
-      if (isBuildTime()) {
-        console.log('Build time detected, returning null for blog slug');
-        return null;
-      }
-
       const API_BASE_URL = getApiBaseUrl();
       const response = await fetch(
         `${API_BASE_URL}/api/blogs?${qs.stringify(query)}`,
@@ -107,25 +85,13 @@ export const blogService = {
       return data.docs[0] || null;
     } catch (error) {
       console.error("Error fetching blog by slug:", error);
-      
-      // During build time, return null instead of throwing
-      if (isBuildTime()) {
-        console.log('Build time error handled, returning null for blog slug');
-        return null;
-      }
-      
+
       throw error;
     }
   },
 
   async getCategories(): Promise<Category[]> {
     try {
-      // During build time, return empty array to prevent build failures
-      if (isBuildTime()) {
-        console.log('Build time detected, returning empty categories array');
-        return [];
-      }
-
       const API_BASE_URL = getApiBaseUrl();
       const response = await fetch(`${API_BASE_URL}/api/categories`, {
         method: "GET",
@@ -145,25 +111,13 @@ export const blogService = {
       return data.docs;
     } catch (error) {
       console.error("Error fetching categories:", error);
-      
-      // During build time, return empty array instead of throwing
-      if (isBuildTime()) {
-        console.log('Build time error handled, returning empty categories array');
-        return [];
-      }
-      
+
       throw error;
     }
   },
 
   async getTags(): Promise<Tag[]> {
     try {
-      // During build time, return empty array to prevent build failures
-      if (isBuildTime()) {
-        console.log('Build time detected, returning empty tags array');
-        return [];
-      }
-
       const API_BASE_URL = getApiBaseUrl();
       const response = await fetch(`${API_BASE_URL}/api/tags`, {
         method: "GET",
@@ -183,13 +137,7 @@ export const blogService = {
       return data.docs;
     } catch (error) {
       console.error("Error fetching tags:", error);
-      
-      // During build time, return empty array instead of throwing
-      if (isBuildTime()) {
-        console.log('Build time error handled, returning empty tags array');
-        return [];
-      }
-      
+
       throw error;
     }
   },

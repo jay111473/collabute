@@ -1,11 +1,12 @@
+// Core wizard types
+export type ProjectType = 'existing' | 'new';
+export type ProjectScope = 'full' | 'partial' | 'unknown';
+
+// Industry and platform types
 export interface Industry {
   label: string;
   value: string;
 }
-
-export type ProjectType = 'existing' | 'new';
-
-export type ProjectScope = 'full' | 'partial' | 'unknown';
 
 export interface ProjectPlatform {
   label: string;
@@ -13,8 +14,8 @@ export interface ProjectPlatform {
   description?: string;
   scopes: ProjectScope[];
   category?: 'web' | 'mobile' | 'desktop' | 'ai' | 'unknown';
-  isCore?: boolean; // Whether this platform is essential for the project type
-  suggestedFor?: string[]; // Array of project descriptions/keywords that suggest this platform
+  isCore?: boolean;
+  suggestedFor?: string[];
 }
 
 export type ProjectSide = 
@@ -29,16 +30,10 @@ export type ProjectSide =
   | 'linux'
   | 'cross-platform';
 
-export interface Feature {
-  title: string;
-  description: string;
-  estimatedPrice: string;
-  platform: "website" | "ios" | "android" | "desktop" | "pwa" | "rest-api" | "graphql-api" | "database" | "auth-service" | "file-storage" | "real-time" | "ai-service" | "payment-service";
-  isCore?: boolean;
-  order?: number; // Implementation order, lower numbers should be implemented first
-}
-
+// Project information types
 export interface ProjectInfo {
+  idea: string;
+  originalIdea?: string;
   name: string;
   description: string;
   industries: string[];
@@ -48,6 +43,159 @@ export interface ProjectInfo {
   }[];
 }
 
+// Feature and comparison types
+export interface Feature {
+  name: string;
+  title?: string; // For backward compatibility
+  description: string;
+  icon: string; // Required for components
+  estimatedPrice?: string;
+  platform?: "website" | "ios" | "android" | "desktop" | "pwa" | "rest-api" | "graphql-api" | "database" | "auth-service" | "file-storage" | "real-time" | "ai-service" | "payment-service";
+  isCore?: boolean;
+  order?: number;
+}
+
+// Business-specific types for business comparison
+export interface BusinessAspect {
+  name: string;
+  description: string;
+  icon: string;
+}
+
+export interface BusinessCategory {
+  name: string;
+  features: BusinessAspect[];
+}
+
+export interface BusinessCompetitor {
+  name: string;
+  url: string;
+  type: "Market Leader" | "Innovative Startup" | "Enterprise Solution" | "Budget Option" | "Niche Player";
+  description: string;
+  features: Record<string, boolean>;
+}
+
+export interface UserBusinessProject {
+  name: string;
+  features: Record<string, boolean>;
+}
+
+export interface Category {
+  name: string;
+  features: Feature[];
+}
+
+export interface Competitor {
+  name: string;
+  url: string;
+  type?: "Market Leader" | "Innovative Startup" | "Enterprise Solution" | "Budget Option" | "Niche Player";
+  description?: string;
+  features?: Record<string, boolean>;
+}
+
+export interface FeatureComparisonData {
+  categories: Category[];
+  competitors: Competitor[];
+  userProject: {
+    name: string;
+    features: Record<string, boolean>;
+  };
+}
+
+export interface BusinessComparisonData {
+  categories: BusinessCategory[];
+  competitors: BusinessCompetitor[];
+  userProject: UserBusinessProject;
+}
+
+// Project generation types
+export interface ProjectPhase {
+  name: string;
+  durationInWeeks: number;
+  description: string;
+}
+
+export interface ResourceRequirements {
+  teamSize: number;
+  skillLevel: "junior" | "mid" | "senior";
+  specializations: string[];
+}
+
+export interface ParallelizationOpportunity {
+  projectIds: string[];
+  trackIds?: string[]; // For track-based parallelization
+  description: string;
+}
+
+export interface GeneratedProject {
+  id: string;
+  name: string;
+  platform: string;
+  framework: string;
+  language: string;
+  estimatedTimeline: string; // For backward compatibility
+  durationInWeeks: number;
+  priority: "high" | "medium" | "low";
+  dependencies: string[];
+  resourceRequirements: ResourceRequirements;
+  phases: ProjectPhase[];
+  deliverables: string[];
+}
+
+export interface ProjectsResponse {
+  projects: GeneratedProject[];
+  totalEstimatedDuration: number;
+  criticalPath: string[];
+  parallelizationOpportunities: ParallelizationOpportunity[];
+}
+
+// Track types
+export interface ProjectTrack {
+  id: string;
+  name: string;
+  category: 
+    | "product-planning"
+    | "ui-ux-design" 
+    | "web-development"
+    | "ios-development"
+    | "android-development"
+    | "backend-development"
+    | "api-development"
+    | "database-development"
+    | "devops-deployment"
+    | "qa-testing"
+    | "integration-testing"
+    | "security-testing";
+  platform?: string;
+  startWeek: number;
+  durationInWeeks: number;
+  endWeek: number;
+  dependencies?: string[];
+  canParallelize?: boolean;
+}
+
+export interface PlatformAnalysis {
+  requiredPlatforms: Array<{
+    platform: string;
+    priority: "high" | "medium" | "low";
+    reasoning: string;
+  }>;
+  estimatedComplexity: "simple" | "moderate" | "complex" | "enterprise";
+  recommendedApproach: string;
+}
+
+export interface TracksResponse {
+  platformAnalysis: PlatformAnalysis;
+  tracks: ProjectTrack[];
+  totalEstimatedDuration: number;
+  criticalPath: string[];
+  parallelizationOpportunities: Array<{
+    trackIds: string[];
+    description: string;
+  }>;
+}
+
+// Team and lead types
 export interface Stack {
   id: number;
   name: string;
@@ -65,11 +213,6 @@ export interface Project {
   createdAt: string;
 }
 
-export interface Competitor {
-  name: string;
-  url: string;
-}
-
 export interface Lead {
   id: number;
   name: string;
@@ -81,6 +224,103 @@ export interface Lead {
   createdAt: string;
 }
 
+// GitHub integration types
+export interface GitHubRepository {
+  repoId: string;
+  name: string;
+  fullName: string;
+  url: string;
+  isPrivate: boolean;
+  description?: string;
+  language?: string;
+  defaultBranch?: string;
+}
+
+// Task types for track breakdown
+export interface Task {
+  id: string;
+  name: string;
+  description: string;
+  estimatedHours: number;
+  priority: "high" | "medium" | "low";
+  skillLevel: "junior" | "mid" | "senior";
+  dependencies: string[]; // Task IDs this depends on
+  deliverables: string[];
+  acceptanceCriteria: string[];
+  tags: string[]; // Technology tags, skill tags, etc.
+}
+
+export interface TrackTasks {
+  trackId: string;
+  trackName: string;
+  trackCategory: string;
+  platform?: string;
+  tasks: Task[];
+  totalEstimatedHours: number;
+  criticalTasks: string[]; // Task IDs on critical path
+  parallelTaskGroups: Array<{
+    taskIds: string[];
+    description: string;
+  }>;
+  requiredSkills: string[];
+}
+
+export interface TrackTasksResponse {
+  trackTasks: TrackTasks[];
+  overallSummary: {
+    totalTasks: number;
+    totalEstimatedHours: number;
+    averageTaskComplexity: "simple" | "moderate" | "complex";
+    crossTrackDependencies: Array<{
+      fromTrackId: string;
+      toTrackId: string;
+      description: string;
+    }>;
+  };
+  recommendations: {
+    developmentApproach: string;
+    riskMitigation: string[];
+    qualityAssurance: string[];
+  };
+}
+
+// Main wizard data type
+export interface WizardData {
+  projectType: ProjectType | null;
+  projectInfo: ProjectInfo | null;
+  competitors: Competitor[];
+  featureComparison: FeatureComparisonData | null;
+  businessComparison: BusinessComparisonData | null;
+  projects: GeneratedProject[];
+  tracks: ProjectTrack[];
+  tracksResponse: TracksResponse | null;
+  trackTasks: TrackTasksResponse | null;
+  leader: Lead | null;
+  githubRepository: GitHubRepository | null;
+}
+
+// Hook return types
+export interface UseWizardAiReturn {
+  isLoading: boolean;
+  suggestedIndustries: Industry[];
+  suggestedCompetitors: Competitor[];
+  suggestedProjects: GeneratedProject[];
+  suggestedTracks: ProjectTrack[];
+  totalEstimatedDuration: number;
+  criticalPath: string[];
+  parallelizationOpportunities: ParallelizationOpportunity[];
+  fetchFeatureComparison: (projectIdea: string) => Promise<FeatureComparisonData | null>;
+  fetchBusinessComparison: (projectIdea: string) => Promise<BusinessComparisonData | null>;
+  fetchProjects: (projectInfo: any) => Promise<ProjectsResponse | null>;
+  fetchTracks: (
+    projectInfo: any,
+    competitors: Competitor[],
+    projects: GeneratedProject[]
+  ) => Promise<TracksResponse | null>;
+  resetSuggestions: () => void;
+}
+
+// Platform constants
 export const PROJECT_PLATFORMS: ProjectPlatform[] = [
   {
     label: 'Frontend Application',

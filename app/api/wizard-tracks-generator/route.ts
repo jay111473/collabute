@@ -21,7 +21,12 @@ const projectTrackSchema = z.object({
   canParallelize: z.boolean().optional(), // Can run in parallel with other tracks
 });
 
-const tracksResponseSchema = z.object({
+const projectPlanSchema = z.object({
+  platformAnalysis: z.object({
+    requiredPlatforms: z.array(z.string()),
+    estimatedComplexity: z.enum(["simple", "moderate", "complex"]),
+    recommendedApproach: z.string(),
+  }),
   tracks: z.array(projectTrackSchema),
   totalEstimatedDuration: z.number(),
   parallelizationOpportunities: z.array(
@@ -49,221 +54,59 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const model = google("gemini-2.5-pro-preview-03-25");
-
+    // Use OpenAI GPT-4 which handles complex structured outputs better
+    const model = google("gemini-2.0-flash-exp");
     const competitorsList =
-      competitors?.map((c: any) => c.name).join(", ") ||
-      "No competitors provided";
-    const projectsList =
-      projects
-        ?.map((p: any) => `${p.name} (${p.durationInWeeks} weeks)`)
-        .join(", ") || "No projects provided";
+      competitors?.map((c: any) => c.name).join(", ") || "None";
     const industriesList = projectInfo.industries?.join(", ") || "general";
 
-    const response = await generateObject({
-      model,
-      schema: tracksResponseSchema,
-      prompt: `Analyze this project and create a comprehensive development timeline with platform-specific tracks. This project will be developed in a marketplace where thousands of developers, designers, and product managers can contribute and get paid instantly, so development can be highly parallelized and faster than traditional teams.
+    console.log("🚀 Generating complete project plan...");
 
-Project: ${projectInfo.idea}
+    const result = await generateObject({
+      model,
+      schema: projectPlanSchema,
+      temperature: 0.4,
+      maxTokens: 8000,
+      prompt: `Project: ${projectInfo.idea}
 Industries: ${industriesList}
-Existing Projects: ${projectsList}
 Competitors: ${competitorsList}
 
-STEP 1: Platform Analysis
-First, analyze what platforms this project needs:
-- Web Application (React, Vue, Angular, etc.)
+Create a complete development plan with proper dependencies:
+
+PLATFORMS TO CONSIDER:
+- UI/UX Design (always required)
+- Backend Development (APIs, databases)
+- Web Application 
 - iOS Mobile App
-- Android Mobile App  
-- Backend API/Services
-- Database Systems
-- Admin Dashboard
-- Desktop Application
-- Chrome Extension
-- Other specialized platforms
+- Android Mobile App
 
-Consider the project's target audience, use cases, and industry requirements.
+TRACK REQUIREMENTS:
+1. Each platform = 1 track only
+2. Realistic durations (3-6 weeks per track)
+3. Proper dependencies (UI/UX first, then backend, then frontend platforms)
+4. Kebab-case IDs (e.g., "ui-ux-design", "backend-api", "web-app")
+5. StartWeek and endWeek based on dependencies
+6. Mark tracks that can run in parallel
 
-STEP 2: Generate Platform-Specific Tracks
-Based on the platform analysis, create development tracks for each required platform.
+DEPENDENCY RULES:
+- UI/UX Design: No dependencies (starts week 1)
+- Backend: Depends on UI/UX completion
+- Web/iOS/Android: Depend on both UI/UX and Backend
+- Mobile apps can run parallel to each other
 
-Available track categories:
-- ui-ux-design: User interface and experience design
-- web-development: Web application development
-- ios-development: iOS mobile app development
-- android-development: Android mobile app development
-- backend-development: Server-side logic and services (API, database, etc.)
-
-For each track, provide:
-- id: unique identifier (kebab-case)
-- name: descriptive track name including platform
-- category: from the enum above
-- platform: specific platform name (optional)
-- startWeek: when it starts (0-based)
-- durationInWeeks: realistic duration for marketplace development
-- endWeek: startWeek + durationInWeeks
-- dependencies: array of track IDs this depends on
-- canParallelize: true if can run parallel with other tracks
-
-STEP 3: Timeline Optimization
-Consider these development patterns:
-- UI/UX Design can start after initial planning (2-6 weeks)
-- Backend/API development can start early and run parallel
-- Frontend platforms can develop in parallel after design
-
-Generate a realistic timeline considering:
-- Marketplace speed advantages (more developers = faster development)
-- Platform complexity and interdependencies  
-
-Aim for 12-24 weeks total duration for most projects.`,
-      temperature: 0.7,
-      maxTokens: 6000,
+OUTPUT FORMAT:
+- platformAnalysis: Required platforms and complexity
+- tracks: Complete tracks with proper timing
+- totalEstimatedDuration: Total project weeks
+- parallelizationOpportunities: Which tracks can run together`,
     });
 
-    return response.toJsonResponse();
+    return Response.json(result.object, { status: 200 });
   } catch (error) {
     console.error("Tracks generation error:", error);
-
-    // Enhanced fallback with platform-specific tracks
-    const fallbackResponse = {
-      platformAnalysis: {
-        requiredPlatforms: [
-          {
-            platform: "Web Application",
-            priority: "high",
-            reasoning: "Essential for broad accessibility and user engagement",
-          },
-          {
-            platform: "Backend API",
-            priority: "high",
-            reasoning: "Required for data management and business logic",
-          },
-          {
-            platform: "Mobile Apps",
-            priority: "medium",
-            reasoning: "Important for mobile user experience",
-          },
-        ],
-        estimatedComplexity: "moderate",
-        recommendedApproach:
-          "Start with web and backend, then expand to mobile platforms",
-      },
-      tracks: [
-        {
-          id: "product-planning",
-          name: "Product Planning & Requirements",
-          category: "product-planning",
-          startWeek: 0,
-          durationInWeeks: 3,
-          endWeek: 3,
-          dependencies: [],
-          canParallelize: false,
-        },
-        {
-          id: "ui-ux-design",
-          name: "UI/UX Design System",
-          category: "ui-ux-design",
-          startWeek: 1,
-          durationInWeeks: 4,
-          endWeek: 5,
-          dependencies: ["product-planning"],
-          canParallelize: false,
-        },
-        {
-          id: "backend-development",
-          name: "Backend Development",
-          category: "backend-development",
-          platform: "Backend API",
-          startWeek: 3,
-          durationInWeeks: 6,
-          endWeek: 9,
-          dependencies: ["product-planning"],
-          canParallelize: true,
-        },
-        {
-          id: "database-development",
-          name: "Database Development",
-          category: "database-development",
-          platform: "Database",
-          startWeek: 3,
-          durationInWeeks: 3,
-          endWeek: 6,
-          dependencies: ["product-planning"],
-          canParallelize: true,
-        },
-        {
-          id: "web-development",
-          name: "Web Development",
-          category: "web-development",
-          platform: "Web Application",
-          startWeek: 4,
-          durationInWeeks: 5,
-          endWeek: 9,
-          dependencies: ["ui-ux-design"],
-          canParallelize: true,
-        },
-        {
-          id: "ios-development",
-          name: "iOS Development",
-          category: "ios-development",
-          platform: "iOS App",
-          startWeek: 5,
-          durationInWeeks: 4,
-          endWeek: 9,
-          dependencies: ["ui-ux-design", "backend-development"],
-          canParallelize: true,
-        },
-        {
-          id: "android-development",
-          name: "Android Development",
-          category: "android-development",
-          platform: "Android App",
-          startWeek: 5,
-          durationInWeeks: 4,
-          endWeek: 9,
-          dependencies: ["ui-ux-design", "backend-development"],
-          canParallelize: true,
-        },
-        {
-          id: "qa-testing",
-          name: "QA and Testing",
-          category: "qa-testing",
-          startWeek: 8,
-          durationInWeeks: 3,
-          endWeek: 11,
-          dependencies: [
-            "web-development",
-            "ios-development",
-            "android-development",
-          ],
-          canParallelize: false,
-        },
-      ],
-      totalEstimatedDuration: 11,
-      criticalPath: [
-        "product-planning",
-        "ui-ux-design",
-        "backend-development",
-        "web-development",
-        "qa-testing",
-      ],
-      parallelizationOpportunities: [
-        {
-          trackIds: ["backend-development", "database-development"],
-          description: "Backend and database can be developed simultaneously",
-        },
-        {
-          trackIds: [
-            "web-development",
-            "ios-development",
-            "android-development",
-          ],
-          description:
-            "All frontend platforms can be developed in parallel after design completion",
-        },
-      ],
-    };
-
-    return Response.json(fallbackResponse, { status: 200 });
+    return Response.json(
+      { error: "Failed to generate tracks" },
+      { status: 500 }
+    );
   }
 }

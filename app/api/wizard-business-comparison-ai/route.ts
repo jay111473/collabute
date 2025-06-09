@@ -2,7 +2,6 @@ import { generateObject } from "ai";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { google } from "@ai-sdk/google";
-import { openai } from "@ai-sdk/openai";
 
 const businessComparisonSchema = z.object({
   categories: z.array(

@@ -106,17 +106,14 @@ const CreateAccount = () => {
     if (formValues.type === "developer") {
       // Get primary roles from form data
       const primaryRolesData = formData.get("developerFields.primaryRole");
-      console.log("Primary roles raw data:", primaryRolesData);
       let primaryRoles: DeveloperRole[] = [];
 
       if (primaryRolesData) {
         try {
           primaryRoles = JSON.parse(primaryRolesData as string);
-          console.log("Parsed primary roles:", primaryRoles);
         } catch {
           // If parsing fails, treat as empty array
           primaryRoles = [];
-          console.log("Failed to parse primary roles, using empty array");
         }
       }
 
@@ -137,21 +134,17 @@ const CreateAccount = () => {
       };
     }
 
-    console.log("Final form values for validation:", formValues);
-
     try {
       createAccountSchema.parse(formValues);
       setFormErrors({});
       return true;
     } catch (error) {
-      console.log("Validation error:", error);
       if (error instanceof z.ZodError) {
         const errors: FormErrors = {};
         error.errors.forEach((err) => {
           // Convert path array to dot notation for error keys
           const errorKey = err.path.join(".");
           errors[errorKey] = err.message;
-          console.log(`Validation error at ${errorKey}:`, err.message);
         });
         setFormErrors(errors);
 
@@ -170,9 +163,6 @@ const CreateAccount = () => {
 
   // Show toast on error or success
   useEffect(() => {
-    // Log all state for debugging
-    console.log("Signup response state:", state);
-
     if ("error" in state && state.error) {
       toast.error(state.error);
       setFormErrors({ form: state.error });

@@ -14,7 +14,8 @@ import {
   FeatureComparisonData,
   BusinessComparisonData,
   PlatformAnalysis,
-  TracksResponse
+  TracksResponse,
+  TrackTasks
 } from "@/types/wizard";
 
 const defaultWizardData: WizardData = {
@@ -34,6 +35,7 @@ const defaultWizardData: WizardData = {
   tracksResponse: null,
   leader: null,
   githubRepository: null,
+  trackTasks: null,
 };
 
 export function useWizardData() {
@@ -107,6 +109,26 @@ export function useWizardData() {
     }));
   };
 
+  const updateTrackTasks = (trackTasks: TrackTasks[]) => {
+    setWizardData((prev) => ({
+      ...prev,
+      trackTasks: {
+        trackTasks,
+        overallSummary: {
+          totalTasks: trackTasks.reduce((sum, track) => sum + track.tasks.length, 0),
+          totalEstimatedHours: trackTasks.reduce((sum, track) => sum + track.totalEstimatedHours, 0),
+          averageTaskComplexity: "moderate" as const,
+          crossTrackDependencies: [],
+        },
+        recommendations: {
+          developmentApproach: "Agile development with parallel track execution",
+          riskMitigation: ["Regular cross-track communication", "Early integration testing"],
+          qualityAssurance: ["Automated testing", "Code review process"],
+        },
+      },
+    }));
+  };
+
   return {
     wizardData,
     updateProjectType,
@@ -120,6 +142,7 @@ export function useWizardData() {
     updateLeader,
     updateIndustries,
     updateGitHubRepository,
+    updateTrackTasks,
   };
 }
 

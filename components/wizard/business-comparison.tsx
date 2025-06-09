@@ -161,11 +161,11 @@ function BusinessCategoryHeader({
     <tr>
       <td
         colSpan={competitorCount + 2}
-        className="px-8 py-4 bg-gradient-to-r from-zinc-900/95 to-zinc-800/95 border-b border-zinc-700/30"
+        className="px-6 py-2 bg-gradient-to-r from-zinc-900/95 to-zinc-800/95 border-b border-zinc-700/30"
       >
-        <div className="flex items-center gap-3">
-          <div className="w-2.5 h-2.5 rounded-full bg-gradient-to-r from-primary2 to-darkPrimary shadow-lg shadow-primary2/30"></div>
-          <h3 className="text-sm font-bold text-white uppercase tracking-wider">
+        <div className="flex items-center gap-2">
+          <div className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-primary2 to-darkPrimary shadow-sm shadow-primary2/30"></div>
+          <h3 className="text-xs font-bold text-white uppercase tracking-wider">
             {category.name}
           </h3>
           <div className="flex-1 h-px bg-gradient-to-r from-zinc-700/50 to-transparent"></div>
@@ -193,18 +193,18 @@ function BusinessAspectRow({
       animate={{ opacity: 1, y: 0 }}
       className="border-b border-zinc-800/40 hover:bg-gradient-to-r hover:from-zinc-900/40 hover:to-zinc-800/40 transition-all duration-300 group"
     >
-      <td className="px-8 py-6 text-left">
-        <div className="flex items-center space-x-4">
-          <div className="flex h-11 w-11 rounded-xl bg-gradient-to-br from-zinc-800/60 to-zinc-700/60 items-center justify-center border border-zinc-700/40 group-hover:border-zinc-600/60 transition-all duration-300 shadow-lg">
+      <td className="px-6 py-3 text-left">
+        <div className="flex items-center space-x-3">
+          <div className="flex h-7 w-7 rounded-lg bg-gradient-to-br from-zinc-800/60 to-zinc-700/60 items-center justify-center border border-zinc-700/40 group-hover:border-zinc-600/60 transition-all duration-300 shadow-sm">
             {getBusinessIcon(aspect.icon)}
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <span className="font-semibold text-white text-sm leading-tight">
+              <span className="font-medium text-white text-xs leading-tight">
                 {aspect.name}
               </span>
               <Tooltip content={aspect.description}>
-                <Info className="h-3.5 w-3.5 text-gray-400 hover:text-gray-300 transition-colors cursor-help flex-shrink-0" />
+                <Info className="h-3 w-3 text-gray-400 hover:text-gray-300 transition-colors cursor-help flex-shrink-0" />
               </Tooltip>
             </div>
           </div>
@@ -212,50 +212,50 @@ function BusinessAspectRow({
       </td>
 
       {competitors.map((competitor) => (
-        <td key={competitor.name} className="px-3 py-6 text-center">
+        <td key={competitor.name} className="px-2 py-3 text-center">
           <div className="flex justify-center">
             {competitor.features[aspect.name] ? (
               <motion.div
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 whileHover={{ scale: 1.1 }}
-                className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500/25 to-green-500/25 border border-emerald-500/50 shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30 transition-all duration-300"
+                className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500/25 to-green-500/25 border border-emerald-500/50 shadow-sm shadow-emerald-500/20 hover:shadow-emerald-500/30 transition-all duration-300"
               >
-                <CheckIcon className="h-4 w-4 text-emerald-300" />
+                <CheckIcon className="h-3 w-3 text-emerald-300" />
               </motion.div>
             ) : (
               <motion.div
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 whileHover={{ scale: 1.1 }}
-                className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-red-500/20 to-rose-500/20 border border-red-500/40 shadow-lg shadow-red-500/15 hover:shadow-red-500/25 transition-all duration-300"
+                className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-red-500/20 to-rose-500/20 border border-red-500/40 shadow-sm shadow-red-500/15 hover:shadow-red-500/25 transition-all duration-300"
               >
-                <X className="h-3.5 w-3.5 text-red-300" />
+                <X className="h-3 w-3 text-red-300" />
               </motion.div>
             )}
           </div>
         </td>
       ))}
 
-      <td className="px-3 py-6 text-center">
+      <td className="px-2 py-3 text-center">
         <div className="flex justify-center">
           {userProject.features[aspect.name] ? (
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               whileHover={{ scale: 1.1 }}
-              className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-primary2/25 to-darkPrimary/25 border border-primary2/50 shadow-lg shadow-primary2/20 hover:shadow-primary2/30 transition-all duration-300"
+              className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-primary2/25 to-darkPrimary/25 border border-primary2/50 shadow-sm shadow-primary2/20 hover:shadow-primary2/30 transition-all duration-300"
             >
-              <CheckIcon className="h-4 w-4 text-primary2" />
+              <CheckIcon className="h-3 w-3 text-primary2" />
             </motion.div>
           ) : (
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               whileHover={{ scale: 1.1 }}
-              className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-red-500/20 to-rose-500/20 border border-red-500/40 shadow-lg shadow-red-500/15 hover:shadow-red-500/25 transition-all duration-300"
+              className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-red-500/20 to-rose-500/20 border border-red-500/40 shadow-sm shadow-red-500/15 hover:shadow-red-500/25 transition-all duration-300"
             >
-              <X className="h-3.5 w-3.5 text-red-300" />
+              <X className="h-3 w-3 text-red-300" />
             </motion.div>
           )}
         </div>
@@ -309,34 +309,34 @@ export function BusinessComparison({
             <table className="w-full">
               <thead>
                 <tr className="border-b border-zinc-700/40 bg-gradient-to-r from-zinc-900/95 to-zinc-800/95">
-                  <th className="px-8 py-8 text-left text-sm font-bold text-white min-w-80">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 rounded-xl bg-gradient-to-br from-primary2/20 to-darkPrimary/20 items-center justify-center border border-primary2/30">
-                        <TrendingUp className="h-5 w-5 text-primary2" />
+                  <th className="px-6 py-4 text-left text-xs font-bold text-white min-w-60">
+                    <div className="flex items-center gap-2">
+                      <div className="flex h-7 w-7 rounded-lg bg-gradient-to-br from-primary2/20 to-darkPrimary/20 items-center justify-center border border-primary2/30">
+                        <TrendingUp className="h-3.5 w-3.5 text-primary2" />
                       </div>
-                      <span className="text-base">Business Aspects</span>
+                      <span className="text-sm">Business Aspects</span>
                     </div>
                   </th>
                   {comparisonData.competitors.map((competitor) => (
                     <th
                       key={competitor.name}
-                      className="px-4 py-8 text-center min-w-40"
+                      className="px-3 py-4 text-center min-w-32"
                     >
-                      <div className="space-y-3">
+                      <div className="space-y-2">
                         {/* Primary: Company Name */}
-                        <div className="flex items-center justify-center space-x-2">
-                          <span className="text-lg font-bold text-white truncate max-w-36 leading-tight">
+                        <div className="flex items-center justify-center space-x-1">
+                          <span className="text-sm font-bold text-white truncate max-w-28 leading-tight">
                             {competitor.name}
                           </span>
                           <Tooltip content={competitor.description}>
-                            <Info className="h-4 w-4 text-gray-400 hover:text-gray-300 transition-colors cursor-help flex-shrink-0" />
+                            <Info className="h-3 w-3 text-gray-400 hover:text-gray-300 transition-colors cursor-help flex-shrink-0" />
                           </Tooltip>
                         </div>
                         {/* Secondary: Type Badge */}
                         <div className="flex items-center justify-center">
                           <div
                             className={cn(
-                              "inline-flex items-center px-2.5 py-1.5 rounded-md text-xs font-medium border shadow-sm transition-all duration-300",
+                              "inline-flex items-center px-2 py-1 rounded-md text-xs font-medium border shadow-sm transition-all duration-300",
                               getCompetitorTypeColor(competitor.type)
                             )}
                           >
@@ -346,17 +346,17 @@ export function BusinessComparison({
                       </div>
                     </th>
                   ))}
-                  <th className="px-4 py-8 text-center min-w-40">
-                    <div className="space-y-3">
+                  <th className="px-3 py-4 text-center min-w-32">
+                    <div className="space-y-2">
                       {/* Primary: Project Name */}
-                      <div className="flex items-center justify-center space-x-2">
-                        <span className="text-lg font-bold text-white leading-tight">
+                      <div className="flex items-center justify-center space-x-1">
+                        <span className="text-sm font-bold text-white leading-tight">
                           {comparisonData.userProject.name}
                         </span>
                       </div>
                       {/* Secondary: Project Badge */}
                       <div className="flex items-center justify-center">
-                        <div className="inline-flex items-center px-2.5 py-1.5 rounded-md text-xs font-medium border bg-gradient-to-r from-primary2/15 to-darkPrimary/15 text-primary2 border-primary2/30 shadow-sm">
+                        <div className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium border bg-gradient-to-r from-primary2/15 to-darkPrimary/15 text-primary2 border-primary2/30 shadow-sm">
                           <span>Your Project</span>
                         </div>
                       </div>
@@ -386,26 +386,26 @@ export function BusinessComparison({
           </div>
 
           {/* Enhanced Summary Footer */}
-          <div className="bg-gradient-to-r from-zinc-900/95 to-zinc-800/95 p-8 border-t border-zinc-700/40">
-            <div className="flex items-center justify-between flex-wrap gap-6">
-              <div className="flex items-center space-x-5">
-                <div className="flex h-14 w-14 rounded-xl bg-gradient-to-br from-primary2/20 to-darkPrimary/20 items-center justify-center border border-primary2/30 shadow-lg shadow-primary2/10">
-                  <TrendingUp className="h-7 w-7 text-primary2" />
+          <div className="bg-gradient-to-r from-zinc-900/95 to-zinc-800/95 p-4 border-t border-zinc-700/40">
+            <div className="flex items-center justify-between flex-wrap gap-4">
+              <div className="flex items-center space-x-3">
+                <div className="flex h-8 w-8 rounded-lg bg-gradient-to-br from-primary2/20 to-darkPrimary/20 items-center justify-center border border-primary2/30 shadow-sm shadow-primary2/10">
+                  <TrendingUp className="h-4 w-4 text-primary2" />
                 </div>
                 <div>
-                  <h4 className="text-base font-bold text-white mb-2">
+                  <h4 className="text-sm font-bold text-white mb-1">
                     Business Strategy Analysis
                   </h4>
-                  <p className="text-sm text-gray-400">
+                  <p className="text-xs text-gray-400">
                     Business model comparison across{" "}
                     {comparisonData.competitors.length} key market competitors
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-6">
-                <div className="flex items-center space-x-3 px-5 py-3 rounded-xl bg-gradient-to-r from-cyan-500/15 to-blue-500/15 border border-cyan-500/30 shadow-lg shadow-cyan-500/10">
-                  <div className="w-2.5 h-2.5 rounded-full bg-cyan-400 shadow-lg shadow-cyan-400/50"></div>
-                  <span className="text-sm font-semibold text-cyan-300">
+              <div className="flex items-center gap-4">
+                <div className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-gradient-to-r from-cyan-500/15 to-blue-500/15 border border-cyan-500/30 shadow-sm shadow-cyan-500/10">
+                  <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-sm shadow-cyan-400/50"></div>
+                  <span className="text-xs font-semibold text-cyan-300">
                     {comparisonData.categories.reduce(
                       (acc, cat) => acc + cat.features.length,
                       0
@@ -413,9 +413,9 @@ export function BusinessComparison({
                     Aspects
                   </span>
                 </div>
-                <div className="flex items-center space-x-3 px-5 py-3 rounded-xl bg-gradient-to-r from-primary2/15 to-darkPrimary/15 border border-primary2/30 shadow-lg shadow-primary2/10">
-                  <div className="w-2.5 h-2.5 rounded-full bg-primary2 shadow-lg shadow-primary2/50"></div>
-                  <span className="text-sm font-semibold text-primary2">
+                <div className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-gradient-to-r from-primary2/15 to-darkPrimary/15 border border-primary2/30 shadow-sm shadow-primary2/10">
+                  <div className="w-1.5 h-1.5 rounded-full bg-primary2 shadow-sm shadow-primary2/50"></div>
+                  <span className="text-xs font-semibold text-primary2">
                     {comparisonData.categories.length} Categories
                   </span>
                 </div>

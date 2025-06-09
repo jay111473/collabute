@@ -7,10 +7,8 @@ import {
   Rocket, 
   UserCheck, 
   Calendar, 
-  CheckCircle,
   ArrowRight,
   Target,
-  Zap
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -131,45 +129,44 @@ export function StepIntroduction({ step, className }: StepIntroductionProps) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: "easeOut" }}
       className={cn(
-        "bg-gradient-to-br from-zinc-900/90 to-zinc-800/90 rounded-xl p-6 border border-zinc-700/50 backdrop-blur-sm",
+        "bg-gradient-to-br from-zinc-900/90 to-zinc-800/90 rounded-xl p-4 border border-zinc-700/50 backdrop-blur-sm",
         className
       )}
     >
-      {/* Header */}
-      <div className="flex items-center gap-4 mb-4">
-        <div className="flex-shrink-0">
+      {/* Full Width Horizontal Layout */}
+      <div className="flex items-center gap-4">
+        {/* Left: Icon and Step Info */}
+        <div className="flex items-center gap-3 flex-shrink-0">
           <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary2/20 to-darkPrimary/20 flex items-center justify-center border border-primary2/30">
             <Icon className="w-5 h-5 text-primary2" />
           </div>
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
+          <div>
             <span className="text-xs font-bold text-primary2 bg-primary2/10 px-2 py-1 rounded-full border border-primary2/20">
               STEP {step + 1}
             </span>
+            <h2 className="text-lg font-bold text-white mt-1 leading-tight">
+              {data.title}
+            </h2>
           </div>
-          <h2 className="text-xl font-bold text-white mb-1 leading-tight">
-            {data.title}
-          </h2>
-          <p className="text-gray-300 text-base leading-relaxed">
+        </div>
+
+        {/* Center: Main Content */}
+        <div className="flex-1 min-w-0 px-4">
+          <p className="text-gray-300 text-sm font-medium mb-1">
             {data.subtitle}
           </p>
+          <p className="text-gray-400 text-sm leading-relaxed">
+            {data.description}
+          </p>
         </div>
-      </div>
 
-      {/* Description */}
-      <div className="mb-4">
-        <p className="text-gray-400 leading-relaxed text-sm">
-          {data.description}
-        </p>
-      </div>
-
-      {/* Next Step Preview */}
-      <div className="pt-3 border-t border-zinc-700/50">
-        <div className="flex items-center gap-2 text-sm">
-          <span className="text-gray-400">Next:</span>
-          <span className="text-gray-300">{data.nextStep}</span>
-          <ArrowRight className="w-4 h-4 text-primary2 ml-1" />
+        {/* Right: Next Step Preview */}
+        <div className="flex items-center gap-3 flex-shrink-0 px-4 py-3 bg-zinc-800/50 rounded-lg border border-zinc-700/30">
+          <div className="text-right">
+            <div className="text-xs text-gray-400 mb-1">Next Step</div>
+            <div className="text-sm text-gray-300 font-medium">{data.nextStep}</div>
+          </div>
+          <ArrowRight className="w-4 h-4 text-primary2" />
         </div>
       </div>
     </motion.div>

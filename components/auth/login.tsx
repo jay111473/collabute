@@ -49,7 +49,6 @@ const Login = () => {
         loading: "Logging in...",
         success: (res) => {
           // Assuming the server sets HttpOnly cookies for us
-          console.log(res.data);
           setCookie("token", res.data.token);
           localStorage.setItem("token", res.data.token);
           localStorage.setItem("userID", res.data.user.id);

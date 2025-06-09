@@ -38,7 +38,6 @@ export default function IssueDetails({ issue }: IssueDetailsProps) {
       .length || 0;
 
   const handleApply = (id: string) => {
-    console.log("Applied to issue:", id);
     // Add your client-side apply logic here
   };
 

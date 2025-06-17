@@ -298,4 +298,4 @@ const ProjectManagerCard: FC<ProjectManagerCardProps> = ({ projectManager, varia
   );
 };
 
-export default ProjectManagerCard;
+export default ProjectManagerCard; 

@@ -2,302 +2,192 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { GitPullRequest, DollarSign, Clock9 } from "lucide-react";
-import { useState, useMemo, Suspense } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import SearchFilterBar from "@/components/dashboard/project/search-filter-bar";
-import { calculateProgressPercentage } from "@/lib/utils";
-import { Issue, Project } from "@/types/dashboard";
-import IssueCard from "../project/issue-card";
+import { ProjectProgress } from "@/components/ui/progress";
+import { DollarSign, Clock9, Users } from "lucide-react";
+import { Suspense } from "react";
+import { calculateDetailedProgress, formatDate } from "@/lib/utils";
+import { Issue, Project, Lead, Media } from "@/types/dashboard";
 import { Skeleton } from "@/components/ui/skeleton";
-
-type StatusType = "open" | "in_progress" | "resolved" | "closed";
-
-const issueFilters = [
-  { label: "Open", value: "open", borderColor: "border-grayBorders" },
-  {
-    label: "In Progress",
-    value: "in_progress",
-    borderColor: "border-grayBorders",
-  },
-  { label: "Resolved", value: "resolved", borderColor: "border-grayBorders" },
-  { label: "Closed", value: "closed", borderColor: "border-grayBorders" },
-];
-
-const sortOptions = [
-  { label: "Newest", value: "newest" },
-  { label: "Oldest", value: "oldest" },
-  { label: "Priority", value: "priority" },
-];
-
-type SortOption = "newest" | "oldest" | "priority";
+import ProjectIcon from "@/public/icons/project";
+import Image from "next/image";
 
 function ProjectHeader({
   project,
-  progressPercentage,
-  currentUser,
+  progressData,
 }: {
   project: Project;
-  progressPercentage: number;
-  currentUser?: any;
+  progressData: {
+    total: number;
+    done: number;
+    inProgress: number;
+    remaining: number;
+    donePercentage: number;
+    inProgressPercentage: number;
+    overallPercentage: number;
+  };
 }) {
   return (
-    <>
-      <div className="flex items-center justify-between px-4">
+    <div className="flex flex-col gap-4">
+      <div className="flex items-center justify-between px-4 gap-y-4">
         <div className="flex items-center gap-2">
+          <ProjectIcon />
           <h3 className="font-medium text-white text-lg">{project?.title}</h3>
           <Badge
             className="font-medium !text-xs"
-            icon={<GitPullRequest className="h-4 w-4 text-primary2" />}
+            icon={<Users className="h-4 w-4 text-darkPrimary" />}
             variant="outline"
           >
-            {project.issues?.length} issues
+            Collaboraters {project.collabuters?.length || 0}
           </Badge>
           <Badge
             className="font-medium !text-xs"
-            icon={<DollarSign className="h-4 w-4 text-primary2" />}
+            icon={<DollarSign className="h-4 w-4 text-darkPrimary" />}
             variant="outline"
           >
-            budget
-            <span className="text-xs">${project.budget}</span>
+            Budget $
+            {project.budget
+              ? project.budget >= 1000
+                ? `${Math.round(project.budget / 1000)}k`
+                : project.budget
+              : "0"}
           </Badge>
           <Badge
             className="font-medium !text-xs"
-            icon={<Clock9 className="h-4 w-4 text-primary2" />}
+            icon={<Clock9 className="h-4 w-4 text-darkPrimary" />}
             variant="outline"
           >
-            Progress
-            <Progress className="w-20 ml-2" value={progressPercentage} />
-            <span className="text-xs">{progressPercentage}%</span>
+            Deliver date Apr 20, 2024
           </Badge>
         </div>
-      </div>
-      <p className="text-white font-light text-sm px-4 py-2">
-        {project.description}
-      </p>
-    </>
-  );
-}
-
-function IssuesList({
-  filteredIssues,
-  projectTitle,
-  isMyProject,
-}: {
-  filteredIssues: Issue[];
-  projectTitle: string;
-  isMyProject?: boolean;
-}) {
-  return (
-    <div className="flex flex-col gap-4">
-      {filteredIssues?.map((issue, index) => (
-        <IssueCard
-          key={index}
-          issue={issue}
-          projectTitle={projectTitle}
-          isMyProject={isMyProject}
-        />
-      ))}
-    </div>
-  );
-}
-
-function IssuesContent({
-  project,
-  isMyProject,
-  tabValue,
-}: {
-  project: Project;
-  isMyProject?: boolean;
-  tabValue: string;
-}) {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedStatus, setSelectedStatus] = useState<StatusType | null>(null);
-  const [sortBy, setSortBy] = useState<SortOption>("newest");
-
-  const filteredAndSortedIssues = useMemo(() => {
-    let filtered = project.issues?.filter((issue) => {
-      // Search filter
-      const matchesSearch = (issue as Issue).title
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase());
-
-      // Status filter
-      const matchesStatus = selectedStatus
-        ? (issue as Issue).status === selectedStatus
-        : true;
-
-      return matchesSearch && matchesStatus;
-    });
-
-    // Sort issues
-    return filtered?.sort((a, b) => {
-      switch (sortBy) {
-        case "newest":
-          return (
-            new Date((b as Issue).id).getTime() -
-            new Date((a as Issue).id).getTime()
-          );
-        case "oldest":
-          return (
-            new Date((a as Issue).id).getTime() -
-            new Date((b as Issue).id).getTime()
-          );
-        case "priority":
-          return (b as Issue).priority.localeCompare((a as Issue).priority);
-        default:
-          return 0;
-      }
-    });
-  }, [project.issues, searchQuery, selectedStatus, sortBy]);
-
-  return (
-    <div className="p-4 flex flex-col gap-y-4">
-      <SearchFilterBar
-        placeholder="Search Issues"
-        filters={issueFilters}
-        sortOptions={sortOptions}
-        onChange={setSearchQuery}
-        onFilterChange={(value) => setSelectedStatus(value as StatusType)}
-        onSortChange={(value) => setSortBy(value as SortOption)}
-        selectedFilter={selectedStatus}
-        selectedSort={sortBy}
-      />
-      <Suspense fallback={<IssuesLoadingSkeleton />}>
-        <IssuesList
-          filteredIssues={filteredAndSortedIssues as Issue[]}
-          projectTitle={project.title}
-          isMyProject={isMyProject}
-        />
-      </Suspense>
-    </div>
-  );
-}
-
-function IssuesLoadingSkeleton() {
-  return (
-    <div className="flex flex-col gap-4">
-      {[1, 2, 3].map((i) => (
-        <div
-          key={i}
-          className="w-full p-4 border border-grayBorders rounded-md"
-        >
-          <Skeleton className="h-6 w-3/4 mb-2" />
-          <Skeleton className="h-4 w-1/2 mb-2" />
-          <div className="flex gap-2 mt-2">
-            <Skeleton className="h-6 w-16" />
-            <Skeleton className="h-6 w-16" />
+        <div className="text-right">
+          <div className="text-white">
+            <span className="text-gray-300">Project Progress:</span>{" "}
+            <span className="text-darkPrimary font-medium">
+              {progressData.overallPercentage}%
+            </span>
           </div>
         </div>
-      ))}
+      </div>
+
+      {/* Progress Bar */}
+      <div className="px-4 py-2">
+        <ProjectProgress
+          donePercentage={progressData.donePercentage}
+          inProgressPercentage={progressData.inProgressPercentage}
+          className="h-3 mb-3"
+        />
+        <div className="relative text-sm">
+          {/* Done label positioned under blue segment */}
+          {progressData.donePercentage > 0 && (
+            <div
+              className="absolute font-medium"
+              style={{
+                left: `${progressData.donePercentage / 2}%`,
+                transform: "translateX(-50%)",
+              }}
+            >
+              <span className="bg-gradient-to-r from-[#D4B0FF] to-[#3D70F1] bg-clip-text text-transparent">
+                {progressData.done}
+              </span>
+              <span className="text-gray-400 ml-1">Done</span>
+            </div>
+          )}
+
+          {/* In Progress label positioned under yellow segment */}
+          {progressData.inProgressPercentage > 0 && (
+            <div
+              className="absolute font-medium"
+              style={{
+                left: `${
+                  progressData.donePercentage +
+                  progressData.inProgressPercentage / 2
+                }%`,
+                transform: "translateX(-50%)",
+              }}
+            >
+              <span className="bg-gradient-to-r from-[#F2AF8E] to-[#EFE7A8] bg-clip-text text-transparent">
+                {progressData.inProgress}
+              </span>
+              <span className="text-gray-400 ml-1">In progress</span>
+            </div>
+          )}
+
+          {/* Remaining label positioned under gray segment */}
+          {progressData.remaining > 0 && (
+            <div
+              className="absolute font-medium"
+              style={{
+                left: `${
+                  progressData.donePercentage +
+                  progressData.inProgressPercentage +
+                  (100 -
+                    progressData.donePercentage -
+                    progressData.inProgressPercentage) /
+                    2
+                }%`,
+                transform: "translateX(-50%)",
+              }}
+            >
+              <span className="bg-gradient-to-r from-gray-700 to-gray-600 bg-clip-text text-transparent">
+                {progressData.remaining}
+              </span>
+              <span className="text-gray-400 ml-1">Remaining</span>
+            </div>
+          )}
+        </div>
+      </div>
+      {/* Project Lead Section */}
+      <div className="flex items-center gap-2 px-4 py-2">
+        <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-600 flex-shrink-0">
+          {project.lead && typeof project.lead === "object" ? (
+            project.lead.profilePicture &&
+            typeof project.lead.profilePicture === "object" ? (
+              <Image
+                src={
+                  (project.lead.profilePicture as Media).url ||
+                  "/placeholder-avatar.png"
+                }
+                alt={project.lead.name}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-sm font-medium">
+                {project.lead.name.charAt(0).toUpperCase()}
+              </div>
+            )
+          ) : (
+            <div className="w-full h-full bg-gray-600 flex items-center justify-center text-gray-400 text-xs">
+              ?
+            </div>
+          )}
+        </div>
+        <div className="flex items-center gap-3 text-sm">
+          <span className="text-white font-medium">
+            {project.lead && typeof project.lead === "object"
+              ? project.lead.name
+              : "No Lead"}
+          </span>
+          <span className="text-gray-400">Project lead</span>
+          <span className="text-gray-500">|</span>
+          <span className="text-gray-400 text-sm">
+            Last updated {formatDate(project.updatedAt)}
+          </span>
+        </div>
+      </div>
     </div>
   );
 }
 
-const MyProjectCard = ({
-  project,
-  isMyProject,
-  currentUser,
-}: {
-  project: Project;
-  isMyProject?: boolean;
-  currentUser?: any;
-}) => {
-  const progressPercentage = calculateProgressPercentage(
-    project.issues as Issue[]
-  );
+const MyProjectCard = ({ project }: { project: Project }) => {
+  const progressData = calculateDetailedProgress(project.issues as Issue[]);
 
   return (
     <div className="flex flex-col w-full">
       <main className="flex flex-1 flex-col gap-4 lg:gap-6 w-full">
-        <Card className="flex flex-col gap-2 py-4 bg-darkGray text-white w-full border-none">
+        <Card className="flex flex-col gap-2 py-5 px-2 bg-darkGray text-white w-full border-none">
           <Suspense fallback={<Skeleton className="h-20 w-full" />}>
-            <ProjectHeader
-              project={project}
-              progressPercentage={progressPercentage}
-              currentUser={currentUser}
-            />
+            <ProjectHeader project={project} progressData={progressData} />
           </Suspense>
-          <span className="w-full h-px"></span>
-          <Tabs defaultValue={!isMyProject ? "issues" : "open-issues"}>
-            {!isMyProject ? (
-              <TabsList className="p-4">
-                <TabsTrigger value="issues">
-                  Issues ({project.issues?.length})
-                </TabsTrigger>
-                <TabsTrigger value="collabuters">Collabuters</TabsTrigger>
-                <TabsTrigger value="latest-activity">
-                  Latest Activity
-                </TabsTrigger>
-              </TabsList>
-            ) : (
-              <TabsList className="p-4">
-                <TabsTrigger value="open-issues">
-                  Open issues ({project.issues?.length})
-                </TabsTrigger>
-                <TabsTrigger value="done-issues">Done issues</TabsTrigger>
-              </TabsList>
-            )}
-            {!isMyProject ? (
-              <TabsContent value="issues">
-                <Suspense fallback={<IssuesLoadingSkeleton />}>
-                  <IssuesContent
-                    project={project}
-                    isMyProject={isMyProject}
-                    tabValue="issues"
-                  />
-                </Suspense>
-              </TabsContent>
-            ) : (
-              <TabsContent value="open-issues">
-                <Suspense fallback={<IssuesLoadingSkeleton />}>
-                  <IssuesContent
-                    project={project}
-                    isMyProject={isMyProject}
-                    tabValue="open-issues"
-                  />
-                </Suspense>
-              </TabsContent>
-            )}
-            {!isMyProject && (
-              <>
-                <TabsContent value="collabuters">
-                  <Suspense
-                    fallback={
-                      <div className="p-4">
-                        <Skeleton className="h-32 w-full" />
-                      </div>
-                    }
-                  >
-                    <div className="p-4">
-                      Collabuters content will be loaded here
-                    </div>
-                  </Suspense>
-                </TabsContent>
-                <TabsContent value="latest-activity">
-                  <Suspense
-                    fallback={
-                      <div className="p-4">
-                        <Skeleton className="h-32 w-full" />
-                      </div>
-                    }
-                  >
-                    <div className="p-4">
-                      Latest activity content will be loaded here
-                    </div>
-                  </Suspense>
-                </TabsContent>
-              </>
-            )}
-            {isMyProject && (
-              <TabsContent value="done-issues">
-                <Suspense fallback={<IssuesLoadingSkeleton />}>
-                  <div className="p-4">Done issues will be loaded here</div>
-                </Suspense>
-              </TabsContent>
-            )}
-          </Tabs>
         </Card>
       </main>
     </div>

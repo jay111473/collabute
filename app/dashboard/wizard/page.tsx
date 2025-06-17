@@ -62,7 +62,7 @@ export default function Wizard() {
             {currentStep > 0 && (
               <ProgressIndicator currentStep={currentStep} className="mb-8" />
             )}
-            
+
             <div
               className={cn(
                 "flex-1 pb-24 w-full",
@@ -78,11 +78,7 @@ export default function Wizard() {
                 canProceed={canProceedToNextStep()}
                 suggestedIndustries={suggestedIndustries}
                 suggestedCompetitors={suggestedCompetitors}
-                suggestedProjects={suggestedProjects}
                 suggestedTracks={suggestedTracks}
-                totalEstimatedDuration={totalEstimatedDuration}
-                criticalPath={criticalPath}
-                parallelizationOpportunities={parallelizationOpportunities}
                 userid={userid}
                 token={token}
                 hasBookedMeeting={hasBookedMeeting}

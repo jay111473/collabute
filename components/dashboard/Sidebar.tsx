@@ -43,7 +43,7 @@ export default function Sidebar({ user }: { user: User }) {
       type: "cross",
     },
     {
-      name: "Project Leads",
+      name: "Project Managers",
       icon: CompassIcon,
       path: "/dashboard/leads",
       type: "startup",

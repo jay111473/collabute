@@ -4,7 +4,7 @@ import { useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { AlertCircle } from 'lucide-react'
 
-export default function LeadsError({
+export default function ProjectManagersError({
   error,
   reset,
 }: {
@@ -22,7 +22,7 @@ export default function LeadsError({
         <h2 className="text-xl font-semibold">Something went wrong!</h2>
       </div>
       <p className="text-muted-foreground text-center max-w-[500px]">
-        We encountered an error while loading the project leads. Please try again later or contact support if the problem persists.
+        We encountered an error while loading the project managers. Please try again later or contact support if the problem persists.
       </p>
       <Button
         variant="outline"

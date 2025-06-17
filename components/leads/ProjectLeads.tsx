@@ -1,13 +1,13 @@
 import { FC } from "react";
 import { Lead, User } from "@/types/dashboard";
-import ProjectLeadsClient from "./ProjectLeadsClient";
+import ProjectManagersClient from "./ProjectLeadsClient";
 
-interface ProjectLeadsProps {
-  leads: User[];
+interface ProjectManagersProps {
+  projectManagers: User[];
 }
 
-const ProjectLeads: FC<ProjectLeadsProps> = ({ leads }) => {
-  return <ProjectLeadsClient leads={leads} />;
+const ProjectManagers: FC<ProjectManagersProps> = ({ projectManagers }) => {
+  return <ProjectManagersClient projectManagers={projectManagers} />;
 };
 
-export default ProjectLeads;
+export default ProjectManagers;

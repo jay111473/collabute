@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { FilterSelect } from "./FilterSelect";
 import { FILTERS, FilterValues, SORT_OPTIONS } from "@/types/filters";
 
-interface LeadFilterBarProps {
+interface ProjectManagerFilterBarProps {
   search: string;
   onSearchChange: (value: string) => void;
   filters: FilterValues;
@@ -17,10 +17,10 @@ interface LeadFilterBarProps {
 }
 
 /**
- * Filter bar component for leads page
+ * Filter bar component for project managers page
  * Includes search, filters, sort, and reset functionality
  */
-export const LeadFilterBar: FC<LeadFilterBarProps> = ({
+export const ProjectManagerFilterBar: FC<ProjectManagerFilterBarProps> = ({
   search,
   onSearchChange,
   filters,
@@ -36,7 +36,7 @@ export const LeadFilterBar: FC<LeadFilterBarProps> = ({
       <div className="relative">
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
         <Input
-          placeholder="Search for a lead by name or stack"
+          placeholder="Search for a project manager by name or stack"
           className="pl-10 bg-black border-grayBorders text-white rounded-lg h-11 placeholder:text-grayText"
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}

@@ -2,14 +2,14 @@ import { FC } from 'react';
 import { Search, Bell, ChevronLeft, ChevronRight } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-interface LeadHeaderProps {
+interface ProjectManagerHeaderProps {
   title: string;
 }
 
 /**
- * Header component for the leads page
+ * Header component for the project managers page
  */
-export const LeadHeader: FC<LeadHeaderProps> = ({ title }) => {
+export const ProjectManagerHeader: FC<ProjectManagerHeaderProps> = ({ title }) => {
   return (
     <div className="flex items-center justify-between border-b border-grayBorders px-6 py-4">
       <h1 className="text-xl font-semibold text-white">{title}</h1>
@@ -30,9 +30,9 @@ export const LeadHeader: FC<LeadHeaderProps> = ({ title }) => {
 };
 
 /**
- * Section header component for the leads page
+ * Section header component for the project managers page
  */
-export const LeadSectionHeader: FC<LeadHeaderProps> = ({ title }) => {
+export const ProjectManagerSectionHeader: FC<ProjectManagerHeaderProps> = ({ title }) => {
   return (
     <div className="flex items-center justify-between mb-6 mt-4">
       <h2 className="text-lg font-semibold text-white">{title}</h2>

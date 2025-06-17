@@ -61,8 +61,8 @@ export default function FloatingBottomBar({ user }: FloatingBottomBarProps) {
       priority: 3,
     },
     {
-      name: "Leads",
-      shortName: "Leads",
+      name: "Project Managers",
+      shortName: "Managers",
       icon: CompassIcon,
       path: "/dashboard/leads",
       type: "startup",

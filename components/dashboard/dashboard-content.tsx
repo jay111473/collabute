@@ -9,9 +9,9 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { truncateToFourWords } from "@/lib/utils";
-import { Project, Issue, User, Media } from "@/types/dashboard";
+import { Project, Issue, User } from "@/types/dashboard";
 import DashboardCard from "@/components/uikit/dashboard-card";
-import { StartupProjectCard } from "@/components/dashboard/projects/startup-project-card";
+import { RecentProjectCard } from "@/components/dashboard/projects/recent-project-card";
 import FloatingBottomBar from "@/components/dashboard/floating-bottom-bar";
 import Sidebar from "@/components/dashboard/Sidebar";
 import Header from "@/components/dashboard/Header";
@@ -27,43 +27,12 @@ interface DashboardContentProps {
   user: User;
 }
 
-const ProjectsTable = ({ projects }: { projects: Project[] }) => (
-  <Table>
-    <TableBody>
-      {projects.map((project) => (
-        <TableRow
-          key={project.id}
-          className="border-white/5 bg-darkGray hover:bg-white/5 rounded-lg mx-0 p-0 flex items-center justify-between m-0 "
-        >
-          <TableCell className="flex justify-center items-center space-x-4 py-2">
-            <div className="bg-neutral-800 p-2 rounded-lg">
-              {typeof (project.logo as Media)?.url === "string" &&
-              (project.logo as Media).url ? (
-                <Image
-                  src={(project.logo as Media).url as string}
-                  alt={project.title}
-                  width={24}
-                  height={24}
-                />
-              ) : null}
-            </div>
-            <div className="flex flex-col">
-              <span className="font-medium text-white" title={project.title}>
-                {project.title}
-              </span>
-              <p className="text-xs text-white/60">
-                {project.description || "No description"}
-              </p>
-            </div>
-          </TableCell>
-          <TableCell className="flex justify-center items-center gap-x-2">
-            <p className="text-lg font-bold">{project.issues?.length || 0} </p>
-            <span className="text-white/70">issues</span>
-          </TableCell>
-        </TableRow>
-      ))}
-    </TableBody>
-  </Table>
+const RecentProjectsList = ({ projects }: { projects: Project[] }) => (
+  <div className="space-y-3">
+    {projects.slice(0, 3).map((project) => (
+      <RecentProjectCard key={project.id} project={project} />
+    ))}
+  </div>
 );
 
 const IssuesTable = ({ issues }: { issues: Issue[] }) => (
@@ -134,7 +103,7 @@ const DashboardContent = ({ user }: DashboardContentProps) => {
   const { isFloatingNavEnabled } = useFloatingNav();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-
+  
   useEffect(() => {
     const checkIfMobile = () => {
       setIsMobile(window.innerWidth < 768);
@@ -169,86 +138,165 @@ const DashboardContent = ({ user }: DashboardContentProps) => {
           <Header />
 
           <main className="flex-1 overflow-y-auto flex flex-col gap-4 p-4 lg:gap-6 lg:p-6 pb-24">
-          {/* Verification Alerts */}
-          <VerificationAlerts user={user} />
-          {user.type === "developer" && (
-            <div className="grid gap-4 md:grid-cols-2 md:gap-6 lg:grid-cols-3">
-              <DashboardCard
-                title="Issues"
-                value={user.developerFields?.issues?.length || 0}
-                icon={GitPullRequest}
-                subtext="+180.1% from last month"
-              />
-              <DashboardCard
-                title="Balance"
-                value={`$${user.wallet}`}
-                icon={DollarSign}
-                subtext="+19% from last month"
-              />
-              <DashboardCard
-                title="Total Payments"
-                value={`$${user.developerFields?.totalPayment || 0}`}
-                icon={ArrowLeftRight}
-                subtext="+20.1% from last month"
-              />
-            </div>
-          )}
-          {user.type === "startup" && (
-            <div className="grid gap-4 md:grid-cols-2 md:gap-6 lg:grid-cols-2">
-              <DashboardCard
-                title="Projects"
-                value={user?.projects?.length || 0}
-                icon={GitPullRequest}
-                subtext="+180.1% from last month"
-              />
-              <DashboardCard
-                title="My Funds"
-                value={`$${user.wallet}`}
-                icon={DollarSign}
-                subtext="+19% from last month"
-              />
-            </div>
-          )}
-          {user.type === "developer" && (
-            <div className="grid gap-6 md:grid-cols-2">
-              <Card className="bg-darkGray rounded-lg border-none">
-                <CardHeader>
-                  <CardTitle className="text-white">Recent Projects</CardTitle>
-                </CardHeader>
-                <CardContent className="p-0 px-2 pb-4">
-                  <ProjectsTable projects={user.projects as Project[]} />
-                </CardContent>
-              </Card>
-              <Card className="bg-darkGray rounded-lg border-none">
-                <CardHeader>
-                  <CardTitle className="text-white">Recent Issues</CardTitle>
-                </CardHeader>
-                <CardContent className="p-0 px-2 pb-4">
-                  <IssuesTable
-                    issues={user.developerFields?.issues as Issue[]}
-                  />
-                </CardContent>
-              </Card>
-            </div>
-          )}
-          {user.type === "startup" && (
-            <div className="flex flex-col gap-4">
-              <h3 className="text-white text-lg font-semibold">My Projects</h3>
-              <div className="grid gap-4 md:grid-cols-2 md:gap-6 lg:grid-cols-2">
-                {user?.projects?.map(
-                  (project: number | Project, index: number) => (
-                    <StartupProjectCard
-                      key={index}
-                      project={project as Project}
-                    />
-                  )
-                )}
+            {/* Verification Alerts */}
+            <VerificationAlerts user={user} />
+            {user.type === "developer" && (
+              <div className="grid gap-4 md:grid-cols-2 md:gap-6 lg:grid-cols-3">
+                <DashboardCard
+                  title="Issues"
+                  value={user.developerFields?.issues?.length || 0}
+                  icon={GitPullRequest}
+                  subtext="+180.1% from last month"
+                />
+                <DashboardCard
+                  title="Balance"
+                  value={`$${user.wallet}`}
+                  icon={DollarSign}
+                  subtext="+19% from last month"
+                />
+                <DashboardCard
+                  title="Total Payments"
+                  value={`$${user.developerFields?.totalPayment || 0}`}
+                  icon={ArrowLeftRight}
+                  subtext="+20.1% from last month"
+                />
               </div>
-            </div>
-          )}
-                  </main>
+            )}
+            {user.type === "startup" && (
+              <div className="grid gap-4 md:grid-cols-2 md:gap-6 lg:grid-cols-2">
+                <DashboardCard
+                  title="Projects"
+                  value={user?.projects?.length || 0}
+                  icon={GitPullRequest}
+                  subtext="+180.1% from last month"
+                />
+                <DashboardCard
+                  title="My Funds"
+                  value={`$${user.wallet}`}
+                  icon={DollarSign}
+                  subtext="+19% from last month"
+                />
+              </div>
+            )}
+            {user.type === "developer" && (
+              <div className="grid gap-6 md:grid-cols-2">
+                <Card className="bg-darkGray rounded-lg border-none">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-white">
+                      Recent projects
+                    </CardTitle>
+                    <button className="text-sm text-white/70 hover:text-white flex items-center gap-1">
+                      Show all
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 5l7 7-7 7"
+                        />
+                      </svg>
+                    </button>
+                  </CardHeader>
+                  <CardContent className="p-4 pt-0">
+                    <RecentProjectsList projects={user.projects as Project[]} />
+                  </CardContent>
+                </Card>
+                <Card className="bg-darkGray rounded-lg border-none">
+                  <CardHeader>
+                    <CardTitle className="text-white">Recent Issues</CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-0 px-2 pb-4">
+                    <IssuesTable
+                      issues={user.developerFields?.issues as Issue[]}
+                    />
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+            {user.type === "startup" && (
+              <div className="grid gap-6 md:grid-cols-2">
+                <Card className="bg-darkGray rounded-lg border-none">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-white">
+                      Recent projects
+                    </CardTitle>
+                    <button className="text-sm text-white/70 hover:text-white flex items-center gap-1">
+                      Show all
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 5l7 7-7 7"
+                        />
+                      </svg>
+                    </button>
+                  </CardHeader>
+                  <CardContent className="p-4 pt-0">
+                    <RecentProjectsList projects={user.projects as Project[]} />
+                  </CardContent>
+                </Card>
+                <Card className="bg-darkGray rounded-lg border-none">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-white">Highlights</CardTitle>
+                    <button className="text-sm text-white/70 hover:text-white flex items-center gap-1">
+                      Show all
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 5l7 7-7 7"
+                        />
+                      </svg>
+                    </button>
+                  </CardHeader>
+                  <CardContent className="p-4 pt-0">
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2 text-sm">
+                        <div className="w-2 h-2 rounded-full bg-orange-500"></div>
+                        <span className="text-orange-500 font-medium">
+                          Urgent
+                        </span>
+                        <span className="text-white">Milestone Overdue!</span>
+                      </div>
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <div className="w-6 h-6 rounded bg-neutral-800 flex items-center justify-center">
+                            <GitPullRequest className="w-3 h-3 text-white" />
+                          </div>
+                          <span className="text-white text-sm">
+                            AI Video Creator Tool [milestone 1]
+                          </span>
+                          <div className="flex items-center gap-1 text-xs text-red-400 ml-auto">
+                            <span>Overdue</span>
+                            <span>2days</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+          </main>
         </div>
-        
+
         {/* Floating Bottom Bar */}
         <FloatingBottomBar user={user} />
       </>
@@ -355,11 +403,29 @@ const DashboardContent = ({ user }: DashboardContentProps) => {
             {user.type === "developer" && (
               <div className="grid gap-6 md:grid-cols-2">
                 <Card className="bg-darkGray rounded-lg border-none">
-                  <CardHeader>
-                    <CardTitle className="text-white">Recent Projects</CardTitle>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-white">
+                      Recent projects
+                    </CardTitle>
+                    <button className="text-sm text-white/70 hover:text-white flex items-center gap-1">
+                      Show all
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 5l7 7-7 7"
+                        />
+                      </svg>
+                    </button>
                   </CardHeader>
-                  <CardContent className="p-0 px-2 pb-4">
-                    <ProjectsTable projects={user.projects as Project[]} />
+                  <CardContent className="p-4 pt-0">
+                    <RecentProjectsList projects={user.projects as Project[]} />
                   </CardContent>
                 </Card>
                 <Card className="bg-darkGray rounded-lg border-none">
@@ -375,18 +441,79 @@ const DashboardContent = ({ user }: DashboardContentProps) => {
               </div>
             )}
             {user.type === "startup" && (
-              <div className="flex flex-col gap-4">
-                <h3 className="text-white text-lg font-semibold">My Projects</h3>
-                <div className="grid gap-4 md:grid-cols-2 md:gap-6 lg:grid-cols-2">
-                  {user?.projects?.map(
-                    (project: number | Project, index: number) => (
-                      <StartupProjectCard
-                        key={index}
-                        project={project as Project}
-                      />
-                    )
-                  )}
-                </div>
+              <div className="grid gap-6 md:grid-cols-2">
+                <Card className="bg-darkGray rounded-lg border-none">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-white">
+                      Recent projects
+                    </CardTitle>
+                    <button className="text-sm text-white/70 hover:text-white flex items-center gap-1">
+                      Show all
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 5l7 7-7 7"
+                        />
+                      </svg>
+                    </button>
+                  </CardHeader>
+                  <CardContent className="p-4 pt-0">
+                    <RecentProjectsList projects={user.projects as Project[]} />
+                  </CardContent>
+                </Card>
+                <Card className="bg-darkGray rounded-lg border-none">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-white">Highlights</CardTitle>
+                    <button className="text-sm text-white/70 hover:text-white flex items-center gap-1">
+                      Show all
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 5l7 7-7 7"
+                        />
+                      </svg>
+                    </button>
+                  </CardHeader>
+                  <CardContent className="p-4 pt-0">
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2 text-sm">
+                        <div className="w-2 h-2 rounded-full bg-orange-500"></div>
+                        <span className="text-orange-500 font-medium">
+                          Urgent
+                        </span>
+                        <span className="text-white">Milestone Overdue!</span>
+                      </div>
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <div className="w-6 h-6 rounded bg-neutral-800 flex items-center justify-center">
+                            <GitPullRequest className="w-3 h-3 text-white" />
+                          </div>
+                          <span className="text-white text-sm">
+                            AI Video Creator Tool [milestone 1]
+                          </span>
+                          <div className="flex items-center gap-1 text-xs text-red-400 ml-auto">
+                            <span>Overdue</span>
+                            <span>2days</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
             )}
           </main>

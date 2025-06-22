@@ -6,7 +6,7 @@
       "dependencies": {
         "@ai-sdk/amazon-bedrock": "^1.1.6",
         "@ai-sdk/anthropic": "^1.1.12",
-        "@ai-sdk/google": "^1.2.18",
+        "@ai-sdk/google": "^1.2.19",
         "@ai-sdk/openai": "^1.1.15",
         "@calcom/embed-react": "^1.5.2",
         "@hookform/resolvers": "^3.10.0",

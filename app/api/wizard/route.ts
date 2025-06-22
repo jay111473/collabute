@@ -32,37 +32,39 @@ export async function POST(request: NextRequest) {
   if (hasNoIdea) {
     // Check if this is the first "no idea" response or part of ongoing conversation
     const isFirstNoIdeaResponse = conversation.length === 0;
-    
+
     if (isFirstNoIdeaResponse) {
       // Start the discovery conversation
       return Response.json({
         needsMoreInfo: true,
-        followUpQuestion: "No worries! Let's discover your perfect project together. What industry or field interests you most? Or is there a problem in your daily life that you wish had a better solution?",
+        followUpQuestion:
+          "No worries! Let's discover your perfect project together. What industry or field interests you most? Or is there a problem in your daily life that you wish had a better solution?",
         refinedIdea: null,
         readyToProceed: false,
-        reasoning: "Starting discovery conversation to help user identify their business idea",
+        reasoning:
+          "Starting discovery conversation to help user identify their business idea",
         suggestions: [
           {
             text: "mobile apps",
-            description: "Explore building smartphone applications"
+            description: "Explore building smartphone applications",
           },
           {
             text: "e-commerce",
-            description: "Online selling and marketplace solutions"
+            description: "Online selling and marketplace solutions",
           },
           {
             text: "productivity tools",
-            description: "Help people work more efficiently"
+            description: "Help people work more efficiently",
           },
           {
             text: "social platforms",
-            description: "Connect people and build communities"
+            description: "Connect people and build communities",
           },
           {
             text: "daily life problems",
-            description: "Solve everyday challenges people face"
-          }
-        ]
+            description: "Solve everyday challenges people face",
+          },
+        ],
       });
     } else {
       // Continue the discovery conversation with AI guidance
@@ -71,7 +73,9 @@ export async function POST(request: NextRequest) {
         schema: z.object({
           needsMoreInfo: z
             .boolean()
-            .describe("Whether more conversation is needed to clarify the idea"),
+            .describe(
+              "Whether more conversation is needed to clarify the idea"
+            ),
           followUpQuestion: z
             .string()
             .optional()
@@ -82,7 +86,9 @@ export async function POST(request: NextRequest) {
             .describe("The discovered/refined idea if clear enough to proceed"),
           readyToProceed: z
             .boolean()
-            .describe("Whether we have enough clarity to move to project planning"),
+            .describe(
+              "Whether we have enough clarity to move to project planning"
+            ),
           reasoning: z.string().describe("Brief explanation of the decision"),
           suggestions: z
             .array(
@@ -92,39 +98,46 @@ export async function POST(request: NextRequest) {
                   .describe("Short suggestion text to add to user input"),
                 description: z
                   .string()
-                  .describe("Brief explanation of what this suggestion helps with"),
+                  .describe(
+                    "Brief explanation of what this suggestion helps with"
+                  ),
               })
             )
             .optional()
-            .describe("3-5 helpful suggestions to guide the user's thinking")
+            .describe("3-5 helpful suggestions to guide the user's thinking"),
         }),
-        prompt: `You are a helpful business idea discovery assistant. The user initially said they had no idea for a project, and you're helping them discover what they want to build through conversation.
+        prompt: `You are a business strategist helping users transform ideas into viable products.
 
 Current conversation with user:${conversationContext}
 
-Your goal is to help them discover a viable business/project idea by:
-1. Understanding their interests, skills, and passions
-2. Identifying problems they've experienced or noticed
-3. Exploring market opportunities they're curious about
-4. Gradually building up to a concrete project idea
+Your mission: Guide them to a clear, implementable business idea by gathering these REQUIRED elements:
+1. TARGET AUDIENCE - Who exactly will use this?
+2. CORE PROBLEM - What specific pain point does this solve?
+3. SOLUTION APPROACH - How will your product solve it?
+4. VALUE PROPOSITION - Why will people choose this over alternatives?
 
-Guidelines for the conversation:
-- Ask ONE specific, engaging question at a time
-- Be encouraging and curious about their responses
-- Help them connect their interests to potential projects
-- Guide them toward identifying a specific problem and solution
-- When they mention something interesting, dig deeper
-- Once you have enough detail about their idea (target audience, problem, solution), approve it to proceed
+CONVERSATION STRATEGY:
+- Ask ONE direct, business-focused question at a time
+- If they sound uncertain or give vague responses, gently redirect with: "I understand you're exploring options. Let me help you focus on what matters most for turning this into a successful product..."
+- ALWAYS explain WHY each question matters for their business success
+- When they mention something promising, immediately connect it to market opportunity
+- If they seem irrational or unfocused, acknowledge their enthusiasm then guide them back to fundamentals
 
-If they've given enough information to form a clear project idea, set readyToProceed to true and provide a refinedIdea.
+QUESTION FORMAT: "To help you build a product that customers will actually pay for, I need to understand [specific aspect]. This will determine [business impact/implementation path]."
 
-For suggestions, provide relevant options based on their responses that help them think deeper:
-- If they mention an industry, suggest specific problems in that space
-- If they mention skills, suggest how to apply them
-- If they mention frustrations, suggest solutions
-- Keep suggestions actionable and specific
+Examples:
+- "Who specifically would use this? Understanding your target audience will help us design features they'll love and determine your marketing strategy."
+- "What problem does this solve that people currently struggle with? This helps us validate market demand and pricing."
 
-Be conversational, supportive, and help them feel excited about their emerging idea!`
+Once you have target audience + problem + solution approach, set readyToProceed to true.
+
+For suggestions, provide market-validated options that move toward implementation:
+- Specific customer segments with real pain points
+- Proven business models in similar spaces
+- Implementation approaches that reduce risk
+- Market opportunities with clear demand
+
+Be direct, supportive, and focused on turning their idea into a profitable product.`,
       });
 
       return response.toJsonResponse();
@@ -168,30 +181,37 @@ Be conversational, supportive, and help them feel excited about their emerging i
           "3-5 helpful suggestions with descriptions to guide the user"
         ),
     }),
-    prompt: `You are a super critical AI assistant that validates startup ideas and ensures they are clear enough for project planning.
+    prompt: `You are a business validation expert who transforms ideas into implementable product plans.
 
-Your job is to analyze the user's idea and determine if you have enough information to pass it to another AI that will generate a comprehensive project management plan across marketing, development, design, etc.
+Your job: Analyze the user's idea and gather the REQUIRED information needed to create a comprehensive project roadmap for marketing, development, design, and business operations.
 
 Current idea: "${idea}"${conversationContext}
 
-Guidelines:
-1. If the idea is vague, unclear, or missing key details (target audience, core features, problem being solved), ask ONE specific follow-up question
-2. If the idea is clear and detailed enough, approve it to proceed
-3. Focus on getting clarity on: target audience, core problem, key features, business model
-4. Keep follow-up questions conversational and helpful
-5. Don't ask more than 3 follow-up questions total
-6. When asking for more info, provide 3-5 short, helpful suggestions that the user can click to add to their response
+VALIDATION CRITERIA - You need ALL of these to proceed:
+1. TARGET AUDIENCE - Specific user segment (not "everyone")
+2. CORE PROBLEM - Clear pain point this solves
+3. SOLUTION APPROACH - How the product works
+4. BUSINESS MODEL - How it makes money
+5. KEY FEATURES - 2-3 essential functionalities
 
-For suggestions, provide specific examples with descriptions like:
-- text: "for busy professionals", description: "Helps define your target audience and user needs"
-- text: "with real-time notifications", description: "Adds a key feature that enhances user engagement"
-- text: "solving time management issues", description: "Clarifies the core problem your app addresses"
-- text: "targeting millennials", description: "Specifies demographic for better market positioning"
-- text: "subscription-based model", description: "Defines how your business will generate revenue"
+RESPONSE STRATEGY:
+- If uncertain/vague responses: "I can see you're excited about this concept. To help you build something customers will actually buy, let's get specific about [missing element]. This directly impacts your [development timeline/marketing strategy/revenue potential]."
+- If irrational ideas: "That's an interesting direction! Let me help you focus on the most viable path to market success..."
+- ALWAYS explain business impact: "Understanding [aspect] will help determine your [specific business outcome]"
 
-Make suggestions relevant to what's missing from their idea. Keep descriptions under 15 words.
+QUESTION EXAMPLES with business reasoning:
+- "Who exactly is your target customer? This determines your entire go-to-market strategy and feature priorities."
+- "What specific problem does this solve? This validates market demand and helps price your product."
+- "How will this make money? This shapes your development priorities and business sustainability."
 
-Be encouraging but thorough in your validation.`,
+APPROVAL CRITERIA: Proceed when you have target audience + problem + solution + business model clearly defined.
+
+For suggestions, provide implementation-focused options:
+- text: "subscription model", description: "Recurring revenue ensures business sustainability"
+- text: "for remote teams", description: "Specific audience with proven willingness to pay"
+- text: "solving communication gaps", description: "Clear problem with measurable business impact"
+
+Limit to 3 follow-up questions maximum. Be direct, business-focused, and guide them toward profitable implementation.`,
   });
 
   return response.toJsonResponse();

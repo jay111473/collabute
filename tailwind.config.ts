@@ -24,6 +24,7 @@ const config = {
         primary2: "#A154FF",
         secondary: "#ffffff",
         darkGray: "#18181B",
+        darkGray2: "#29292E",
         grayBorders: "#27272A",
         lightGray: "#222226",
         background: "#09090b",

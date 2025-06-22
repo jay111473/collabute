@@ -1,13 +1,16 @@
 import { Project } from "@/types/dashboard";
+import qs from "qs";
 
 export const getRecentProjects = async (userId: number): Promise<Project[]> => {
   const query = {
     where: {
-      user: userId,
+      owner: userId,
     },
   };
   const projects = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/api/projects?sort=-createdAt&limit=5`,
+    `${
+      process.env.NEXT_PUBLIC_API_URL
+    }/api/projects?sort=-createdAt&limit=5${qs.stringify(query)}`,
     {
       method: "GET",
       headers: {

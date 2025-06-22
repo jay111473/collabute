@@ -15,7 +15,9 @@ interface ProjectManagersClientProps {
  * Client component for the project managers page
  * Manages filters, search, and displaying project managers in two sections
  */
-const ProjectManagersClient: FC<ProjectManagersClientProps> = ({ projectManagers }) => {
+const ProjectManagersClient: FC<ProjectManagersClientProps> = ({
+  projectManagers,
+}) => {
   // Initialize filters from URL search params
   const {
     search,
@@ -46,17 +48,19 @@ const ProjectManagersClient: FC<ProjectManagersClientProps> = ({ projectManagers
   // Helper function to calculate rating (same logic as in ProjectManagerCard)
   function calculateRating(projectManager: User): number {
     const experience = projectManager.leadFields?.experience || 0;
-    const projectCount = (projectManager.leadFields?.projects?.length || 0) + (projectManager.projects?.length || 0);
-    
+    const projectCount =
+      (projectManager.leadFields?.projects?.length || 0) +
+      (projectManager.projects?.length || 0);
+
     let rating = 3.5;
-    
+
     if (experience >= 8) rating += 1.0;
     else if (experience >= 5) rating += 0.7;
     else if (experience >= 3) rating += 0.4;
-    
+
     if (projectCount >= 10) rating += 0.4;
     else if (projectCount >= 5) rating += 0.2;
-    
+
     return Math.min(5.0, Math.round(rating * 10) / 10);
   }
 
@@ -77,12 +81,20 @@ const ProjectManagersClient: FC<ProjectManagersClientProps> = ({ projectManagers
 
         {/* Top Ranked Section */}
         <ProjectManagerSectionHeader title="Top Ranked" />
-        <ProjectManagerGrid projectManagers={topRankedProjectManagers} isLoading={isLoading} variant="featured" />
+        <ProjectManagerGrid
+          projectManagers={topRankedProjectManagers}
+          isLoading={isLoading}
+          variant="featured"
+        />
 
         {/* All Project Managers Section */}
         <div className="mt-12">
           <ProjectManagerSectionHeader title="All project managers" />
-          <ProjectManagerGrid projectManagers={projectManagers} isLoading={isLoading} variant="compact" />
+          <ProjectManagerGrid
+            projectManagers={projectManagers}
+            isLoading={isLoading}
+            variant="compact"
+          />
         </div>
       </div>
     </div>

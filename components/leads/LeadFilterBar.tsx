@@ -1,4 +1,4 @@
-import { FC } from 'react';
+import { FC } from "react";
 import { Input } from "@/components/ui/input";
 import { Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -37,14 +37,14 @@ export const ProjectManagerFilterBar: FC<ProjectManagerFilterBarProps> = ({
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
         <Input
           placeholder="Search for a project manager by name or stack"
-          className="pl-10 bg-black border-grayBorders text-white rounded-lg h-11 placeholder:text-grayText"
+          className="pl-10 bg-darkGray border-grayBorders text-white rounded-[18px] h-11 placeholder:text-grayText"
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
         />
       </div>
 
       {/* Filters */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between w-full">
         <div className="flex items-center gap-3">
           {FILTERS.map((filter) => (
             <FilterSelect
@@ -54,11 +54,11 @@ export const ProjectManagerFilterBar: FC<ProjectManagerFilterBarProps> = ({
               onChange={onFilterChange(filter.id)}
             />
           ))}
-          
+
           {/* Reset button - only show when filters are active */}
           {hasActiveFilters && (
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={onResetFilters}
               className="h-11 px-4 bg-black border border-grayBorders text-white hover:bg-[#222] hover:text-white rounded-lg flex items-center gap-2"
             >
@@ -67,16 +67,17 @@ export const ProjectManagerFilterBar: FC<ProjectManagerFilterBarProps> = ({
             </Button>
           )}
         </div>
-
-        <FilterSelect
-          filter={{
-            placeholder: "Sort By",
-            options: SORT_OPTIONS,
-          }}
-          value={sort}
-          onChange={onSortChange}
-        />
+        <div>
+          <FilterSelect
+            filter={{
+              placeholder: "Sort By",
+              options: SORT_OPTIONS,
+            }}
+            value={sort}
+            onChange={onSortChange}
+          />
+        </div>
       </div>
     </div>
   );
-}; 
+};

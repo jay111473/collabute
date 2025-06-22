@@ -31,14 +31,7 @@ export default function Wizard() {
     isLoading,
     suggestedIndustries,
     suggestedCompetitors,
-    suggestedProjects,
     suggestedTracks,
-    totalEstimatedDuration,
-    criticalPath,
-    parallelizationOpportunities,
-
-    // GitHub Access
-    gitHubAccess,
 
     // Handlers
     handleNext,

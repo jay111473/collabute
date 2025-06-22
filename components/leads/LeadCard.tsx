@@ -232,7 +232,7 @@ const ProjectManagerCard: FC<ProjectManagerCardProps> = ({ projectManager, varia
           <div className="flex items-center gap-2">
             <Code className="h-4 w-4 text-gray-400" />
             <Badge
-              className="text-white bg-transparent border-gray-600 px-3 py-1 rounded-full text-sm"
+              className="text-white bg-transparent border-gray-600 px-3 py-1 rounded-[18px] text-sm"
               variant="outline"
             >
               {primaryRole}

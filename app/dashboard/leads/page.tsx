@@ -2,19 +2,20 @@ import { Metadata } from "next";
 import { User } from "@/types/dashboard";
 import ProjectManagersClient from "@/components/leads/ProjectLeadsClient";
 import { cookies } from "next/headers";
-import { getUser } from "@/lib/get-user";
 import qs from "qs";
 import { FILTERS } from "@/types/filters";
-import DashboardLayout from "@/components/dashboard/dashboard-layout";
 
 export const metadata: Metadata = {
   title: "Project Managers | Dashboard | Collabute",
-  description: "Explore and connect with top project managers for your project.",
+  description:
+    "Explore and connect with top project managers for your project.",
 };
 
 type SearchParams = { [key: string]: string } | undefined;
 
-function buildProjectManagersQuery(searchParams: SearchParams = {}): Record<string, any> {
+function buildProjectManagersQuery(
+  searchParams: SearchParams = {}
+): Record<string, any> {
   const query: Record<string, any> = {
     type: {
       equals: "lead",
@@ -133,15 +134,15 @@ export default async function DashboardProjectManagersPage({
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
   const cookieStore = await cookies();
   const token = cookieStore.get("token")?.value;
-  const user = await getUser();
 
-  const projectManagers = await getProjectManagers(token || "", resolvedSearchParams);
+  const projectManagers = await getProjectManagers(
+    token || "",
+    resolvedSearchParams
+  );
 
   return (
-    <DashboardLayout user={user} title="Project Managers">
-      <div className="flex-1 flex flex-col">
-        <ProjectManagersClient projectManagers={projectManagers} />
-      </div>
-    </DashboardLayout>
+    <div className="flex-1 flex flex-col">
+      <ProjectManagersClient projectManagers={projectManagers} />
+    </div>
   );
 }

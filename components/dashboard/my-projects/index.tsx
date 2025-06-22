@@ -4,9 +4,23 @@ import { Project } from "@/types/dashboard";
 import MyProjectCard from "../projects";
 import { EmptyState } from "./EmptyState";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useState, useMemo } from "react";
-import { CheckCircle, Clock, Pause, Calendar, FolderOpen, Search, TimerIcon, AlertTriangle, TrendingUp } from "lucide-react";
+import {
+  CheckCircle,
+  Clock,
+  Pause,
+  Calendar,
+  FolderOpen,
+  Search,
+  TimerIcon,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ProjectSummaryBoxProps {
@@ -16,30 +30,30 @@ interface ProjectSummaryBoxProps {
   icon: React.ReactNode;
   isSelected: boolean;
   onClick: () => void;
-  variant?: 'default' | 'warning' | 'danger' | 'success';
+  variant?: "default" | "warning" | "danger" | "success";
 }
 
-const ProjectSummaryBox = ({ 
-  title, 
-  count, 
-  subtitle, 
-  icon, 
-  isSelected, 
+const ProjectSummaryBox = ({
+  title,
+  count,
+  subtitle,
+  icon,
+  isSelected,
   onClick,
-  variant = 'default'
+  variant = "default",
 }: ProjectSummaryBoxProps) => {
   const variantStyles = {
-    default: 'border-grayBorders hover:border-gray-500',
-    warning: 'border-grayBorders hover:border-gray-500',
-    danger: 'border-grayBorders hover:border-gray-500',
-    success: 'border-grayBorders hover:border-gray-500'
+    default: "border-grayBorders hover:border-gray-500",
+    warning: "border-grayBorders hover:border-gray-500",
+    danger: "border-grayBorders hover:border-gray-500",
+    success: "border-grayBorders hover:border-gray-500",
   };
 
   const selectedStyles = {
-    default: 'border-blue-400',
-    warning: 'border-[#F5C78B]',
-    danger: 'border-[#F58B9B]',
-    success: 'border-[#99D5A8]'
+    default: "border-blue-400",
+    warning: "border-[#F5C78B]",
+    danger: "border-[#F58B9B]",
+    success: "border-[#99D5A8]",
   };
 
   return (
@@ -68,9 +82,7 @@ const ProjectSummaryBox = ({
       </div>
       <div className="flex flex-col gap-1">
         <span className="text-white text-2xl font-bold">{count}</span>
-        {subtitle && (
-          <span className="text-gray-400 text-sm">{subtitle}</span>
-        )}
+        {subtitle && <span className="text-gray-400 text-sm">{subtitle}</span>}
       </div>
     </div>
   );
@@ -80,11 +92,7 @@ const ProjectSummaryBox = ({
  * MyProjectsComponent displays a user's projects and issues
  * Shows an empty state when no projects exist
  */
-const MyProjectsComponent = ({
-  projects,
-}: {
-  projects: Project[];
-}) => {
+const MyProjectsComponent = ({ projects }: { projects: Project[] }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState("newest");
@@ -100,12 +108,12 @@ const MyProjectsComponent = ({
   const projectCounts = useMemo(() => {
     const counts = {
       planned: 0,
-      'in-progress': 0,
+      "in-progress": 0,
       completed: 0,
-      'on-hold': 0,
+      "on-hold": 0,
     };
 
-    projects.forEach(project => {
+    projects?.forEach((project) => {
       if (project.status in counts) {
         counts[project.status as keyof typeof counts]++;
       }
@@ -115,24 +123,29 @@ const MyProjectsComponent = ({
   }, [projects]);
 
   const filteredAndSortedProjects = useMemo(() => {
-    let filtered = projects?.filter((project) => {
-      const matchesSearch =
-        project.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        project.description.toLowerCase().includes(searchQuery.toLowerCase());
-      
-      const matchesStatus = selectedStatus
-        ? project.status === selectedStatus
-        : true;
-      
-      return matchesSearch && matchesStatus;
-    }) || [];
+    let filtered =
+      projects?.filter((project) => {
+        const matchesSearch =
+          project.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          project.description.toLowerCase().includes(searchQuery.toLowerCase());
+
+        const matchesStatus = selectedStatus
+          ? project.status === selectedStatus
+          : true;
+
+        return matchesSearch && matchesStatus;
+      }) || [];
 
     return filtered.sort((a, b) => {
       switch (sortBy) {
         case "newest":
-          return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+          return (
+            new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+          );
         case "oldest":
-          return new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime();
+          return (
+            new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime()
+          );
         case "progress":
           // Sort by completion percentage (assuming we can calculate this)
           return 0; // Placeholder for progress sorting
@@ -144,7 +157,7 @@ const MyProjectsComponent = ({
     });
   }, [projects, searchQuery, selectedStatus, sortBy]);
 
-  const hasProjects = projects.length > 0;
+  const hasProjects = projects?.length > 0;
 
   // If user has no projects and no issues, show the main empty state
   if (!hasProjects) {
@@ -173,15 +186,18 @@ const MyProjectsComponent = ({
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          
-                     <Select value={sortBy} onValueChange={setSortBy}>
-             <SelectTrigger className="rounded-full font-medium text-sm cursor-pointer !py-4 px-3 flex items-center gap-x-[6px] w-max bg-darkGray border-grayBorders text-white">
-               <div className="flex items-center gap-2 h-full">
-                 <TimerIcon className="w-4 h-4 text-white" />
-                 <span className="text-sm text-white">Sort:</span>
-                 <SelectValue className="text-sm text-white" placeholder="Sort by" />
-               </div>
-             </SelectTrigger>
+
+          <Select value={sortBy} onValueChange={setSortBy}>
+            <SelectTrigger className="rounded-full font-medium text-sm cursor-pointer !py-4 px-3 flex items-center gap-x-[6px] w-max bg-darkGray border-grayBorders text-white">
+              <div className="flex items-center gap-2 h-full">
+                <TimerIcon className="w-4 h-4 text-white" />
+                <span className="text-sm text-white">Sort:</span>
+                <SelectValue
+                  className="text-sm text-white"
+                  placeholder="Sort by"
+                />
+              </div>
+            </SelectTrigger>
             <SelectContent>
               {sortOptions.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
@@ -199,40 +215,63 @@ const MyProjectsComponent = ({
             count={projectCounts.planned}
             icon={<Calendar className="w-5 h-5 text-blue-400" />}
             isSelected={selectedStatus === "planned"}
-            onClick={() => setSelectedStatus(selectedStatus === "planned" ? null : "planned")}
+            onClick={() =>
+              setSelectedStatus(selectedStatus === "planned" ? null : "planned")
+            }
             variant="default"
           />
           <ProjectSummaryBox
             title="In Progress"
-            count={projectCounts['in-progress']}
-            subtitle={projectCounts['in-progress'] > 0 ? "Active development" : undefined}
-            icon={<Clock className="w-5 h-5" style={{ color: '#F5C78B' }} />}
+            count={projectCounts["in-progress"]}
+            subtitle={
+              projectCounts["in-progress"] > 0
+                ? "Active development"
+                : undefined
+            }
+            icon={<Clock className="w-5 h-5" style={{ color: "#F5C78B" }} />}
             isSelected={selectedStatus === "in-progress"}
-            onClick={() => setSelectedStatus(selectedStatus === "in-progress" ? null : "in-progress")}
+            onClick={() =>
+              setSelectedStatus(
+                selectedStatus === "in-progress" ? null : "in-progress"
+              )
+            }
             variant="warning"
           />
           <ProjectSummaryBox
             title="On Hold"
-            count={projectCounts['on-hold']}
-            subtitle={projectCounts['on-hold'] > 0 ? "Temporarily paused" : undefined}
-            icon={<Pause className="w-5 h-5" style={{ color: '#F58B9B' }} />}
+            count={projectCounts["on-hold"]}
+            subtitle={
+              projectCounts["on-hold"] > 0 ? "Temporarily paused" : undefined
+            }
+            icon={<Pause className="w-5 h-5" style={{ color: "#F58B9B" }} />}
             isSelected={selectedStatus === "on-hold"}
-            onClick={() => setSelectedStatus(selectedStatus === "on-hold" ? null : "on-hold")}
+            onClick={() =>
+              setSelectedStatus(selectedStatus === "on-hold" ? null : "on-hold")
+            }
             variant="danger"
           />
           <ProjectSummaryBox
             title="Completed"
             count={projectCounts.completed}
-            subtitle={projectCounts.completed > 0 ? "Successfully delivered" : undefined}
-            icon={<CheckCircle className="w-5 h-5" style={{ color: '#99D5A8' }} />}
+            subtitle={
+              projectCounts.completed > 0 ? "Successfully delivered" : undefined
+            }
+            icon={
+              <CheckCircle className="w-5 h-5" style={{ color: "#99D5A8" }} />
+            }
             isSelected={selectedStatus === "completed"}
-            onClick={() => setSelectedStatus(selectedStatus === "completed" ? null : "completed")}
+            onClick={() =>
+              setSelectedStatus(
+                selectedStatus === "completed" ? null : "completed"
+              )
+            }
             variant="success"
           />
         </div>
 
         {/* Projects List */}
-        {filteredAndSortedProjects.length === 0 && (searchQuery || selectedStatus) ? (
+        {filteredAndSortedProjects?.length === 0 &&
+        (searchQuery || selectedStatus) ? (
           <div className="flex flex-col items-center justify-center py-10 text-gray-500">
             <FolderOpen className="w-12 h-12 mb-4" />
             <p className="text-lg font-medium">No matching projects found</p>
@@ -242,11 +281,8 @@ const MyProjectsComponent = ({
           </div>
         ) : (
           <div className="flex flex-col gap-4">
-            {filteredAndSortedProjects.map((project) => (
-              <MyProjectCard
-                key={project.id}
-                project={project}
-              />
+            {filteredAndSortedProjects?.map((project) => (
+              <MyProjectCard key={project.id} project={project} />
             ))}
           </div>
         )}

@@ -22,6 +22,9 @@ import { cn } from "@/lib/utils";
 import { Menu, X } from "lucide-react";
 import { VerificationAlerts } from "@/components/dashboard/verification-alerts";
 import { useFloatingNav } from "@/lib/hooks/use-floating-nav";
+import { useProjectsData } from "@/hooks/use-projects-data";
+import { useUserData } from "@/hooks/use-user-data";
+import { Button } from "@/components/ui/button";
 
 interface DashboardContentProps {
   user: User;
@@ -100,23 +103,26 @@ const IssuesTable = ({ issues }: { issues: Issue[] }) => (
 );
 
 const DashboardContent = ({ user }: DashboardContentProps) => {
+  const { 
+    projects, 
+    loading: projectsLoading, 
+    error: projectsError,
+    refetch: refetchProjects 
+  } = useProjectsData({ limit: 6 });
   const { isFloatingNavEnabled } = useFloatingNav();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  
+
+  const isLoading = projectsLoading;
+
   useEffect(() => {
-    const checkIfMobile = () => {
+    const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
     };
 
-    // Initial check
-    checkIfMobile();
-
-    // Add event listener
-    window.addEventListener("resize", checkIfMobile);
-
-    // Clean up
-    return () => window.removeEventListener("resize", checkIfMobile);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
   // Close the mobile menu when switching to desktop view
@@ -128,6 +134,34 @@ const DashboardContent = ({ user }: DashboardContentProps) => {
 
   if (!user) {
     return null;
+  }
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-darkGray p-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="animate-pulse space-y-6">
+            <div className="h-8 bg-gray-700 rounded w-1/4"></div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="h-48 bg-gray-700 rounded"></div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (projectsError) {
+    return (
+      <div className="p-6 text-center">
+        <p className="text-red-500 mb-4">Error loading projects: {projectsError}</p>
+        <Button onClick={refetchProjects} variant="outline">
+          Try Again
+        </Button>
+      </div>
+    );
   }
 
   // Render floating navigation layout
@@ -166,7 +200,7 @@ const DashboardContent = ({ user }: DashboardContentProps) => {
               <div className="grid gap-4 md:grid-cols-2 md:gap-6 lg:grid-cols-2">
                 <DashboardCard
                   title="Projects"
-                  value={user?.projects?.length || 0}
+                  value={projects.length || 0}
                   icon={GitPullRequest}
                   subtext="+180.1% from last month"
                 />

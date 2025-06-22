@@ -2,12 +2,13 @@ import { useState, useEffect, useRef } from "react";
 import { useWizardData } from "./use-wizard-data";
 import { useWizardNavigation } from "./use-wizard-navigation";
 import { useWizardAi } from "./use-wizard-ai";
-import { WizardData } from "@/types/wizard";
+import { useGitHubAccess } from "./use-github-access";
 
-export function useWizardFlow() {
+export function useWizardFlow(userId?: string) {
   const wizardDataHook = useWizardData();
   const { wizardData } = wizardDataHook;
   const ai = useWizardAi();
+  const gitHubAccess = useGitHubAccess(userId || null);
 
   // State for tracking AI calls
   const [lastProcessedIdea, setLastProcessedIdea] = useState("");
@@ -22,21 +23,13 @@ export function useWizardFlow() {
   const [hasBookedMeeting, setHasBookedMeeting] = useState(false);
   const [showSubscriptionPopup, setShowSubscriptionPopup] = useState(false);
 
-  const navigation = useWizardNavigation(wizardData, hasBookedMeeting);
+  const navigation = useWizardNavigation(wizardData, hasBookedMeeting, gitHubAccess.hasGitHubAccess);
 
   // Refs to prevent multiple calls
   const businessComparisonCallInProgress = useRef(false);
   const featureComparisonCallInProgress = useRef(false);
   const tracksCallInProgress = useRef(false);
   const projectsCallInProgress = useRef(false);
-
-  const isNoIdeaCase = (idea: string) => {
-    return (
-      !idea ||
-      idea.trim() === "" ||
-      idea.includes("AI will assist throughout the process")
-    );
-  };
 
   // Auto-call business comparison when reaching step 1
   useEffect(() => {
@@ -103,6 +96,12 @@ export function useWizardFlow() {
   }, [navigation.currentStep, wizardData.githubRepository]);
 
   const handleNext = async () => {
+    // Validate GitHub access before proceeding to project creation steps
+    if (navigation.currentStep >= 0 && !gitHubAccess.hasGitHubAccess) {
+      console.warn("Cannot proceed: GitHub access not verified");
+      return;
+    }
+
     // Handle step 1 -> 2: Fetch feature comparison for step 2
     if (
       navigation.currentStep === 1 &&
@@ -321,6 +320,9 @@ export function useWizardFlow() {
     totalEstimatedDuration: ai.totalEstimatedDuration,
     criticalPath: ai.criticalPath,
     parallelizationOpportunities: ai.parallelizationOpportunities,
+
+    // GitHub Access
+    gitHubAccess,
 
     // Handlers
     handleNext,

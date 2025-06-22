@@ -1,22 +1,5 @@
-import MyProjectsComponent from "@/components/dashboard/my-projects";
-import { getUser } from "@/lib/get-user";
-import { Project } from "@/types/dashboard";
-import { redirect } from "next/navigation";
-import React from "react";
-import DashboardLayout from "@/components/dashboard/dashboard-layout";
+import MyProjectsClientWrapper from "@/components/dashboard/my-projects/client-wrapper";
 
-export const dynamic = "force-dynamic";
-
-const MyProjects = async () => { 
-  const user = await getUser(2);
-  if (!user) {
-    redirect("/auth");
-  }
-  return (
-    <DashboardLayout user={user} title="My Projects">
-      <MyProjectsComponent projects={user?.projects as Project[]} />
-    </DashboardLayout>
-  );
-};
-
-export default MyProjects;
+export default function MyProjects() {
+  return <MyProjectsClientWrapper />;
+}

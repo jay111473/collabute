@@ -10,6 +10,7 @@ import {
   Plus,
   LogOut,
   Menu,
+  Package,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -35,6 +36,10 @@ export default function FloatingBottomBar({ user }: FloatingBottomBarProps) {
   const router = useRouter();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
+  // Debug: Log user information
+  console.log("FloatingBottomBar - User object:", user);
+  console.log("FloatingBottomBar - User type:", user?.type);
+
   const allNavItems = [
     {
       name: "Home",
@@ -53,10 +58,18 @@ export default function FloatingBottomBar({ user }: FloatingBottomBarProps) {
       priority: 2,
     },
     {
+      name: "Products",
+      shortName: "Products",
+      icon: Package,
+      path: "/dashboard/products",
+      type: "startup",
+      priority: 2,
+    },
+    {
       name: "Projects",
       shortName: "Projects",
       icon: Layers3,
-      path: "/dashboard/my-projects",
+      path: "/dashboard/projects",
       type: "cross",
       priority: 3,
     },
@@ -66,7 +79,7 @@ export default function FloatingBottomBar({ user }: FloatingBottomBarProps) {
       icon: CompassIcon,
       path: "/dashboard/leads",
       type: "startup",
-      priority: 2,
+      priority: 3,
     },
     {
       name: "Payments",
@@ -98,6 +111,10 @@ export default function FloatingBottomBar({ user }: FloatingBottomBarProps) {
   const filteredNavItems = allNavItems.filter(
     (item) => item.type === "cross" || item.type === user.type
   );
+
+  // Debug: Log filtered items
+  console.log("FloatingBottomBar - Filtered nav items:", filteredNavItems);
+  console.log("FloatingBottomBar - All nav items for startup:", allNavItems.filter(item => item.type === "startup"));
 
   // Sort by priority and take first 4 for main bar
   const sortedItems = filteredNavItems.sort((a, b) => a.priority - b.priority);

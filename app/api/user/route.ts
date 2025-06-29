@@ -10,8 +10,26 @@ export async function GET(request: Request) {
     return NextResponse.json(user);
   } catch (error) {
     console.error('Error fetching user:', error);
+    
+    const errorMessage = error instanceof Error ? error.message : 'Failed to fetch user data';
+    
+    // Handle specific error cases
+    if (errorMessage.includes('Authentication required') || errorMessage.includes('Authentication failed')) {
+      return NextResponse.json(
+        { error: errorMessage },
+        { status: 401 }
+      );
+    }
+    
+    if (errorMessage.includes('User not found')) {
+      return NextResponse.json(
+        { error: errorMessage },
+        { status: 404 }
+      );
+    }
+    
     return NextResponse.json(
-      { error: 'Failed to fetch user data' },
+      { error: errorMessage },
       { status: 500 }
     );
   }

@@ -14,7 +14,7 @@ export default async function Home() {
   const isAuthenticated = await useIsAuthenticated();
   return (
     <>
-      <div className="relative min-h-screen w-full">
+      <div className="relative h-full min-h-screen w-full">
         {/* Background image - Mobile (hidden on md and above) */}
         <div className="absolute inset-0 z-0 block md:hidden">
           <Image

@@ -9,6 +9,8 @@ import {
   CompassIcon,
   Plus,
   LogOut,
+  MessageCircle,
+  Package,
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -86,6 +88,11 @@ export default function Sidebar({ user }: { user: User }) {
   const router = useRouter();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
+  // Debug: Log user information
+  console.log("Sidebar - User object:", user);
+  console.log("Sidebar - User type:", user?.type);
+  console.log("Sidebar - User type type:", typeof user?.type);
+
   const navItems = [
     {
       name: "Dashboard",
@@ -100,9 +107,15 @@ export default function Sidebar({ user }: { user: User }) {
       type: "developer",
     },
     {
+      name: "Products",
+      icon: Package,
+      path: "/dashboard/products",
+      type: "startup",
+    },
+    {
       name: "My Projects",
       icon: Layers3,
-      path: "/dashboard/my-projects",
+      path: "/dashboard/projects",
       type: "cross",
     },
     {
@@ -110,6 +123,12 @@ export default function Sidebar({ user }: { user: User }) {
       icon: CompassIcon,
       path: "/dashboard/leads",
       type: "startup",
+    },
+    {
+      name: "Chat",
+      icon: MessageCircle,
+      path: "/dashboard/chat",
+      type: "cross",
     },
     {
       name: "Payments",
@@ -129,6 +148,10 @@ export default function Sidebar({ user }: { user: User }) {
   const filteredNavItems = navItems.filter(
     (item) => item.type === "cross" || item.type === user.type
   );
+
+  // Debug: Log filtered items
+  console.log("Sidebar - Filtered nav items:", filteredNavItems);
+  console.log("Sidebar - Nav items for startup:", navItems.filter(item => item.type === "startup"));
 
   const handleLogout = async () => {
     if (isLoggingOut) return;

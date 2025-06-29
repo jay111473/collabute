@@ -6,10 +6,11 @@ import { ProjectProgress } from "@/components/ui/progress";
 import { DollarSign, Clock9, Users } from "lucide-react";
 import { Suspense } from "react";
 import { calculateDetailedProgress, formatDate } from "@/lib/utils";
-import { Issue, Project, Lead, Media } from "@/types/dashboard";
+import { Issue, Project, Media } from "@/types/dashboard";
 import { Skeleton } from "@/components/ui/skeleton";
 import ProjectIcon from "@/public/icons/project";
 import Image from "next/image";
+import Link from "next/link";
 
 function ProjectHeader({
   project,
@@ -182,7 +183,7 @@ const MyProjectCard = ({ project }: { project: Project }) => {
   const progressData = calculateDetailedProgress(project.issues as Issue[]);
 
   return (
-    <div className="flex flex-col w-full">
+    <Link href={`/dashboard/projects/${project.slug}`} className="flex flex-col w-full">
       <main className="flex flex-1 flex-col gap-4 lg:gap-6 w-full">
         <Card className="flex flex-col gap-2 py-5 px-2 bg-darkGray text-white w-full border-none">
           <Suspense fallback={<Skeleton className="h-20 w-full" />}>
@@ -190,7 +191,7 @@ const MyProjectCard = ({ project }: { project: Project }) => {
           </Suspense>
         </Card>
       </main>
-    </div>
+    </Link>
   );
 };
 

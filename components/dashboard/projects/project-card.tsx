@@ -6,16 +6,36 @@ import { Project } from "@/types/dashboard";
 import { truncateText } from "@/lib/utils";
 import { GitPullRequest } from "lucide-react";
 import Link from "next/link";
+import {
+  getCurrentMilestonePhase,
+  getMilestoneShadow,
+  getMilestoneStats,
+} from "@/lib/utils/milestone-utils";
 
 interface ProjectCardProps {
   project: Project;
 }
 
 export const ProjectCard = ({ project }: ProjectCardProps) => {
+  const milestonePhase = getCurrentMilestonePhase(project.milestones);
+  const milestoneShadow = getMilestoneShadow(project.milestones);
+  const milestoneStats = getMilestoneStats(project.milestones);
+
   return (
     <Link href={`/dashboard/explore/${project.slug}`}>
-      <Card className="text-white rounded-lg border-none hover:shadow-primary2 duration-300 bg-darkGray">
+      <Card className={`text-white rounded-lg border-none hover:shadow-primary2 duration-300 bg-darkGray ${milestoneShadow}`}>
         <CardContent className="flex flex-col p-0 py-4 space-y-4">
+          {/* Milestone Phase Badge */}
+          <div className="px-4">
+            <Badge className={`text-xs ${milestonePhase.color}`}>
+              <span className="mr-1">{milestonePhase.icon}</span>
+              {milestonePhase.phase}
+              {milestonePhase.status === "active" && (
+                <span className="ml-1 inline-flex h-1.5 w-1.5 rounded-full bg-current animate-pulse"></span>
+              )}
+            </Badge>
+          </div>
+          
           <div className="flex justify-between px-4">
             <div className="flex flex-col justify-start items-start gap-y-2">
               <div className="flex items-center gap-2">
@@ -50,10 +70,13 @@ export const ProjectCard = ({ project }: ProjectCardProps) => {
           </div>
           <Divider />
           <div className="flex px-6 items-center gap-2 justify-between">
-            <p className="text-sm ">Progress</p>
+            <p className="text-sm">Milestone Progress</p>
             <div className="flex items-center gap-2">
-              <Progress className="w-20 ml-2 bg-gray-300" value={30} />
-              <p className="text-xs">Two weeks</p>
+              <Progress 
+                className="w-20 ml-2 bg-gray-300" 
+                value={milestoneStats.completionPercentage} 
+              />
+              <p className="text-xs">{milestoneStats.completionPercentage}%</p>
             </div>
           </div>
         </CardContent>

@@ -87,258 +87,258 @@ export interface User {
   id: number;
   name: string;
   profilePicture?: (number | null) | Media;
-  type: 'developer' | 'startup' | 'designer' | 'lead';
+  type: "developer" | "startup" | "designer" | "lead";
   phoneNumber?: string | null;
   country?:
     | (
-        | 'AF'
-        | 'AX'
-        | 'AL'
-        | 'DZ'
-        | 'AS'
-        | 'AD'
-        | 'AO'
-        | 'AI'
-        | 'AQ'
-        | 'AG'
-        | 'AR'
-        | 'AM'
-        | 'AW'
-        | 'AU'
-        | 'AT'
-        | 'AZ'
-        | 'BS'
-        | 'BH'
-        | 'BD'
-        | 'BB'
-        | 'BY'
-        | 'BE'
-        | 'BZ'
-        | 'BJ'
-        | 'BM'
-        | 'BT'
-        | 'BO'
-        | 'BA'
-        | 'BW'
-        | 'BV'
-        | 'BR'
-        | 'IO'
-        | 'BN'
-        | 'BG'
-        | 'BF'
-        | 'BI'
-        | 'KH'
-        | 'CM'
-        | 'CA'
-        | 'CV'
-        | 'KY'
-        | 'CF'
-        | 'TD'
-        | 'CL'
-        | 'CN'
-        | 'CX'
-        | 'CC'
-        | 'CO'
-        | 'KM'
-        | 'CG'
-        | 'CD'
-        | 'CK'
-        | 'CR'
-        | 'CI'
-        | 'HR'
-        | 'CU'
-        | 'CY'
-        | 'CZ'
-        | 'DK'
-        | 'DJ'
-        | 'DM'
-        | 'DO'
-        | 'EC'
-        | 'EG'
-        | 'SV'
-        | 'GQ'
-        | 'ER'
-        | 'EE'
-        | 'ET'
-        | 'FK'
-        | 'FO'
-        | 'FJ'
-        | 'FI'
-        | 'FR'
-        | 'GF'
-        | 'PF'
-        | 'TF'
-        | 'GA'
-        | 'GM'
-        | 'GE'
-        | 'DE'
-        | 'GH'
-        | 'GI'
-        | 'GR'
-        | 'GL'
-        | 'GD'
-        | 'GP'
-        | 'GU'
-        | 'GT'
-        | 'GG'
-        | 'GN'
-        | 'GW'
-        | 'GY'
-        | 'HT'
-        | 'HM'
-        | 'VA'
-        | 'HN'
-        | 'HK'
-        | 'HU'
-        | 'IS'
-        | 'IN'
-        | 'ID'
-        | 'IR'
-        | 'IQ'
-        | 'IE'
-        | 'IM'
-        | 'IL'
-        | 'IT'
-        | 'JM'
-        | 'JP'
-        | 'JE'
-        | 'JO'
-        | 'KZ'
-        | 'KE'
-        | 'KI'
-        | 'KP'
-        | 'KR'
-        | 'KW'
-        | 'KG'
-        | 'LA'
-        | 'LV'
-        | 'LB'
-        | 'LS'
-        | 'LR'
-        | 'LY'
-        | 'LI'
-        | 'LT'
-        | 'LU'
-        | 'MO'
-        | 'MK'
-        | 'MG'
-        | 'MW'
-        | 'MY'
-        | 'MV'
-        | 'ML'
-        | 'MT'
-        | 'MH'
-        | 'MQ'
-        | 'MR'
-        | 'MU'
-        | 'YT'
-        | 'MX'
-        | 'FM'
-        | 'MD'
-        | 'MC'
-        | 'MN'
-        | 'MS'
-        | 'MA'
-        | 'MZ'
-        | 'MM'
-        | 'NA'
-        | 'NR'
-        | 'NP'
-        | 'NL'
-        | 'AN'
-        | 'NC'
-        | 'NZ'
-        | 'NI'
-        | 'NE'
-        | 'NG'
-        | 'NU'
-        | 'NF'
-        | 'MP'
-        | 'NO'
-        | 'OM'
-        | 'PK'
-        | 'PW'
-        | 'PS'
-        | 'PA'
-        | 'PG'
-        | 'PY'
-        | 'PE'
-        | 'PH'
-        | 'PN'
-        | 'PL'
-        | 'PT'
-        | 'PR'
-        | 'QA'
-        | 'RE'
-        | 'RO'
-        | 'RU'
-        | 'RW'
-        | 'SH'
-        | 'KN'
-        | 'LC'
-        | 'PM'
-        | 'VC'
-        | 'WS'
-        | 'SM'
-        | 'ST'
-        | 'SA'
-        | 'SN'
-        | 'CS'
-        | 'SC'
-        | 'SL'
-        | 'SG'
-        | 'SK'
-        | 'SI'
-        | 'SB'
-        | 'SO'
-        | 'ZA'
-        | 'GS'
-        | 'ES'
-        | 'LK'
-        | 'SD'
-        | 'SR'
-        | 'SJ'
-        | 'SZ'
-        | 'SE'
-        | 'CH'
-        | 'SY'
-        | 'TW'
-        | 'TJ'
-        | 'TZ'
-        | 'TH'
-        | 'TL'
-        | 'TG'
-        | 'TK'
-        | 'TO'
-        | 'TT'
-        | 'TN'
-        | 'TR'
-        | 'TM'
-        | 'TC'
-        | 'TV'
-        | 'UG'
-        | 'UA'
-        | 'AE'
-        | 'GB'
-        | 'US'
-        | 'UM'
-        | 'UY'
-        | 'UZ'
-        | 'VU'
-        | 'VE'
-        | 'VN'
-        | 'VG'
-        | 'VI'
-        | 'WF'
-        | 'EH'
-        | 'YE'
-        | 'ZM'
-        | 'ZW'
+        | "AF"
+        | "AX"
+        | "AL"
+        | "DZ"
+        | "AS"
+        | "AD"
+        | "AO"
+        | "AI"
+        | "AQ"
+        | "AG"
+        | "AR"
+        | "AM"
+        | "AW"
+        | "AU"
+        | "AT"
+        | "AZ"
+        | "BS"
+        | "BH"
+        | "BD"
+        | "BB"
+        | "BY"
+        | "BE"
+        | "BZ"
+        | "BJ"
+        | "BM"
+        | "BT"
+        | "BO"
+        | "BA"
+        | "BW"
+        | "BV"
+        | "BR"
+        | "IO"
+        | "BN"
+        | "BG"
+        | "BF"
+        | "BI"
+        | "KH"
+        | "CM"
+        | "CA"
+        | "CV"
+        | "KY"
+        | "CF"
+        | "TD"
+        | "CL"
+        | "CN"
+        | "CX"
+        | "CC"
+        | "CO"
+        | "KM"
+        | "CG"
+        | "CD"
+        | "CK"
+        | "CR"
+        | "CI"
+        | "HR"
+        | "CU"
+        | "CY"
+        | "CZ"
+        | "DK"
+        | "DJ"
+        | "DM"
+        | "DO"
+        | "EC"
+        | "EG"
+        | "SV"
+        | "GQ"
+        | "ER"
+        | "EE"
+        | "ET"
+        | "FK"
+        | "FO"
+        | "FJ"
+        | "FI"
+        | "FR"
+        | "GF"
+        | "PF"
+        | "TF"
+        | "GA"
+        | "GM"
+        | "GE"
+        | "DE"
+        | "GH"
+        | "GI"
+        | "GR"
+        | "GL"
+        | "GD"
+        | "GP"
+        | "GU"
+        | "GT"
+        | "GG"
+        | "GN"
+        | "GW"
+        | "GY"
+        | "HT"
+        | "HM"
+        | "VA"
+        | "HN"
+        | "HK"
+        | "HU"
+        | "IS"
+        | "IN"
+        | "ID"
+        | "IR"
+        | "IQ"
+        | "IE"
+        | "IM"
+        | "IL"
+        | "IT"
+        | "JM"
+        | "JP"
+        | "JE"
+        | "JO"
+        | "KZ"
+        | "KE"
+        | "KI"
+        | "KP"
+        | "KR"
+        | "KW"
+        | "KG"
+        | "LA"
+        | "LV"
+        | "LB"
+        | "LS"
+        | "LR"
+        | "LY"
+        | "LI"
+        | "LT"
+        | "LU"
+        | "MO"
+        | "MK"
+        | "MG"
+        | "MW"
+        | "MY"
+        | "MV"
+        | "ML"
+        | "MT"
+        | "MH"
+        | "MQ"
+        | "MR"
+        | "MU"
+        | "YT"
+        | "MX"
+        | "FM"
+        | "MD"
+        | "MC"
+        | "MN"
+        | "MS"
+        | "MA"
+        | "MZ"
+        | "MM"
+        | "NA"
+        | "NR"
+        | "NP"
+        | "NL"
+        | "AN"
+        | "NC"
+        | "NZ"
+        | "NI"
+        | "NE"
+        | "NG"
+        | "NU"
+        | "NF"
+        | "MP"
+        | "NO"
+        | "OM"
+        | "PK"
+        | "PW"
+        | "PS"
+        | "PA"
+        | "PG"
+        | "PY"
+        | "PE"
+        | "PH"
+        | "PN"
+        | "PL"
+        | "PT"
+        | "PR"
+        | "QA"
+        | "RE"
+        | "RO"
+        | "RU"
+        | "RW"
+        | "SH"
+        | "KN"
+        | "LC"
+        | "PM"
+        | "VC"
+        | "WS"
+        | "SM"
+        | "ST"
+        | "SA"
+        | "SN"
+        | "CS"
+        | "SC"
+        | "SL"
+        | "SG"
+        | "SK"
+        | "SI"
+        | "SB"
+        | "SO"
+        | "ZA"
+        | "GS"
+        | "ES"
+        | "LK"
+        | "SD"
+        | "SR"
+        | "SJ"
+        | "SZ"
+        | "SE"
+        | "CH"
+        | "SY"
+        | "TW"
+        | "TJ"
+        | "TZ"
+        | "TH"
+        | "TL"
+        | "TG"
+        | "TK"
+        | "TO"
+        | "TT"
+        | "TN"
+        | "TR"
+        | "TM"
+        | "TC"
+        | "TV"
+        | "UG"
+        | "UA"
+        | "AE"
+        | "GB"
+        | "US"
+        | "UM"
+        | "UY"
+        | "UZ"
+        | "VU"
+        | "VE"
+        | "VN"
+        | "VG"
+        | "VI"
+        | "WF"
+        | "EH"
+        | "YE"
+        | "ZM"
+        | "ZW"
       )
     | null;
-  role?: ('admin' | 'user') | null;
+  role?: ("admin" | "user") | null;
   isVerified?: boolean | null;
-  kycStatus?: ('pending' | 'verified' | 'rejected') | null;
+  kycStatus?: ("pending" | "verified" | "rejected") | null;
   githubId?: string | null;
   githubUsername?: string | null;
   wallet?: number | null;
@@ -346,9 +346,11 @@ export interface User {
     | {
         transactionDate?: string | null;
         transactionAmount?: number | null;
-        transactionType?: ('income' | 'withdrawal' | 'tip') | null;
-        transactionMethods?: ('credit_card' | 'bank_transfer' | 'crypto') | null;
-        transactionStatus?: ('pending' | 'completed' | 'failed') | null;
+        transactionType?: ("income" | "withdrawal" | "tip") | null;
+        transactionMethods?:
+          | ("credit_card" | "bank_transfer" | "crypto")
+          | null;
+        transactionStatus?: ("pending" | "completed" | "failed") | null;
         transactionProject?: (number | null) | Project;
         transactionDescription?: string | null;
         id?: string | null;
@@ -363,9 +365,9 @@ export interface User {
       | {
           paymentDate?: string | null;
           paymentAmount?: number | null;
-          paymentType?: ('income' | 'withdrawal' | 'tip') | null;
+          paymentType?: ("income" | "withdrawal" | "tip") | null;
           paymentMethod?: string | null;
-          paymentStatus?: ('pending' | 'completed' | 'failed') | null;
+          paymentStatus?: ("pending" | "completed" | "failed") | null;
           paymentReference?: string | null;
           paymentDescription?: string | null;
           id?: string | null;
@@ -379,25 +381,29 @@ export interface User {
           id?: string | null;
         }[]
       | null;
-    experienceLevel?: ('junior' | 'mid_level' | 'senior' | 'lead' | 'architect') | null;
+    experienceLevel?:
+      | ("junior" | "mid_level" | "senior" | "lead" | "architect")
+      | null;
     githubProfile?: string | null;
     linkedinProfile?: string | null;
     personalWebsite?: string | null;
     primaryRole?:
       | (
-          | 'Frontend Developer'
-          | 'Backend Developer'
-          | 'Full Stack Developer'
-          | 'Mobile Developer'
-          | 'DevOps Engineer'
-          | 'Data Scientist'
-          | 'UI/UX Designer'
-          | 'QA Engineer'
-          | 'Other'
+          | "Frontend Developer"
+          | "Backend Developer"
+          | "Full Stack Developer"
+          | "Mobile Developer"
+          | "DevOps Engineer"
+          | "Data Scientist"
+          | "UI/UX Designer"
+          | "QA Engineer"
+          | "Other"
         )[]
       | null;
-    availability?: ('full_time' | 'part_time' | 'contract' | 'freelance' | 'not_available') | null;
-    preferredWorkType?: ('remote' | 'on_site' | 'hybrid') | null;
+    availability?:
+      | ("full_time" | "part_time" | "contract" | "freelance" | "not_available")
+      | null;
+    preferredWorkType?: ("remote" | "on_site" | "hybrid") | null;
     education?:
       | {
           degree?: string | null;
@@ -409,17 +415,27 @@ export interface User {
     languages?:
       | {
           language?: string | null;
-          proficiency?: ('Beginner' | 'Intermediate' | 'Advanced' | 'Native') | null;
+          proficiency?:
+            | ("Beginner" | "Intermediate" | "Advanced" | "Native")
+            | null;
           id?: string | null;
         }[]
       | null;
     hourlyRate?: number | null;
     preferredProjectDuration?:
-      | ('Less than 1 month' | '1-3 months' | '3-6 months' | '6-12 months' | 'More than 12 months')
+      | (
+          | "Less than 1 month"
+          | "1-3 months"
+          | "3-6 months"
+          | "6-12 months"
+          | "More than 12 months"
+        )
       | null;
     stripeAccountId?: string | null;
     stripeOnboardingUrl?: string | null;
-    stripeAccountStatus?: ('pending' | 'active' | 'restricted' | 'disabled') | null;
+    stripeAccountStatus?:
+      | ("pending" | "active" | "restricted" | "disabled")
+      | null;
   };
   startupFields?: {
     companyName?: string | null;
@@ -427,12 +443,16 @@ export interface User {
     foundingDate?: string | null;
     cto?: (number | null) | User;
     fundingInformation?: {
-      fundingStage?: ('Pre-seed' | 'Seed' | 'Series A' | 'Series B' | 'Series C+') | null;
+      fundingStage?:
+        | ("Pre-seed" | "Seed" | "Series A" | "Series B" | "Series C+")
+        | null;
       totalFundingRaised?: number | null;
       lastFundingDate?: string | null;
     };
-    teamSize?: ('1-10' | '10-50' | '50-100' | '+100') | null;
-    productStage?: ('Idea' | 'Prototype' | 'MVP' | 'Beta' | 'Launched' | 'Growth') | null;
+    teamSize?: ("1-10" | "10-50" | "50-100" | "+100") | null;
+    productStage?:
+      | ("Idea" | "Prototype" | "MVP" | "Beta" | "Launched" | "Growth")
+      | null;
   };
   leadFields?: {
     experience?: number | null;
@@ -443,14 +463,20 @@ export interface User {
     calendar?:
       | {
           calendarLink?: string | null;
-          calendarType?: ('cal.com' | 'calendly') | null;
+          calendarType?: ("cal.com" | "calendly") | null;
           id?: string | null;
         }[]
       | null;
     preferredProjectDuration?:
-      | ('Less than 1 month' | '1-3 months' | '3-6 months' | '6-12 months' | 'More than 12 months')[]
+      | (
+          | "Less than 1 month"
+          | "1-3 months"
+          | "3-6 months"
+          | "6-12 months"
+          | "More than 12 months"
+        )[]
       | null;
-    preferedPayment?: ('hourly' | 'dcm') | null;
+    preferedPayment?: ("hourly" | "dcm") | null;
     hourlyRate?: number | null;
     projects?: (number | Project)[] | null;
   };
@@ -520,22 +546,47 @@ export interface Media {
 export interface Project {
   id: number;
   title: string;
-  description: string;
-  logo: (number | Media) | null;
+  owner?: (number | null) | User;
   slug?: string | null;
-  lead?: (number | null) | Lead;
+  description: string;
+  longDescription?: {
+    root: {
+      type: string;
+      children: {
+        type: string;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ("ltr" | "rtl") | null;
+      format: "left" | "start" | "center" | "right" | "end" | "justify" | "";
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  logo?: (number | null) | Media;
   projectType?: ("normal" | "urgent" | "featured" | "trending") | null;
-  startDate: string;
-  endDate?: string | null;
-  stacks?: (number | Stack)[] | null;
   status: "planned" | "in-progress" | "completed" | "on-hold";
-  budget?: number | null;
+  milestones?: {
+    ideaRefinement?: ("not-started" | "in-progress" | "completed") | null;
+    documentation?: ("not-started" | "in-progress" | "completed") | null;
+    design?: ("not-started" | "in-progress" | "completed") | null;
+    development?: ("not-started" | "in-progress" | "completed") | null;
+    testing?: ("not-started" | "in-progress" | "completed") | null;
+    launch?: ("not-started" | "in-progress" | "completed") | null;
+    maintenance?: ("not-started" | "in-progress" | "completed") | null;
+    scaling?: ("not-started" | "in-progress" | "completed") | null;
+  };
   tags?:
     | {
         tag?: string | null;
         id?: string | null;
       }[]
     | null;
+  startDate: string;
+  endDate?: string | null;
+  budget?: number | null;
+  lead?: (number | null) | Lead;
   collabuters?:
     | {
         collabuter?: (number | null) | User;
@@ -543,7 +594,44 @@ export interface Project {
         id?: string | null;
       }[]
     | null;
+  stacks?: (number | Stack)[] | null;
   issues?: (number | Issue)[] | null;
+  projectState:
+    | "draft"
+    | "submitted"
+    | "under-review"
+    | "approved"
+    | "in-progress"
+    | "completed"
+    | "rejected";
+  githubRepository?: {
+    repoId?: string | null;
+    name?: string | null;
+    fullName?: string | null;
+    url?: string | null;
+    isPrivate?: boolean | null;
+    defaultBranch?: string | null;
+    createdAt?: string | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+
+export interface Product {
+  id: number;
+  owner?: (number | null) | User;
+  name: string;
+  description?: string | null;
+  projects?: (number | Project)[] | null;
+  foundingDate?: string | null;
+  cto?: (number | null) | User;
+  fundingInformation?: {
+    fundingStage?:
+      | ("Pre-seed" | "Seed" | "Series A" | "Series B" | "Series C+")
+      | null;
+    totalFundingRaised?: number | null;
+    lastFundingDate?: string | null;
+  };
   updatedAt: string;
   createdAt: string;
 }

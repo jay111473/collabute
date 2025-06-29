@@ -42,18 +42,21 @@ export function useUserData(options: UseUserDataOptions = {}): UserDataState {
     // Create and store the promise to prevent duplicate requests
     const fetchPromise = (async () => {
       try {
+        // Use the existing /api/user route which handles cookies server-side
         const response = await fetch(`/api/user?depth=${depth}`);
+        
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-        const userData = await response.json();
         
+        const userData = await response.json();
+
         // Cache the result
         userCache.set(cacheKey, {
           data: userData,
-          timestamp: Date.now()
+          timestamp: Date.now(),
         });
-        
+
         return userData;
       } finally {
         // Remove the pending request
@@ -68,16 +71,17 @@ export function useUserData(options: UseUserDataOptions = {}): UserDataState {
   const refetch = useCallback(async () => {
     setLoading(true);
     setError(null);
-    
+
     try {
       // Clear cache for this key to force fresh fetch
       userCache.delete(cacheKey);
       const userData = await fetchUser();
       setUser(userData);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch user data';
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to fetch user data";
       setError(errorMessage);
-      console.error('Error fetching user:', err);
+      console.error("Error fetching user:", err);
     } finally {
       setLoading(false);
     }
@@ -90,9 +94,10 @@ export function useUserData(options: UseUserDataOptions = {}): UserDataState {
         setUser(userData);
         setError(null);
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Failed to fetch user data';
+        const errorMessage =
+          err instanceof Error ? err.message : "Failed to fetch user data";
         setError(errorMessage);
-        console.error('Error fetching user:', err);
+        console.error("Error fetching user:", err);
       } finally {
         setLoading(false);
       }
@@ -105,6 +110,6 @@ export function useUserData(options: UseUserDataOptions = {}): UserDataState {
     user,
     loading,
     error,
-    refetch
+    refetch,
   };
-} 
+}

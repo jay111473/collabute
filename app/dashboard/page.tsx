@@ -47,7 +47,7 @@ export default function Dashboard() {
   const { user } = useUserData();
 
   return (
-    <div className="flex flex-col gap-4 lg:gap-6">
+    <div className="flex flex-col gap-4 lg:gap-6 h-full min-h-screen">
       {/* Verification alerts - loads immediately */}
       {user && <VerificationAlerts user={user} />}
 

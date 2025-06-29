@@ -33,6 +33,9 @@ export default function Wizard() {
     suggestedCompetitors,
     suggestedTracks,
 
+    // GitHub Access
+    gitHubAccess,
+
     // Handlers
     handleNext,
     handleBookMeeting,

@@ -165,14 +165,14 @@ const CountdownTimer = () => {
         transition={{ duration: 0.8, delay: 0.6 }}
         className="flex space-x-7 mt-1 mb-8"
       >
-        <a
-          href="https://discord.gg/JjxMMacU"
+        <Link
+          href="https://discord.gg/3PUyPGF2"
           target="_blank"
           rel="noopener noreferrer"
           className="text-white hover:text-gray-300 transition-colors duration-300"
         >
           <FaDiscord size={20} />
-        </a>
+        </Link>
       </motion.div>
     </div>
   );

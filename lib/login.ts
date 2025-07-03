@@ -1,6 +1,7 @@
 import axios from "axios";
 import { setCookie } from "cookies-next";
 import { z } from "zod";
+import { getAuthErrorMessage } from "@/lib/utils/auth-error-handler";
 
 export const loginformSchema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
@@ -35,7 +36,8 @@ export const login = async (
 
     return "Successfully logged in!";
   } catch (err) {
-    console.log(err);
-    throw new Error("Failed to log in. Please try again.");
+    console.error("Login error:", err);
+    const errorMessage = getAuthErrorMessage(err);
+    throw new Error(errorMessage);
   }
 };

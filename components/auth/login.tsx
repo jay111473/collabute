@@ -22,6 +22,8 @@ import { Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { setCookie } from "cookies-next";
 import Image from "next/image";
+import { getAuthErrorMessage } from "@/lib/utils/auth-error-handler";
+
 const formSchema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
   password: z
@@ -59,8 +61,9 @@ const Login = () => {
           return "Successfully logged in!";
         },
         error: (err) => {
-          console.error(err);
-          return "Failed to log in. Please try again.";
+          console.error("Login error:", err);
+          const errorMessage = getAuthErrorMessage(err);
+          return errorMessage;
         },
       }
     );

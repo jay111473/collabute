@@ -160,7 +160,6 @@ export const MessageInput = ({
       <div className="flex items-end gap-2">
         {/* Attachment Button */}
         <Button
-          variant="ghost"
           size="sm"
           className="text-gray-400 hover:text-white p-2"
           disabled={disabled}
@@ -199,7 +198,6 @@ export const MessageInput = ({
           
           {/* Emoji Button */}
           <Button
-            variant="ghost"
             size="sm"
             className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white p-1"
             disabled={disabled}

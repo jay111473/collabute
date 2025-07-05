@@ -6,14 +6,14 @@ import { Product, Project } from "@/types/dashboard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Package, 
-  ArrowLeft, 
-  Building2, 
-  Calendar, 
-  Users, 
+import {
+  Package,
+  ArrowLeft,
+  Building2,
+  Calendar,
+  Users,
   FolderOpen,
-  ExternalLink 
+  ExternalLink,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import Link from "next/link";
@@ -28,26 +28,27 @@ export default function ProductDetailsPage() {
 
   useEffect(() => {
     const fetchProduct = async () => {
-      if (!params.id || typeof params.id !== 'string') return;
-      
+      if (!params.id || typeof params.id !== "string") return;
+
       try {
         setLoading(true);
         const response = await fetch(`/api/products/${params.id}`);
-        
+
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-        
+
         const productData = await response.json();
-        
+
         if (productData.error) {
           throw new Error(productData.error);
         }
-        
+
         setProduct(productData);
       } catch (err) {
         console.error("Error fetching product:", err);
-        const errorMessage = err instanceof Error ? err.message : "Failed to load product";
+        const errorMessage =
+          err instanceof Error ? err.message : "Failed to load product";
         setError(errorMessage);
       } finally {
         setLoading(false);
@@ -88,8 +89,10 @@ export default function ProductDetailsPage() {
     );
   }
 
-  const projects = Array.isArray(product.projects) 
-    ? product.projects.filter((p): p is Project => typeof p === 'object' && p !== null)
+  const projects = Array.isArray(product.projects)
+    ? product.projects.filter(
+        (p): p is Project => typeof p === "object" && p !== null
+      )
     : [];
 
   const formatFunding = (funding?: {
@@ -97,16 +100,16 @@ export default function ProductDetailsPage() {
     totalFundingRaised?: number | null;
   }) => {
     if (!funding) return null;
-    
+
     const { fundingStage, totalFundingRaised } = funding;
-    
+
     if (fundingStage && totalFundingRaised) {
       return `${fundingStage} - $${totalFundingRaised.toLocaleString()}`;
     }
-    
+
     if (fundingStage) return fundingStage;
     if (totalFundingRaised) return `$${totalFundingRaised.toLocaleString()}`;
-    
+
     return null;
   };
 
@@ -118,7 +121,6 @@ export default function ProductDetailsPage() {
         {/* Header */}
         <div className="flex items-center gap-4">
           <Button
-            variant="ghost"
             size="sm"
             onClick={() => router.back()}
             className="text-gray-400 hover:text-white"
@@ -137,7 +139,9 @@ export default function ProductDetailsPage() {
                   <Package className="h-8 w-8 text-darkPrimary" />
                 </div>
                 <div>
-                  <CardTitle className="text-2xl text-white">{product.name}</CardTitle>
+                  <CardTitle className="text-2xl text-white">
+                    {product.name}
+                  </CardTitle>
                   <p className="text-gray-400 mt-1">
                     {product.description || "No description available"}
                   </p>
@@ -152,7 +156,9 @@ export default function ProductDetailsPage() {
                 <FolderOpen className="h-5 w-5 text-gray-400" />
                 <div>
                   <p className="text-sm text-gray-400">Projects</p>
-                  <p className="text-lg font-semibold text-white">{projects.length}</p>
+                  <p className="text-lg font-semibold text-white">
+                    {projects.length}
+                  </p>
                 </div>
               </div>
 
@@ -163,20 +169,22 @@ export default function ProductDetailsPage() {
                   <div>
                     <p className="text-sm text-gray-400">Founded</p>
                     <p className="text-lg font-semibold text-white">
-                      {formatDistanceToNow(new Date(product.foundingDate), { addSuffix: true })}
+                      {formatDistanceToNow(new Date(product.foundingDate), {
+                        addSuffix: true,
+                      })}
                     </p>
                   </div>
                 </div>
               )}
 
               {/* CTO */}
-              {product.cto && typeof product.cto === 'object' && (
+              {product.cto && typeof product.cto === "object" && (
                 <div className="flex items-center gap-3">
                   <Users className="h-5 w-5 text-gray-400" />
                   <div>
                     <p className="text-sm text-gray-400">CTO</p>
                     <p className="text-lg font-semibold text-white">
-                      {product.cto.firstName} {product.cto.lastName}
+                      {product.cto.name}
                     </p>
                   </div>
                 </div>
@@ -188,7 +196,10 @@ export default function ProductDetailsPage() {
                   <Building2 className="h-5 w-5 text-gray-400" />
                   <div>
                     <p className="text-sm text-gray-400">Funding</p>
-                    <Badge variant="outline" className="bg-darkPrimary/10 text-darkPrimary border-darkPrimary/20">
+                    <Badge
+                      variant="outline"
+                      className="bg-darkPrimary/10 text-darkPrimary border-darkPrimary/20"
+                    >
                       {fundingInfo}
                     </Badge>
                   </div>
@@ -204,7 +215,8 @@ export default function ProductDetailsPage() {
             <div>
               <h2 className="text-xl font-bold text-white">Projects</h2>
               <p className="text-gray-400 text-sm">
-                {projects.length} {projects.length === 1 ? 'project' : 'projects'} in this product
+                {projects.length}{" "}
+                {projects.length === 1 ? "project" : "projects"} in this product
               </p>
             </div>
             {projects.length > 0 && (
@@ -221,9 +233,12 @@ export default function ProductDetailsPage() {
             <Card className="bg-darkGray border-grayBorders">
               <CardContent className="flex flex-col items-center justify-center py-12">
                 <FolderOpen className="h-12 w-12 text-gray-400 mb-4" />
-                <h3 className="text-lg font-medium text-white mb-2">No Projects Yet</h3>
+                <h3 className="text-lg font-medium text-white mb-2">
+                  No Projects Yet
+                </h3>
                 <p className="text-gray-400 text-sm text-center mb-4">
-                  This product doesn't have any projects associated with it yet.
+                  This product doesn&apos;t have any projects associated with it
+                  yet.
                 </p>
                 <Link href="/dashboard/wizard">
                   <Button className="bg-darkPrimary hover:bg-darkPrimary/80">
@@ -243,4 +258,4 @@ export default function ProductDetailsPage() {
       </main>
     </div>
   );
-} 
+}

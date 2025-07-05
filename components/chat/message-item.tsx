@@ -2,7 +2,7 @@ import { formatDistanceToNow } from 'date-fns'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Message } from '@/types/chat'
-import { User } from '@/types/dashboard'
+import { Media, User } from '@/types/dashboard'
 import { cn } from '@/lib/utils'
 
 interface MessageItemProps {
@@ -71,7 +71,7 @@ export const MessageItem = ({ message, currentUserId, showAvatar }: MessageItemP
           {showAvatar ? (
             <Avatar className="w-8 h-8">
               <AvatarImage 
-                src={typeof sender.profilePicture === 'object' ? sender.profilePicture?.url : undefined}
+                src={(sender.profilePicture as Media)?.url || ""}
                 alt={sender.name}
               />
               <AvatarFallback className="bg-darkGray text-white text-xs">

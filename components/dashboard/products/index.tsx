@@ -78,7 +78,7 @@ const ProductsComponent = ({ products }: ProductsComponentProps) => {
                 No Products Yet
               </h2>
               <p className="text-gray-400 text-sm leading-relaxed">
-                You haven't created any products yet. Products help you organize and manage multiple related projects under one umbrella.
+                You haven&apos;t created any products yet. Products help you organize and manage multiple related projects under one umbrella.
               </p>
             </div>
           </div>

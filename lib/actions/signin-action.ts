@@ -3,6 +3,7 @@
 import type { LoginFormData, LoginResponse } from "@/types/auth.types";
 import { login } from "../auth-server";
 import { cookies } from "next/headers";
+import { getAuthErrorMessage } from "@/lib/utils/auth-error-handler";
 
 export const signinAction = async (
   _prevState: unknown,
@@ -28,6 +29,7 @@ export const signinAction = async (
     };
   } catch (error) {
     console.error("Login error:", error);
-    return { error: "Failed to sign in" };
+    const errorMessage = getAuthErrorMessage(error);
+    return { error: errorMessage };
   }
 };

@@ -1,14 +1,23 @@
 "use client";
 import React from "react";
+import DashboardLayout from "@/components/dashboard/dashboard-layout";
+import { useUserData } from "@/hooks/use-user-data";
 
-export default function DashboardLayout({
+export default function Layout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const { user, loading } = useUserData();
+
+  // Show loading state while user data is being fetched
+  if (loading || !user) {
+    return null; // This will trigger the loading.tsx file
+  }
+
   return (
-    <div className="grid min-h-screen w-full">
+    <DashboardLayout user={user}>
       {children}
-    </div>
+    </DashboardLayout>
   );
 }

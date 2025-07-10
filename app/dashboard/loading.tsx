@@ -35,7 +35,7 @@ const HeaderSkeleton = () => (
 
 // Dashboard card skeleton
 const DashboardCardSkeleton = ({ icon: Icon }: { icon: any }) => (
-  <div className="bg-white shadow-md dark:bg-darkGray rounded-lg p-4">
+  <div className="bg-darkGray rounded-lg p-4">
     <div className="flex flex-row items-start justify-between space-y-0 pb-2">
       <Skeleton className="h-5 w-28 bg-[#222] rounded-md" />
       <Icon className="h-4 w-4 text-white/50" />

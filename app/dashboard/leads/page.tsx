@@ -1,28 +1,28 @@
 import { Metadata } from "next";
 import { User } from "@/types/dashboard";
-import ProjectLeadsClient from "@/components/leads/ProjectLeadsClient";
+import ProjectManagersClient from "@/components/leads/ProjectLeadsClient";
 import { cookies } from "next/headers";
-import { getUser } from "@/lib/get-user";
 import qs from "qs";
 import { FILTERS } from "@/types/filters";
-import DashboardLayout from "@/components/dashboard/dashboard-layout";
 
 export const metadata: Metadata = {
-  title: "Project Leads | Dashboard | Contribunation",
-  description: "Explore and connect with top technical leads for your project.",
+  title: "Project Managers | Dashboard | Collabute",
+  description:
+    "Explore and connect with top project managers for your project.",
 };
 
-// Make this function dynamic to handle search params
-async function getLeads(
-  token: string,
-  searchParams: { [key: string]: string }
-): Promise<User[]> {
-  // Base query - always filter by type=lead
+type SearchParams = { [key: string]: string } | undefined;
+
+function buildProjectManagersQuery(
+  searchParams: SearchParams = {}
+): Record<string, any> {
   const query: Record<string, any> = {
     type: {
       equals: "lead",
     },
   };
+
+  if (!searchParams) return query;
 
   // Process search parameter
   if (searchParams.search) {
@@ -51,48 +51,54 @@ async function getLeads(
     if (!value || !filter.apiField) return;
 
     if (filter.id === "experience") {
-      // For experience, use greater than or equal on leadFields.experience
       query[filter.apiField] = {
         greater_than_equal: parseInt(value),
       };
     } else if (filter.id === "availability") {
-      // For availability, convert string to boolean on leadFields.availability
       query[filter.apiField] = {
         equals: value === "true",
       };
     } else if (filter.id === "stack") {
-      // For stack, search in array of stack objects by name
       query[filter.apiField] = {
         contains: value,
       };
     } else if (filter.id === "role") {
-      // For role, exact match on primaryRole
       query[filter.apiField] = {
         equals: value,
       };
     }
   });
 
-  // Process sort parameter
-  let sortOptions = {};
-  if (searchParams.sort) {
-    const [field, direction] = searchParams.sort.split("_");
-    sortOptions = {
-      [field]: direction,
-    };
-  } else {
-    // Default sort by experience (most experienced first)
-    sortOptions = {
+  return query;
+}
+
+function buildSortOptions(
+  searchParams: SearchParams = {}
+): Record<string, string> {
+  if (!searchParams?.sort) {
+    return {
       "leadFields.experience": "desc",
     };
   }
 
-  // Build query string
+  const [field, direction] = searchParams.sort.split("_");
+  return {
+    [field]: direction,
+  };
+}
+
+async function getProjectManagers(
+  token: string,
+  searchParams: SearchParams = {}
+): Promise<User[]> {
+  const query = buildProjectManagersQuery(searchParams);
+  const sortOptions = buildSortOptions(searchParams);
+
   const stringifiedQuery = qs.stringify(
     {
       where: query,
       sort: sortOptions,
-      depth: 2, // Include nested objects like stack, skills, etc.
+      depth: 2,
     },
     { addQueryPrefix: true }
   );
@@ -109,36 +115,34 @@ async function getLeads(
     );
 
     if (!res.ok) {
-      throw new Error("Failed to fetch leads");
+      throw new Error("Failed to fetch project managers");
     }
 
     const data = await res.json();
     return data.docs || [];
   } catch (error) {
-    console.error("Error fetching leads:", error);
+    console.error("Error fetching project managers:", error);
     return [];
   }
 }
 
-// Make the page component accept search params
-export default async function DashboardLeadsPage({
+export default async function DashboardProjectManagersPage({
   searchParams,
 }: {
-  searchParams: Promise<any>;
+  searchParams?: Promise<SearchParams>;
 }) {
-  const { search } = await searchParams;
+  const resolvedSearchParams = searchParams ? await searchParams : undefined;
   const cookieStore = await cookies();
   const token = cookieStore.get("token")?.value;
-  const user = await getUser();
 
-  // Pass search params to getLeads
-  const leads = await getLeads(token || "", search);
+  const projectManagers = await getProjectManagers(
+    token || "",
+    resolvedSearchParams
+  );
 
   return (
-    <DashboardLayout user={user} title="Project Leads">
-      <div className="flex-1 flex flex-col">
-        <ProjectLeadsClient leads={leads} />
-      </div>
-    </DashboardLayout>
+    <div className="flex-1 flex flex-col">
+      <ProjectManagersClient projectManagers={projectManagers} />
+    </div>
   );
 }

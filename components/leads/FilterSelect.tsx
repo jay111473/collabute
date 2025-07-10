@@ -28,7 +28,7 @@ export const FilterSelect: FC<FilterSelectProps> = ({
 }) => {
   return (
     <Select value={value} onValueChange={onChange}>
-      <SelectTrigger className={`w-[140px] bg-black border-grayBorders text-white rounded-lg ${className}`}>
+      <SelectTrigger className={` bg-black border-grayBorders text-white rounded-[18px] ${className}`}>
         <div className="flex items-center gap-2">
           {'icon' in filter && <filter.icon className="h-4 w-4" />}
           <SelectValue placeholder={filter.placeholder} />

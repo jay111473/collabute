@@ -1,18 +1,9 @@
 import { Badge } from "@/components/ui/badge";
 import RectangleStack from "@/public/icons/rectangle-stack";
-import { Issue, User } from "@/types/dashboard";
+import { Issue } from "@/types/dashboard";
 import { Circle, CircleDot, Clock } from "lucide-react";
 import { getBulbColor, getStatusInfo } from "@/lib/utils";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import { useState } from "react";
-import { Divider } from "@/components/uikit/divider";
-import { motion, AnimatePresence } from "framer-motion";
-import { YouTubeEmbed } from "@/components/ui/youtube-embed";
+import { motion } from "framer-motion";
 import { format } from "date-fns";
 import { ApplyDrawer } from "./apply-drawer";
 import Link from "next/link";
@@ -88,21 +79,9 @@ const IssueDetailRow = ({
 
 const IssueCard = ({ issue, projectTitle, isMyProject }: IssueCardProps) => {
   const { label, color } = getStatusInfo(issue.status);
-  const [isOpen, setIsOpen] = useState(false);
-  const [isBookmarked, setIsBookmarked] = useState(issue.isBookmarked || false);
-
-  const pendingRequestsCount =
-    issue.requests?.filter((request) => request.requestStatus === "pending")
-      .length || 0;
 
   const handleApply = (issueId: string) => {
     console.log("Applied to issue:", issueId);
-  };
-
-  const handleBookmark = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setIsBookmarked(!isBookmarked);
-    console.log("Bookmarked issue:", issue.id);
   };
 
   // Truncate description to first 100 words

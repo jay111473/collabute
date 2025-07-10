@@ -30,8 +30,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${plusJakarta.className}`}>
+    <html lang="en" className="h-full">
+      <body className={`${plusJakarta.className} h-full`}>
         <SpeedInsights />
         <CSPostHogProvider>
           <EmailProvider>
@@ -41,7 +41,11 @@ export default function RootLayout({
               enableSystem
               disableTransitionOnChange
             >
-              <UserProvider>{children}</UserProvider>
+              <UserProvider>
+                <div className="h-full">
+                  {children}
+                </div>
+              </UserProvider>
             </ThemeProvider>
           </EmailProvider>
         </CSPostHogProvider>

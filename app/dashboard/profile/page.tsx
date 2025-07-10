@@ -326,14 +326,9 @@ function SkillSet({ skills }: SkillSetProps) {
 }
 
 /**
- * Achievements section showing badges based on experience and rate
+ * Achievements section showing badges  based on experience and rate
  */
 function Achievements({ experienceLevel, hourlyRate }: AchievementsProps) {
-  const isPro =
-    experienceLevel === "senior" ||
-    experienceLevel === "lead" ||
-    experienceLevel === "architect";
-
   const isPremium = hourlyRate && hourlyRate > 50;
 
   return (

@@ -54,23 +54,22 @@ const DashboardLayout = ({
   // Render floating navigation layout
   if (isFloatingNavEnabled) {
     return (
-      <>
-        <div className="flex flex-col h-screen bg-black">
+      <div className="h-full">
+        <div className="flex flex-col h-full bg-black">
           <Header title={title} />
 
           {/* Page content */}
-          <main className="flex-1 overflow-y-auto">{children}</main>
+          <main className="flex-1 overflow-y-auto p-4 lg:p-6">{children}</main>
         </div>
 
         {/* Floating Bottom Bar */}
         <FloatingBottomBar user={user} />
-      </>
+      </div>
     );
   }
-
   // Render traditional sidebar layout
   return (
-    <div className="flex">
+    <div className="flex h-full">
       {/* Desktop Sidebar - Visible on md+ screens */}
       <div className="hidden md:block border-r border-white/10 bg-black text-white w-1/5">
         <Sidebar user={user} />
@@ -110,7 +109,7 @@ const DashboardLayout = ({
         </div>
       </div>
 
-      <div className="flex flex-col bg-black w-full">
+      <div className="flex flex-col bg-black w-full h-full">
         <div className="relative flex items-center">
           {/* Hamburger Menu Button - Only on mobile */}
           <button
@@ -124,9 +123,7 @@ const DashboardLayout = ({
         </div>
 
         {/* Page content */}
-        <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
-          {children}
-        </main>
+        <main className="flex-1 overflow-y-auto p-4 lg:p-6">{children}</main>
       </div>
     </div>
   );

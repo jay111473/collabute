@@ -9,6 +9,7 @@ import type {
 } from "@/types/auth.types";
 import { signinAction } from "./signin-action";
 import { signup } from "../auth-server";
+import { getSignupErrorMessage } from "@/lib/utils/auth-error-handler";
 
 export const signupAction = async (
   _prevState: unknown,
@@ -82,7 +83,7 @@ export const signupAction = async (
     };
   } catch (error) {
     console.error("Signup error:", error);
-    const errorMessage = error instanceof Error ? error.message : "Failed to sign up";
+    const errorMessage = getSignupErrorMessage(error);
     return { error: errorMessage };
   }
 };

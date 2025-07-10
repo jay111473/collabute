@@ -1,11 +1,11 @@
-import { FC } from 'react';
+import { FC } from "react";
 import { Input } from "@/components/ui/input";
 import { Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FilterSelect } from "./FilterSelect";
 import { FILTERS, FilterValues, SORT_OPTIONS } from "@/types/filters";
 
-interface LeadFilterBarProps {
+interface ProjectManagerFilterBarProps {
   search: string;
   onSearchChange: (value: string) => void;
   filters: FilterValues;
@@ -17,10 +17,10 @@ interface LeadFilterBarProps {
 }
 
 /**
- * Filter bar component for leads page
+ * Filter bar component for project managers page
  * Includes search, filters, sort, and reset functionality
  */
-export const LeadFilterBar: FC<LeadFilterBarProps> = ({
+export const ProjectManagerFilterBar: FC<ProjectManagerFilterBarProps> = ({
   search,
   onSearchChange,
   filters,
@@ -36,15 +36,15 @@ export const LeadFilterBar: FC<LeadFilterBarProps> = ({
       <div className="relative">
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
         <Input
-          placeholder="Search for a lead by name or stack"
-          className="pl-10 bg-black border-grayBorders text-white rounded-lg h-11 placeholder:text-grayText"
+          placeholder="Search for a project manager by name or stack"
+          className="pl-10 bg-darkGray border-grayBorders text-white rounded-[18px] h-11 placeholder:text-grayText"
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
         />
       </div>
 
       {/* Filters */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between w-full">
         <div className="flex items-center gap-3">
           {FILTERS.map((filter) => (
             <FilterSelect
@@ -54,11 +54,11 @@ export const LeadFilterBar: FC<LeadFilterBarProps> = ({
               onChange={onFilterChange(filter.id)}
             />
           ))}
-          
+
           {/* Reset button - only show when filters are active */}
           {hasActiveFilters && (
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={onResetFilters}
               className="h-11 px-4 bg-black border border-grayBorders text-white hover:bg-[#222] hover:text-white rounded-lg flex items-center gap-2"
             >
@@ -67,16 +67,17 @@ export const LeadFilterBar: FC<LeadFilterBarProps> = ({
             </Button>
           )}
         </div>
-
-        <FilterSelect
-          filter={{
-            placeholder: "Sort By",
-            options: SORT_OPTIONS,
-          }}
-          value={sort}
-          onChange={onSortChange}
-        />
+        <div>
+          <FilterSelect
+            filter={{
+              placeholder: "Sort By",
+              options: SORT_OPTIONS,
+            }}
+            value={sort}
+            onChange={onSortChange}
+          />
+        </div>
       </div>
     </div>
   );
-}; 
+};

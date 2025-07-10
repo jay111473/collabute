@@ -3,13 +3,14 @@
 import { Badge } from "@/components/ui/badge";
 import RectangleStack from "@/public/icons/rectangle-stack";
 import { Issue, Project, User } from "@/types/dashboard";
-import { Circle, CircleDot, Clock, ArrowLeft } from "lucide-react";
+import { Circle, CircleDot, Clock, ArrowLeft, MessageCircle } from "lucide-react";
 import { getBulbColor, getStatusInfo } from "@/lib/utils";
 import { format } from "date-fns";
 import { ApplyDrawer } from "@/components/dashboard/project/issue-card/apply-drawer";
 import { Divider } from "@/components/uikit/divider";
 import { YouTubeEmbed } from "@/components/ui/youtube-embed";
 import Link from "next/link";
+import { ChatButton } from "@/components/chat/chat-button";
 
 interface DetailRowProps {
   icon: React.ReactNode;
@@ -41,6 +42,9 @@ export default function IssueDetails({ issue }: IssueDetailsProps) {
     // Add your client-side apply logic here
   };
 
+  const project = issue.project as Project;
+  const projectOwner = project.lead as unknown as User;
+
   return (
     <div className="flex flex-col gap-4 py-4 bg-black text-white w-full">
       <div className="flex items-center gap-3 px-4">
@@ -65,6 +69,20 @@ export default function IssueDetails({ issue }: IssueDetailsProps) {
               ${issue.budget}
             </span>
           </div>
+          {projectOwner && (
+            <ChatButton
+              targetUser={projectOwner}
+              conversationType="project"
+              conversationName={`${project.title} - Issue Discussion`}
+              conversationDescription={`Discussion about: ${issue.title}`}
+              relatedProject={project.id}
+              variant="outline"
+              size="sm"
+              className="text-white border-white/20 hover:bg-white/10"
+            >
+              Chat with PM
+            </ChatButton>
+          )}
           <ApplyDrawer
             issue={issue}
             projectTitle={(issue.project as Project).title || ""}

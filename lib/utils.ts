@@ -67,3 +67,39 @@ export function calculateProgressPercentage(
     ? Math.round((completedIssues / totalIssues) * 100)
     : 0;
 }
+
+export function calculateDetailedProgress(issues: Issue[]) {
+  const total = issues.length;
+  const done = issues.filter(issue => 
+    issue.status === "resolved"
+  ).length;
+  const inProgress = issues.filter(issue => 
+    issue.status === "in_progress"
+  ).length;
+  const remaining = issues.filter(issue => 
+    issue.status === "open" || issue.status === "closed"
+  ).length;
+  
+  const donePercentage = total > 0 ? (done / total) * 100 : 0;
+  const inProgressPercentage = total > 0 ? (inProgress / total) * 100 : 0;
+  const overallPercentage = Math.round(donePercentage);
+  
+  return {
+    total,
+    done,
+    inProgress,
+    remaining,
+    donePercentage,
+    inProgressPercentage,
+    overallPercentage
+  };
+}
+
+export function formatDate(dateString: string): string {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric'
+  });
+}

@@ -13,8 +13,7 @@ import {
   Competitor,
   ProjectTrack,
   GeneratedProject,
-  ProjectType,
-  ParallelizationOpportunity
+  ProjectType
 } from "@/types/wizard";
 
 interface WizardStepRendererProps {
@@ -24,12 +23,7 @@ interface WizardStepRendererProps {
   canProceed: boolean;
   suggestedIndustries: Industry[];
   suggestedCompetitors: Competitor[];
-  suggestedProjects: GeneratedProject[];
   suggestedTracks: ProjectTrack[];
-  totalEstimatedDuration?: number;
-  criticalPath?: string[];
-  parallelizationOpportunities?: ParallelizationOpportunity[];
-
   userid: string;
   token: string;
   hasBookedMeeting: boolean;
@@ -52,12 +46,7 @@ export function WizardStepRenderer({
   isLoading,
   canProceed,
   suggestedIndustries,
-  suggestedProjects,
   suggestedTracks,
-  totalEstimatedDuration = 0,
-  criticalPath = [],
-  parallelizationOpportunities = [],
-
   hasBookedMeeting,
   onNext,
   onProjectInfoChange,

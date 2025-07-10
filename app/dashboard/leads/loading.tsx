@@ -146,7 +146,7 @@ const MainContentSkeleton = () => (
   </div>
 );
 
-export default function LeadsLoading() {
+export default function ProjectManagersLoading() {
   return (
     <div className="flex min-h-screen bg-black">
       <SidebarSkeleton />

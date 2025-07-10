@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { WizardData } from "@/types/wizard";
 
-export function useWizardNavigation(wizardData: WizardData, hasBookedMeeting: boolean = false) {
+export function useWizardNavigation(wizardData: WizardData, hasBookedMeeting: boolean = false, hasGitHubAccess: boolean = false) {
   const searchParams = useSearchParams();
   const stepParam = searchParams.get("step");
 
@@ -47,6 +47,11 @@ export function useWizardNavigation(wizardData: WizardData, hasBookedMeeting: bo
   };
 
   const canProceedToNextStep = (): boolean => {
+    // GitHub access is required for all steps
+    if (!hasGitHubAccess) {
+      return false;
+    }
+
     switch (currentStep) {
       case 0:
         return !!wizardData.projectInfo?.idea;

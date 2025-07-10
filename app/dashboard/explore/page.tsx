@@ -2,16 +2,11 @@ import React from "react";
 import { ExploreComponent } from "@/components/dashboard/projects/explore";
 import { getProjects } from "@/lib/get-projects";
 import { getUser } from "@/lib/get-user";
-import DashboardLayout from "@/components/dashboard/dashboard-layout";
 import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
-const Explore = async ({
-  searchParams,
-}: {
-  searchParams: Promise<any>;
-}) => {
+const Explore = async ({ searchParams }: { searchParams: Promise<any> }) => {
   const { page } = await searchParams;
   const projectsData = await getProjects(page);
   const user = await getUser(2);
@@ -19,17 +14,15 @@ const Explore = async ({
     redirect("/auth");
   }
   return (
-    <DashboardLayout user={user} title="Explore">
-      <ExploreComponent 
-        projects={projectsData.docs}
-        pagination={{
-          currentPage: projectsData.page,
-          totalPages: projectsData.totalPages,
-          hasNextPage: projectsData.hasNextPage,
-          hasPrevPage: projectsData.hasPrevPage
-        }}
-      />
-    </DashboardLayout>
+    <ExploreComponent
+      projects={projectsData.docs}
+      pagination={{
+        currentPage: projectsData.page,
+        totalPages: projectsData.totalPages,
+        hasNextPage: projectsData.hasNextPage,
+        hasPrevPage: projectsData.hasPrevPage,
+      }}
+    />
   );
 };
 

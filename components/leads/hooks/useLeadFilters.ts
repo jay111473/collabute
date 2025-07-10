@@ -2,13 +2,13 @@ import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { FilterValues } from '@/types/filters';
 
-interface UseLeadFiltersProps {
+interface UseProjectManagerFiltersProps {
   initialSearch?: string;
   initialFilters?: FilterValues;
   initialSort?: string;
 }
 
-interface UseLeadFiltersReturn {
+interface UseProjectManagerFiltersReturn {
   search: string;
   setSearch: (value: string) => void;
   filters: FilterValues;
@@ -22,14 +22,14 @@ interface UseLeadFiltersReturn {
 }
 
 /**
- * Custom hook to manage lead filters, search, and sorting
+ * Custom hook to manage project manager filters, search, and sorting
  * Handles URL synchronization and filter state
  */
-export const useLeadFilters = ({
+export const useProjectManagerFilters = ({
   initialSearch = '',
   initialFilters = {},
   initialSort = '',
-}: UseLeadFiltersProps = {}): UseLeadFiltersReturn => {
+}: UseProjectManagerFiltersProps = {}): UseProjectManagerFiltersReturn => {
   const router = useRouter();
   const searchParams = useSearchParams();
   

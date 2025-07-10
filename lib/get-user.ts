@@ -14,11 +14,11 @@ export async function getUser(depth: number = 1): Promise<User> {
   try {
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/api/users/${userId}?depth=${depth}`,
-      { 
-        headers: { 
+      {
+        headers: {
           Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json"
-        } 
+          "Content-Type": "application/json",
+        },
       }
     );
 
@@ -35,6 +35,8 @@ export async function getUser(depth: number = 1): Promise<User> {
     return response.json();
   } catch (error) {
     console.error("Error fetching user:", error);
-    throw error instanceof Error ? error : new Error("Failed to fetch user data");
+    throw error instanceof Error
+      ? error
+      : new Error("Failed to fetch user data");
   }
 }

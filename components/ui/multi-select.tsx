@@ -62,7 +62,7 @@ export function MultiSelect({
           role="combobox"
           aria-expanded={open}
           className={cn(
-            "w-full justify-between min-h-10 h-auto",
+            "w-full justify-between min-h-10 h-auto bg-transparent text-white border border-grayBorders hover:bg-transparent hover:border-grayBorders focus:ring-0 focus:ring-offset-0 px-3 py-3",
             className
           )}
           disabled={disabled}
@@ -102,21 +102,22 @@ export function MultiSelect({
                 </Badge>
               ))
             ) : (
-              <span className="text-muted-foreground">{placeholder}</span>
+              <span className="text-gray-500">{placeholder}</span>
             )}
           </div>
           <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-full p-0" align="start">
-        <Command>
-          <CommandInput placeholder="Search..." />
-          <CommandEmpty>No item found.</CommandEmpty>
-          <CommandGroup className="max-h-64 overflow-auto">
+      <PopoverContent className="w-full p-0 bg-black border-grayBorders" align="start">
+        <Command className="bg-black">
+          <CommandInput placeholder="Search..." className="bg-transparent text-white placeholder:text-gray-500 border-none" />
+          <CommandEmpty className="text-gray-400 py-6 text-center text-sm">No item found.</CommandEmpty>
+          <CommandGroup className="max-h-64 overflow-auto bg-black">
             {options.map((option) => (
               <CommandItem
                 key={option.value}
                 onSelect={() => handleSelect(option.value)}
+                className="text-white hover:bg-gray-800 cursor-pointer"
               >
                 <Check
                   className={cn(

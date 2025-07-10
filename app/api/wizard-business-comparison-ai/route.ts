@@ -52,7 +52,7 @@ export async function POST(request: Request) {
     let projectName, description, projectIdea;
     try {
       const body = await request.json();
-      
+
       projectName = body.projectName;
       description = body.description;
       projectIdea = body.projectIdea;
@@ -211,7 +211,6 @@ ENSURE:
 
     return NextResponse.json(transformedData);
   } catch (error) {
-
     return NextResponse.json(
       {
         error: "Failed to analyze business comparison",

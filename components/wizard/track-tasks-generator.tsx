@@ -219,8 +219,6 @@ function TrackSection({
                 ))}
               </div>
             )}
-
-
           </motion.div>
         )}
       </AnimatePresence>
@@ -271,26 +269,26 @@ export function TrackTasksGenerator({
       } else {
         const errorData = await response.json();
         console.error("API Error:", errorData);
-        
+
         // Retry once if it's a truncation error
         if (retryCount === 0 && errorData.details?.includes("truncated")) {
           console.log("Retrying task generation...");
           setTimeout(() => generateAllTracks(1), 2000);
           return;
         }
-        
+
         setIsGenerating(false);
       }
     } catch (error) {
       console.error("Failed to generate track tasks:", error);
-      
+
       // Retry once on network/parsing errors
       if (retryCount === 0) {
         console.log("Retrying task generation...");
         setTimeout(() => generateAllTracks(1), 2000);
         return;
       }
-      
+
       setIsGenerating(false);
     }
   };

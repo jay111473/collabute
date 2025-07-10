@@ -88,11 +88,6 @@ export default function Sidebar({ user }: { user: User }) {
   const router = useRouter();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
-  // Debug: Log user information
-  console.log("Sidebar - User object:", user);
-  console.log("Sidebar - User type:", user?.type);
-  console.log("Sidebar - User type type:", typeof user?.type);
-
   const navItems = [
     {
       name: "Dashboard",

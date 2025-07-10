@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { stringify } from "qs-esm";
-import { Product } from "@/types/dashboard";
+import { Product, User } from "@/types/dashboard";
 
 interface UseProductsDataOptions {
   page?: number;
@@ -10,6 +10,7 @@ interface UseProductsDataOptions {
   type?: "startup" | "developer";
   status?: "active" | "completed" | "pending";
   where?: Record<string, any>; // PayloadCMS-style where query
+  user?: User;
 }
 
 interface UseProductsDataReturn {
@@ -25,7 +26,7 @@ interface UseProductsDataReturn {
 export function useProductsData(
   options: UseProductsDataOptions = {}
 ): UseProductsDataReturn {
-  const { page = 1, limit = 10, type, status, where = {} } = options;
+  const { page = 1, limit = 10, type, status, where = {}, user } = options;
 
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -64,21 +65,30 @@ export function useProductsData(
 
       const queryString = stringify(queryParams, {
         addQueryPrefix: true,
-        encode: false,
+        encode: true,
       });
-
-      const response = await fetch(`/api/products${queryString}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      let response;
+      try {
+        response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/products${queryString}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              "user": JSON.stringify(user),
+            },
+          }
+        );
+      } catch (error) {
+        console.error("Error fetching products:", error);
       }
 
-      const data = await response.json();
+      console.log(await response?.json());
+      if (!response?.ok) {
+        throw new Error(`HTTP error! status: ${response?.status}`);
+      }
+
+      const data = await response?.json();
 
       if (data.error) {
         throw new Error(data.error);

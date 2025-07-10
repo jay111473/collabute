@@ -35,11 +35,6 @@ export default function FloatingBottomBar({ user }: FloatingBottomBarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-
-  // Debug: Log user information
-  console.log("FloatingBottomBar - User object:", user);
-  console.log("FloatingBottomBar - User type:", user?.type);
-
   const allNavItems = [
     {
       name: "Home",

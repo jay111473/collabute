@@ -32,37 +32,39 @@ export async function POST(request: NextRequest) {
   if (hasNoIdea) {
     // Check if this is the first "no idea" response or part of ongoing conversation
     const isFirstNoIdeaResponse = conversation.length === 0;
-    
+
     if (isFirstNoIdeaResponse) {
       // Start the discovery conversation
       return Response.json({
         needsMoreInfo: true,
-        followUpQuestion: "No worries! Let's discover your perfect project together. What industry or field interests you most? Or is there a problem in your daily life that you wish had a better solution?",
+        followUpQuestion:
+          "No worries! Let's discover your perfect project together. What industry or field interests you most? Or is there a problem in your daily life that you wish had a better solution?",
         refinedIdea: null,
         readyToProceed: false,
-        reasoning: "Starting discovery conversation to help user identify their business idea",
+        reasoning:
+          "Starting discovery conversation to help user identify their business idea",
         suggestions: [
           {
             text: "mobile apps",
-            description: "Explore building smartphone applications"
+            description: "Explore building smartphone applications",
           },
           {
             text: "e-commerce",
-            description: "Online selling and marketplace solutions"
+            description: "Online selling and marketplace solutions",
           },
           {
             text: "productivity tools",
-            description: "Help people work more efficiently"
+            description: "Help people work more efficiently",
           },
           {
             text: "social platforms",
-            description: "Connect people and build communities"
+            description: "Connect people and build communities",
           },
           {
             text: "daily life problems",
-            description: "Solve everyday challenges people face"
-          }
-        ]
+            description: "Solve everyday challenges people face",
+          },
+        ],
       });
     } else {
       // Continue the discovery conversation with AI guidance
@@ -71,7 +73,9 @@ export async function POST(request: NextRequest) {
         schema: z.object({
           needsMoreInfo: z
             .boolean()
-            .describe("Whether more conversation is needed to clarify the idea"),
+            .describe(
+              "Whether more conversation is needed to clarify the idea"
+            ),
           followUpQuestion: z
             .string()
             .optional()
@@ -82,7 +86,9 @@ export async function POST(request: NextRequest) {
             .describe("The discovered/refined idea if clear enough to proceed"),
           readyToProceed: z
             .boolean()
-            .describe("Whether we have enough clarity to move to project planning"),
+            .describe(
+              "Whether we have enough clarity to move to project planning"
+            ),
           reasoning: z.string().describe("Brief explanation of the decision"),
           suggestions: z
             .array(
@@ -92,11 +98,13 @@ export async function POST(request: NextRequest) {
                   .describe("Short suggestion text to add to user input"),
                 description: z
                   .string()
-                  .describe("Brief explanation of what this suggestion helps with"),
+                  .describe(
+                    "Brief explanation of what this suggestion helps with"
+                  ),
               })
             )
             .optional()
-            .describe("3-5 helpful suggestions to guide the user's thinking")
+            .describe("3-5 helpful suggestions to guide the user's thinking"),
         }),
         prompt: `You are a business strategist helping users transform ideas into viable products.
 

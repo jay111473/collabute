@@ -22,7 +22,7 @@ const CountdownTimer = () => {
   });
 
   useEffect(() => {
-    const targetDate = new Date("July 15, 2025 12:00:00").getTime();
+    const targetDate = new Date("July 30, 2025 12:00:00").getTime();
 
     const calculateTimeLeft = () => {
       const now = new Date().getTime();
@@ -54,7 +54,7 @@ const CountdownTimer = () => {
         className="text-center mb-12"
       >
         <div className="flex items-center justify-center mb-4">
-          <Image src="/logo.svg" alt="Collabute Logo" width={40} height={40} />
+          <Image src="/logo.png" alt="Collabute Logo" width={80} height={80} />
         </div>
         <h2 className="text-xs sm:text-sm uppercase tracking-widest text-gray-300 mb-3">
           Coming Soon

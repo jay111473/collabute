@@ -23,22 +23,23 @@ import {
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast, Toaster } from "sonner";
-import { createUser } from "@/lib/create-user";
 import { DownloadIcon } from "lucide-react";
 import { toPng } from "html-to-image";
 
 const formSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
   name: z.string().min(2, "Name must be at least 2 characters"),
-  type: z.enum(["developer", "designer", "startup"], {
+  type: z.enum(["developer", "designer", "startup", "lead", "projectManager"], {
     required_error: "Please select what best describes you",
   }),
+  phoneNumber: z.string().optional(),
+  countryCode: z.string().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
 
 type UserData = FormValues & {
-  id?: number;
+  id?: string;
 };
 
 const EarlyBird = () => {
@@ -53,6 +54,8 @@ const EarlyBird = () => {
       email: "",
       name: "",
       type: undefined,
+      phoneNumber: "",
+      countryCode: "",
     },
   });
 
@@ -60,34 +63,56 @@ const EarlyBird = () => {
     setIsSubmitting(true);
 
     try {
-      const promise = createUser(values);
-      
-      toast.promise(promise, {
-        loading: "Submitting...",
-        success: (response) => {
-          // Extract user ID from response
-          const userId = response?.doc?.id;
-          
-          // Save user data for badge generation
-          setUserData({
-            ...values,
-            id: userId,
-          });
-          setSubmissionSuccess(true);
-          form.reset();
-          return "Successfully submitted! Your badge is ready.";
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users/early-bird`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${process.env.STATIC_EARLY_BIRD_TOKEN}`
         },
-        error: (err) => {
-          console.error("Submission error:", err);
-          return err.message || "Failed to submit. Please try again.";
-        },
-        finally: () => {
-          setIsSubmitting(false);
-        },
+        body: JSON.stringify({
+          name: values.name,
+          email: values.email,
+          type: values.type,
+          ...(values.phoneNumber && { phoneNumber: values.phoneNumber }),
+          ...(values.countryCode && { countryCode: values.countryCode }),
+        })
       });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        // Success - show confirmation message
+        setUserData({
+          ...values,
+          id: result.userId,
+        });
+        setSubmissionSuccess(true);
+        form.reset();
+        toast.success("Successfully submitted! Your badge is ready.");
+      } else {
+        // Handle specific errors
+        let errorMessage = "Failed to submit. Please try again.";
+        
+        switch (response.status) {
+          case 400:
+            errorMessage = result.message || "Please check your form data and try again.";
+            break;
+          case 409:
+            errorMessage = "This email is already registered. Please use a different email.";
+            break;
+          case 401:
+            errorMessage = "Authentication failed. Please try again.";
+            break;
+          default:
+            errorMessage = result.message || "An unexpected error occurred.";
+        }
+        
+        toast.error(errorMessage);
+      }
     } catch (error) {
       console.error("Form submission error:", error);
-      toast.error(error instanceof Error ? error.message : "Failed to submit. Please try again.");
+      toast.error("Network error. Please check your connection and try again.");
+    } finally {
       setIsSubmitting(false);
     }
   }
@@ -215,13 +240,13 @@ const EarlyBird = () => {
             >
               <FormField
                 control={form.control}
-                name="email"
+                name="name"
                 render={({ field }) => (
                   <FormItem className="flex flex-col items-start justify-center">
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel>Name</FormLabel>
                     <FormControl>
                       <Input 
-                        placeholder="Enter your email" 
+                        placeholder="John Doe" 
                         {...field} 
                         className="text-base md:text-sm" 
                       />
@@ -233,13 +258,13 @@ const EarlyBird = () => {
 
               <FormField
                 control={form.control}
-                name="name"
+                name="email"
                 render={({ field }) => (
                   <FormItem className="flex flex-col items-start justify-center">
-                    <FormLabel>Name</FormLabel>
+                    <FormLabel>Email</FormLabel>
                     <FormControl>
                       <Input 
-                        placeholder="John" 
+                        placeholder="john@example.com" 
                         {...field} 
                         className="text-base md:text-sm" 
                       />
@@ -268,12 +293,34 @@ const EarlyBird = () => {
                         <SelectItem value="developer">Developer</SelectItem>
                         <SelectItem value="designer">Designer</SelectItem>
                         <SelectItem value="startup">Founder</SelectItem>
+                        <SelectItem value="lead">Lead</SelectItem>
+                        <SelectItem value="projectManager">Project Manager</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+
+              <FormField
+                control={form.control}
+                name="phoneNumber"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col items-start justify-center">
+                    <FormLabel>Phone Number (Optional)</FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="+1234567890" 
+                        {...field} 
+                        className="text-base md:text-sm" 
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+
 
               <Button
                 type="submit"

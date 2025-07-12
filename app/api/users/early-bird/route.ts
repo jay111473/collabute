@@ -68,8 +68,7 @@ export async function POST(request: NextRequest) {
         { status: 500, headers: corsHeaders }
       );
     }
-    console.log(apiUrl);
-    console.log(token);
+
     const response = await fetch(`${apiUrl}/api/users/early-bird`, {
       method: "POST",
       headers: {

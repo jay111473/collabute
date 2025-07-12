@@ -63,11 +63,10 @@ const EarlyBird = () => {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users/early-bird`, {
-        method: 'POST',
+      const response = await fetch(`/api/users/early-bird`, {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${process.env.STATIC_EARLY_BIRD_TOKEN}`
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           name: values.name,
@@ -75,7 +74,7 @@ const EarlyBird = () => {
           type: values.type,
           ...(values.phoneNumber && { phoneNumber: values.phoneNumber }),
           ...(values.countryCode && { countryCode: values.countryCode }),
-        })
+        }),
       });
 
       const result = await response.json();
@@ -92,13 +91,15 @@ const EarlyBird = () => {
       } else {
         // Handle specific errors
         let errorMessage = "Failed to submit. Please try again.";
-        
+
         switch (response.status) {
           case 400:
-            errorMessage = result.message || "Please check your form data and try again.";
+            errorMessage =
+              result.message || "Please check your form data and try again.";
             break;
           case 409:
-            errorMessage = "This email is already registered. Please use a different email.";
+            errorMessage =
+              "This email is already registered. Please use a different email.";
             break;
           case 401:
             errorMessage = "Authentication failed. Please try again.";
@@ -106,7 +107,7 @@ const EarlyBird = () => {
           default:
             errorMessage = result.message || "An unexpected error occurred.";
         }
-        
+
         toast.error(errorMessage);
       }
     } catch (error) {
@@ -154,10 +155,10 @@ const EarlyBird = () => {
               className="object-cover"
             />
           </div>
-          
+
           {/* Dark overlay for better visibility */}
           <div className="absolute inset-0 bg-black/40 z-10"></div>
-          
+
           {/* Badge content */}
           <div className="relative z-20 flex flex-col items-center justify-center min-h-screen gap-10">
             {/* Badge */}
@@ -190,7 +191,9 @@ const EarlyBird = () => {
                     EARLY BIRD
                   </h3>
                   {userData.id && (
-                    <div className="text-sm text-purple-300 mb-2">#{userData.id}</div>
+                    <div className="text-sm text-purple-300 mb-2">
+                      #{userData.id}
+                    </div>
                   )}
                   <div className="w-40 h-[1px] bg-white/30 mb-5"></div>
                   <h2 className="text-2xl font-bold text-white mb-4">
@@ -245,10 +248,10 @@ const EarlyBird = () => {
                   <FormItem className="flex flex-col items-start justify-center">
                     <FormLabel>Name</FormLabel>
                     <FormControl>
-                      <Input 
-                        placeholder="John Doe" 
-                        {...field} 
-                        className="text-base md:text-sm" 
+                      <Input
+                        placeholder="John Doe"
+                        {...field}
+                        className="text-base md:text-sm"
                       />
                     </FormControl>
                     <FormMessage />
@@ -263,10 +266,10 @@ const EarlyBird = () => {
                   <FormItem className="flex flex-col items-start justify-center">
                     <FormLabel>Email</FormLabel>
                     <FormControl>
-                      <Input 
-                        placeholder="john@example.com" 
-                        {...field} 
-                        className="text-base md:text-sm" 
+                      <Input
+                        placeholder="john@example.com"
+                        {...field}
+                        className="text-base md:text-sm"
                       />
                     </FormControl>
                     <FormMessage />
@@ -294,7 +297,9 @@ const EarlyBird = () => {
                         <SelectItem value="designer">Designer</SelectItem>
                         <SelectItem value="startup">Founder</SelectItem>
                         <SelectItem value="lead">Lead</SelectItem>
-                        <SelectItem value="projectManager">Project Manager</SelectItem>
+                        <SelectItem value="projectManager">
+                          Project Manager
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -309,18 +314,16 @@ const EarlyBird = () => {
                   <FormItem className="flex flex-col items-start justify-center">
                     <FormLabel>Phone Number (Optional)</FormLabel>
                     <FormControl>
-                      <Input 
-                        placeholder="+1234567890" 
-                        {...field} 
-                        className="text-base md:text-sm" 
+                      <Input
+                        placeholder="+1234567890"
+                        {...field}
+                        className="text-base md:text-sm"
                       />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-
-
 
               <Button
                 type="submit"

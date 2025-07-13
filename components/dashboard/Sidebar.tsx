@@ -151,11 +151,6 @@ export default function Sidebar({ user }: { user: User }) {
     (item) => item.type === "cross" || item.type === user.type || 
     (item.type === "developer-lead" && (user.type === "developer" || user.type === "lead"))
   );
-
-  // Debug: Log filtered items
-  console.log("Sidebar - Filtered nav items:", filteredNavItems);
-  console.log("Sidebar - Nav items for startup:", navItems.filter(item => item.type === "startup"));
-
   const handleLogout = async () => {
     if (isLoggingOut) return;
 

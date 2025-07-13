@@ -107,10 +107,6 @@ export default function FloatingBottomBar({ user }: FloatingBottomBarProps) {
     (item) => item.type === "cross" || item.type === user.type
   );
 
-  // Debug: Log filtered items
-  console.log("FloatingBottomBar - Filtered nav items:", filteredNavItems);
-  console.log("FloatingBottomBar - All nav items for startup:", allNavItems.filter(item => item.type === "startup"));
-
   // Sort by priority and take first 4 for main bar
   const sortedItems = filteredNavItems.sort((a, b) => (a.priority || 0) - (b.priority || 0));
   const mainBarItems = sortedItems.slice(0, 4);

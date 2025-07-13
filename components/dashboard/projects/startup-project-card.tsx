@@ -118,8 +118,9 @@ const CollaboratorsSection = ({
       <div className="flex -space-x-2 ml-1.5">
         {collabuters?.slice(0, 5).map((item, i) => {
           const collaboratorUser = item?.collabuter;
-          const userName = isUser(collaboratorUser) ? collaboratorUser.name : "U";
-          const userProfilePicture = isUser(collaboratorUser) ? collaboratorUser.profilePicture : null;
+          const isValidUser = isUser(collaboratorUser);
+          const userName = isValidUser ? collaboratorUser.name : "U";
+          const userProfilePicture = isValidUser ? collaboratorUser.profilePicture : null;
           const profilePictureUrl = userProfilePicture && typeof userProfilePicture === 'object' && 'url' in userProfilePicture ? userProfilePicture.url : "";
           
           return (

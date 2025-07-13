@@ -5,6 +5,20 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
+// Type guard function to safely check if a value is a User object
+function isUser(value: unknown): value is User {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "id" in value &&
+    "name" in value &&
+    "email" in value &&
+    typeof (value as any).id === "number" &&
+    typeof (value as any).name === "string" &&
+    typeof (value as any).email === "string"
+  );
+}
+
 interface ProjectCardProps {
   project: Project;
 }
@@ -102,17 +116,25 @@ const CollaboratorsSection = ({
       <Users className="h-4 w-4 text-[#666666]" />
       <span className="text-white text-sm">{count}</span>
       <div className="flex -space-x-2 ml-1.5">
-        {collabuters?.slice(0, 5).map((item, i) => (
-          <Avatar key={i} className="h-6 w-6 border-2 border-[#1C1C1C]">
-            <AvatarImage 
-              src={((item?.collabuter as User)?.profilePicture as Media)?.url || ""} 
-              alt={(item?.collabuter as User)?.name || ""}
-            />
-            <AvatarFallback>
-              {((item?.collabuter as User)?.name || "U")[0]}
-            </AvatarFallback>
-          </Avatar>
-        ))}
+        {collabuters?.slice(0, 5).map((item, i) => {
+          const collaboratorUser = item?.collabuter;
+          const isValidUser = isUser(collaboratorUser);
+          const userName = isValidUser ? collaboratorUser.name : "U";
+          const userProfilePicture = isValidUser ? collaboratorUser.profilePicture : null;
+          const profilePictureUrl = userProfilePicture && typeof userProfilePicture === 'object' && 'url' in userProfilePicture ? userProfilePicture.url : "";
+          
+          return (
+            <Avatar key={i} className="h-6 w-6 border-2 border-[#1C1C1C]">
+              <AvatarImage 
+                src={profilePictureUrl || ""} 
+                alt={userName}
+              />
+              <AvatarFallback>
+                {userName[0]}
+              </AvatarFallback>
+            </Avatar>
+          );
+        })}
         {count > 5 && (
           <div className="h-6 w-6 rounded-full bg-[#8B5CF6]/20 text-[#8B5CF6] flex items-center justify-center text-xs border-2 border-[#1C1C1C]">
             +{count - 5}

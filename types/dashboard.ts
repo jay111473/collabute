@@ -6,6 +6,17 @@
  * and re-run `payload generate:types` to regenerate this file.
  */
 
+import React from "react";
+
+export interface NavItem {
+  name: string;
+  shortName?: string;
+  icon: React.ComponentType<{ className?: string }>;
+  path: string;
+  type: "cross" | "developer" | "startup" | "designer" | "lead" | "developer-lead";
+  priority?: number;
+}
+
 export interface Config {
   auth: {
     users: UserAuthOperations;
@@ -87,7 +98,7 @@ export interface User {
   id: number;
   name: string;
   profilePicture?: (number | null) | Media;
-  type: "developer" | "startup" | "designer" | "lead";
+  type: "developer" | "startup" | "designer" | "lead" | "developer-lead";
   phoneNumber?: string | null;
   country?:
     | (
@@ -436,6 +447,12 @@ export interface User {
     stripeAccountStatus?:
       | ("pending" | "active" | "restricted" | "disabled")
       | null;
+    industries?:
+      | {
+          industry?: string | null;
+          id?: string | null;
+        }[]
+      | null;
   };
   startupFields?: {
     companyName?: string | null;
@@ -685,6 +702,16 @@ export interface Issue {
         requestPriority?: ("low" | "medium") | null;
         requestAssignee?: (number | null) | User;
         requestStatus?: ("pending" | "in_progress" | "completed") | null;
+        id?: string | null;
+      }[]
+    | null;
+  collaborationRequests?:
+    | {
+        developer?: (number | null) | User;
+        percentageShare?: number | null;
+        taskDefinition?: string | null;
+        status?: ("pending" | "accepted" | "rejected") | null;
+        requestedAt?: string | null;
         id?: string | null;
       }[]
     | null;
@@ -1235,6 +1262,16 @@ export interface IssuesSelect<T extends boolean = true> {
         requestPriority?: T;
         requestAssignee?: T;
         requestStatus?: T;
+        id?: T;
+      };
+  collaborationRequests?:
+    | T
+    | {
+        developer?: T;
+        percentageShare?: T;
+        taskDefinition?: T;
+        status?: T;
+        requestedAt?: T;
         id?: T;
       };
   priority?: T;

@@ -39,7 +39,9 @@ const Password = () => {
     toast.promise(login(values, router), {
       loading: "Logging in...",
       success: "Successfully logged in!",
-      error: "Failed to log in. Please try again.",
+      error: (err) => {
+        return err.message || "Failed to log in. Please try again.";
+      },
     });
   }
 
@@ -48,7 +50,7 @@ const Password = () => {
       <Toaster />
       <div className="flex flex-col items-center justify-center gap-y-16 px-[80px] w-[500px] py-[90px] text-center rounded-md">
         <div className="flex flex-col items-center justify-center gap-y-2">
-          <Image src="/logo.svg" alt="logo" width={66} height={66} />
+          <Image src="/logo.png" alt="logo" width={66} height={66} />
           <h1 className="text-3xl font-bold text-white">Collabute</h1>
         </div>
         <Form {...form}>

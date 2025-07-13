@@ -108,7 +108,7 @@ const Footer = () => {
               <div className="mb-8 md:mb-0 flex flex-col items-center md:items-start">
                 <div className="flex items-center mb-6">
                   <Image
-                    src="/logo.svg"
+                    src="/logo.png"
                     alt="Collabute"
                     width={48}
                     height={48}

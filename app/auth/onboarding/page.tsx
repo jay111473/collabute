@@ -11,7 +11,7 @@ const Onboarding = () => {
       {/* Logo */}
       <div className="relative w-12 h-12 sm:w-16 sm:h-16 mb-2">
         <Image
-          src="/logo.svg"
+          src="/logo.png"
           alt="Collabute Logo"
           fill
           className="rounded-md"

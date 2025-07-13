@@ -16,7 +16,7 @@ import {
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { User } from "@/types/dashboard";
+import { User, NavItem } from "@/types/dashboard";
 import { toast } from "sonner";
 import { deleteCookie, getCookie } from "cookies-next";
 import axios from "axios";
@@ -89,7 +89,7 @@ export default function Sidebar({ user }: { user: User }) {
   const router = useRouter();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
-  const navItems = [
+  const navItems: NavItem[] = [
     {
       name: "Dashboard",
       icon: LayoutPanelLeft,

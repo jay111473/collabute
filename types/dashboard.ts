@@ -6,6 +6,17 @@
  * and re-run `payload generate:types` to regenerate this file.
  */
 
+import React from "react";
+
+export interface NavItem {
+  name: string;
+  shortName?: string;
+  icon: React.ComponentType<{ className?: string }>;
+  path: string;
+  type: "cross" | "developer" | "startup" | "designer" | "lead" | "developer-lead";
+  priority?: number;
+}
+
 export interface Config {
   auth: {
     users: UserAuthOperations;
@@ -87,7 +98,7 @@ export interface User {
   id: number;
   name: string;
   profilePicture?: (number | null) | Media;
-  type: "developer" | "startup" | "designer" | "lead";
+  type: "developer" | "startup" | "designer" | "lead" | "developer-lead";
   phoneNumber?: string | null;
   country?:
     | (
@@ -435,6 +446,12 @@ export interface User {
     stripeOnboardingUrl?: string | null;
     stripeAccountStatus?:
       | ("pending" | "active" | "restricted" | "disabled")
+      | null;
+    industries?:
+      | {
+          industry?: string | null;
+          id?: string | null;
+        }[]
       | null;
   };
   startupFields?: {

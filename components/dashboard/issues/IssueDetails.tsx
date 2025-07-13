@@ -14,6 +14,20 @@ import { ChatButton } from "@/components/chat/chat-button";
 import { CollaborationRequestDrawer } from "./collaboration-request-drawer";
 import { useUserData } from "@/hooks/use-user-data";
 
+// Type guard function to safely check if a value is a User object
+function isUser(value: unknown): value is User {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "id" in value &&
+    "name" in value &&
+    "email" in value &&
+    typeof (value as any).id === "number" &&
+    typeof (value as any).name === "string" &&
+    typeof (value as any).email === "string"
+  );
+}
+
 interface DetailRowProps {
   icon: React.ReactNode;
   label: string;
@@ -75,8 +89,8 @@ export default function IssueDetails({ issue }: IssueDetailsProps) {
   // Check if current user is a collaborator on this project
   const isCollaborator = user && project.collabuters?.some(
     (collaborator) => {
-      const collaboratorUser = collaborator.collabuter as User;
-      return collaboratorUser?.id === user.id && collaborator.status === "active";
+      const collaboratorUser = collaborator.collabuter;
+      return isUser(collaboratorUser) && collaboratorUser.id === user.id && collaborator.status === "active";
     }
   );
 

@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { User } from "@/types/dashboard";
+import { User, NavItem } from "@/types/dashboard";
 import { toast } from "sonner";
 import { deleteCookie, getCookie } from "cookies-next";
 import axios from "axios";
@@ -35,7 +35,7 @@ export default function FloatingBottomBar({ user }: FloatingBottomBarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const allNavItems = [
+  const allNavItems: NavItem[] = [
     {
       name: "Home",
       shortName: "Home",
@@ -112,7 +112,7 @@ export default function FloatingBottomBar({ user }: FloatingBottomBarProps) {
   console.log("FloatingBottomBar - All nav items for startup:", allNavItems.filter(item => item.type === "startup"));
 
   // Sort by priority and take first 4 for main bar
-  const sortedItems = filteredNavItems.sort((a, b) => a.priority - b.priority);
+  const sortedItems = filteredNavItems.sort((a, b) => (a.priority || 0) - (b.priority || 0));
   const mainBarItems = sortedItems.slice(0, 4);
   const dropdownItems = sortedItems.slice(4);
 

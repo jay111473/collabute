@@ -4,7 +4,7 @@ import { FC } from "react";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Calendar, Github, Star, Bookmark, Code } from "lucide-react";
+import { MapPin, Calendar, Github, Bookmark, Code } from "lucide-react";
 import { User, Media, Stack } from "@/types/dashboard";
 
 interface DeveloperCardProps {
@@ -54,55 +54,27 @@ const getPrimaryRole = (developer: User): string => {
 };
 
 /**
- * Gets industry information from available fields
+ * Gets industry information from explicit user data
  */
-const getIndustry = (developer: User): string => {
-  // Try to derive industry from skills
-  const skills = getSkills(developer).toLowerCase();
-  if (skills.includes("web3") || skills.includes("crypto") || skills.includes("blockchain")) {
-    return "Web3, Crypto, Finance";
-  }
-  if (skills.includes("mobile") || skills.includes("ios") || skills.includes("android") || skills.includes("react native") || skills.includes("flutter")) {
-    return "SaaS, Mobile Apps, AI";
-  }
-  if (skills.includes("ai") || skills.includes("machine learning") || skills.includes("python")) {
-    return "AI, Machine Learning";
-  }
-  if (skills.includes("design") || skills.includes("ui") || skills.includes("ux")) {
-    return "Design, Tech, E-commerce";
+const getIndustry = (developer: User): string | null => {
+  // First check if the developer has explicit industry data
+  const industries = developer.developerFields?.industries;
+  if (industries && industries.length > 0) {
+    // Return the first industry or join multiple industries
+    const industryNames = industries
+      .map(item => item.industry)
+      .filter(Boolean);
+    
+    if (industryNames.length > 0) {
+      return industryNames.join(", ");
+    }
   }
   
-  // Default based on role
-  const role = getPrimaryRole(developer);
-  if (role.toLowerCase().includes("frontend") || role.toLowerCase().includes("full stack")) {
-    return "SaaS, Mobile Apps, AI";
-  }
-  if (role.toLowerCase().includes("backend") || role.toLowerCase().includes("devops")) {
-    return "Web3, Crypto, Finance";
-  }
-  
-  return "SaaS, Mobile Apps, AI";
+  // If no explicit industry data exists, return null instead of guessing
+  return null;
 };
 
-/**
- * Calculates a mock rating based on experience and projects
- */
-const calculateRating = (developer: User): number => {
-  const experience = developer.leadFields?.experience || 0;
-  const projectCount = developer.developerFields?.issues?.length || 0;
-  
-  // Base rating on experience and projects
-  let rating = 3.5; // Base rating
-  
-  if (experience >= 8) rating += 1.0;
-  else if (experience >= 5) rating += 0.7;
-  else if (experience >= 3) rating += 0.4;
-  
-  if (projectCount >= 10) rating += 0.4;
-  else if (projectCount >= 5) rating += 0.2;
-  
-  return Math.min(5.0, Math.round(rating * 10) / 10);
-};
+
 
 /**
  * Developer card component with two variants: featured (large visual) and compact (detailed list)
@@ -114,7 +86,6 @@ const DeveloperCard: FC<DeveloperCardProps> = ({ developer, variant = 'compact' 
   const currentProjects = developer.developerFields?.issues?.length || 0;
   const developmentProjects = currentProjects;
   const experience = developer.leadFields?.experience || 0;
-  const rating = calculateRating(developer);
   const industry = getIndustry(developer);
   const skills = getSkills(developer);
   const primaryRole = getPrimaryRole(developer);
@@ -177,11 +148,8 @@ const DeveloperCard: FC<DeveloperCardProps> = ({ developer, variant = 'compact' 
               <p className="text-sm text-gray-400">Years Experience</p>
             </div>
             <div className="text-right">
-              <div className="flex items-center gap-1">
-                <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                <p className="text-2xl font-semibold text-white">{rating}</p>
-              </div>
-              <p className="text-sm text-gray-400">Rating</p>
+              <p className="text-2xl font-semibold text-white">+{experience}</p>
+              <p className="text-sm text-gray-400">Years Experience</p>
             </div>
           </div>
 
@@ -251,30 +219,25 @@ const DeveloperCard: FC<DeveloperCardProps> = ({ developer, variant = 'compact' 
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-2 gap-4 mb-6">
         <div className="text-center">
           <p className="text-2xl font-semibold text-white mb-1">{developmentProjects}</p>
           <p className="text-sm text-gray-400">Development Projects</p>
         </div>
-        <div className="text-center border-x border-gray-700">
+        <div className="text-center">
           <p className="text-2xl font-semibold text-white mb-1">+{experience}</p>
           <p className="text-sm text-gray-400">Years Experience</p>
-        </div>
-        <div className="text-center">
-          <div className="flex items-center justify-center gap-1 mb-1">
-            <Star className="h-4 w-4 text-yellow-400 fill-current" />
-            <p className="text-2xl font-semibold text-white">{rating}</p>
-          </div>
-          <p className="text-sm text-gray-400">Rating</p>
         </div>
       </div>
 
       {/* Industry and Skills */}
       <div className="space-y-3">
-        <div className="flex justify-between items-center">
-          <span className="text-sm text-gray-400">Industry</span>
-          <p className="text-white text-sm text-right">{industry}</p>
-        </div>
+        {industry && (
+          <div className="flex justify-between items-center">
+            <span className="text-sm text-gray-400">Industry</span>
+            <p className="text-white text-sm text-right">{industry}</p>
+          </div>
+        )}
         <div className="flex justify-between items-start">
           <span className="text-sm text-gray-400">Skills</span>
           <p className="text-white text-sm text-right max-w-[60%]">{skills}</p>

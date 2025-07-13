@@ -31,7 +31,7 @@ export function Header({ isAuthenticated }: HeaderProps) {
             <div className="flex-1 md:flex-[0.7]">
               <Link href="/" className="flex items-center space-x-2">
                 <Image
-                  src="/logo.svg"
+                  src="/logo.png"
                   alt="Collabute Logo"
                   width={40}
                   height={40}

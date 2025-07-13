@@ -74,7 +74,7 @@ const Login = () => {
       <Toaster />
       <div className="flex flex-col items-center justify-center gap-y-16 px-[80px] w-[500px] py-[90px] text-center border border-slate-200 rounded-md">
         <div className="flex flex-col items-center justify-center gap-y-2">
-          <Image src="/logo.svg" alt="logo" width={66} height={66} />
+          <Image src="/logo.png" alt="logo" width={66} height={66} />
           <h1 className="text-3xl font-bold">Collabute</h1>
         </div>
         <Form {...form}>

@@ -181,7 +181,7 @@ const EarlyBird = () => {
                 {/* Content */}
                 <div className="z-10 flex flex-col items-center max-w-[85%]">
                   <Image
-                    src="/logo.svg"
+                    src="/logo.png"
                     alt="Collabute Logo"
                     width={54}
                     height={54}
@@ -225,7 +225,7 @@ const EarlyBird = () => {
         >
           <div className="flex flex-col items-center justify-center gap-y-2 relative z-10">
             <Image
-              src="/logo.svg"
+              src="/logo.png"
               alt="Collabute Logo"
               width={66}
               height={66}

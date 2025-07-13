@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { FaTwitter, FaDiscord } from "react-icons/fa";
+import { FaTwitter, FaDiscord, FaGithub } from "react-icons/fa";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
@@ -154,7 +154,7 @@ const CountdownTimer = () => {
           whileTap={{ scale: 0.95 }}
           className="mt-3 mb-16 px-12 py-3 border border-white hover:bg-white hover:text-black transition-colors duration-300 uppercase tracking-widest text-xs"
         >
-          Get Your Badge Now
+          Register for Early Access
         </motion.button>
       </Link>
 
@@ -166,12 +166,28 @@ const CountdownTimer = () => {
         className="flex space-x-7 mt-1 mb-8"
       >
         <Link
+          href="https://x.com/collabute"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-white hover:text-gray-300 transition-colors duration-300"
+        >
+          <Image src="/twitterx.png" alt="X" width={28} height={28} />
+        </Link>
+        <Link
           href="https://discord.gg/3PUyPGF2"
           target="_blank"
           rel="noopener noreferrer"
           className="text-white hover:text-gray-300 transition-colors duration-300"
         >
-          <FaDiscord size={20} />
+          <FaDiscord size={28} />
+        </Link>
+        <Link
+          href="https://github.com/muperdev/collabute"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-white hover:text-gray-300 transition-colors duration-300"
+        >
+          <FaGithub size={28} />
         </Link>
       </motion.div>
     </div>

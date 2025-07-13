@@ -15,7 +15,7 @@ const Auth = () => {
     <div className="flex flex-col items-center justify-center min-h-screen py-2 bg-black">
       <div className="flex flex-col items-center justify-center gap-y-10 sm:gap-y-16 px-4 sm:px-[80px] w-full max-w-[500px] py-8 sm:py-[90px] text-center rounded-md">
         <div className="flex flex-col items-center justify-center gap-y-2">
-          <Image src="/logo.svg" alt="logo" width={66} height={66} />
+          <Image src="/logo.png" alt="logo" width={66} height={66} />
           <h1 className="text-2xl sm:text-3xl font-bold text-white">Collabute</h1>
         </div>
         <div className="flex flex-col items-center justify-center w-full mt-4 gap-y-2">

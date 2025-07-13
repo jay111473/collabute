@@ -94,7 +94,7 @@ const DashboardLayout = ({
       >
         <div className="flex items-center justify-between p-4 border-b border-white/10">
           <div className="flex items-center gap-2">
-            <Image src="/logo.svg" alt="logo" width={32} height={32} />
+            <Image src="/logo.png" alt="logo" width={32} height={32} />
             <h1 className="text-lg font-bold text-white">Collabute</h1>
           </div>
           <button

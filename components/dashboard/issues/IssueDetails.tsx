@@ -3,7 +3,7 @@
 import { Badge } from "@/components/ui/badge";
 import RectangleStack from "@/public/icons/rectangle-stack";
 import { Issue, Project, User } from "@/types/dashboard";
-import { Circle, CircleDot, Clock, ArrowLeft, MessageCircle } from "lucide-react";
+import { Circle, CircleDot, Clock, ArrowLeft, MessageCircle, Users } from "lucide-react";
 import { getBulbColor, getStatusInfo } from "@/lib/utils";
 import { format } from "date-fns";
 import { ApplyDrawer } from "@/components/dashboard/project/issue-card/apply-drawer";
@@ -11,6 +11,8 @@ import { Divider } from "@/components/uikit/divider";
 import { YouTubeEmbed } from "@/components/ui/youtube-embed";
 import Link from "next/link";
 import { ChatButton } from "@/components/chat/chat-button";
+import { CollaborationRequestDrawer } from "./collaboration-request-drawer";
+import { useUserData } from "@/hooks/use-user-data";
 
 interface DetailRowProps {
   icon: React.ReactNode;
@@ -33,17 +35,50 @@ interface IssueDetailsProps {
 }
 
 export default function IssueDetails({ issue }: IssueDetailsProps) {
+  const { user } = useUserData();
   const { label, color } = getStatusInfo(issue.status);
   const pendingRequestsCount =
     issue.requests?.filter((request) => request.requestStatus === "pending")
       .length || 0;
+  const collaborationRequestsCount = issue.collaborationRequests?.length || 0;
 
   const handleApply = (id: string) => {
     // Add your client-side apply logic here
   };
 
+  const handleCollaborationRequest = async (data: { percentageShare: number; taskDefinition: string }) => {
+    try {
+      const response = await fetch(`/api/issues/${issue.id}/collaboration-request`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Failed to submit collaboration request");
+      }
+
+      const result = await response.json();
+      console.log("Collaboration request submitted:", result);
+    } catch (error) {
+      console.error("Collaboration request error:", error);
+      throw error;
+    }
+  };
+
   const project = issue.project as Project;
   const projectOwner = project.lead as unknown as User;
+  
+  // Check if current user is a collaborator on this project
+  const isCollaborator = user && project.collabuters?.some(
+    (collaborator) => {
+      const collaboratorUser = collaborator.collabuter as User;
+      return collaboratorUser?.id === user.id && collaborator.status === "active";
+    }
+  );
 
   return (
     <div className="flex flex-col gap-4 py-4 bg-black text-white w-full">
@@ -83,6 +118,12 @@ export default function IssueDetails({ issue }: IssueDetailsProps) {
               Chat with PM
             </ChatButton>
           )}
+          {user?.type === "developer" && isCollaborator && (
+            <CollaborationRequestDrawer
+              issue={issue}
+              onRequest={handleCollaborationRequest}
+            />
+          )}
           <ApplyDrawer
             issue={issue}
             projectTitle={(issue.project as Project).title || ""}
@@ -118,6 +159,15 @@ export default function IssueDetails({ issue }: IssueDetailsProps) {
         >
           {label}
         </Badge>
+        {collaborationRequestsCount > 0 && (
+          <Badge
+            icon={<Users className="h-3 w-3" />}
+            className="font-medium text-xs"
+            variant="outline"
+          >
+            {collaborationRequestsCount} collaboration{collaborationRequestsCount === 1 ? "" : "s"}
+          </Badge>
+        )}
       </div>
 
       <div className="flex flex-col gap-4 bg-black p-4">
@@ -157,6 +207,46 @@ export default function IssueDetails({ issue }: IssueDetailsProps) {
                 ?.map((assignee) => (assignee as User).name)
                 .join(", ")}
             />
+          </>
+        )}
+
+        {issue.collaborationRequests && issue.collaborationRequests.length > 0 && (
+          <>
+            <Divider className="my-2 opacity-10" />
+            <div className="mt-4">
+              <h2 className="text-base font-medium mb-3">Collaboration Requests</h2>
+              <div className="space-y-2">
+                {issue.collaborationRequests.map((request, index) => (
+                  <div key={request.id || index} className="bg-gray-900 p-3 rounded-lg">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium text-white">
+                          {(request.developer as any)?.name || "Developer"}
+                        </span>
+                        <Badge
+                          variant="outline"
+                          className={`text-xs ${
+                            request.status === "pending"
+                              ? "border-yellow-500 text-yellow-400"
+                              : request.status === "accepted"
+                              ? "border-green-500 text-green-400"
+                              : "border-red-500 text-red-400"
+                          }`}
+                        >
+                          {request.status}
+                        </Badge>
+                      </div>
+                      <span className="text-primary-light font-semibold">
+                        {request.percentageShare}%
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-400 mt-1 line-clamp-2">
+                      {request.taskDefinition}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
           </>
         )}
 

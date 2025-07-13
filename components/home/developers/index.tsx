@@ -28,7 +28,7 @@ function Developers() {
           <div className="flex flex-col md:flex-row justify-center items-center gap-2 mb-4">
             <h2 className="text-2xl md:text-[36px] font-bold text-white mt-4 mb-2 md:mb-0 md:mt-0 flex justify-center items-center">
               <Image
-                src="/logo.svg"
+                src="/logo.png"
                 alt="Code"
                 width={40}
                 height={32}

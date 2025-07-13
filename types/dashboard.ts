@@ -688,6 +688,16 @@ export interface Issue {
         id?: string | null;
       }[]
     | null;
+  collaborationRequests?:
+    | {
+        developer?: (number | null) | User;
+        percentageShare?: number | null;
+        taskDefinition?: string | null;
+        status?: ("pending" | "accepted" | "rejected") | null;
+        requestedAt?: string | null;
+        id?: string | null;
+      }[]
+    | null;
   priority: "low" | "medium" | "high" | "urgent";
   budget?: number | null;
   assignees?: (number | User)[] | null;
@@ -1235,6 +1245,16 @@ export interface IssuesSelect<T extends boolean = true> {
         requestPriority?: T;
         requestAssignee?: T;
         requestStatus?: T;
+        id?: T;
+      };
+  collaborationRequests?:
+    | T
+    | {
+        developer?: T;
+        percentageShare?: T;
+        taskDefinition?: T;
+        status?: T;
+        requestedAt?: T;
         id?: T;
       };
   priority?: T;

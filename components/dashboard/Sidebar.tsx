@@ -11,6 +11,7 @@ import {
   LogOut,
   MessageCircle,
   Package,
+  Users,
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -120,6 +121,12 @@ export default function Sidebar({ user }: { user: User }) {
       type: "startup",
     },
     {
+      name: "Developers",
+      icon: Users,
+      path: "/dashboard/developers",
+      type: "developer-lead",
+    },
+    {
       name: "Chat",
       icon: MessageCircle,
       path: "/dashboard/chat",
@@ -141,7 +148,8 @@ export default function Sidebar({ user }: { user: User }) {
 
   // Filter navigation items based on user type
   const filteredNavItems = navItems.filter(
-    (item) => item.type === "cross" || item.type === user.type
+    (item) => item.type === "cross" || item.type === user.type || 
+    (item.type === "developer-lead" && (user.type === "developer" || user.type === "lead"))
   );
 
   // Debug: Log filtered items
@@ -189,7 +197,7 @@ export default function Sidebar({ user }: { user: User }) {
           href={"/"}
           prefetch={true}
         >
-          <Image src="/logo.svg" alt="logo" width={40} height={40} />
+          <Image src="/logo.png" alt="logo" width={40} height={40} />
           <h1 className="text-lg font-bold text-white">Collabute</h1>
         </Link>
       </div>

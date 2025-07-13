@@ -33,6 +33,9 @@ function ProjectHeader({
         <div className="flex items-center gap-2">
           <ProjectIcon />
           <h3 className="font-medium text-white text-lg">{project?.title}</h3>
+          {project.projectState === "under-review" && (
+            <Badge variant="outline" className="ml-2 bg-gray-900 text-gray-300 border-gray-500">Under Review</Badge>
+          )}
           <Badge
             className="font-medium !text-xs"
             icon={<Users className="h-4 w-4 text-darkPrimary" />}
@@ -185,7 +188,7 @@ const MyProjectCard = ({ project }: { project: Project }) => {
   return (
     <Link href={`/dashboard/projects/${project.slug}`} className="flex flex-col w-full">
       <main className="flex flex-1 flex-col gap-4 lg:gap-6 w-full">
-        <Card className="flex flex-col gap-2 py-5 px-2 bg-darkGray text-white w-full border-none">
+        <Card className={`flex flex-col gap-2 py-5 px-2 bg-darkGray text-white w-full ${project.projectState === "under-review" ? "border-2 border-gray-500" : "border-none"}`}>
           <Suspense fallback={<Skeleton className="h-20 w-full" />}>
             <ProjectHeader project={project} progressData={progressData} />
           </Suspense>

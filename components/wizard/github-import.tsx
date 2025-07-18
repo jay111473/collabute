@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import Image from "next/image";
+import { GitHubRepoAnalyzer } from "./github-repo-analyzer";
 
 // Custom debounce hook
 function useDebounce<T>(value: T, delay: number): T {
@@ -99,6 +100,7 @@ interface GitHubImportProps {
     repository: Repository;
     aiGeneratedName: string;
     aiGeneratedDescription: string;
+    analysis?: any;
   }) => void;
   userid: string;
   token: string;
@@ -122,6 +124,7 @@ export function GitHubImport({
   const [page, setPage] = useState(1);
   const [hasNextPage, setHasNextPage] = useState(false);
   const [totalRepos, setTotalRepos] = useState(0);
+  const [showAnalyzer, setShowAnalyzer] = useState(false);
 
   const observerTarget = useRef(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -329,67 +332,24 @@ export function GitHubImport({
 
   const handleRepoSelect = async (repository: Repository) => {
     setSelectedRepo(repository.repoId);
-    setIsProcessingRepo(true);
-    setError(null);
+    setShowAnalyzer(true);
+  };
 
-    try {
-      const readmeContent = await getFileContent(
-        repository.fullName,
-        "README.md"
-      );
-      const packageJsonContent = await getFileContent(
-        repository.fullName,
-        "package.json"
-      );
-
-      const projectDescriberResponse = await fetch(
-        "/api/wizard-project-describer",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            readme: readmeContent,
-            packageJson: packageJsonContent,
-          }),
-        }
-      );
-
-      if (!projectDescriberResponse.ok) {
-        const errorData = await projectDescriberResponse.json();
-        throw new Error(
-          `Failed to get AI project description: ${
-            errorData.error || projectDescriberResponse.statusText
-          }`
-        );
-      }
-
-      const aiData = await projectDescriberResponse.json();
-
+  const handleAnalysisComplete = (analysis: any) => {
+    const currentRepo = repositories.find(r => r.repoId === selectedRepo);
+    if (currentRepo) {
       onImportComplete({
-        repository,
-        aiGeneratedName: aiData.projectName || repository.name, // Fallback to repo name
-        aiGeneratedDescription:
-          aiData.projectDescription || repository.description || "", // Fallback to repo desc
+        repository: currentRepo,
+        aiGeneratedName: analysis.projectName || currentRepo.name,
+        aiGeneratedDescription: analysis.projectDescription || currentRepo.description || "",
+        analysis
       });
-    } catch (err) {
-      console.error("Error processing repository for AI description:", err);
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Failed to process repository. Please try again or skip this step."
-      );
-      // Fallback if AI description fails, proceed with basic repo info
-      onImportComplete({
-        repository,
-        aiGeneratedName: repository.name,
-        aiGeneratedDescription: repository.description || "",
-      });
-    } finally {
-      setIsProcessingRepo(false);
     }
+  };
+
+  const handleBackToSelection = () => {
+    setShowAnalyzer(false);
+    setSelectedRepo(null);
   };
 
   const checkAuthPrerequisites = () => {
@@ -413,6 +373,21 @@ export function GitHubImport({
       day: "numeric",
     });
   };
+
+  // Show analyzer if a repository is selected
+  if (showAnalyzer && selectedRepo) {
+    const currentRepo = repositories.find(r => r.repoId === selectedRepo);
+    if (currentRepo) {
+      return (
+        <GitHubRepoAnalyzer
+          repository={currentRepo}
+          token={token}
+          onAnalysisComplete={handleAnalysisComplete}
+          onBack={handleBackToSelection}
+        />
+      );
+    }
+  }
 
   return (
     <div className="relative min-h-[600px] flex items-center justify-center">

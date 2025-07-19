@@ -104,7 +104,9 @@ export default function FloatingBottomBar({ user }: FloatingBottomBarProps) {
 
   // Filter navigation items based on user type
   const filteredNavItems = allNavItems.filter(
-    (item) => item.type === "cross" || item.type === user.type
+    (item) => item.type === "cross" || item.type === user.type ||
+    (item.type === "developer" && user.type === "projectManager" && item.name === "Explore") ||
+    (item.type === "startup" && user.type === "projectManager" && item.name === "Products")
   );
 
   // Sort by priority and take first 4 for main bar

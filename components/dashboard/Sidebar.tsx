@@ -9,9 +9,9 @@ import {
   CompassIcon,
   Plus,
   LogOut,
-  MessageCircle,
   Package,
   Users,
+  MessageSquareText,
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -97,12 +97,6 @@ export default function Sidebar({ user }: { user: User }) {
       type: "cross",
     },
     {
-      name: "Explore",
-      icon: Compass,
-      path: "/dashboard/explore",
-      type: "developer",
-    },
-    {
       name: "Products",
       icon: Package,
       path: "/dashboard/products",
@@ -115,6 +109,12 @@ export default function Sidebar({ user }: { user: User }) {
       type: "cross",
     },
     {
+      name: "Explore",
+      icon: Compass,
+      path: "/dashboard/explore",
+      type: "developer",
+    },
+    {
       name: "Project Managers",
       icon: CompassIcon,
       path: "/dashboard/leads",
@@ -124,11 +124,11 @@ export default function Sidebar({ user }: { user: User }) {
       name: "Developers",
       icon: Users,
       path: "/dashboard/developers",
-      type: "developer-lead",
+      type: "projectManager",
     },
     {
       name: "Chat",
-      icon: MessageCircle,
+      icon: MessageSquareText,
       path: "/dashboard/chat",
       type: "cross",
     },
@@ -148,8 +148,15 @@ export default function Sidebar({ user }: { user: User }) {
 
   // Filter navigation items based on user type
   const filteredNavItems = navItems.filter(
-    (item) => item.type === "cross" || item.type === user.type || 
-    (item.type === "developer-lead" && (user.type === "developer" || user.type === "lead"))
+    (item) =>
+      item.type === "cross" ||
+      item.type === user.type ||
+      (item.type === "developer" &&
+        user.type === "projectManager" &&
+        item.name === "Explore") ||
+      (item.type === "startup" &&
+        user.type === "projectManager" &&
+        item.name === "Products")
   );
   const handleLogout = async () => {
     if (isLoggingOut) return;

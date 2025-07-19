@@ -9,7 +9,7 @@ import { User, Media, Stack } from "@/types/dashboard";
 
 interface ProjectManagerCardProps {
   projectManager: User;
-  variant?: 'featured' | 'compact';
+  variant?: "featured" | "compact";
 }
 
 /**
@@ -26,7 +26,8 @@ const formatDate = (date: Date): string => {
  * Extracts the profile picture URL from a project manager
  */
 const getProfilePictureUrl = (projectManager: User): string | undefined => {
-  return projectManager.profilePicture && typeof projectManager.profilePicture === "object"
+  return projectManager.profilePicture &&
+    typeof projectManager.profilePicture === "object"
     ? (projectManager.profilePicture as Media).url || undefined
     : undefined;
 };
@@ -36,7 +37,7 @@ const getProfilePictureUrl = (projectManager: User): string | undefined => {
  */
 const getStackNames = (projectManager: User): string => {
   return (
-    projectManager.leadFields?.stack
+    projectManager?.projectManagerFields?.stack
       ?.map((stack) => (typeof stack === "object" ? (stack as Stack).name : ""))
       .filter(Boolean)
       .join(", ") || ""
@@ -59,14 +60,17 @@ const getSkills = (projectManager: User): string => {
  * Gets the primary role for display
  */
 const getPrimaryRole = (projectManager: User): string => {
-  if (projectManager.leadFields?.title) {
-    return projectManager.leadFields.title;
+  if (projectManager.developerFields?.primaryRole) {
+    return projectManager.developerFields.primaryRole[0];
   }
-  
-  if (projectManager.developerFields?.primaryRole && Array.isArray(projectManager.developerFields.primaryRole)) {
+
+  if (
+    projectManager.developerFields?.primaryRole &&
+    Array.isArray(projectManager.developerFields.primaryRole)
+  ) {
     return projectManager.developerFields.primaryRole[0] || "Project Manager";
   }
-  
+
   return "Project Manager";
 };
 
@@ -76,25 +80,42 @@ const getPrimaryRole = (projectManager: User): string => {
 const getIndustry = (projectManager: User): string => {
   // Try to derive industry from stack or skills
   const stackNames = getStackNames(projectManager);
-  if (stackNames.toLowerCase().includes("web3") || stackNames.toLowerCase().includes("crypto")) {
+  if (
+    stackNames.toLowerCase().includes("web3") ||
+    stackNames.toLowerCase().includes("crypto")
+  ) {
     return "Web3, Crypto, Finance";
   }
-  if (stackNames.toLowerCase().includes("mobile") || stackNames.toLowerCase().includes("ios") || stackNames.toLowerCase().includes("android")) {
+  if (
+    stackNames.toLowerCase().includes("mobile") ||
+    stackNames.toLowerCase().includes("ios") ||
+    stackNames.toLowerCase().includes("android")
+  ) {
     return "SaaS, Mobile Apps, AI";
   }
-  if (stackNames.toLowerCase().includes("design") || stackNames.toLowerCase().includes("ui") || stackNames.toLowerCase().includes("ux")) {
+  if (
+    stackNames.toLowerCase().includes("design") ||
+    stackNames.toLowerCase().includes("ui") ||
+    stackNames.toLowerCase().includes("ux")
+  ) {
     return "Design, Tech, E-commerce";
   }
-  
+
   // Default based on role
   const role = getPrimaryRole(projectManager);
-  if (role.toLowerCase().includes("frontend") || role.toLowerCase().includes("full stack")) {
+  if (
+    role.toLowerCase().includes("frontend") ||
+    role.toLowerCase().includes("full stack")
+  ) {
     return "SaaS, Mobile Apps, AI";
   }
-  if (role.toLowerCase().includes("backend") || role.toLowerCase().includes("devops")) {
+  if (
+    role.toLowerCase().includes("backend") ||
+    role.toLowerCase().includes("devops")
+  ) {
     return "Web3, Crypto, Finance";
   }
-  
+
   return "Tech, Software Development";
 };
 
@@ -102,40 +123,46 @@ const getIndustry = (projectManager: User): string => {
  * Calculates a mock rating based on experience and projects
  */
 const calculateRating = (projectManager: User): number => {
-  const experience = projectManager.leadFields?.experience || 0;
-  const projectCount = (projectManager.leadFields?.projects?.length || 0) + (projectManager.projects?.length || 0);
-  
+  const experience = projectManager.developerFields?.experience || 0;
+  const projectCount = projectManager.projects?.length || 0;
+
   // Base rating on experience and projects
   let rating = 3.5; // Base rating
-  
+
   if (experience >= 8) rating += 1.0;
   else if (experience >= 5) rating += 0.7;
   else if (experience >= 3) rating += 0.4;
-  
+
   if (projectCount >= 10) rating += 0.4;
   else if (projectCount >= 5) rating += 0.2;
-  
+
   return Math.min(5.0, Math.round(rating * 10) / 10);
 };
 
 /**
  * Project Manager card component with two variants: featured (large visual) and compact (detailed list)
  */
-const ProjectManagerCard: FC<ProjectManagerCardProps> = ({ projectManager, variant = 'compact' }) => {
+const ProjectManagerCard: FC<ProjectManagerCardProps> = ({
+  projectManager,
+  variant = "compact",
+}) => {
   // Extract and prepare data
   const profilePictureUrl = getProfilePictureUrl(projectManager);
-  const joinDate = projectManager.createdAt ? formatDate(new Date(projectManager.createdAt)) : "Unknown";
+  const joinDate = projectManager.createdAt
+    ? formatDate(new Date(projectManager.createdAt))
+    : "Unknown";
   const currentProjects = projectManager.projects?.length || 0;
-  const developmentProjects = (projectManager.leadFields?.projects?.length || 0) + currentProjects;
-  const experience = projectManager.leadFields?.experience || 0;
+  const developmentProjects =
+    (projectManager.projects?.length || 0) + currentProjects;
+  const experience = projectManager.developerFields?.experience || 0;
   const rating = calculateRating(projectManager);
   const industry = getIndustry(projectManager);
   const skills = getSkills(projectManager);
   const primaryRole = getPrimaryRole(projectManager);
-  const location = projectManager.leadFields?.location || projectManager.country || "Location not specified";
+  const location = projectManager.country || "Location not specified";
   const githubProfile = projectManager.developerFields?.githubProfile;
 
-  if (variant === 'featured') {
+  if (variant === "featured") {
     return (
       <Card className="bg-darkGray border-none rounded-2xl overflow-hidden w-full relative">
         {/* Bookmark Icon */}
@@ -146,8 +173,8 @@ const ProjectManagerCard: FC<ProjectManagerCardProps> = ({ projectManager, varia
         {/* Large Profile Image */}
         <div className="aspect-[4/3] bg-gradient-to-b from-gray-800 to-gray-900 relative overflow-hidden">
           {profilePictureUrl ? (
-            <img 
-              src={profilePictureUrl} 
+            <img
+              src={profilePictureUrl}
               alt={projectManager.name}
               className="w-full h-full object-cover grayscale"
             />
@@ -164,10 +191,20 @@ const ProjectManagerCard: FC<ProjectManagerCardProps> = ({ projectManager, varia
         <div className="p-6">
           {/* Name with Verification */}
           <div className="flex items-center gap-2 mb-2">
-            <h3 className="text-xl font-semibold text-white">{projectManager.name}</h3>
+            <h3 className="text-xl font-semibold text-white">
+              {projectManager.name}
+            </h3>
             <div className="w-5 h-5 bg-teal-500 rounded-full flex items-center justify-center">
-              <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+              <svg
+                className="w-3 h-3 text-white"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                  clipRule="evenodd"
+                />
               </svg>
             </div>
           </div>
@@ -222,10 +259,20 @@ const ProjectManagerCard: FC<ProjectManagerCardProps> = ({ projectManager, varia
         </Avatar>
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1">
-            <h3 className="text-lg font-semibold text-white">{projectManager.name}</h3>
+            <h3 className="text-lg font-semibold text-white">
+              {projectManager.name}
+            </h3>
             <div className="w-4 h-4 bg-teal-500 rounded-full flex items-center justify-center">
-              <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+              <svg
+                className="w-2.5 h-2.5 text-white"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                  clipRule="evenodd"
+                />
               </svg>
             </div>
           </div>
@@ -259,7 +306,9 @@ const ProjectManagerCard: FC<ProjectManagerCardProps> = ({ projectManager, varia
             className="flex items-center gap-1 text-blue-400 hover:underline"
           >
             <Github className="h-4 w-4" />
-            <span>{githubProfile.replace("https://github.com/", "Github.com/")}</span>
+            <span>
+              {githubProfile.replace("https://github.com/", "Github.com/")}
+            </span>
           </a>
         )}
       </div>
@@ -267,11 +316,15 @@ const ProjectManagerCard: FC<ProjectManagerCardProps> = ({ projectManager, varia
       {/* Stats Grid */}
       <div className="grid grid-cols-3 gap-4 mb-6">
         <div className="text-center">
-          <p className="text-2xl font-semibold text-white mb-1">{developmentProjects}</p>
+          <p className="text-2xl font-semibold text-white mb-1">
+            {developmentProjects}
+          </p>
           <p className="text-sm text-gray-400">Development Projects</p>
         </div>
         <div className="text-center border-x border-gray-700">
-          <p className="text-2xl font-semibold text-white mb-1">+{experience}</p>
+          <p className="text-2xl font-semibold text-white mb-1">
+            +{experience}
+          </p>
           <p className="text-sm text-gray-400">Years Experience</p>
         </div>
         <div className="text-center">

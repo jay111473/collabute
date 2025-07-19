@@ -9,8 +9,7 @@ import { redirect } from "next/navigation";
 
 export const metadata: Metadata = {
   title: "Explore Developers | Dashboard | Collabute",
-  description:
-    "Discover and connect with top developers for your projects.",
+  description: "Discover and connect with top developers for your projects.",
 };
 
 type SearchParams = { [key: string]: string } | undefined;
@@ -150,7 +149,10 @@ export default async function DashboardDevelopersPage({
 }) {
   // Check if user is authorized to view this page
   const currentUser = await getUser();
-  if (!currentUser || (currentUser.type !== "developer" && currentUser.type !== "lead")) {
+  if (
+    !currentUser ||
+    (currentUser.type !== "developer" && currentUser.type !== "lead" && currentUser.type !== "projectManager")
+  ) {
     redirect("/dashboard");
   }
 
@@ -158,10 +160,7 @@ export default async function DashboardDevelopersPage({
   const cookieStore = await cookies();
   const token = cookieStore.get("token")?.value;
 
-  const developers = await getDevelopers(
-    token || "",
-    resolvedSearchParams
-  );
+  const developers = await getDevelopers(token || "", resolvedSearchParams);
 
   return (
     <div className="flex-1 flex flex-col">

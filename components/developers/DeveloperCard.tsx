@@ -62,16 +62,10 @@ const getPrimaryRole = (developer: User): string => {
  */
 const getIndustry = (developer: User): string | null => {
   // First check if the developer has explicit industry data
-  const industries = developer.developerFields?.industries;
-  if (industries && industries.length > 0) {
+  const industry = developer.industry;
+  if (industry) {
     // Return the first industry or join multiple industries
-    const industryNames = industries
-      .map((item) => item.industry)
-      .filter(Boolean);
-
-    if (industryNames.length > 0) {
-      return industryNames.join(", ");
-    }
+    return industry;
   }
 
   // If no explicit industry data exists, return null instead of guessing
@@ -92,7 +86,7 @@ const DeveloperCard: FC<DeveloperCardProps> = ({
     : "Unknown";
   const currentProjects = developer.developerFields?.issues?.length || 0;
   const developmentProjects = currentProjects;
-  const experience = developer.leadFields?.experience || 0;
+  const experience = developer.developerFields?.experience || 0;
   const industry = getIndustry(developer);
   const skills = getSkills(developer);
   const primaryRole = getPrimaryRole(developer);

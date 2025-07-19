@@ -45,7 +45,7 @@ const DevelopersClient: FC<DevelopersClientProps> = ({ developers }) => {
 
   // Helper function to calculate rating (same logic as in DeveloperCard)
   function calculateRating(developer: User): number {
-    const experience = developer.leadFields?.experience || 0;
+    const experience = developer.developerFields?.experience || 0;
     const projectCount = developer.developerFields?.issues?.length || 0;
 
     let rating = 3.5;

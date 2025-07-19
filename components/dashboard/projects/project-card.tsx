@@ -25,8 +25,10 @@ export const ProjectCard = ({ project }: ProjectCardProps) => {
     <Link href={`/dashboard/explore/${project.slug}`}>
       <div className="relative mt-3">
         {/* Milestone Phase Badge - Folder tab style */}
-        <div className="absolute -top-3 left-6 z-10">
-          <div className={`text-xs rounded-t-lg rounded-b-none px-3 py-1.5 border-b-0 shadow-lg ${milestonePhase.color}`}>
+        <div className="absolute -top-4 left-4 z-0">
+          <div
+            className={`text-xs rounded-t-md rounded-b-none px-3 py-1.5 bg-darkGray shadow-lg ${milestonePhase.color}`}
+          >
             <span className="mr-1">{milestonePhase.icon}</span>
             {milestonePhase.phase}
             {milestonePhase.status === "active" && (
@@ -35,7 +37,9 @@ export const ProjectCard = ({ project }: ProjectCardProps) => {
           </div>
         </div>
 
-        <Card className={`text-white rounded-lg border-none hover:shadow-primary2 duration-300 bg-darkGray ${milestoneShadow}`}>
+        <Card
+          className={`text-white rounded-lg border-none hover:shadow-primary2 duration-300 bg-darkGray ${milestoneShadow} z-10`}
+        >
           <CardContent className="flex flex-col p-0 py-4 space-y-4">
             <div className="flex justify-between px-4">
               <div className="flex flex-col justify-start items-start gap-y-2">
@@ -45,7 +49,9 @@ export const ProjectCard = ({ project }: ProjectCardProps) => {
                   </h3>
                   <Badge
                     className="font-medium !text-xs border-grayBorders text-white"
-                    icon={<GitPullRequest className="h-4 w-4 text-darkPrimary" />}
+                    icon={
+                      <GitPullRequest className="h-4 w-4 text-darkPrimary" />
+                    }
                     variant="outline"
                   >
                     {project.issues?.length} issues
@@ -73,11 +79,13 @@ export const ProjectCard = ({ project }: ProjectCardProps) => {
             <div className="flex px-6 items-center gap-2 justify-between">
               <p className="text-sm">Milestone Progress</p>
               <div className="flex items-center gap-2">
-                <Progress 
-                  className="w-20 ml-2 bg-gray-300" 
-                  value={milestoneStats.completionPercentage} 
-                /> 
-                <p className="text-xs">{milestoneStats.completionPercentage}%</p>
+                <Progress
+                  className="w-20 ml-2 bg-gray-300"
+                  value={milestoneStats.completionPercentage}
+                />
+                <p className="text-xs">
+                  {milestoneStats.completionPercentage}%
+                </p>
               </div>
             </div>
           </CardContent>

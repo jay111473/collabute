@@ -21,7 +21,9 @@ interface ExploreComponentProps {
 }
 
 const projectTypeFilters = [
-  { label: "Normal", value: "normal",
+  {
+    label: "Normal",
+    value: "normal",
     bgColor: "",
     borderColor: "border-grayBorders",
     icon: <TimerReset size={16} />,

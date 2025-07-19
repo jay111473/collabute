@@ -13,7 +13,13 @@ export interface NavItem {
   shortName?: string;
   icon: React.ComponentType<{ className?: string }>;
   path: string;
-  type: "cross" | "developer" | "startup" | "designer" | "lead" | "developer-lead";
+  type:
+    | "cross"
+    | "developer"
+    | "startup"
+    | "designer"
+    | "lead"
+    | "projectManager";
   priority?: number;
 }
 
@@ -98,8 +104,9 @@ export interface User {
   id: number;
   name: string;
   profilePicture?: (number | null) | Media;
-  type: "developer" | "startup" | "designer" | "lead" | "developer-lead";
+  type: "developer" | "startup" | "designer" | "lead" | "projectManager";
   phoneNumber?: string | null;
+  countryCode?: string | null;
   country?:
     | (
         | "AF"
@@ -347,9 +354,48 @@ export interface User {
         | "ZW"
       )
     | null;
-  role?: ("admin" | "user") | null;
+  industry?:
+    | (
+        | "technology"
+        | "healthcare"
+        | "finance"
+        | "education"
+        | "ecommerce"
+        | "manufacturing"
+        | "real_estate"
+        | "entertainment"
+        | "food_beverage"
+        | "transportation"
+        | "energy"
+        | "agriculture"
+        | "construction"
+        | "retail"
+        | "consulting"
+        | "marketing_advertising"
+        | "media_communications"
+        | "nonprofit"
+        | "government"
+        | "travel_tourism"
+        | "sports_recreation"
+        | "fashion_beauty"
+        | "automotive"
+        | "telecommunications"
+        | "insurance"
+        | "legal"
+        | "logistics"
+        | "other"
+      )
+    | null;
+  /**
+   * User role determines permissions throughout the system
+   */
+  role?: (number | null) | Role;
   isVerified?: boolean | null;
   kycStatus?: ("pending" | "verified" | "rejected") | null;
+  /**
+   * Indicates if user registered through early bird signup
+   */
+  earlybird?: boolean | null;
   githubId?: string | null;
   githubUsername?: string | null;
   wallet?: number | null;
@@ -392,6 +438,7 @@ export interface User {
           id?: string | null;
         }[]
       | null;
+    experience?: number | null;
     experienceLevel?:
       | ("junior" | "mid_level" | "senior" | "lead" | "architect")
       | null;
@@ -447,31 +494,8 @@ export interface User {
     stripeAccountStatus?:
       | ("pending" | "active" | "restricted" | "disabled")
       | null;
-    industries?:
-      | {
-          industry?: string | null;
-          id?: string | null;
-        }[]
-      | null;
   };
-  startupFields?: {
-    companyName?: string | null;
-    description?: string | null;
-    foundingDate?: string | null;
-    cto?: (number | null) | User;
-    fundingInformation?: {
-      fundingStage?:
-        | ("Pre-seed" | "Seed" | "Series A" | "Series B" | "Series C+")
-        | null;
-      totalFundingRaised?: number | null;
-      lastFundingDate?: string | null;
-    };
-    teamSize?: ("1-10" | "10-50" | "50-100" | "+100") | null;
-    productStage?:
-      | ("Idea" | "Prototype" | "MVP" | "Beta" | "Launched" | "Growth")
-      | null;
-  };
-  leadFields?: {
+  projectManagerFields?: {
     experience?: number | null;
     stack?: (number | Stack)[] | null;
     title?: string | null;
@@ -484,26 +508,11 @@ export interface User {
           id?: string | null;
         }[]
       | null;
-    preferredProjectDuration?:
-      | (
-          | "Less than 1 month"
-          | "1-3 months"
-          | "3-6 months"
-          | "6-12 months"
-          | "More than 12 months"
-        )[]
-      | null;
     preferedPayment?: ("hourly" | "dcm") | null;
     hourlyRate?: number | null;
     projects?: (number | Project)[] | null;
   };
   website?: string | null;
-  contactInformation?: {
-    email?: string | null;
-    countryCode?: string | null;
-    phone?: string | null;
-    address?: string | null;
-  };
   projects?: (number | Project)[] | null;
   githubRepositories?:
     | {
@@ -541,6 +550,157 @@ export interface User {
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "media".
  */
+
+export interface Role {
+  id: number;
+  /**
+   * Unique role name (e.g., "admin", "user", "project-manager")
+   */
+  name: string;
+  /**
+   * Human-readable role name (e.g., "Administrator", "Project Manager")
+   */
+  displayName: string;
+  /**
+   * Description of what this role can do
+   */
+  description?: string | null;
+  /**
+   * Whether this role can be assigned to users
+   */
+  isActive?: boolean | null;
+  /**
+   * Configure permissions for each collection
+   */
+  permissions?: {
+    users?: {
+      /**
+       * Can create new users
+       */
+      create?: boolean | null;
+      /**
+       * Can read user records
+       */
+      read?: ("none" | "own" | "all") | null;
+      /**
+       * Can update user records
+       */
+      update?: ("none" | "own" | "all") | null;
+      /**
+       * Can delete user records
+       */
+      delete?: ("none" | "own" | "all") | null;
+    };
+    projects?: {
+      create?: boolean | null;
+      read?: ("none" | "own" | "participating" | "all") | null;
+      update?: ("none" | "own" | "participating" | "all") | null;
+      delete?: ("none" | "own" | "participating" | "all") | null;
+    };
+    conversations?: {
+      create?: boolean | null;
+      read?: ("none" | "participating" | "all") | null;
+      update?: ("none" | "own" | "all") | null;
+      delete?: ("none" | "own" | "all") | null;
+    };
+    messages?: {
+      create?: boolean | null;
+      read?: ("none" | "participating" | "all") | null;
+      update?: ("none" | "own" | "all") | null;
+      delete?: ("none" | "own" | "all") | null;
+    };
+    blogs?: {
+      create?: boolean | null;
+      read?: ("none" | "published" | "all") | null;
+      update?: ("none" | "own" | "all") | null;
+      delete?: ("none" | "own" | "all") | null;
+    };
+    issues?: {
+      create?: boolean | null;
+      read?: ("none" | "assigned" | "all") | null;
+      update?: ("none" | "assigned" | "all") | null;
+      delete?: ("none" | "assigned" | "all") | null;
+    };
+    media?: {
+      create?: boolean | null;
+      read?: ("none" | "own" | "all") | null;
+      update?: ("none" | "own" | "all") | null;
+      delete?: ("none" | "own" | "all") | null;
+    };
+    admin?: {
+      /**
+       * Can create new admin accounts
+       */
+      create?: boolean | null;
+      /**
+       * Can read admin accounts
+       */
+      read?: ("none" | "own" | "all") | null;
+      /**
+       * Can update admin accounts
+       */
+      update?: ("none" | "own" | "all") | null;
+      /**
+       * Can delete admin accounts
+       */
+      delete?: ("none" | "own" | "all") | null;
+    };
+    products?: {
+      create?: boolean | null;
+      read?: ("none" | "own" | "all") | null;
+      update?: ("none" | "own" | "all") | null;
+      delete?: ("none" | "own" | "all") | null;
+    };
+    other?: {
+      waitlists?: {
+        create?: boolean | null;
+        read?: ("none" | "all") | null;
+        update?: ("none" | "all") | null;
+        delete?: ("none" | "all") | null;
+      };
+      stacks?: {
+        create?: boolean | null;
+        read?: ("none" | "all") | null;
+        update?: ("none" | "all") | null;
+        delete?: ("none" | "all") | null;
+      };
+      repositories?: {
+        create?: boolean | null;
+        read?: ("none" | "all") | null;
+        update?: ("none" | "all") | null;
+        delete?: ("none" | "all") | null;
+      };
+      activities?: {
+        create?: boolean | null;
+        read?: ("none" | "all") | null;
+        update?: ("none" | "all") | null;
+        delete?: ("none" | "all") | null;
+      };
+      types?: {
+        create?: boolean | null;
+        read?: ("none" | "all") | null;
+        update?: ("none" | "all") | null;
+        delete?: ("none" | "all") | null;
+      };
+    };
+    adminPanel?: {
+      /**
+       * Can access the admin panel
+       */
+      canAccess?: boolean | null;
+      /**
+       * Can create, update, and delete roles
+       */
+      canManageRoles?: boolean | null;
+      /**
+       * Can manage all user accounts
+       */
+      canManageUsers?: boolean | null;
+    };
+  };
+  updatedAt: string;
+  createdAt: string;
+}
 export interface Media {
   id: number;
   alt: string;

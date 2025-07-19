@@ -174,7 +174,7 @@ const CountdownTimer = () => {
           <Image src="/twitterx.png" alt="X" width={28} height={28} />
         </Link>
         <Link
-          href="https://discord.gg/3PUyPGF2"
+          href="https://discord.gg/7q3BBpEvwP"
           target="_blank"
           rel="noopener noreferrer"
           className="text-white hover:text-gray-300 transition-colors duration-300"

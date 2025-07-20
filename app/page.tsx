@@ -35,7 +35,6 @@ export default async function Home() {
           />
         </div>
 
-        {/* Dark overlay for better text visibility */}
         <div className="absolute inset-0 bg-black/40 z-10"></div>
 
         <main className="relative z-20 flex min-h-screen min-w-screen flex-col items-center justify-center px-2 py-8 lg:px-24 lg:py-4 h-full font-sans gap-y-24 bg-transparent">

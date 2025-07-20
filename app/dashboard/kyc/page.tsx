@@ -82,7 +82,7 @@ const KYCPage = () => {
                 <TabsContent value="business">
                   <BusinessInfoForm
                     defaultValues={{
-                      companyName: user.startupFields?.companyName || "",
+                      companyName: (user as any).startupFields?.companyName || "",
                       registrationNumber: "",
                       taxId: "",
                     }}

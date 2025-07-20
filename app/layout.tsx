@@ -7,6 +7,7 @@ import { ThemeProvider } from "./providers/ThemeProvider";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { CSPostHogProvider } from "./provider";
 import { UserProvider } from "./providers/UserContext";
+import { ConvexProvider } from "./providers/ConvexProvider";
 const plusJakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
   weight: ["300", "400", "500", "700"],
@@ -34,20 +35,22 @@ export default function RootLayout({
       <body className={`${plusJakarta.className} h-full`}>
         <SpeedInsights />
         <CSPostHogProvider>
-          <EmailProvider>
-            <ThemeProvider
-              attribute="class"
-              defaultTheme="system"
-              enableSystem
-              disableTransitionOnChange
-            >
-              <UserProvider>
-                <div className="h-full">
-                  {children}
-                </div>
-              </UserProvider>
-            </ThemeProvider>
-          </EmailProvider>
+          <ConvexProvider>
+            <EmailProvider>
+              <ThemeProvider
+                attribute="class"
+                defaultTheme="system"
+                enableSystem
+                disableTransitionOnChange
+              >
+                <UserProvider>
+                  <div className="h-full">
+                    {children}
+                  </div>
+                </UserProvider>
+              </ThemeProvider>
+            </EmailProvider>
+          </ConvexProvider>
         </CSPostHogProvider>
         <Analytics />
       </body>

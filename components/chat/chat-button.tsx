@@ -2,8 +2,8 @@ import { useState } from "react";
 import { MessageCircle } from "lucide-react";
 import { Button, ButtonProps } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
-import { useConversations } from "@/hooks/use-conversations";
-import { useUserData } from "@/hooks/use-user-data";
+import { useConversationsConvex } from "@/hooks/use-conversations-convex";
+import { useUserConvex } from "@/hooks/use-user-convex";
 import { CreateConversationData } from "@/types/chat";
 import { User } from "@/types/dashboard";
 
@@ -31,8 +31,8 @@ export const ChatButton = ({
   children,
 }: ChatButtonProps) => {
   const router = useRouter();
-  const { user } = useUserData();
-  const { createConversation } = useConversations(user?.id?.toString() || "");
+  const { user } = useUserConvex();
+  const { createConversation } = useConversationsConvex({ userId: user?._id! });
   const [isCreating, setIsCreating] = useState(false);
 
   const handleStartChat = async () => {
@@ -44,26 +44,12 @@ export const ChatButton = ({
       // Check if conversation already exists for private chats
       // In a real implementation, you'd want to check existing conversations
 
-      const conversationData: CreateConversationData = {
+      const conversation = await createConversation({
+        title: conversationType !== "private" ? conversationName || `Chat with ${targetUser.name}` : `Chat with ${targetUser.name}`,
         type: conversationType,
-        name: conversationType !== "private" ? conversationName : undefined,
-        description: conversationDescription,
-        participants: [
-          {
-            user: user.id,
-            role: conversationType === "project" ? "member" : "member",
-            notifications: "all",
-          },
-          {
-            user: targetUser.id,
-            role: conversationType === "project" ? "admin" : "member",
-            notifications: "all",
-          },
-        ],
-        relatedProject,
-      };
-
-      const conversation = await createConversation(conversationData);
+        participantIds: [(targetUser as any)._id],
+        projectId: relatedProject as any,
+      });
 
       if (conversation) {
         // Navigate to chat with the new conversation selected

@@ -47,9 +47,9 @@ const ProjectManagersClient: FC<ProjectManagersClientProps> = ({
 
   // Helper function to calculate rating (same logic as in ProjectManagerCard)
   function calculateRating(projectManager: User): number {
-    const experience = projectManager.leadFields?.experience || 0;
+    const experience = (projectManager as any).leadFields?.experience || 0;
     const projectCount =
-      (projectManager.leadFields?.projects?.length || 0) +
+      ((projectManager as any).leadFields?.projects?.length || 0) +
       (projectManager.projects?.length || 0);
 
     let rating = 3.5;

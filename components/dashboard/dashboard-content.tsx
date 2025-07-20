@@ -22,8 +22,8 @@ import { cn } from "@/lib/utils";
 import { Menu, X } from "lucide-react";
 import { VerificationAlerts } from "@/components/dashboard/verification-alerts";
 import { useFloatingNav } from "@/lib/hooks/use-floating-nav";
-import { useProjectsData } from "@/hooks/use-projects-data";
-import { useUserData } from "@/hooks/use-user-data";
+import { useProjectsConvex } from "@/hooks/use-projects-convex";
+import { useUserConvex } from "@/hooks/use-user-convex";
 import { Button } from "@/components/ui/button";
 
 interface DashboardContentProps {
@@ -108,7 +108,7 @@ const DashboardContent = ({ user }: DashboardContentProps) => {
     loading: projectsLoading, 
     error: projectsError,
     refetch: refetchProjects 
-  } = useProjectsData({ limit: 6 });
+  } = useProjectsConvex({ limit: 6 });
   const { isFloatingNavEnabled } = useFloatingNav();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);

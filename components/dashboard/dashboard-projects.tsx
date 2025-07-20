@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RecentProjectCard } from "@/components/dashboard/projects/recent-project-card";
-import { useProjectsData } from "@/hooks/use-projects-data";
+import { useProjectsConvex } from "@/hooks/use-projects-convex";
 import { Project } from "@/types/dashboard";
 
 const RecentProjectsList = ({ projects }: { projects: Project[] }) => (
@@ -14,7 +14,7 @@ const RecentProjectsList = ({ projects }: { projects: Project[] }) => (
 );
 
 export default function DashboardProjects() {
-  const { projects, loading, error } = useProjectsData({ limit: 3 });
+  const { projects, loading, error } = useProjectsConvex({ limit: 3 });
 
   if (loading) {
     return (

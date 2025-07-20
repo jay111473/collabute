@@ -12,7 +12,7 @@ import { YouTubeEmbed } from "@/components/ui/youtube-embed";
 import Link from "next/link";
 import { ChatButton } from "@/components/chat/chat-button";
 import { CollaborationRequestDrawer } from "./collaboration-request-drawer";
-import { useUserData } from "@/hooks/use-user-data";
+import { useUserData } from "@/hooks/use-user-convex";
 
 // Type guard function to safely check if a value is a User object
 function isUser(value: unknown): value is User {

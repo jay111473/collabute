@@ -3,7 +3,7 @@
 import { Suspense } from "react";
 
 import { VerificationAlerts } from "@/components/dashboard/verification-alerts";
-import { useUserData } from "@/hooks/use-user-data";
+import { useUserData } from "@/hooks/use-user-convex";
 import DashboardStats from "@/components/dashboard/dashboard-stats";
 import DashboardProjects from "@/components/dashboard/dashboard-projects";
 import DashboardIssues from "@/components/dashboard/dashboard-issues";

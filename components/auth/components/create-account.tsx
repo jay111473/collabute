@@ -15,213 +15,62 @@ import { AccountTypeSelector } from "../AccountTypeSelector";
 import { DeveloperFields } from "../DeveloperFields";
 import { StartupFields } from "../StartupFields";
 import { useCreateAccount } from "@/components/auth/hooks/useCreateAccount";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { useFormStatus } from "react-dom";
-import { signupAction } from "@/lib/actions/signup-action";
-import { useActionState } from "react";
+import { signUp } from "@/lib/auth-client";
 import { toast } from "sonner";
-import type {
-  AccountType,
-  CreateAccountFormData,
-  CreateAccountResponse,
-  DeveloperRole,
-  TeamSize,
-} from "@/types/auth.types";
+import type { CreateAccountFormData } from "@/types/auth.types";
 import { useRouter } from "next/navigation";
-import { createAccountSchema } from "@/app/auth/schemas/createAccount.schema";
-import { z } from "zod";
-
-// Initial state for server action
-const initialState: CreateAccountResponse & { error?: string } = {
-  success: false,
-  message: "",
-  userId: undefined,
-  error: undefined,
-};
 
 // Define the form error type
 type FormErrors = {
   [key: string]: string | undefined;
 };
 
-// Submit button with loading state
-const SubmitButton = () => {
-  const { pending } = useFormStatus();
-  return (
-    <Button
-      variant="primary"
-      size="lg"
-      disabled={pending}
-      type="submit"
-      className="w-full sm:w-2/3 md:w-1/2"
-    >
-      {pending ? (
-        <span className="flex items-center gap-2">
-          <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-            <circle
-              className="opacity-25"
-              cx="12"
-              cy="12"
-              r="10"
-              stroke="currentColor"
-              strokeWidth="4"
-              fill="none"
-            />
-            <path
-              className="opacity-75"
-              fill="currentColor"
-              d="M4 12a8 8 0 018-8v8z"
-            />
-          </svg>
-          Loading...
-        </span>
-      ) : (
-        "Sign Up"
-      )}
-    </Button>
-  );
-};
-
 const CreateAccount = () => {
   const { form, showPassword, setShowPassword } = useCreateAccount();
-  const [state, formAction] = useActionState(signupAction, initialState);
   const accountType = form.watch("type");
   const router = useRouter();
   const [formErrors, setFormErrors] = useState<FormErrors>({});
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Client-side validation function
-  const validateForm = (formData: FormData): boolean => {
-    // Create correctly typed form values object
-    const formValues: Partial<CreateAccountFormData> = {
-      name: formData.get("name") as string,
-      type: (formData.get("type") as AccountType) || "developer",
-      email: formData.get("email") as string,
-      password: formData.get("password") as string,
-      countryCode: (formData.get("countryCode") as string) || "",
-      phoneNumber: (formData.get("phoneNumber") as string) || "",
-    };
-
-    // Add nested fields based on account type
-    if (formValues.type === "developer") {
-      // Get primary roles from form data
-      const primaryRolesData = formData.get("developerFields.primaryRole");
-      let primaryRoles: DeveloperRole[] = [];
-
-      if (primaryRolesData) {
-        try {
-          primaryRoles = JSON.parse(primaryRolesData as string);
-        } catch {
-          // If parsing fails, treat as empty array
-          primaryRoles = [];
-        }
-      }
-
-      formValues.developerFields = {
-        primaryRole: primaryRoles,
-      };
-    } else if (formValues.type === "startup") {
-      // Check both formats of field names
-      const companyName =
-        formData.get("startupFields.companyName") ||
-        formData.get("companyName");
-      const teamSize =
-        formData.get("startupFields.teamSize") || formData.get("teamSize");
-
-      formValues.startupFields = {
-        companyName: companyName as string,
-        teamSize: teamSize as TeamSize,
-      };
-    }
-
+  // Handle form submission with Better Auth
+  const handleSubmit = async (values: CreateAccountFormData) => {
+    setIsLoading(true);
     try {
-      createAccountSchema.parse(formValues);
-      setFormErrors({});
-      return true;
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        const errors: FormErrors = {};
-        error.errors.forEach((err) => {
-          // Convert path array to dot notation for error keys
-          const errorKey = err.path.join(".");
-          errors[errorKey] = err.message;
-        });
-        setFormErrors(errors);
+      const { data, error } = await signUp.email({
+        email: values.email,
+        password: values.password,
+        name: values.name,
+      });
 
-        // Display toast for first error
-        const firstError = error.errors[0];
-        if (firstError) {
-          toast.error(firstError.message);
-        }
-      } else {
-        setFormErrors({ form: "An unexpected error occurred" });
-        toast.error("An unexpected error occurred");
+      if (error) {
+        toast.error(error.message || "Failed to create account");
+        setFormErrors({ form: error.message || "Failed to create account" });
+        return;
       }
-      return false;
+
+      toast.success("Account created successfully!");
+      router.push("/dashboard");
+    } catch (err) {
+      toast.error("An unexpected error occurred");
+      setFormErrors({ form: "An unexpected error occurred" });
+    } finally {
+      setIsLoading(false);
     }
   };
-
-  // Show toast on error or success
-  useEffect(() => {
-    if ("error" in state && state.error) {
-      toast.error(state.error);
-      setFormErrors({ form: state.error });
-    } else if ("success" in state && state.success) {
-      // Redirect to dashboard after successful signup
-      router.push("/dashboard");
-    }
-  }, [state, form, router]);
-
-  // Watch form values for hidden inputs
-  const primaryRole = form.watch("developerFields.primaryRole");
-  const teamSize = form.watch("startupFields.teamSize");
-  const countryCode = form.watch("countryCode");
-  const phoneNumber = form.watch("phoneNumber");
 
   return (
     <Form {...form}>
       <form
         className="w-full max-w-full sm:max-w-[600px] md:max-w-[700px]"
-        action={async (formData: FormData) => {
-          // Ensure type is set before validation
-          if (!formData.get("type")) {
-            formData.set("type", "developer");
-          }
-          if (validateForm(formData)) {
-            formAction(formData);
-          }
-        }}
+        onSubmit={form.handleSubmit(handleSubmit)}
       >
         {/* Only show form-level errors, not success messages */}
         {formErrors.form &&
           formErrors.form !== "User successfully created." && (
             <div className="text-red-500 text-sm mb-4">{formErrors.form}</div>
           )}
-
-        {/* Ensure type has a default value */}
-        <input
-          type="hidden"
-          name="type"
-          value={form.watch("type") || "developer"}
-        />
-
-        {/* Add direct field for primary roles if developer */}
-        {accountType === "developer" && (
-          <input
-            type="hidden"
-            name="developerFields.primaryRole"
-            value={JSON.stringify(primaryRole || [])}
-          />
-        )}
-
-        {/* Add direct field for team size if startup */}
-        {accountType === "startup" && (
-          <input type="hidden" name="teamSize" value={teamSize || ""} />
-        )}
-
-        {/* Add direct fields for phone number and country code */}
-        <input type="hidden" name="phoneNumber" value={phoneNumber || ""} />
-        <input type="hidden" name="countryCode" value={countryCode || ""} />
 
         {/* Fields */}
         <div className="space-y-4 md:space-y-6">
@@ -399,7 +248,37 @@ const CreateAccount = () => {
 
         {/* Navigation Buttons */}
         <div className="flex gap-4 mt-6 md:mt-8 w-full justify-center px-2 sm:px-0">
-          <SubmitButton />
+          <Button
+            variant="primary"
+            size="lg"
+            disabled={isLoading}
+            type="submit"
+            className="w-full sm:w-2/3 md:w-1/2"
+          >
+            {isLoading ? (
+              <span className="flex items-center gap-2">
+                <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                    fill="none"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8v8z"
+                  />
+                </svg>
+                Loading...
+              </span>
+            ) : (
+              "Sign Up"
+            )}
+          </Button>
         </div>
       </form>
     </Form>

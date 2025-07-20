@@ -36,8 +36,8 @@ const getProfilePictureUrl = (projectManager: User): string | undefined => {
  */
 const getStackNames = (projectManager: User): string => {
   return (
-    projectManager.leadFields?.stack
-      ?.map((stack) => (typeof stack === "object" ? (stack as Stack).name : ""))
+    (projectManager as any).leadFields?.stack
+      ?.map((stack: any) => (typeof stack === "object" ? (stack as Stack).name : ""))
       .filter(Boolean)
       .join(", ") || ""
   );
@@ -59,8 +59,8 @@ const getSkills = (projectManager: User): string => {
  * Gets the primary role for display
  */
 const getPrimaryRole = (projectManager: User): string => {
-  if (projectManager.leadFields?.title) {
-    return projectManager.leadFields.title;
+  if ((projectManager as any).leadFields?.title) {
+    return (projectManager as any).leadFields.title;
   }
   
   if (projectManager.developerFields?.primaryRole && Array.isArray(projectManager.developerFields.primaryRole)) {
@@ -102,8 +102,8 @@ const getIndustry = (projectManager: User): string => {
  * Calculates a mock rating based on experience and projects
  */
 const calculateRating = (projectManager: User): number => {
-  const experience = projectManager.leadFields?.experience || 0;
-  const projectCount = (projectManager.leadFields?.projects?.length || 0) + (projectManager.projects?.length || 0);
+  const experience = (projectManager as any).leadFields?.experience || 0;
+  const projectCount = ((projectManager as any).leadFields?.projects?.length || 0) + (projectManager.projects?.length || 0);
   
   // Base rating on experience and projects
   let rating = 3.5; // Base rating
@@ -126,13 +126,13 @@ const ProjectManagerCard: FC<ProjectManagerCardProps> = ({ projectManager, varia
   const profilePictureUrl = getProfilePictureUrl(projectManager);
   const joinDate = projectManager.createdAt ? formatDate(new Date(projectManager.createdAt)) : "Unknown";
   const currentProjects = projectManager.projects?.length || 0;
-  const developmentProjects = (projectManager.leadFields?.projects?.length || 0) + currentProjects;
-  const experience = projectManager.leadFields?.experience || 0;
+  const developmentProjects = ((projectManager as any).leadFields?.projects?.length || 0) + currentProjects;
+  const experience = (projectManager as any).leadFields?.experience || 0;
   const rating = calculateRating(projectManager);
   const industry = getIndustry(projectManager);
   const skills = getSkills(projectManager);
   const primaryRole = getPrimaryRole(projectManager);
-  const location = projectManager.leadFields?.location || projectManager.country || "Location not specified";
+  const location = (projectManager as any).leadFields?.location || projectManager.country || "Location not specified";
   const githubProfile = projectManager.developerFields?.githubProfile;
 
   if (variant === 'featured') {

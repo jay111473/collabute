@@ -3,7 +3,6 @@
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -20,7 +19,15 @@ import { useEmail } from "@/app/providers/EmailContext";
 import { Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import Image from "next/image";
-import { login, loginformSchema } from "@/lib/login";
+import { signIn } from "@/lib/auth-client";
+import { z } from "zod";
+
+const loginformSchema = z.object({
+  email: z.string().email({ message: "Invalid email address" }),
+  password: z
+    .string()
+    .min(8, { message: "Password must be at least 8 characters" }),
+});
 
 const Password = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -35,14 +42,24 @@ const Password = () => {
     },
   });
 
-  function onSubmit(values: z.infer<typeof loginformSchema>) {
-    toast.promise(login(values, router), {
-      loading: "Logging in...",
-      success: "Successfully logged in!",
-      error: (err) => {
-        return err.message || "Failed to log in. Please try again.";
-      },
-    });
+  async function onSubmit(values: z.infer<typeof loginformSchema>) {
+    try {
+      toast.loading("Logging in...");
+      const { data, error } = await signIn.email({
+        email: values.email,
+        password: values.password,
+      });
+
+      if (error) {
+        toast.error(error.message || "Failed to log in. Please try again.");
+        return;
+      }
+
+      toast.success("Successfully logged in!");
+      router.push("/dashboard");
+    } catch (err) {
+      toast.error("Failed to log in. Please try again.");
+    }
   }
 
   return (

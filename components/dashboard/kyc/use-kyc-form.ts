@@ -6,7 +6,7 @@ import { personalInfoSchema, PersonalInfoFormData } from "./personal-info-form";
 import { businessInfoSchema, BusinessInfoFormData } from "./business-info-form";
 import { bankingInfoSchema, BankingInfoFormData } from "./banking-info-form";
 import { toast } from "sonner";
-import { useUserData } from "@/hooks/use-user-data";
+import { useUserData } from "@/hooks/use-user-convex";
 
 type BankFormat = {
   accountFormat: string;

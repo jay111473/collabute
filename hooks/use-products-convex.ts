@@ -1,0 +1,113 @@
+"use client";
+
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { Id, Doc } from "@/convex/_generated/dataModel";
+import { Product } from "@/types/dashboard";
+
+// Transform Convex Doc to legacy Product type for backward compatibility
+function transformProduct(doc: Doc<"products">): Product {
+  return {
+    id: doc._id as any, // Convert Convex ID to number-like
+    name: doc.name,
+    description: doc.description || null,
+    projects: null, // Products don't have projects in Convex schema
+    owner: null, // Not implemented in current Convex schema
+    foundingDate: null,
+    cto: null,
+    fundingInformation: undefined,
+    updatedAt: new Date(doc._creationTime).toISOString(),
+    createdAt: new Date(doc._creationTime).toISOString(),
+  };
+}
+
+interface UseProductsOptions {
+  page?: number;
+  limit?: number;
+  category?: string;
+  isActive?: boolean;
+}
+
+export function useProductsConvex(options: UseProductsOptions = {}): {
+  products: Product[];
+  totalPages: number;
+  currentPage: number;
+  totalProducts: number;
+  loading: boolean;
+  error: null;
+  refetch: () => void;
+} {
+  const { page = 1, limit = 10, category, isActive = true } = options;
+
+  const result = useQuery(api.products.getProducts, {
+    page,
+    limit,
+    category,
+    isActive,
+  });
+
+  return {
+    products: result?.products ? result.products.map(transformProduct) : [],
+    totalPages: result?.totalPages || 0,
+    currentPage: result?.currentPage || 1,
+    totalProducts: result?.totalProducts || 0,
+    loading: result === undefined,
+    error: null,
+    refetch: () => {
+      // Convex automatically refetches when dependencies change
+    },
+  };
+}
+
+export function useProductById(productId: Id<"products">): {
+  product: Product | undefined;
+  loading: boolean;
+  error: null;
+} {
+  const product = useQuery(api.products.getProductById, { productId });
+
+  return {
+    product: product ? transformProduct(product) : undefined,
+    loading: product === undefined,
+    error: null,
+  };
+}
+
+export function useProductsByCategory(
+  category: string,
+  limit?: number
+): {
+  products: Product[];
+  loading: boolean;
+  error: null;
+} {
+  const products = useQuery(api.products.getProductsByCategory, {
+    category,
+    limit,
+  });
+
+  return {
+    products: products ? products.map(transformProduct) : [],
+    loading: products === undefined,
+    error: null,
+  };
+}
+
+export function useActiveProducts(limit?: number): {
+  products: Product[];
+  loading: boolean;
+  error: null;
+} {
+  const products = useQuery(api.products.getActiveProducts, { limit });
+
+  return {
+    products: products ? products.map(transformProduct) : [],
+    loading: products === undefined,
+    error: null,
+  };
+}
+
+// Backward compatibility
+export function useProductsData(options: UseProductsOptions = {}) {
+  return useProductsConvex(options);
+}

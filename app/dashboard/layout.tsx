@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import DashboardLayout from "@/components/dashboard/dashboard-layout";
-import { useUserData } from "@/hooks/use-user-data";
+import { useUserData } from "@/hooks/use-user-convex";
 
 export default function Layout({
   children,

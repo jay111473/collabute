@@ -3,7 +3,7 @@
 import AccountSettings from "@/app/dashboard/settings/components/AccountSettings";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import PreferencesSettings from "@/app/dashboard/settings/components/PreferencesSettings";
-import { useUserData } from "@/hooks/use-user-data";
+import { useUserData } from "@/hooks/use-user-convex";
 
 export default function SettingsClientWrapper() {
   const { user, loading } = useUserData();

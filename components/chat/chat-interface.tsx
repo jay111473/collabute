@@ -1,5 +1,5 @@
 import { useRef, useEffect } from 'react'
-import { useChat } from '@/hooks/use-chat'
+import { useChatConvex } from '@/hooks/use-messages-convex'
 import { Conversation } from '@/types/chat'
 import { User } from '@/types/dashboard'
 import { ChatHeader } from './chat-header'
@@ -17,18 +17,10 @@ export const ChatInterface = ({ conversation, currentUser }: ChatInterfaceProps)
 
   const {
     messages,
-    typing,
-    onlineUsers,
     loading,
     sendMessage,
-    startTyping,
-    stopTyping,
     markAsRead,
-  } = useChat({
-    conversationId: conversation.id,
-    userId: currentUser.id.toString(),
-    user: currentUser,
-  })
+  } = useChatConvex((conversation as any)._id, (currentUser as any)._id)
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -38,37 +30,26 @@ export const ChatInterface = ({ conversation, currentUser }: ChatInterfaceProps)
   // Mark messages as read when conversation is opened
   useEffect(() => {
     if (messages.length > 0 && !loading) {
-      const lastMessage = messages[messages.length - 1]
-      if (lastMessage && lastMessage.sender !== currentUser && !lastMessage.isOptimistic) {
-        markAsRead(lastMessage.id.toString())
-      }
+      markAsRead()
     }
-  }, [messages, loading, currentUser, markAsRead])
+  }, [messages, loading, markAsRead])
 
   return (
     <div className="flex flex-col h-full bg-black">
       {/* Chat Header */}
       <ChatHeader 
         conversation={conversation} 
-        currentUserId={currentUser.id.toString()}
-        onlineUsers={onlineUsers}
+        currentUserId={(currentUser as any)._id}
+        onlineUsers={[]}
       />
 
       {/* Messages Area */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         <MessageList 
-          messages={messages}
-          currentUserId={currentUser.id.toString()}
+          messages={messages as any}
+          currentUserId={(currentUser as any)._id}
           loading={loading}
         />
-        
-        {/* Typing Indicator */}
-        {typing.length > 0 && (
-          <TypingIndicator 
-            typingUsers={typing}
-            participants={conversation.participants}
-          />
-        )}
         
         <div ref={messagesEndRef} />
       </div>
@@ -76,10 +57,10 @@ export const ChatInterface = ({ conversation, currentUser }: ChatInterfaceProps)
       {/* Message Input */}
       <div className="border-t border-white/10 p-4">
         <MessageInput
-          onSendMessage={sendMessage}
-          onStartTyping={startTyping}
-          onStopTyping={stopTyping}
+          onSendMessage={(message) => sendMessage(message)}
           disabled={loading}
+          onStartTyping={() => {}}
+          onStopTyping={() => {}}
         />
       </div>
     </div>

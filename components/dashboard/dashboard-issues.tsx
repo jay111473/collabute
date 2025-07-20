@@ -5,7 +5,7 @@ import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { GitCommit } from "lucide-react";
 import { truncateToFourWords } from "@/lib/utils";
-import { useUserData } from "@/hooks/use-user-data";
+import { useUserData } from "@/hooks/use-user-convex";
 import { Issue } from "@/types/dashboard";
 
 const IssuesTable = ({ issues }: { issues: Issue[] }) => (

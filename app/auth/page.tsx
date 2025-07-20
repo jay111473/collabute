@@ -7,10 +7,19 @@ import GithubIcon from "@/public/icons/github";
 import { ArrowRightIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { signIn } from "@/lib/auth-client";
 
 
 const Auth = () => {
   const router = useRouter();
+  
+  const handleGitHubSignIn = async () => {
+    await signIn.social({
+      provider: "github",
+      callbackURL: "/dashboard",
+    });
+  };
+  
   return (
     <div className="flex flex-col items-center justify-center min-h-screen py-2 bg-black">
       <div className="flex flex-col items-center justify-center gap-y-10 sm:gap-y-16 px-4 sm:px-[80px] w-full max-w-[500px] py-8 sm:py-[90px] text-center rounded-md">
@@ -20,9 +29,7 @@ const Auth = () => {
         </div>
         <div className="flex flex-col items-center justify-center w-full mt-4 gap-y-2">
           <Button
-            onClick={() =>
-              router.push(process.env.NEXT_PUBLIC_API_URL + "/api/oauth/github/login")
-            }
+            onClick={handleGitHubSignIn}
             className="w-full gap-x-2 border border-white hover:scale-[1.02] transition-all duration-200 hover:shadow-lg bg-black"
           >
             <GithubIcon />

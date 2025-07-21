@@ -46,15 +46,31 @@ const MessageType = v.union(
 );
 
 export default defineSchema({
-  // BetterAuth tables
+  // Unified user table (BetterAuth + business logic)
   user: defineTable({
+    // BetterAuth fields
     name: v.string(),
     email: v.string(),
     emailVerified: v.boolean(),
     image: v.optional(v.string()),
     createdAt: v.number(),
     updatedAt: v.number(),
-  }).index("email", ["email"]),
+
+    // Business logic fields (merged from users table)
+    profilePicture: v.optional(v.string()),
+    type: UserType,
+    phoneNumber: v.optional(v.string()),
+    countryCode: v.optional(v.string()),
+    country: v.optional(v.string()),
+    industry: v.optional(v.string()),
+    roleId: v.optional(v.id("roles")),
+    isVerified: v.boolean(),
+    kycStatus: KycStatus,
+    earlybird: v.boolean(),
+    wallet: v.number(),
+  })
+    .index("email", ["email"])
+    .index("by_type", ["type"]),
 
   session: defineTable({
     sessionToken: v.string(),
@@ -93,28 +109,9 @@ export default defineSchema({
     .index("identifier", ["identifier"])
     .index("token", ["token"]),
 
-  // Core user profile table - minimal fields only
-  users: defineTable({
-    authUserId: v.optional(v.id("user")), // Reference to BetterAuth user
-    email: v.optional(v.string()), // Temporary field for matching during creation
-    profilePicture: v.optional(v.string()),
-    type: UserType,
-    phoneNumber: v.optional(v.string()),
-    countryCode: v.optional(v.string()),
-    country: v.optional(v.string()),
-    industry: v.optional(v.string()),
-    roleId: v.optional(v.id("roles")),
-    isVerified: v.boolean(),
-    kycStatus: KycStatus,
-    earlybird: v.boolean(),
-    wallet: v.number(),
-  })
-    .index("by_auth_user", ["authUserId"])
-    .index("by_type", ["type"]),
-
   // Developer-specific profile data
   developer_profiles: defineTable({
-    userId: v.id("users"),
+    userId: v.id("user"),
     bio: v.optional(v.string()),
     skills: v.optional(v.array(v.string())),
     experience: v.optional(v.number()),
@@ -133,7 +130,7 @@ export default defineSchema({
 
   // Lead/Manager-specific profile data
   lead_profiles: defineTable({
-    userId: v.id("users"),
+    userId: v.id("user"),
     specializations: v.optional(v.array(v.string())),
     title: v.optional(v.string()),
     location: v.optional(v.string()),
@@ -149,7 +146,7 @@ export default defineSchema({
 
   // Startup-specific profile data
   startup_profiles: defineTable({
-    userId: v.id("users"),
+    userId: v.id("user"),
     companyName: v.string(),
     companyDescription: v.optional(v.string()),
     website: v.optional(v.string()),
@@ -166,7 +163,7 @@ export default defineSchema({
 
   // GitHub integration data - separate table for better performance
   github_profiles: defineTable({
-    userId: v.id("users"),
+    userId: v.id("user"),
     githubId: v.string(),
     githubUsername: v.string(),
     githubConnected: v.boolean(),
@@ -204,8 +201,8 @@ export default defineSchema({
     budget: v.optional(v.number()),
 
     // Owner and Team
-    ownerId: v.id("users"),
-    teamLeadId: v.optional(v.id("users")),
+    ownerId: v.id("user"),
+    teamLeadId: v.optional(v.id("user")),
 
     // Technical
     stacks: v.optional(v.array(v.string())),
@@ -226,7 +223,7 @@ export default defineSchema({
 
   project_collaborators: defineTable({
     projectId: v.id("projects"),
-    userId: v.id("users"),
+    userId: v.id("user"),
     status: v.optional(v.string()),
     joinedAt: v.number(),
   })
@@ -252,8 +249,8 @@ export default defineSchema({
 
     // Relationships
     projectId: v.id("projects"),
-    assigneeIds: v.optional(v.array(v.id("users"))),
-    reporterId: v.id("users"),
+    assigneeIds: v.optional(v.array(v.id("user"))),
+    reporterId: v.id("user"),
 
     // Labels
     labels: v.optional(v.array(v.string())),
@@ -270,7 +267,7 @@ export default defineSchema({
     .index("by_github_number", ["githubIssueNumber", "projectId"]),
 
   collaboration_requests: defineTable({
-    developerId: v.id("users"),
+    developerId: v.id("user"),
     issueId: v.id("issues"),
     percentageShare: v.number(),
     taskDefinition: v.optional(v.string()),
@@ -286,7 +283,7 @@ export default defineSchema({
     name: v.string(),
     fullName: v.string(),
     description: v.optional(v.string()),
-    ownerId: v.id("users"),
+    ownerId: v.id("user"),
     private: v.boolean(),
     htmlUrl: v.string(),
     cloneUrl: v.string(),
@@ -317,7 +314,7 @@ export default defineSchema({
 
     // Relationships
     projectId: v.optional(v.id("projects")),
-    createdById: v.optional(v.id("users")),
+    createdById: v.optional(v.id("user")),
     lastMessageId: v.optional(v.id("messages")),
   })
     .index("by_project", ["projectId"])
@@ -326,7 +323,7 @@ export default defineSchema({
 
   conversation_participants: defineTable({
     conversationId: v.id("conversations"),
-    userId: v.id("users"),
+    userId: v.id("user"),
     role: v.optional(v.string()),
     joinedAt: v.number(),
     leftAt: v.optional(v.number()),
@@ -343,7 +340,7 @@ export default defineSchema({
 
     // Relationships
     conversationId: v.id("conversations"),
-    senderId: v.id("users"),
+    senderId: v.id("user"),
     replyToId: v.optional(v.id("messages")),
 
     // Media
@@ -360,7 +357,7 @@ export default defineSchema({
     .index("by_reply_to", ["replyToId"]),
 
   transactions: defineTable({
-    userId: v.id("users"),
+    userId: v.id("user"),
     amount: v.number(),
     type: v.string(),
     method: v.string(),

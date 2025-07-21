@@ -71,7 +71,7 @@
     "html-to-image": "^1.11.13",
     "lucide-react": "^0.417.0",
     "mermaid": "^11.6.0",
-    "next": "15.3.4",
+    "next": "15.4.2",
     "next-themes": "^0.3.0",
     "posthog-js": "^1.224.1",
     "qs": "^6.14.0",

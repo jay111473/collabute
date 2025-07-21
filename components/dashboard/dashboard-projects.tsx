@@ -24,7 +24,10 @@ export default function DashboardProjects() {
         </CardHeader>
         <CardContent className="space-y-3">
           {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="h-16 bg-gray-700 rounded animate-pulse"></div>
+            <div
+              key={i}
+              className="h-16 bg-gray-700 rounded animate-pulse"
+            ></div>
           ))}
         </CardContent>
       </Card>
@@ -58,4 +61,4 @@ export default function DashboardProjects() {
       </CardContent>
     </Card>
   );
-} 
+}

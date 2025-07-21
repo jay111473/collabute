@@ -1,17 +1,15 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
-import { Id } from "./_generated/dataModel";
 
 // Get complete user profile with role-specific data
 export const getCompleteUserProfile = query({
-  args: { userId: v.id("users") },
+  args: { userId: v.id("user") },
   handler: async (ctx, args) => {
     const user = await ctx.db.get(args.userId);
     if (!user) return null;
 
-    // Get BetterAuth user data
-    const authUser = user.authUserId ? await ctx.db.get(user.authUserId) : null;
-    if (!authUser) return null;
+    // Since we have unified user table, no need to fetch separate auth data
+    // All user data is already in the user object
 
     let roleProfile = null;
 
@@ -48,7 +46,6 @@ export const getCompleteUserProfile = query({
 
     return {
       ...user,
-      authUser,
       roleProfile,
       githubProfile,
     };
@@ -58,7 +55,7 @@ export const getCompleteUserProfile = query({
 // Create developer profile
 export const createDeveloperProfile = mutation({
   args: {
-    userId: v.id("users"),
+    userId: v.id("user"),
     bio: v.optional(v.string()),
     skills: v.optional(v.array(v.string())),
     experience: v.optional(v.number()),
@@ -101,7 +98,7 @@ export const createDeveloperProfile = mutation({
 // Create lead profile
 export const createLeadProfile = mutation({
   args: {
-    userId: v.id("users"),
+    userId: v.id("user"),
     specializations: v.optional(v.array(v.string())),
     title: v.optional(v.string()),
     location: v.optional(v.string()),
@@ -134,7 +131,7 @@ export const createLeadProfile = mutation({
 // Create startup profile
 export const createStartupProfile = mutation({
   args: {
-    userId: v.id("users"),
+    userId: v.id("user"),
     companyName: v.string(),
     companyDescription: v.optional(v.string()),
     website: v.optional(v.string()),
@@ -168,7 +165,7 @@ export const createStartupProfile = mutation({
 // Create or update GitHub profile
 export const createGitHubProfile = mutation({
   args: {
-    userId: v.id("users"),
+    userId: v.id("user"),
     githubId: v.string(),
     githubUsername: v.string(),
     githubConnected: v.boolean(),
@@ -223,7 +220,7 @@ export const searchDevelopers = query({
   handler: async (ctx, args) => {
     // Get all developers
     const developers = await ctx.db
-      .query("users")
+      .query("user")
       .withIndex("by_type", (q) => q.eq("type", "DEVELOPER"))
       .collect();
 
@@ -235,11 +232,8 @@ export const searchDevelopers = query({
           .withIndex("by_user", (q) => q.eq("userId", dev._id))
           .first();
 
-        const authUser = dev.authUserId ? await ctx.db.get(dev.authUserId) : null;
-
         return {
           ...dev,
-          authUser,
           profile,
         };
       })
@@ -291,7 +285,7 @@ export const searchDevelopers = query({
 // Update user profile by type
 export const updateUserProfileByType = mutation({
   args: {
-    userId: v.id("users"),
+    userId: v.id("user"),
     profileData: v.any(),
   },
   handler: async (ctx, args) => {

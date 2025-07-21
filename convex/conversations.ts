@@ -5,9 +5,9 @@ export const createConversation = mutation({
   args: {
     title: v.string(),
     type: v.string(),
-    createdById: v.id("users"),
+    createdById: v.id("user"),
     projectId: v.optional(v.id("projects")),
-    participantIds: v.optional(v.array(v.id("users"))),
+    participantIds: v.optional(v.array(v.id("user"))),
   },
   handler: async (ctx, args) => {
     const conversationId = await ctx.db.insert("conversations", {
@@ -47,7 +47,7 @@ export const createConversation = mutation({
 
 export const getConversations = query({
   args: {
-    userId: v.id("users"),
+    userId: v.id("user"),
     type: v.optional(v.string()),
     projectId: v.optional(v.id("projects")),
     limit: v.optional(v.number()),
@@ -101,14 +101,13 @@ export const getConversations = query({
         const participantsWithData = await Promise.all(
           allParticipants.map(async (p) => {
             const user = await ctx.db.get(p.userId);
-            const authUser = user && user.authUserId ? await ctx.db.get(user.authUserId) : null;
             return {
               ...p,
               user: user ? {
                 ...user,
-                name: authUser?.name,
-                email: authUser?.email,
-                image: authUser?.image,
+                name: user.name,
+                email: user.email,
+                image: user.image,
               } : null,
             };
           })
@@ -125,13 +124,12 @@ export const getConversations = query({
         let lastMessageWithSender = null;
         if (lastMessage) {
           const sender = await ctx.db.get(lastMessage.senderId);
-          const senderAuth = sender && sender.authUserId ? await ctx.db.get(sender.authUserId) : null;
           lastMessageWithSender = {
             ...lastMessage,
             sender: sender ? {
               ...sender,
-              name: senderAuth?.name,
-              email: senderAuth?.email,
+              name: sender.name,
+              email: sender.email,
             } : null,
           };
         }
@@ -166,7 +164,7 @@ export const getConversations = query({
 export const getConversationById = query({
   args: { 
     conversationId: v.id("conversations"),
-    userId: v.id("users"),
+    userId: v.id("user"),
   },
   handler: async (ctx, args) => {
     const conversation = await ctx.db.get(args.conversationId);
@@ -196,14 +194,13 @@ export const getConversationById = query({
     const participantsWithData = await Promise.all(
       participants.map(async (p) => {
         const user = await ctx.db.get(p.userId);
-        const authUser = user && user.authUserId ? await ctx.db.get(user.authUserId) : null;
         return {
           ...p,
           user: user ? {
             ...user,
-            name: authUser?.name,
-            email: authUser?.email,
-            image: authUser?.image,
+            name: user.name,
+            email: user.email,
+            image: user.image,
           } : null,
         };
       })
@@ -225,8 +222,8 @@ export const getConversationById = query({
 export const addParticipant = mutation({
   args: {
     conversationId: v.id("conversations"),
-    userId: v.id("users"),
-    addedById: v.id("users"),
+    userId: v.id("user"),
+    addedById: v.id("user"),
     role: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
@@ -274,8 +271,8 @@ export const addParticipant = mutation({
 export const removeParticipant = mutation({
   args: {
     conversationId: v.id("conversations"),
-    userId: v.id("users"),
-    removedById: v.id("users"),
+    userId: v.id("user"),
+    removedById: v.id("user"),
   },
   handler: async (ctx, args) => {
     // Users can remove themselves, or admins/moderators can remove others
@@ -314,7 +311,7 @@ export const updateConversation = mutation({
       title: v.optional(v.string()),
       isArchived: v.optional(v.boolean()),
     }),
-    userId: v.id("users"),
+    userId: v.id("user"),
   },
   handler: async (ctx, args) => {
     // Check if user has permission to update
@@ -335,8 +332,8 @@ export const updateConversation = mutation({
 
 export const getDirectConversation = query({
   args: {
-    userId1: v.id("users"),
-    userId2: v.id("users"),
+    userId1: v.id("user"),
+    userId2: v.id("user"),
   },
   handler: async (ctx, args) => {
     // Find direct conversations involving both users
@@ -377,8 +374,8 @@ export const getDirectConversation = query({
 
 export const createDirectConversation = mutation({
   args: {
-    userId1: v.id("users"),
-    userId2: v.id("users"),
+    userId1: v.id("user"),
+    userId2: v.id("user"),
   },
   handler: async (ctx, args) => {
     // Check if direct conversation already exists

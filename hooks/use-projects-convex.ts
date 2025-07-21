@@ -64,7 +64,7 @@ interface UseProjectsOptions {
   limit?: number;
   type?: "startup" | "developer";
   status?: "active" | "completed" | "pending";
-  ownerId?: Id<"users">;
+  ownerId?: Id<"user">;
   where?: Record<string, any>;
 }
 

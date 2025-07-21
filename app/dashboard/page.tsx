@@ -3,10 +3,11 @@
 import { Suspense } from "react";
 
 import { VerificationAlerts } from "@/components/dashboard/verification-alerts";
-import { useUserData } from "@/hooks/use-user-convex";
+import { useUserConvex, useUserData } from "@/hooks/use-user-convex";
 import DashboardStats from "@/components/dashboard/dashboard-stats";
 import DashboardProjects from "@/components/dashboard/dashboard-projects";
 import DashboardIssues from "@/components/dashboard/dashboard-issues";
+import { GitHubAuthTest } from "@/components/debug/github-auth-test";
 
 // Skeleton components for progressive loading
 const StatsSkeleton = () => (
@@ -44,10 +45,13 @@ const IssuesSkeleton = () => (
 );
 
 export default function Dashboard() {
-  const { user } = useUserData();
+  const { user } = useUserConvex();
 
   return (
     <div className="flex flex-col gap-4 lg:gap-6 h-full min-h-screen">
+      {/* GitHub Auth Test - TEMPORARY DEBUG */}
+      <GitHubAuthTest />
+
       {/* Verification alerts - loads immediately */}
       {user && <VerificationAlerts user={user} />}
 

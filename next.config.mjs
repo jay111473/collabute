@@ -1,23 +1,26 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    devIndicators: {
-        appIsrStatus: true,
-        devLoading: true,
+  devIndicators: {
+    appIsrStatus: true,
+    devLoading: true,
+  },
+  experimental: {
+    browserDebugInfoInTerminal: true,
+  },
+  headers: [
+    {
+      key: "Access-Control-Allow-Origin",
+      value: "*",
     },
-    headers: [
-        {
-            key: 'Access-Control-Allow-Origin',
-            value: '*',
-        },
+  ],
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "admin.collabute.com",
+      },
     ],
-    images: {
-        remotePatterns: [
-            {
-                protocol: 'https',
-                hostname: 'admin.collabute.com',
-            },
-        ],
-    },
+  },
 };
 
 export default nextConfig;

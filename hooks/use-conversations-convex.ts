@@ -2,10 +2,10 @@
 
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { Id, Doc } from "@/convex/_generated/dataModel";
+import { Id } from "@/convex/_generated/dataModel";
 
 interface UseConversationsOptions {
-  userId: Id<"users">;
+  userId: Id<"user">;
   type?: string;
   projectId?: Id<"projects">;
   limit?: number;
@@ -18,12 +18,12 @@ export function useConversationsConvex(options: UseConversationsOptions): {
   createConversation: (data: {
     title: string;
     type: string;
-    participantIds?: Id<"users">[];
+    participantIds?: Id<"user">[];
     projectId?: Id<"projects">;
   }) => Promise<any>;
   updateConversation: (conversationId: Id<"conversations">, updates: { title?: string; isArchived?: boolean }) => Promise<any>;
-  addParticipant: (conversationId: Id<"conversations">, participantId: Id<"users">, role?: string) => Promise<any>;
-  removeParticipant: (conversationId: Id<"conversations">, participantId: Id<"users">) => Promise<any>;
+  addParticipant: (conversationId: Id<"conversations">, participantId: Id<"user">, role?: string) => Promise<any>;
+  removeParticipant: (conversationId: Id<"conversations">, participantId: Id<"user">) => Promise<any>;
   refetch: () => void;
 } {
   const { userId, type, projectId, limit } = options;
@@ -47,7 +47,7 @@ export function useConversationsConvex(options: UseConversationsOptions): {
     createConversation: async (data: {
       title: string;
       type: string;
-      participantIds?: Id<"users">[];
+      participantIds?: Id<"user">[];
       projectId?: Id<"projects">;
     }) => {
       return await createConversation({
@@ -65,7 +65,7 @@ export function useConversationsConvex(options: UseConversationsOptions): {
         userId,
       });
     },
-    addParticipant: async (conversationId: Id<"conversations">, participantId: Id<"users">, role?: string) => {
+    addParticipant: async (conversationId: Id<"conversations">, participantId: Id<"user">, role?: string) => {
       return await addParticipant({
         conversationId,
         userId: participantId,
@@ -73,7 +73,7 @@ export function useConversationsConvex(options: UseConversationsOptions): {
         role,
       });
     },
-    removeParticipant: async (conversationId: Id<"conversations">, participantId: Id<"users">) => {
+    removeParticipant: async (conversationId: Id<"conversations">, participantId: Id<"user">) => {
       return await removeParticipant({
         conversationId,
         userId: participantId,
@@ -86,7 +86,7 @@ export function useConversationsConvex(options: UseConversationsOptions): {
   };
 }
 
-export function useConversationById(conversationId: Id<"conversations">, userId: Id<"users">): {
+export function useConversationById(conversationId: Id<"conversations">, userId: Id<"user">): {
   conversation: any;
   loading: boolean;
   error: null;
@@ -103,7 +103,7 @@ export function useConversationById(conversationId: Id<"conversations">, userId:
   };
 }
 
-export function useDirectConversation(userId1: Id<"users">, userId2: Id<"users">): {
+export function useDirectConversation(userId1: Id<"user">, userId2: Id<"user">): {
   conversation: any;
   loading: boolean;
   error: null;
@@ -126,5 +126,5 @@ export function useDirectConversation(userId1: Id<"users">, userId2: Id<"users">
 
 // Backward compatibility
 export function useConversations(userId: string) {
-  return useConversationsConvex({ userId: userId as Id<"users"> });
+  return useConversationsConvex({ userId: userId as Id<"user"> });
 }

@@ -1,5 +1,6 @@
 import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
+import { mutation, query, action } from "./_generated/server";
+import { api } from "./_generated/api";
 
 // Get user's GitHub account from BetterAuth
 export const getUserGitHubAccount = query({
@@ -38,11 +39,8 @@ export const syncUserRepositories = mutation({
     ),
   },
   handler: async (ctx, args) => {
-    // Get user's profile
-    const userProfile = await ctx.db
-      .query("users")
-      .withIndex("by_auth_user", (q) => q.eq("authUserId", args.userId as any))
-      .first();
+    // Get user's profile directly from unified user table
+    const userProfile = await ctx.db.get(args.userId);
 
     if (!userProfile) {
       throw new Error("User profile not found");
@@ -102,7 +100,7 @@ export const syncUserRepositories = mutation({
 // Get user's GitHub repositories
 export const getUserRepositories = query({
   args: {
-    userId: v.id("users"),
+    userId: v.id("user"),
     includePrivate: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
@@ -149,10 +147,7 @@ export const connectRepositoryToProject = mutation({
       throw new Error("Repository not found");
     }
 
-    const userProfile = await ctx.db
-      .query("users")
-      .withIndex("by_auth_user", (q) => q.eq("authUserId", args.userId as any))
-      .first();
+    const userProfile = await ctx.db.get(args.userId);
 
     if (!userProfile || repository.ownerId !== userProfile._id) {
       throw new Error("Unauthorized to connect this repository");
@@ -202,10 +197,7 @@ export const disconnectRepositoryFromProject = mutation({
       throw new Error("Repository not found");
     }
 
-    const userProfile = await ctx.db
-      .query("users")
-      .withIndex("by_auth_user", (q) => q.eq("authUserId", args.userId as any))
-      .first();
+    const userProfile = await ctx.db.get(args.userId);
 
     if (!userProfile || repository.ownerId !== userProfile._id) {
       throw new Error("Unauthorized to disconnect this repository");
@@ -331,5 +323,161 @@ export const getRepositoryStats = query({
       repository,
       issueStats,
     };
+  },
+});
+
+// Fetch user's GitHub repositories from GitHub API and store them
+export const fetchAndStoreRepositories = action({
+  args: { userId: v.id("user") },
+  handler: async (ctx, { userId }) => {
+    console.log("Fetching GitHub repositories for user:", userId);
+    
+    // Get GitHub profile and access token
+    const githubProfile = await ctx.runQuery("auth:getGithubProfile" as any, { userId });
+    
+    if (!githubProfile || !githubProfile.githubAccessToken) {
+      throw new Error("GitHub profile not found or access token missing");
+    }
+
+    try {
+      // Fetch repositories from GitHub API
+      const response = await fetch("https://api.github.com/user/repos?per_page=100", {
+        headers: {
+          Authorization: `Bearer ${githubProfile.githubAccessToken}`,
+          "User-Agent": "Collabute-App",
+          Accept: "application/vnd.github.v3+json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`GitHub API error: ${response.status} ${response.statusText}`);
+      }
+
+      const repos = await response.json();
+      console.log(`Fetched ${repos.length} repositories from GitHub`);
+      
+      // Prepare repository data for sync
+      const repoData = repos.map((repo: any) => ({
+        id: repo.id,
+        name: repo.name,
+        fullName: repo.full_name,
+        description: repo.description || "",
+        private: repo.private,
+        htmlUrl: repo.html_url,
+        cloneUrl: repo.clone_url,
+        language: repo.language || "",
+        stargazersCount: repo.stargazers_count,
+        forksCount: repo.forks_count,
+        defaultBranch: repo.default_branch,
+      }));
+
+      // Store repositories using existing sync function
+      const syncedRepoIds = await ctx.runMutation("github:syncUserRepositories" as any, {
+        userId,
+        repositories: repoData,
+      });
+
+      // Update GitHub profile with latest stats
+      await ctx.runMutation("auth:updateGithubProfile" as any, {
+        userId,
+        githubUsername: repos[0]?.owner?.login,
+        publicRepos: repos.filter((r: any) => !r.private).length,
+      });
+
+      console.log(`Synced ${syncedRepoIds.length} repositories`);
+      return { syncedCount: syncedRepoIds.length, repositories: repoData };
+    } catch (error) {
+      console.error("Error fetching GitHub repositories:", error);
+      throw error;
+    }
+  },
+});
+
+// Fetch user's GitHub activities/events
+export const fetchGithubActivities = action({
+  args: { userId: v.id("user") },
+  handler: async (ctx, { userId }) => {
+    console.log("Fetching GitHub activities for user:", userId);
+    
+    const githubProfile = await ctx.runQuery("auth:getGithubProfile" as any, { userId });
+    
+    if (!githubProfile || !githubProfile.githubAccessToken || !githubProfile.githubUsername) {
+      throw new Error("GitHub profile incomplete - username or access token missing");
+    }
+
+    try {
+      // Fetch user events from GitHub API
+      const response = await fetch(`https://api.github.com/users/${githubProfile.githubUsername}/events?per_page=100`, {
+        headers: {
+          Authorization: `Bearer ${githubProfile.githubAccessToken}`,
+          "User-Agent": "Collabute-App",
+          Accept: "application/vnd.github.v3+json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`GitHub API error: ${response.status} ${response.statusText}`);
+      }
+
+      const activities = await response.json();
+      console.log(`Fetched ${activities.length} activities from GitHub`);
+      
+      // Filter relevant activities (commits, PRs, issues, repository creation)
+      const relevantActivities = activities.filter((activity: any) => 
+        ['PushEvent', 'PullRequestEvent', 'IssuesEvent', 'CreateEvent', 'ForkEvent'].includes(activity.type)
+      );
+
+      console.log(`Found ${relevantActivities.length} relevant activities`);
+      return relevantActivities;
+    } catch (error) {
+      console.error("Error fetching GitHub activities:", error);
+      throw error;
+    }
+  },
+});
+
+// Fetch user profile data from GitHub API
+export const fetchGithubUserProfile = action({
+  args: { userId: v.id("user") },
+  handler: async (ctx, { userId }) => {
+    console.log("Fetching GitHub user profile for user:", userId);
+    
+    const githubProfile = await ctx.runQuery("auth:getGithubProfile" as any, { userId });
+    
+    if (!githubProfile || !githubProfile.githubAccessToken) {
+      throw new Error("GitHub profile not found or access token missing");
+    }
+
+    try {
+      // Fetch user profile from GitHub API
+      const response = await fetch("https://api.github.com/user", {
+        headers: {
+          Authorization: `Bearer ${githubProfile.githubAccessToken}`,
+          "User-Agent": "Collabute-App",
+          Accept: "application/vnd.github.v3+json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`GitHub API error: ${response.status} ${response.statusText}`);
+      }
+
+      const profile = await response.json();
+      console.log("Fetched GitHub profile:", profile.login);
+      
+      // Update GitHub profile with fetched data
+      await ctx.runMutation("auth:updateGithubProfile" as any, {
+        userId,
+        githubUsername: profile.login,
+        publicRepos: profile.public_repos,
+        followers: profile.followers,
+        following: profile.following,
+      });
+
+      return profile;
+    } catch (error) {
+      console.error("Error fetching GitHub user profile:", error);
+      throw error;
+    }
   },
 });

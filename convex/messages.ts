@@ -4,7 +4,7 @@ import { mutation, query } from "./_generated/server";
 export const sendMessage = mutation({
   args: {
     conversationId: v.id("conversations"),
-    senderId: v.id("users"),
+    senderId: v.id("user"),
     content: v.string(),
     type: v.optional(v.string()),
     metadata: v.optional(v.any()),
@@ -67,16 +67,15 @@ export const getMessages = query({
     const messagesWithSenders = await Promise.all(
       messages.map(async (message) => {
         const sender = await ctx.db.get(message.senderId);
-        const senderAuth = sender && sender.authUserId ? await ctx.db.get(sender.authUserId) : null;
 
         return {
           ...message,
           sender: sender
             ? {
                 ...sender,
-                name: senderAuth?.name,
-                email: senderAuth?.email,
-                image: senderAuth?.image,
+                name: sender.name,
+                email: sender.email,
+                image: sender.image,
               }
             : null,
         };
@@ -91,7 +90,7 @@ export const editMessage = mutation({
   args: {
     messageId: v.id("messages"),
     newContent: v.string(),
-    userId: v.id("users"),
+    userId: v.id("user"),
   },
   handler: async (ctx, args) => {
     const message = await ctx.db.get(args.messageId);
@@ -116,7 +115,7 @@ export const editMessage = mutation({
 export const deleteMessage = mutation({
   args: {
     messageId: v.id("messages"),
-    userId: v.id("users"),
+    userId: v.id("user"),
   },
   handler: async (ctx, args) => {
     const message = await ctx.db.get(args.messageId);
@@ -148,7 +147,7 @@ export const deleteMessage = mutation({
 export const markAsRead = mutation({
   args: {
     conversationId: v.id("conversations"),
-    userId: v.id("users"),
+    userId: v.id("user"),
     messageId: v.optional(v.id("messages")),
   },
   handler: async (ctx, args) => {
@@ -172,7 +171,7 @@ export const markAsRead = mutation({
 export const getUnreadCount = query({
   args: {
     conversationId: v.id("conversations"),
-    userId: v.id("users"),
+    userId: v.id("user"),
   },
   handler: async (ctx, args) => {
     const participant = await ctx.db
@@ -231,16 +230,15 @@ export const searchMessages = query({
     const messagesWithSenders = await Promise.all(
       filteredMessages.map(async (message) => {
         const sender = await ctx.db.get(message.senderId);
-        const senderAuth = sender && sender.authUserId ? await ctx.db.get(sender.authUserId) : null;
 
         return {
           ...message,
           sender: sender
             ? {
                 ...sender,
-                name: senderAuth?.name,
-                email: senderAuth?.email,
-                image: senderAuth?.image,
+                name: sender.name,
+                email: sender.email,
+                image: sender.image,
               }
             : null,
         };

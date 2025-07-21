@@ -1,6 +1,8 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 
+// This function is deprecated since user creation is now handled in auth.ts
+// Keeping for backward compatibility but redirecting to user table
 export const createUserProfile = mutation({
   args: {
     authUserId: v.id("user"),
@@ -12,60 +14,37 @@ export const createUserProfile = mutation({
     industry: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    // Check if user profile already exists
-    const existingProfile = await ctx.db
-      .query("users")
-      .withIndex("by_auth_user", (q) => q.eq("authUserId", args.authUserId))
-      .first();
-
-    if (existingProfile) {
-      return existingProfile._id;
+    // Since we have a unified user table, just update the existing user
+    const user = await ctx.db.get(args.authUserId);
+    if (!user) {
+      throw new Error("User not found");
     }
 
-    const userId = await ctx.db.insert("users", {
-      authUserId: args.authUserId,
-      profilePicture: args.profilePicture,
-      type: (args.type as any) || "DEVELOPER",
-      phoneNumber: args.phoneNumber,
-      countryCode: args.countryCode,
-      country: args.country,
-      industry: args.industry,
-      isVerified: false,
-      kycStatus: "PENDING",
-      earlybird: false,
-      wallet: 0,
+    // Update the user with additional profile data
+    await ctx.db.patch(args.authUserId, {
+      profilePicture: args.profilePicture || user.profilePicture,
+      type: (args.type as any) || user.type,
+      phoneNumber: args.phoneNumber || user.phoneNumber,
+      countryCode: args.countryCode || user.countryCode,
+      country: args.country || user.country,
+      industry: args.industry || user.industry,
     });
 
-    return userId;
+    return args.authUserId;
   },
 });
 
 export const getUserProfile = query({
   args: { authUserId: v.id("user") },
   handler: async (ctx, args) => {
-    const profile = await ctx.db
-      .query("users")
-      .withIndex("by_auth_user", (q) => q.eq("authUserId", args.authUserId))
-      .first();
-
-    if (!profile) {
-      return null;
-    }
-
-    // Get the auth user data
-    const authUser = await ctx.db.get(args.authUserId);
-
-    return {
-      ...profile,
-      email: authUser?.email,
-      name: authUser?.name,
-    };
+    // With unified table, just return the user directly
+    return await ctx.db.get(args.authUserId);
   },
 });
 
 export const updateUserProfile = mutation({
   args: {
-    userId: v.id("users"),
+    userId: v.id("user"),
     updates: v.object({
       profilePicture: v.optional(v.string()),
       type: v.optional(v.string()),
@@ -76,19 +55,9 @@ export const updateUserProfile = mutation({
     }),
   },
   handler: async (ctx, args) => {
-    // Only update fields that exist in the core users table
-    const coreUpdates = {
-      profilePicture: args.updates.profilePicture,
-      type: args.updates.type,
-      phoneNumber: args.updates.phoneNumber,
-      countryCode: args.updates.countryCode,
-      country: args.updates.country,
-      industry: args.updates.industry,
-    };
-
     // Remove undefined values
     const filteredUpdates = Object.fromEntries(
-      Object.entries(coreUpdates).filter(([_, v]) => v !== undefined)
+      Object.entries(args.updates).filter(([_, v]) => v !== undefined)
     );
 
     if (Object.keys(filteredUpdates).length > 0) {
@@ -101,7 +70,7 @@ export const updateUserProfile = mutation({
 
 export const updateGitHubData = mutation({
   args: {
-    userId: v.id("users"),
+    userId: v.id("user"),
     githubData: v.object({
       githubId: v.string(),
       githubUsername: v.string(),
@@ -201,29 +170,19 @@ export const getUsers = query({
 
     if (args.type) {
       users = await ctx.db
-        .query("users")
+        .query("user")
         .withIndex("by_type", (q) => q.eq("type", args.type as any))
         .collect();
     } else {
-      users = await ctx.db.query("users").collect();
+      users = await ctx.db.query("user").collect();
     }
 
-    // Get auth user data for each user
-    const usersWithAuthData = await Promise.all(
-      users
-        .filter((user) => !args.country || user.country === args.country)
-        .slice(0, args.limit || 50)
-        .map(async (user) => {
-          const authUser = user.authUserId ? await ctx.db.get(user.authUserId) : null;
-          return {
-            ...user,
-            email: authUser?.email,
-            name: authUser?.name,
-          };
-        })
-    );
+    // Filter and limit users
+    const filteredUsers = users
+      .filter((user) => !args.country || user.country === args.country)
+      .slice(0, args.limit || 50);
 
-    return usersWithAuthData;
+    return filteredUsers;
   },
 });
 
@@ -234,29 +193,17 @@ export const getUsersByType = query({
   },
   handler: async (ctx, args) => {
     const users = await ctx.db
-      .query("users")
+      .query("user")
       .withIndex("by_type", (q) => q.eq("type", args.type as any))
       .take(args.limit || 20);
 
-    // Get auth user data for each user
-    const usersWithAuthData = await Promise.all(
-      users.map(async (user) => {
-        const authUser = user.authUserId ? await ctx.db.get(user.authUserId) : null;
-        return {
-          ...user,
-          email: authUser?.email,
-          name: authUser?.name,
-        };
-      })
-    );
-
-    return usersWithAuthData;
+    return users;
   },
 });
 
 export const updateKycStatus = mutation({
   args: {
-    userId: v.id("users"),
+    userId: v.id("user"),
     status: v.string(),
   },
   handler: async (ctx, args) => {
@@ -292,26 +239,17 @@ export const completeUserProfile = mutation({
     ),
   },
   handler: async (ctx, args) => {
-    // Get current authenticated user ID from Better Auth
+    // Get current user from Better Auth
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
       throw new Error("Not authenticated");
     }
 
-    // Find user in our users table by authUserId
-    const user = await ctx.db
-      .query("users")
-      .withIndex("by_auth_user", (q) =>
-        q.eq("authUserId", identity.subject as any)
-      )
-      .first();
-
-    if (!user) {
-      throw new Error("User not found");
-    }
+    // The user ID from Better Auth is the unified user table ID
+    const userId = identity.subject as any;
 
     // Update core user profile
-    await ctx.db.patch(user._id, {
+    await ctx.db.patch(userId, {
       phoneNumber: args.phoneNumber,
       countryCode: args.countryCode,
       type: args.type,
@@ -321,12 +259,12 @@ export const completeUserProfile = mutation({
     if (args.type === "DEVELOPER" && args.developerFields?.primaryRole) {
       const existingProfile = await ctx.db
         .query("developer_profiles")
-        .withIndex("by_user", (q) => q.eq("userId", user._id))
+        .withIndex("by_user", (q) => q.eq("userId", userId))
         .first();
 
       if (!existingProfile) {
         await ctx.db.insert("developer_profiles", {
-          userId: user._id,
+          userId: userId,
           skills: args.developerFields.primaryRole,
         });
       }
@@ -335,12 +273,81 @@ export const completeUserProfile = mutation({
     if (args.type === "STARTUP" && args.startupFields?.companyName) {
       const existingProfile = await ctx.db
         .query("startup_profiles")
-        .withIndex("by_user", (q) => q.eq("userId", user._id))
+        .withIndex("by_user", (q) => q.eq("userId", userId))
         .first();
 
       if (!existingProfile) {
         await ctx.db.insert("startup_profiles", {
-          userId: user._id,
+          userId: userId,
+          companyName: args.startupFields.companyName,
+          teamSize: args.startupFields.teamSize
+            ? parseInt(args.startupFields.teamSize.split("-")[0])
+            : undefined,
+        });
+      }
+    }
+
+    return { success: true };
+  },
+});
+
+// Version that takes explicit userId for admin operations
+export const completeUserProfileWithId = mutation({
+  args: {
+    userId: v.id("user"),
+    phoneNumber: v.optional(v.string()),
+    countryCode: v.optional(v.string()),
+    type: v.union(
+      v.literal("DEVELOPER"),
+      v.literal("STARTUP"),
+      v.literal("DESIGNER"),
+      v.literal("LEAD"),
+      v.literal("PROJECT_MANAGER")
+    ),
+    developerFields: v.optional(
+      v.object({
+        primaryRole: v.optional(v.array(v.string())),
+      })
+    ),
+    startupFields: v.optional(
+      v.object({
+        companyName: v.optional(v.string()),
+        teamSize: v.optional(v.string()),
+      })
+    ),
+  },
+  handler: async (ctx, args) => {
+    // Update core user profile
+    await ctx.db.patch(args.userId, {
+      phoneNumber: args.phoneNumber,
+      countryCode: args.countryCode,
+      type: args.type,
+    });
+
+    // Create role-specific profile if needed
+    if (args.type === "DEVELOPER" && args.developerFields?.primaryRole) {
+      const existingProfile = await ctx.db
+        .query("developer_profiles")
+        .withIndex("by_user", (q) => q.eq("userId", args.userId))
+        .first();
+
+      if (!existingProfile) {
+        await ctx.db.insert("developer_profiles", {
+          userId: args.userId,
+          skills: args.developerFields.primaryRole,
+        });
+      }
+    }
+
+    if (args.type === "STARTUP" && args.startupFields?.companyName) {
+      const existingProfile = await ctx.db
+        .query("startup_profiles")
+        .withIndex("by_user", (q) => q.eq("userId", args.userId))
+        .first();
+
+      if (!existingProfile) {
+        await ctx.db.insert("startup_profiles", {
+          userId: args.userId,
           companyName: args.startupFields.companyName,
           teamSize: args.startupFields.teamSize
             ? parseInt(args.startupFields.teamSize.split("-")[0])
@@ -355,7 +362,7 @@ export const completeUserProfile = mutation({
 
 export const updateWallet = mutation({
   args: {
-    userId: v.id("users"),
+    userId: v.id("user"),
     amount: v.number(),
     operation: v.union(v.literal("add"), v.literal("subtract")),
   },
@@ -383,7 +390,7 @@ export const updateWallet = mutation({
 });
 
 export const getUserGitHubRepositories = query({
-  args: { userId: v.id("users") },
+  args: { userId: v.id("user") },
   handler: async (ctx, args) => {
     return await ctx.db
       .query("github_repositories")

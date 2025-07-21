@@ -13,8 +13,8 @@ export const createProject = mutation({
     budget: v.optional(v.number()),
     stacks: v.optional(v.array(v.string())),
     tags: v.optional(v.array(v.string())),
-    ownerId: v.id("users"),
-    teamLeadId: v.optional(v.id("users")),
+    ownerId: v.id("user"),
+    teamLeadId: v.optional(v.id("user")),
     productId: v.optional(v.id("products")),
   },
   handler: async (ctx, args) => {
@@ -72,7 +72,7 @@ export const createProject = mutation({
 
 export const getProjects = query({
   args: {
-    ownerId: v.optional(v.id("users")),
+    ownerId: v.optional(v.id("user")),
     status: v.optional(v.string()),
     type: v.optional(v.string()),
     limit: v.optional(v.number()),
@@ -113,9 +113,7 @@ export const getProjects = query({
         const owner = await ctx.db.get(project.ownerId);
         const teamLead = project.teamLeadId ? await ctx.db.get(project.teamLeadId) : null;
         
-        // Get owner's auth data
-        const ownerAuth = owner && owner.authUserId ? await ctx.db.get(owner.authUserId) : null;
-        const teamLeadAuth = teamLead && teamLead.authUserId ? await ctx.db.get(teamLead.authUserId) : null;
+        // Owner and teamLead data is directly available from unified user table
 
         // Get repository if connected
         const repository = project.repositoryId ? 
@@ -139,13 +137,13 @@ export const getProjects = query({
           ...project,
           owner: owner ? {
             ...owner,
-            name: ownerAuth?.name,
-            email: ownerAuth?.email,
+            name: owner.name,
+            email: owner.email,
           } : null,
           teamLead: teamLead ? {
             ...teamLead,
-            name: teamLeadAuth?.name,
-            email: teamLeadAuth?.email,
+            name: teamLead.name,
+            email: teamLead.email,
           } : null,
           repository,
           issueCount,
@@ -179,9 +177,7 @@ export const getProjectBySlug = query({
     const owner = await ctx.db.get(project.ownerId);
     const teamLead = project.teamLeadId ? await ctx.db.get(project.teamLeadId) : null;
     
-    // Get auth data
-    const ownerAuth = owner && owner.authUserId ? await ctx.db.get(owner.authUserId) : null;
-    const teamLeadAuth = teamLead && teamLead.authUserId ? await ctx.db.get(teamLead.authUserId) : null;
+    // Owner and teamLead data is directly available from unified user table
 
     // Get repository
     const repository = project.repositoryId ? 
@@ -202,13 +198,12 @@ export const getProjectBySlug = query({
     const collaboratorsWithData = await Promise.all(
       collaborators.map(async (collab) => {
         const user = await ctx.db.get(collab.userId);
-        const authUser = user && user.authUserId ? await ctx.db.get(user.authUserId) : null;
         return {
           ...collab,
           user: user ? {
             ...user,
-            name: authUser?.name,
-            email: authUser?.email,
+            name: user.name,
+            email: user.email,
           } : null,
         };
       })
@@ -218,13 +213,13 @@ export const getProjectBySlug = query({
       ...project,
       owner: owner ? {
         ...owner,
-        name: ownerAuth?.name,
-        email: ownerAuth?.email,
+        name: owner.name,
+        email: owner.email,
       } : null,
       teamLead: teamLead ? {
         ...teamLead,
-        name: teamLeadAuth?.name,
-        email: teamLeadAuth?.email,
+        name: teamLead.name,
+        email: teamLead.email,
       } : null,
       repository,
       issues,
@@ -248,7 +243,7 @@ export const updateProject = mutation({
       budget: v.optional(v.number()),
       stacks: v.optional(v.array(v.string())),
       tags: v.optional(v.array(v.string())),
-      teamLeadId: v.optional(v.id("users")),
+      teamLeadId: v.optional(v.id("user")),
       milestones: v.optional(v.any()),
     }),
   },
@@ -307,7 +302,7 @@ export const deleteProject = mutation({
 export const addCollaborator = mutation({
   args: {
     projectId: v.id("projects"),
-    userId: v.id("users"),
+    userId: v.id("user"),
     status: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
@@ -351,7 +346,7 @@ export const addCollaborator = mutation({
 export const removeCollaborator = mutation({
   args: {
     projectId: v.id("projects"),
-    userId: v.id("users"),
+    userId: v.id("user"),
   },
   handler: async (ctx, args) => {
     const collaborator = await ctx.db

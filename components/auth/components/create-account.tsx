@@ -17,10 +17,12 @@ import { StartupFields } from "../StartupFields";
 import { useCreateAccount } from "@/components/auth/hooks/useCreateAccount";
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { signUp } from "@/lib/auth-client";
+import { authClient } from "@/lib/auth-client";
 import { toast } from "sonner";
 import type { CreateAccountFormData } from "@/types/auth.types";
 import { useRouter } from "next/navigation";
+import { useMutation } from "convex/react";
+import { api } from "../../../convex/_generated/api";
 
 // Define the form error type
 type FormErrors = {
@@ -33,29 +35,68 @@ const CreateAccount = () => {
   const router = useRouter();
   const [formErrors, setFormErrors] = useState<FormErrors>({});
   const [isLoading, setIsLoading] = useState(false);
+  const completeProfile = useMutation(api.users.completeUserProfile);
 
   // Handle form submission with Better Auth
   const handleSubmit = async (values: CreateAccountFormData) => {
     setIsLoading(true);
     try {
-      const { data, error } = await signUp.email({
-        email: values.email,
-        password: values.password,
-        name: values.name,
-      });
+      // First, create the account with BetterAuth
+      await authClient.signUp.email(
+        {
+          email: values.email,
+          password: values.password,
+          name: values.name,
+        },
+        {
+          onError: (ctx) => {
+            toast.error(ctx.error.message || "Failed to create account");
+            setFormErrors({
+              form: ctx.error.message || "Failed to create account",
+            });
+            setIsLoading(false);
+          },
+          onSuccess: async () => {
+            try {
+              // Wait a moment for the user to be properly created in Convex
+              await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      if (error) {
-        toast.error(error.message || "Failed to create account");
-        setFormErrors({ form: error.message || "Failed to create account" });
-        return;
-      }
+              // Complete the user profile with additional fields
+              await completeProfile({
+                phoneNumber: values.phoneNumber || undefined,
+                countryCode: values.countryCode || undefined,
+                type: values.type.toUpperCase() as any,
+                developerFields: values.developerFields
+                  ? {
+                      primaryRole:
+                        values.developerFields.primaryRole || undefined,
+                    }
+                  : undefined,
+                startupFields: values.startupFields
+                  ? {
+                      companyName:
+                        values.startupFields.companyName || undefined,
+                      teamSize: values.startupFields.teamSize || undefined,
+                    }
+                  : undefined,
+              });
 
-      toast.success("Account created successfully!");
-      router.push("/dashboard");
+              toast.success("Account created successfully!");
+              router.push("/dashboard");
+            } catch (profileError) {
+              toast.error(
+                "Account created, but profile completion failed. Please update your profile in settings."
+              );
+              router.push("/dashboard");
+            } finally {
+              setIsLoading(false);
+            }
+          },
+        }
+      );
     } catch (err) {
       toast.error("An unexpected error occurred");
       setFormErrors({ form: "An unexpected error occurred" });
-    } finally {
       setIsLoading(false);
     }
   };

@@ -114,8 +114,8 @@ export const getProjects = query({
         const teamLead = project.teamLeadId ? await ctx.db.get(project.teamLeadId) : null;
         
         // Get owner's auth data
-        const ownerAuth = owner ? await ctx.db.get(owner.authUserId) : null;
-        const teamLeadAuth = teamLead ? await ctx.db.get(teamLead.authUserId) : null;
+        const ownerAuth = owner && owner.authUserId ? await ctx.db.get(owner.authUserId) : null;
+        const teamLeadAuth = teamLead && teamLead.authUserId ? await ctx.db.get(teamLead.authUserId) : null;
 
         // Get repository if connected
         const repository = project.repositoryId ? 
@@ -180,8 +180,8 @@ export const getProjectBySlug = query({
     const teamLead = project.teamLeadId ? await ctx.db.get(project.teamLeadId) : null;
     
     // Get auth data
-    const ownerAuth = owner ? await ctx.db.get(owner.authUserId) : null;
-    const teamLeadAuth = teamLead ? await ctx.db.get(teamLead.authUserId) : null;
+    const ownerAuth = owner && owner.authUserId ? await ctx.db.get(owner.authUserId) : null;
+    const teamLeadAuth = teamLead && teamLead.authUserId ? await ctx.db.get(teamLead.authUserId) : null;
 
     // Get repository
     const repository = project.repositoryId ? 
@@ -202,7 +202,7 @@ export const getProjectBySlug = query({
     const collaboratorsWithData = await Promise.all(
       collaborators.map(async (collab) => {
         const user = await ctx.db.get(collab.userId);
-        const authUser = user ? await ctx.db.get(user.authUserId) : null;
+        const authUser = user && user.authUserId ? await ctx.db.get(user.authUserId) : null;
         return {
           ...collab,
           user: user ? {

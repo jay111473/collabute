@@ -3,8 +3,6 @@
 import { useQuery } from "convex/react";
 import { useSession } from "@/lib/auth-client";
 import { api } from "@/convex/_generated/api";
-import { Doc } from "@/convex/_generated/dataModel";
-import { User } from "@/types/dashboard";
 
 function transformConvexUserToUser(convexUser: any, authUser: any): any {
   if (!convexUser || !authUser) return null;
@@ -45,22 +43,19 @@ export function useUserConvex(): {
 } {
   const { data: session, isPending: sessionLoading } = useSession();
   
-  // Get the user profile from Convex if we have a session
-  const userProfile = useQuery(
-    api.users.getUserProfile,
-    session?.user?.id ? { authUserId: session.user.id as any } : "skip"
-  );
+  // Use the getCurrentUser function from auth.ts which handles BetterAuth integration correctly
+  const currentUser = useQuery(api.auth.getCurrentUser, {});
 
-  // Get complete profile with role-specific data
+  // Get complete profile with role-specific data - ensure we have a valid users table ID  
   const completeProfile = useQuery(
     api.userProfiles.getCompleteUserProfile,
-    userProfile ? { userId: userProfile._id } : "skip"
+    currentUser?._id ? { userId: currentUser._id } : "skip"
   );
 
-  const loading = sessionLoading || Boolean(session?.user?.id && userProfile === undefined);
+  const loading = sessionLoading || Boolean(session?.user && !currentUser);
   
   const transformedUser = transformConvexUserToUser(
-    completeProfile || userProfile,
+    completeProfile ? { ...currentUser, ...completeProfile, _id: currentUser?._id } : currentUser,
     session?.user
   );
 

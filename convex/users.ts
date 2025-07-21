@@ -214,7 +214,7 @@ export const getUsers = query({
         .filter((user) => !args.country || user.country === args.country)
         .slice(0, args.limit || 50)
         .map(async (user) => {
-          const authUser = await ctx.db.get(user.authUserId);
+          const authUser = user.authUserId ? await ctx.db.get(user.authUserId) : null;
           return {
             ...user,
             email: authUser?.email,
@@ -241,7 +241,7 @@ export const getUsersByType = query({
     // Get auth user data for each user
     const usersWithAuthData = await Promise.all(
       users.map(async (user) => {
-        const authUser = await ctx.db.get(user.authUserId);
+        const authUser = user.authUserId ? await ctx.db.get(user.authUserId) : null;
         return {
           ...user,
           email: authUser?.email,
@@ -265,6 +265,91 @@ export const updateKycStatus = mutation({
       isVerified: args.status === "VERIFIED",
     });
     return true;
+  },
+});
+
+export const completeUserProfile = mutation({
+  args: {
+    phoneNumber: v.optional(v.string()),
+    countryCode: v.optional(v.string()),
+    type: v.union(
+      v.literal("DEVELOPER"),
+      v.literal("STARTUP"),
+      v.literal("DESIGNER"),
+      v.literal("LEAD"),
+      v.literal("PROJECT_MANAGER")
+    ),
+    developerFields: v.optional(
+      v.object({
+        primaryRole: v.optional(v.array(v.string())),
+      })
+    ),
+    startupFields: v.optional(
+      v.object({
+        companyName: v.optional(v.string()),
+        teamSize: v.optional(v.string()),
+      })
+    ),
+  },
+  handler: async (ctx, args) => {
+    // Get current authenticated user ID from Better Auth
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Not authenticated");
+    }
+
+    // Find user in our users table by authUserId
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_auth_user", (q) =>
+        q.eq("authUserId", identity.subject as any)
+      )
+      .first();
+
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    // Update core user profile
+    await ctx.db.patch(user._id, {
+      phoneNumber: args.phoneNumber,
+      countryCode: args.countryCode,
+      type: args.type,
+    });
+
+    // Create role-specific profile if needed
+    if (args.type === "DEVELOPER" && args.developerFields?.primaryRole) {
+      const existingProfile = await ctx.db
+        .query("developer_profiles")
+        .withIndex("by_user", (q) => q.eq("userId", user._id))
+        .first();
+
+      if (!existingProfile) {
+        await ctx.db.insert("developer_profiles", {
+          userId: user._id,
+          skills: args.developerFields.primaryRole,
+        });
+      }
+    }
+
+    if (args.type === "STARTUP" && args.startupFields?.companyName) {
+      const existingProfile = await ctx.db
+        .query("startup_profiles")
+        .withIndex("by_user", (q) => q.eq("userId", user._id))
+        .first();
+
+      if (!existingProfile) {
+        await ctx.db.insert("startup_profiles", {
+          userId: user._id,
+          companyName: args.startupFields.companyName,
+          teamSize: args.startupFields.teamSize
+            ? parseInt(args.startupFields.teamSize.split("-")[0])
+            : undefined,
+        });
+      }
+    }
+
+    return { success: true };
   },
 });
 

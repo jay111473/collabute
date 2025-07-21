@@ -101,7 +101,7 @@ export const getConversations = query({
         const participantsWithData = await Promise.all(
           allParticipants.map(async (p) => {
             const user = await ctx.db.get(p.userId);
-            const authUser = user ? await ctx.db.get(user.authUserId) : null;
+            const authUser = user && user.authUserId ? await ctx.db.get(user.authUserId) : null;
             return {
               ...p,
               user: user ? {
@@ -125,7 +125,7 @@ export const getConversations = query({
         let lastMessageWithSender = null;
         if (lastMessage) {
           const sender = await ctx.db.get(lastMessage.senderId);
-          const senderAuth = sender ? await ctx.db.get(sender.authUserId) : null;
+          const senderAuth = sender && sender.authUserId ? await ctx.db.get(sender.authUserId) : null;
           lastMessageWithSender = {
             ...lastMessage,
             sender: sender ? {
@@ -196,7 +196,7 @@ export const getConversationById = query({
     const participantsWithData = await Promise.all(
       participants.map(async (p) => {
         const user = await ctx.db.get(p.userId);
-        const authUser = user ? await ctx.db.get(user.authUserId) : null;
+        const authUser = user && user.authUserId ? await ctx.db.get(user.authUserId) : null;
         return {
           ...p,
           user: user ? {

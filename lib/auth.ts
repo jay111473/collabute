@@ -1,45 +1,31 @@
-import { betterAuth } from "better-auth";
+import { convexAdapter } from "@convex-dev/better-auth";
 import { convex } from "@convex-dev/better-auth/plugins";
+import { betterAuth } from "better-auth";
+import { betterAuthComponent } from "../convex/auth";
+import { type GenericCtx } from "../convex/_generated/server";
 
-type User = any;
-type Account = any;
+// You'll want to replace this with an environment variable
+const siteUrl = "http://localhost:3000";
 
-const siteUrl = process.env.BETTER_AUTH_URL || "http://localhost:3000";
-
-export const auth = betterAuth({
-  baseURL: siteUrl,
-  secret: process.env.BETTER_AUTH_SECRET || "your-secret-key",
-  emailAndPassword: {
-    enabled: true,
-    requireEmailVerification: true,
-  },
-  socialProviders: {
-    github: {
-      clientId: process.env.GITHUB_CLIENT_ID as string,
-      clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
+export const createAuth = (ctx: GenericCtx) =>
+  // Configure your Better Auth instance here
+  betterAuth({
+    // All auth requests will be proxied through your next.js server
+    baseURL: siteUrl,
+    database: convexAdapter(ctx, betterAuthComponent),
+    socialProviders: {
+      github: {
+        clientId: process.env.GITHUB_CLIENT_ID as string,
+        clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
+      },
     },
-    google: {
-      clientId: process.env.GOOGLE_CLIENT_ID as string,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+    // Simple non-verified email/password to get started
+    emailAndPassword: {
+      enabled: true,
+      requireEmailVerification: false,
     },
-  },
-  session: {
-    expiresIn: 60 * 60 * 24 * 7, // 7 days
-    updateAge: 60 * 60 * 24, // 24 hours
-  },
-  plugins: [
-    convex({
-      // Configure the Convex plugin with necessary options
-    }),
-  ],
-  callbacks: {
-    async signIn({ user, account }: { user: User; account: Account }) {
-      return true;
-    },
-    async signUp({ user }: { user: User }) {
-      return true;
-    },
-  },
-});
-
-export type Session = typeof auth.$Infer.Session;
+    plugins: [
+      // The Convex plugin is required
+      convex(),
+    ],
+  });

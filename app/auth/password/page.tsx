@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
@@ -19,7 +19,8 @@ import { useEmail } from "@/app/providers/EmailContext";
 import { Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import Image from "next/image";
-import { signIn } from "@/lib/auth-client";
+import { authClient } from "@/lib/auth-client";
+import { Authenticated, Unauthenticated, AuthLoading } from "convex/react";
 import { z } from "zod";
 
 const loginformSchema = z.object({
@@ -29,7 +30,21 @@ const loginformSchema = z.object({
     .min(8, { message: "Password must be at least 8 characters" }),
 });
 
-const Password = () => {
+function AuthenticatedRedirect() {
+  const router = useRouter();
+  
+  useEffect(() => {
+    router.push("/dashboard");
+  }, [router]);
+
+  return (
+    <div className="flex items-center justify-center min-h-screen bg-black">
+      <div className="text-white">Redirecting to dashboard...</div>
+    </div>
+  );
+}
+
+function PasswordForm() {
   const [showPassword, setShowPassword] = useState(false);
   const { email } = useEmail();
   const router = useRouter();
@@ -45,18 +60,23 @@ const Password = () => {
   async function onSubmit(values: z.infer<typeof loginformSchema>) {
     try {
       toast.loading("Logging in...");
-      const { data, error } = await signIn.email({
-        email: values.email,
-        password: values.password,
-      });
-
-      if (error) {
-        toast.error(error.message || "Failed to log in. Please try again.");
-        return;
-      }
-
-      toast.success("Successfully logged in!");
-      router.push("/dashboard");
+      await authClient.signIn.email(
+        {
+          email: values.email,
+          password: values.password,
+        },
+        {
+          onError: (ctx) => {
+            toast.error(
+              ctx.error.message || "Failed to log in. Please try again."
+            );
+          },
+          onSuccess: () => {
+            toast.success("Successfully logged in!");
+            router.push("/dashboard");
+          },
+        }
+      );
     } catch (err) {
       toast.error("Failed to log in. Please try again.");
     }
@@ -130,6 +150,26 @@ const Password = () => {
         </Form>
       </div>
     </div>
+  );
+}
+
+const Password = () => {
+  return (
+    <>
+      <AuthLoading>
+        <div className="flex items-center justify-center min-h-screen bg-black">
+          <div className="text-white">Loading...</div>
+        </div>
+      </AuthLoading>
+      
+      <Authenticated>
+        <AuthenticatedRedirect />
+      </Authenticated>
+      
+      <Unauthenticated>
+        <PasswordForm />
+      </Unauthenticated>
+    </>
   );
 };
 

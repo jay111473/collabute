@@ -1,20 +1,35 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import React from "react";
+import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { Authenticated, Unauthenticated, AuthLoading } from "convex/react";
 import GithubIcon from "@/public/icons/github";
 import { ArrowRightIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { signIn } from "@/lib/auth-client";
+import { authClient } from "@/lib/auth-client";
 
 
-const Auth = () => {
+function AuthenticatedRedirect() {
+  const router = useRouter();
+  
+  useEffect(() => {
+    router.push("/dashboard");
+  }, [router]);
+
+  return (
+    <div className="flex items-center justify-center min-h-screen bg-black">
+      <div className="text-white">Redirecting to dashboard...</div>
+    </div>
+  );
+}
+
+function AuthForm() {
   const router = useRouter();
   
   const handleGitHubSignIn = async () => {
-    await signIn.social({
+    await authClient.signIn.social({
       provider: "github",
       callbackURL: "/dashboard",
     });
@@ -35,10 +50,6 @@ const Auth = () => {
             <GithubIcon />
             Continue with Github
           </Button>
-          {/* <Button className="w-full gap-x-2 bg-[#6B4FBB] hover:bg-[#8263d9] dark:bg-[#6B4FBB] dark:hover:bg-[#8263d9] text-white hover:scale-[1.02] transition-all duration-200 hover:shadow-lg hover:shadow-[#6B4FBB]/50">
-            <GitLabIcon />
-            Continue with GitLab
-          </Button> */}
           <Button
             onClick={() => router.push("/auth/password")}
             className="w-full gap-x-2 bg-white dark:bg-white border border-darkPrimary text-black dark:text-black hover:scale-[1.02] transition-all duration-200 hover:shadow-lg hover:shadow-darkPrimary/50"
@@ -57,6 +68,26 @@ const Auth = () => {
         </div>
       </div>
     </div>
+  );
+}
+
+const Auth = () => {
+  return (
+    <>
+      <AuthLoading>
+        <div className="flex items-center justify-center min-h-screen bg-black">
+          <div className="text-white">Loading...</div>
+        </div>
+      </AuthLoading>
+      
+      <Authenticated>
+        <AuthenticatedRedirect />
+      </Authenticated>
+      
+      <Unauthenticated>
+        <AuthForm />
+      </Unauthenticated>
+    </>
   );
 };
 

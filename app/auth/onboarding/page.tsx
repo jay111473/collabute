@@ -1,10 +1,28 @@
-import React from "react";
+"use client";
+
+import React, { useEffect } from "react";
+import { Authenticated, Unauthenticated, AuthLoading } from "convex/react";
+import { useRouter } from "next/navigation";
 import CreateAccount from "@/components/auth/components/create-account";
 import { Toaster } from "sonner";
 import Image from "next/image";
 import Link from "next/link";
 
-const Onboarding = () => {
+function AuthenticatedRedirect() {
+  const router = useRouter();
+
+  useEffect(() => {
+    router.push("/dashboard");
+  }, [router]);
+
+  return (
+    <div className="flex items-center justify-center min-h-screen bg-black">
+      <div className="text-white">Redirecting to dashboard...</div>
+    </div>
+  );
+}
+
+function OnboardingForm() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-black text-white px-4 py-6 md:px-6 overflow-x-hidden">
       <Toaster />
@@ -47,6 +65,26 @@ const Onboarding = () => {
         </Link>
       </div>
     </div>
+  );
+}
+
+const Onboarding = () => {
+  return (
+    <>
+      <AuthLoading>
+        <div className="flex items-center justify-center min-h-screen bg-black">
+          <div className="text-white">Loading...</div>
+        </div>
+      </AuthLoading>
+
+      <Authenticated>
+        <AuthenticatedRedirect />
+      </Authenticated>
+
+      <Unauthenticated>
+        <OnboardingForm />
+      </Unauthenticated>
+    </>
   );
 };
 

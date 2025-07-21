@@ -10,7 +10,7 @@ export const getCompleteUserProfile = query({
     if (!user) return null;
 
     // Get BetterAuth user data
-    const authUser = await ctx.db.get(user.authUserId);
+    const authUser = user.authUserId ? await ctx.db.get(user.authUserId) : null;
     if (!authUser) return null;
 
     let roleProfile = null;
@@ -62,7 +62,15 @@ export const createDeveloperProfile = mutation({
     bio: v.optional(v.string()),
     skills: v.optional(v.array(v.string())),
     experience: v.optional(v.number()),
-    experienceLevel: v.optional(v.union(v.literal("JUNIOR"), v.literal("MID_LEVEL"), v.literal("SENIOR"), v.literal("LEAD"), v.literal("ARCHITECT"))),
+    experienceLevel: v.optional(
+      v.union(
+        v.literal("JUNIOR"),
+        v.literal("MID_LEVEL"),
+        v.literal("SENIOR"),
+        v.literal("LEAD"),
+        v.literal("ARCHITECT")
+      )
+    ),
     availability: v.optional(v.string()),
     preferredWorkType: v.optional(v.string()),
     hourlyRate: v.optional(v.number()),
@@ -71,7 +79,7 @@ export const createDeveloperProfile = mutation({
   },
   handler: async (ctx, args) => {
     const { userId, ...profileData } = args;
-    
+
     // Check if profile already exists
     const existingProfile = await ctx.db
       .query("developer_profiles")
@@ -105,7 +113,7 @@ export const createLeadProfile = mutation({
   },
   handler: async (ctx, args) => {
     const { userId, ...profileData } = args;
-    
+
     const existingProfile = await ctx.db
       .query("lead_profiles")
       .withIndex("by_user", (q) => q.eq("userId", userId))
@@ -139,7 +147,7 @@ export const createStartupProfile = mutation({
   },
   handler: async (ctx, args) => {
     const { userId, ...profileData } = args;
-    
+
     const existingProfile = await ctx.db
       .query("startup_profiles")
       .withIndex("by_user", (q) => q.eq("userId", userId))
@@ -173,7 +181,7 @@ export const createGitHubProfile = mutation({
   },
   handler: async (ctx, args) => {
     const { userId, ...profileData } = args;
-    
+
     const existingProfile = await ctx.db
       .query("github_profiles")
       .withIndex("by_user", (q) => q.eq("userId", userId))
@@ -199,7 +207,15 @@ export const createGitHubProfile = mutation({
 export const searchDevelopers = query({
   args: {
     skills: v.optional(v.array(v.string())),
-    experienceLevel: v.optional(v.union(v.literal("JUNIOR"), v.literal("MID_LEVEL"), v.literal("SENIOR"), v.literal("LEAD"), v.literal("ARCHITECT"))),
+    experienceLevel: v.optional(
+      v.union(
+        v.literal("JUNIOR"),
+        v.literal("MID_LEVEL"),
+        v.literal("SENIOR"),
+        v.literal("LEAD"),
+        v.literal("ARCHITECT")
+      )
+    ),
     availability: v.optional(v.string()),
     minHourlyRate: v.optional(v.number()),
     maxHourlyRate: v.optional(v.number()),
@@ -218,9 +234,9 @@ export const searchDevelopers = query({
           .query("developer_profiles")
           .withIndex("by_user", (q) => q.eq("userId", dev._id))
           .first();
-        
-        const authUser = await ctx.db.get(dev.authUserId);
-        
+
+        const authUser = dev.authUserId ? await ctx.db.get(dev.authUserId) : null;
+
         return {
           ...dev,
           authUser,
@@ -230,37 +246,41 @@ export const searchDevelopers = query({
     );
 
     // Filter based on criteria
-    let filteredDevelopers = developersWithProfiles.filter(dev => dev.profile);
+    let filteredDevelopers = developersWithProfiles.filter(
+      (dev) => dev.profile
+    );
 
     if (args.skills?.length) {
-      filteredDevelopers = filteredDevelopers.filter(dev => 
-        dev.profile?.skills?.some(skill => 
-          args.skills!.includes(skill)
-        )
+      filteredDevelopers = filteredDevelopers.filter((dev) =>
+        dev.profile?.skills?.some((skill) => args.skills!.includes(skill))
       );
     }
 
     if (args.experienceLevel) {
-      filteredDevelopers = filteredDevelopers.filter(dev => 
-        dev.profile?.experienceLevel === args.experienceLevel
+      filteredDevelopers = filteredDevelopers.filter(
+        (dev) => dev.profile?.experienceLevel === args.experienceLevel
       );
     }
 
     if (args.availability) {
-      filteredDevelopers = filteredDevelopers.filter(dev => 
-        dev.profile?.availability === args.availability
+      filteredDevelopers = filteredDevelopers.filter(
+        (dev) => dev.profile?.availability === args.availability
       );
     }
 
     if (args.minHourlyRate) {
-      filteredDevelopers = filteredDevelopers.filter(dev => 
-        dev.profile?.hourlyRate && dev.profile.hourlyRate >= args.minHourlyRate!
+      filteredDevelopers = filteredDevelopers.filter(
+        (dev) =>
+          dev.profile?.hourlyRate &&
+          dev.profile.hourlyRate >= args.minHourlyRate!
       );
     }
 
     if (args.maxHourlyRate) {
-      filteredDevelopers = filteredDevelopers.filter(dev => 
-        dev.profile?.hourlyRate && dev.profile.hourlyRate <= args.maxHourlyRate!
+      filteredDevelopers = filteredDevelopers.filter(
+        (dev) =>
+          dev.profile?.hourlyRate &&
+          dev.profile.hourlyRate <= args.maxHourlyRate!
       );
     }
 
@@ -322,7 +342,10 @@ export const updateUserProfileByType = mutation({
           .first();
 
         if (existingStartupProfile) {
-          await ctx.db.patch(existingStartupProfile._id, args.profileData as any);
+          await ctx.db.patch(
+            existingStartupProfile._id,
+            args.profileData as any
+          );
           return existingStartupProfile._id;
         }
 

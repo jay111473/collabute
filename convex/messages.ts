@@ -67,7 +67,7 @@ export const getMessages = query({
     const messagesWithSenders = await Promise.all(
       messages.map(async (message) => {
         const sender = await ctx.db.get(message.senderId);
-        const senderAuth = sender ? await ctx.db.get(sender.authUserId) : null;
+        const senderAuth = sender && sender.authUserId ? await ctx.db.get(sender.authUserId) : null;
 
         return {
           ...message,
@@ -231,7 +231,7 @@ export const searchMessages = query({
     const messagesWithSenders = await Promise.all(
       filteredMessages.map(async (message) => {
         const sender = await ctx.db.get(message.senderId);
-        const senderAuth = sender ? await ctx.db.get(sender.authUserId) : null;
+        const senderAuth = sender && sender.authUserId ? await ctx.db.get(sender.authUserId) : null;
 
         return {
           ...message,

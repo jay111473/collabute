@@ -279,16 +279,33 @@ const EarlyBird = () => {
 
               <FormField
                 control={form.control}
+                name="phoneNumber"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col items-start justify-center">
+                    <FormLabel>Phone Number (Optional)</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="+1234567890"
+                        {...field}
+                        className="text-base md:text-sm"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
                 name="type"
                 render={({ field }) => (
                   <FormItem className="flex flex-col items-start justify-center w-full">
-                    <FormLabel>What best describes you</FormLabel>
+                    <FormLabel>Role</FormLabel>
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
                     >
                       <FormControl>
-                        <SelectTrigger className="text-base md:text-sm">
+                        <SelectTrigger className="text-base md:text-sm text-gray-500">
                           <SelectValue placeholder="Select what best describes you" />
                         </SelectTrigger>
                       </FormControl>
@@ -302,24 +319,6 @@ const EarlyBird = () => {
                         </SelectItem>
                       </SelectContent>
                     </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="phoneNumber"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col items-start justify-center">
-                    <FormLabel>Phone Number (Optional)</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="+1234567890"
-                        {...field}
-                        className="text-base md:text-sm"
-                      />
-                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}

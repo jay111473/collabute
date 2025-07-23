@@ -5,9 +5,9 @@ export const createConversation = mutation({
   args: {
     title: v.string(),
     type: v.string(),
-    createdById: v.id("user"),
+    createdById: v.id("users"),
     projectId: v.optional(v.id("projects")),
-    participantIds: v.optional(v.array(v.id("user"))),
+    participantIds: v.optional(v.array(v.id("users"))),
   },
   handler: async (ctx, args) => {
     const conversationId = await ctx.db.insert("conversations", {
@@ -30,14 +30,12 @@ export const createConversation = mutation({
     // Add other participants if specified
     if (args.participantIds) {
       for (const userId of args.participantIds) {
-        if (userId !== args.createdById) {
-          await ctx.db.insert("conversation_participants", {
-            conversationId,
-            userId,
-            role: "MEMBER",
-            joinedAt: Date.now(),
-          });
-        }
+        await ctx.db.insert("conversation_participants", {
+          conversationId,
+          userId,
+          role: "MEMBER",
+          joinedAt: Date.now(),
+        });
       }
     }
 
@@ -47,7 +45,7 @@ export const createConversation = mutation({
 
 export const getConversations = query({
   args: {
-    userId: v.id("user"),
+    userId: v.id("users"),
     type: v.optional(v.string()),
     projectId: v.optional(v.id("projects")),
     limit: v.optional(v.number()),
@@ -71,8 +69,13 @@ export const getConversations = query({
     // Filter and sort conversations
     let filteredConversations = conversations
       .filter(({ conversation }) => conversation && !conversation.isArchived)
-      .filter(({ conversation }) => !args.type || conversation!.type === args.type)
-      .filter(({ conversation }) => !args.projectId || conversation!.projectId === args.projectId);
+      .filter(
+        ({ conversation }) => !args.type || conversation!.type === args.type
+      )
+      .filter(
+        ({ conversation }) =>
+          !args.projectId || conversation!.projectId === args.projectId
+      );
 
     // Sort by creation time for now (can be improved with last message tracking)
     filteredConversations.sort((a, b) => {
@@ -94,21 +97,28 @@ export const getConversations = query({
         // Get all participants
         const allParticipants = await ctx.db
           .query("conversation_participants")
-          .withIndex("by_conversation", (q) => q.eq("conversationId", conversation._id))
+          .withIndex("by_conversation", (q) =>
+            q.eq("conversationId", conversation._id)
+          )
           .filter((q) => q.eq(q.field("leftAt"), undefined))
           .collect();
 
         const participantsWithData = await Promise.all(
           allParticipants.map(async (p) => {
-            const user = await ctx.db.get(p.userId);
+            const user = await ctx.db
+              .query("users")
+              .withIndex("by_user", (q) => q.eq("userId", p.userId))
+              .first();
             return {
               ...p,
-              user: user ? {
-                ...user,
-                name: user.name,
-                email: user.email,
-                image: user.image,
-              } : null,
+              user: user
+                ? {
+                    ...user,
+                    name: user.name,
+                    email: user.email,
+                    image: user.profilePicture,
+                  }
+                : null,
             };
           })
         );
@@ -116,7 +126,9 @@ export const getConversations = query({
         // Get last message
         const lastMessage = await ctx.db
           .query("messages")
-          .withIndex("by_conversation", (q) => q.eq("conversationId", conversation._id))
+          .withIndex("by_conversation", (q) =>
+            q.eq("conversationId", conversation._id)
+          )
           .filter((q) => q.eq(q.field("isDeleted"), false))
           .order("desc")
           .first();
@@ -126,19 +138,23 @@ export const getConversations = query({
           const sender = await ctx.db.get(lastMessage.senderId);
           lastMessageWithSender = {
             ...lastMessage,
-            sender: sender ? {
-              ...sender,
-              name: sender.name,
-              email: sender.email,
-            } : null,
+            sender: sender
+              ? {
+                  ...sender,
+                  name: sender.name,
+                  email: sender.email,
+                }
+              : null,
           };
         }
 
         // Get unread count (simplified for now)
         const unreadMessages = await ctx.db
           .query("messages")
-          .withIndex("by_conversation", (q) => q.eq("conversationId", conversation._id))
-          .filter((q) => 
+          .withIndex("by_conversation", (q) =>
+            q.eq("conversationId", conversation._id)
+          )
+          .filter((q) =>
             q.and(
               q.gt(q.field("_creationTime"), participation.joinedAt),
               q.neq(q.field("senderId"), args.userId),
@@ -162,13 +178,13 @@ export const getConversations = query({
 });
 
 export const getConversationById = query({
-  args: { 
+  args: {
     conversationId: v.id("conversations"),
-    userId: v.id("user"),
+    userId: v.id("users"),
   },
   handler: async (ctx, args) => {
     const conversation = await ctx.db.get(args.conversationId);
-    
+
     if (!conversation) {
       return null;
     }
@@ -176,8 +192,9 @@ export const getConversationById = query({
     // Check if user is participant
     const participation = await ctx.db
       .query("conversation_participants")
-      .withIndex("by_conversation_user", (q) => 
-        q.eq("conversationId", args.conversationId).eq("userId", args.userId))
+      .withIndex("by_conversation_user", (q) =>
+        q.eq("conversationId", args.conversationId).eq("userId", args.userId)
+      )
       .first();
 
     if (!participation || participation.leftAt) {
@@ -187,7 +204,9 @@ export const getConversationById = query({
     // Get all participants
     const participants = await ctx.db
       .query("conversation_participants")
-      .withIndex("by_conversation", (q) => q.eq("conversationId", args.conversationId))
+      .withIndex("by_conversation", (q) =>
+        q.eq("conversationId", args.conversationId)
+      )
       .filter((q) => q.eq(q.field("leftAt"), undefined))
       .collect();
 
@@ -196,19 +215,22 @@ export const getConversationById = query({
         const user = await ctx.db.get(p.userId);
         return {
           ...p,
-          user: user ? {
-            ...user,
-            name: user.name,
-            email: user.email,
-            image: user.image,
-          } : null,
+          user: user
+            ? {
+                ...user,
+                name: user.name,
+                email: user.email,
+                image: user.profilePicture,
+              }
+            : null,
         };
       })
     );
 
     // Get project if exists
-    const project = conversation.projectId ? 
-      await ctx.db.get(conversation.projectId) : null;
+    const project = conversation.projectId
+      ? await ctx.db.get(conversation.projectId)
+      : null;
 
     return {
       ...conversation,
@@ -222,27 +244,32 @@ export const getConversationById = query({
 export const addParticipant = mutation({
   args: {
     conversationId: v.id("conversations"),
-    userId: v.id("user"),
-    addedById: v.id("user"),
+    userId: v.id("users"),
+    addedById: v.id("users"),
     role: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     // Check if adder has permission
     const adderParticipation = await ctx.db
       .query("conversation_participants")
-      .withIndex("by_conversation_user", (q) => 
-        q.eq("conversationId", args.conversationId).eq("userId", args.addedById))
+      .withIndex("by_conversation_user", (q) =>
+        q.eq("conversationId", args.conversationId).eq("userId", args.addedById)
+      )
       .first();
 
-    if (!adderParticipation || !["ADMIN", "MODERATOR"].includes(adderParticipation.role || "")) {
+    if (
+      !adderParticipation ||
+      !["ADMIN", "MODERATOR"].includes(adderParticipation.role || "")
+    ) {
       throw new Error("Insufficient permissions to add participants");
     }
 
     // Check if user is already a participant
     const existingParticipation = await ctx.db
       .query("conversation_participants")
-      .withIndex("by_conversation_user", (q) => 
-        q.eq("conversationId", args.conversationId).eq("userId", args.userId))
+      .withIndex("by_conversation_user", (q) =>
+        q.eq("conversationId", args.conversationId).eq("userId", args.userId)
+      )
       .first();
 
     if (existingParticipation && !existingParticipation.leftAt) {
@@ -271,27 +298,34 @@ export const addParticipant = mutation({
 export const removeParticipant = mutation({
   args: {
     conversationId: v.id("conversations"),
-    userId: v.id("user"),
-    removedById: v.id("user"),
+    userId: v.id("users"),
+    removedById: v.id("users"),
   },
   handler: async (ctx, args) => {
     // Users can remove themselves, or admins/moderators can remove others
     if (args.userId !== args.removedById) {
       const removerParticipation = await ctx.db
         .query("conversation_participants")
-        .withIndex("by_conversation_user", (q) => 
-          q.eq("conversationId", args.conversationId).eq("userId", args.removedById))
+        .withIndex("by_conversation_user", (q) =>
+          q
+            .eq("conversationId", args.conversationId)
+            .eq("userId", args.removedById)
+        )
         .first();
 
-      if (!removerParticipation || !["ADMIN", "MODERATOR"].includes(removerParticipation.role || "")) {
+      if (
+        !removerParticipation ||
+        !["ADMIN", "MODERATOR"].includes(removerParticipation.role || "")
+      ) {
         throw new Error("Insufficient permissions to remove participants");
       }
     }
 
     const participation = await ctx.db
       .query("conversation_participants")
-      .withIndex("by_conversation_user", (q) => 
-        q.eq("conversationId", args.conversationId).eq("userId", args.userId))
+      .withIndex("by_conversation_user", (q) =>
+        q.eq("conversationId", args.conversationId).eq("userId", args.userId)
+      )
       .first();
 
     if (participation) {
@@ -311,17 +345,21 @@ export const updateConversation = mutation({
       title: v.optional(v.string()),
       isArchived: v.optional(v.boolean()),
     }),
-    userId: v.id("user"),
+    userId: v.id("users"),
   },
   handler: async (ctx, args) => {
     // Check if user has permission to update
     const participation = await ctx.db
       .query("conversation_participants")
-      .withIndex("by_conversation_user", (q) => 
-        q.eq("conversationId", args.conversationId).eq("userId", args.userId))
+      .withIndex("by_conversation_user", (q) =>
+        q.eq("conversationId", args.conversationId).eq("userId", args.userId)
+      )
       .first();
 
-    if (!participation || !["ADMIN", "MODERATOR"].includes(participation.role || "")) {
+    if (
+      !participation ||
+      !["ADMIN", "MODERATOR"].includes(participation.role || "")
+    ) {
       throw new Error("Insufficient permissions to update conversation");
     }
 
@@ -332,8 +370,8 @@ export const updateConversation = mutation({
 
 export const getDirectConversation = query({
   args: {
-    userId1: v.id("user"),
-    userId2: v.id("user"),
+    userId1: v.id("users"),
+    userId2: v.id("users"),
   },
   handler: async (ctx, args) => {
     // Find direct conversations involving both users
@@ -349,8 +387,12 @@ export const getDirectConversation = query({
 
     // Find common conversations
     const commonConversations = user1Participations
-      .filter(p1 => user2Participations.some(p2 => p2.conversationId === p1.conversationId))
-      .map(p => p.conversationId);
+      .filter((p1) =>
+        user2Participations.some(
+          (p2) => p2.conversationId === p1.conversationId
+        )
+      )
+      .map((p) => p.conversationId);
 
     // Find direct message conversation (type: DIRECT, only 2 participants)
     for (const conversationId of commonConversations) {
@@ -358,7 +400,9 @@ export const getDirectConversation = query({
       if (conversation?.type === "DIRECT") {
         const participantCount = await ctx.db
           .query("conversation_participants")
-          .withIndex("by_conversation", (q) => q.eq("conversationId", conversationId))
+          .withIndex("by_conversation", (q) =>
+            q.eq("conversationId", conversationId)
+          )
           .filter((q) => q.eq(q.field("leftAt"), undefined))
           .collect();
 
@@ -374,8 +418,8 @@ export const getDirectConversation = query({
 
 export const createDirectConversation = mutation({
   args: {
-    userId1: v.id("user"),
-    userId2: v.id("user"),
+    userId1: v.id("users"),
+    userId2: v.id("users"),
   },
   handler: async (ctx, args) => {
     // Check if direct conversation already exists
@@ -389,7 +433,9 @@ export const createDirectConversation = mutation({
       if (conversation?.type === "DIRECT") {
         const otherParticipant = await ctx.db
           .query("conversation_participants")
-          .withIndex("by_conversation", (q) => q.eq("conversationId", participation.conversationId))
+          .withIndex("by_conversation", (q) =>
+            q.eq("conversationId", participation.conversationId)
+          )
           .filter((q) => q.neq(q.field("userId"), args.userId1))
           .first();
 

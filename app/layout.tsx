@@ -7,7 +7,8 @@ import { ThemeProvider } from "./providers/ThemeProvider";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { CSPostHogProvider } from "./provider";
 import { UserProvider } from "./providers/UserContext";
-import { ConvexProvider } from "./providers/ConvexProvider";
+import { ConvexAuthNextjsServerProvider } from "@convex-dev/auth/nextjs/server";
+
 const plusJakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
   weight: ["300", "400", "500", "700"],
@@ -31,11 +32,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full">
-      <body className={`${plusJakarta.className} h-full`}>
-        <SpeedInsights />
-        <CSPostHogProvider>
-          <ConvexProvider>
+    <ConvexAuthNextjsServerProvider>
+      <html lang="en" className="h-full">
+        <body className={`${plusJakarta.className} h-full`}>
+          <SpeedInsights />
+          <CSPostHogProvider>
             <EmailProvider>
               <ThemeProvider
                 attribute="class"
@@ -44,16 +45,14 @@ export default function RootLayout({
                 disableTransitionOnChange
               >
                 <UserProvider>
-                  <div className="h-full">
-                    {children}
-                  </div>
+                  <div className="h-full">{children}</div>
                 </UserProvider>
               </ThemeProvider>
             </EmailProvider>
-          </ConvexProvider>
-        </CSPostHogProvider>
-        <Analytics />
-      </body>
-    </html>
+          </CSPostHogProvider>
+          <Analytics />
+        </body>
+      </html>
+    </ConvexAuthNextjsServerProvider>
   );
 }

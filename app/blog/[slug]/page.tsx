@@ -37,7 +37,7 @@ export async function generateMetadata({
       };
     }
 
-    const imageUrl = getMediaUrl(blog.image);
+    const imageUrl = getMediaUrl(blog.profilePicture);
     const description =
       blog.description || extractTextFromRichText(blog.richtext).slice(0, 160);
 
@@ -87,7 +87,7 @@ const BlogDetailPage = async ({ params }: BlogDetailPageProps) => {
 
     const categoryName = getCategoryName(blog.category);
     const categoryColor = getCategoryColor(blog.category);
-    const imageUrl = getMediaUrl(blog.image);
+    const imageUrl = getMediaUrl(blog.profilePicture);
     const publishedDate = formatBlogDate(blog.publishedAt);
     const tags = getBlogTags(blog);
     const content = extractTextFromRichText(blog.richtext);
@@ -151,7 +151,7 @@ const BlogDetailPage = async ({ params }: BlogDetailPageProps) => {
               </div>
 
               {/* Featured image */}
-              {blog.image && (
+              {blog.profilePicture && (
                 <div className="relative w-full h-48 sm:h-64 md:h-96 rounded-lg overflow-hidden mb-8 sm:mb-12">
                   <Image
                     src={imageUrl}

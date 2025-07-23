@@ -13,22 +13,23 @@ export const createProject = mutation({
     budget: v.optional(v.number()),
     stacks: v.optional(v.array(v.string())),
     tags: v.optional(v.array(v.string())),
-    ownerId: v.id("user"),
-    teamLeadId: v.optional(v.id("user")),
+    ownerId: v.id("users"),
+    teamLeadId: v.optional(v.id("users")),
     productId: v.optional(v.id("products")),
   },
   handler: async (ctx, args) => {
-    const slug = args.title.toLowerCase()
+    const slug = args.title
+      .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/(^-|-$)/g, "");
-    
+
     const projectId = await ctx.db.insert("projects", {
       ...args,
       slug,
       status: "PLANNED",
       milestones: {
         ideaRefinement: "not-started",
-        documentation: "not-started", 
+        documentation: "not-started",
         design: "not-started",
         development: "not-started",
         testing: "not-started",
@@ -72,7 +73,7 @@ export const createProject = mutation({
 
 export const getProjects = query({
   args: {
-    ownerId: v.optional(v.id("user")),
+    ownerId: v.optional(v.id("users")),
     status: v.optional(v.string()),
     type: v.optional(v.string()),
     limit: v.optional(v.number()),
@@ -80,7 +81,7 @@ export const getProjects = query({
   },
   handler: async (ctx, args) => {
     let projects;
-    
+
     if (args.ownerId) {
       projects = await ctx.db
         .query("projects")
@@ -89,15 +90,17 @@ export const getProjects = query({
     } else {
       projects = await ctx.db.query("projects").collect();
     }
-    
+
     let filteredProjects = projects;
-    
+
     if (args.status) {
-      filteredProjects = filteredProjects.filter(p => p.status === args.status);
+      filteredProjects = filteredProjects.filter(
+        (p) => p.status === args.status
+      );
     }
-    
+
     if (args.type) {
-      filteredProjects = filteredProjects.filter(p => p.type === args.type);
+      filteredProjects = filteredProjects.filter((p) => p.type === args.type);
     }
 
     // Calculate pagination
@@ -111,40 +114,47 @@ export const getProjects = query({
     const projectsWithData = await Promise.all(
       paginatedProjects.map(async (project) => {
         const owner = await ctx.db.get(project.ownerId);
-        const teamLead = project.teamLeadId ? await ctx.db.get(project.teamLeadId) : null;
-        
+        const teamLead = project.teamLeadId
+          ? await ctx.db.get(project.teamLeadId)
+          : null;
+
         // Owner and teamLead data is directly available from unified user table
 
         // Get repository if connected
-        const repository = project.repositoryId ? 
-          await ctx.db.get(project.repositoryId) : null;
+        const repository = project.repositoryId
+          ? await ctx.db.get(project.repositoryId)
+          : null;
 
         // Get issue count
         const issueCount = await ctx.db
           .query("issues")
           .withIndex("by_project", (q) => q.eq("projectId", project._id))
           .collect()
-          .then(issues => issues.length);
+          .then((issues) => issues.length);
 
         // Get collaborator count
         const collaboratorCount = await ctx.db
           .query("project_collaborators")
           .withIndex("by_project", (q) => q.eq("projectId", project._id))
           .collect()
-          .then(collaborators => collaborators.length);
+          .then((collaborators) => collaborators.length);
 
         return {
           ...project,
-          owner: owner ? {
-            ...owner,
-            name: owner.name,
-            email: owner.email,
-          } : null,
-          teamLead: teamLead ? {
-            ...teamLead,
-            name: teamLead.name,
-            email: teamLead.email,
-          } : null,
+          owner: owner
+            ? {
+                ...owner,
+                name: owner.name,
+                email: owner.email,
+              }
+            : null,
+          teamLead: teamLead
+            ? {
+                ...teamLead,
+                name: teamLead.name,
+                email: teamLead.email,
+              }
+            : null,
           repository,
           issueCount,
           collaboratorCount,
@@ -175,13 +185,16 @@ export const getProjectBySlug = query({
     }
 
     const owner = await ctx.db.get(project.ownerId);
-    const teamLead = project.teamLeadId ? await ctx.db.get(project.teamLeadId) : null;
-    
+    const teamLead = project.teamLeadId
+      ? await ctx.db.get(project.teamLeadId)
+      : null;
+
     // Owner and teamLead data is directly available from unified user table
 
     // Get repository
-    const repository = project.repositoryId ? 
-      await ctx.db.get(project.repositoryId) : null;
+    const repository = project.repositoryId
+      ? await ctx.db.get(project.repositoryId)
+      : null;
 
     // Get issues
     const issues = await ctx.db
@@ -200,27 +213,33 @@ export const getProjectBySlug = query({
         const user = await ctx.db.get(collab.userId);
         return {
           ...collab,
-          user: user ? {
-            ...user,
-            name: user.name,
-            email: user.email,
-          } : null,
+          user: user
+            ? {
+                ...user,
+                name: user.name,
+                email: user.email,
+              }
+            : null,
         };
       })
     );
 
     return {
       ...project,
-      owner: owner ? {
-        ...owner,
-        name: owner.name,
-        email: owner.email,
-      } : null,
-      teamLead: teamLead ? {
-        ...teamLead,
-        name: teamLead.name,
-        email: teamLead.email,
-      } : null,
+      owner: owner
+        ? {
+            ...owner,
+            name: owner.name,
+            email: owner.email,
+          }
+        : null,
+      teamLead: teamLead
+        ? {
+            ...teamLead,
+            name: teamLead.name,
+            email: teamLead.email,
+          }
+        : null,
       repository,
       issues,
       collaborators: collaboratorsWithData,
@@ -243,16 +262,17 @@ export const updateProject = mutation({
       budget: v.optional(v.number()),
       stacks: v.optional(v.array(v.string())),
       tags: v.optional(v.array(v.string())),
-      teamLeadId: v.optional(v.id("user")),
+      teamLeadId: v.optional(v.id("users")),
       milestones: v.optional(v.any()),
     }),
   },
   handler: async (ctx, args) => {
     const updates: any = { ...args.updates };
-    
+
     // Update slug if title changed
     if (args.updates.title) {
-      updates.slug = args.updates.title.toLowerCase()
+      updates.slug = args.updates.title
+        .toLowerCase()
         .replace(/[^a-z0-9]+/g, "-")
         .replace(/(^-|-$)/g, "");
     }
@@ -302,15 +322,16 @@ export const deleteProject = mutation({
 export const addCollaborator = mutation({
   args: {
     projectId: v.id("projects"),
-    userId: v.id("user"),
+    userId: v.id("users"),
     status: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     // Check if collaborator already exists
     const existing = await ctx.db
       .query("project_collaborators")
-      .withIndex("by_project_user", (q) => 
-        q.eq("projectId", args.projectId).eq("userId", args.userId))
+      .withIndex("by_project_user", (q) =>
+        q.eq("projectId", args.projectId).eq("userId", args.userId)
+      )
       .first();
 
     if (existing) {
@@ -346,13 +367,14 @@ export const addCollaborator = mutation({
 export const removeCollaborator = mutation({
   args: {
     projectId: v.id("projects"),
-    userId: v.id("user"),
+    userId: v.id("users"),
   },
   handler: async (ctx, args) => {
     const collaborator = await ctx.db
       .query("project_collaborators")
-      .withIndex("by_project_user", (q) => 
-        q.eq("projectId", args.projectId).eq("userId", args.userId))
+      .withIndex("by_project_user", (q) =>
+        q.eq("projectId", args.projectId).eq("userId", args.userId)
+      )
       .first();
 
     if (collaborator) {
@@ -368,8 +390,9 @@ export const removeCollaborator = mutation({
     if (conversation) {
       const participant = await ctx.db
         .query("conversation_participants")
-        .withIndex("by_conversation_user", (q) => 
-          q.eq("conversationId", conversation._id).eq("userId", args.userId))
+        .withIndex("by_conversation_user", (q) =>
+          q.eq("conversationId", conversation._id).eq("userId", args.userId)
+        )
         .first();
 
       if (participant) {
@@ -421,11 +444,13 @@ export const getProjectStats = query({
       .withIndex("by_project", (q) => q.eq("projectId", args.projectId));
 
     const issues = await issuesQuery.collect();
-    
-    const openIssues = issues.filter(i => i.status === "OPEN").length;
-    const inProgressIssues = issues.filter(i => i.status === "IN_PROGRESS").length;
-    const resolvedIssues = issues.filter(i => i.status === "RESOLVED").length;
-    const closedIssues = issues.filter(i => i.status === "CLOSED").length;
+
+    const openIssues = issues.filter((i) => i.status === "OPEN").length;
+    const inProgressIssues = issues.filter(
+      (i) => i.status === "IN_PROGRESS"
+    ).length;
+    const resolvedIssues = issues.filter((i) => i.status === "RESOLVED").length;
+    const closedIssues = issues.filter((i) => i.status === "CLOSED").length;
 
     const collaborators = await ctx.db
       .query("project_collaborators")
@@ -439,7 +464,8 @@ export const getProjectStats = query({
       resolvedIssues,
       closedIssues,
       totalCollaborators: collaborators.length,
-      activeCollaborators: collaborators.filter(c => c.status === "ACTIVE").length,
+      activeCollaborators: collaborators.filter((c) => c.status === "ACTIVE")
+        .length,
     };
   },
 });

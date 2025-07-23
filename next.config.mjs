@@ -4,9 +4,6 @@ const nextConfig = {
     appIsrStatus: true,
     devLoading: true,
   },
-  experimental: {
-    browserDebugInfoInTerminal: true,
-  },
   headers: [
     {
       key: "Access-Control-Allow-Origin",

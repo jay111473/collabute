@@ -46,7 +46,7 @@ user: defineTable({
 
 // GitHub integration data
 github_profiles: defineTable({
-  userId: v.id("user"),
+  userId: v.id("users"),
   githubId: v.string(),
   githubUsername: v.string(),
   githubConnected: v.boolean(),
@@ -67,7 +67,7 @@ github_repositories: defineTable({
   name: v.string(),
   fullName: v.string(),
   description: v.optional(v.string()),
-  ownerId: v.id("user"),
+  ownerId: v.id("users"),
   private: v.boolean(),
   htmlUrl: v.string(),
   cloneUrl: v.string(),
@@ -101,12 +101,12 @@ export const {
       name: user.name || "",
       email: user.email,
       emailVerified: user.emailVerified || false,
-      image: user.image,
+      image: user.profilePicture,
       createdAt: Date.now(),
       updatedAt: Date.now(),
       
       // Business fields with defaults
-      profilePicture: user.image,
+      profilePicture: user.profilePicture,
       type: "DEVELOPER",
       kycStatus: "PENDING",
       isVerified: false,
@@ -138,7 +138,7 @@ export const {
 
 // Create GitHub profile for user (called after GitHub OAuth account is created)
 export const createGithubProfileForUser = mutation({
-  args: { userId: v.id("user") },
+  args: { userId: v.id("users") },
   handler: async (ctx, { userId }) => {
     // Check if GitHub profile already exists
     const existingProfile = await ctx.db
@@ -188,7 +188,7 @@ Create actions to fetch and store GitHub data:
 ```typescript
 // Fetch and store user repositories
 export const fetchAndStoreRepositories = action({
-  args: { userId: v.id("user") },
+  args: { userId: v.id("users") },
   handler: async (ctx, { userId }) => {
     const githubProfile = await ctx.runQuery("auth:getGithubProfile" as any, { userId });
     
@@ -236,7 +236,7 @@ export const fetchAndStoreRepositories = action({
 
 // Fetch user activities
 export const fetchGithubActivities = action({
-  args: { userId: v.id("user") },
+  args: { userId: v.id("users") },
   handler: async (ctx, { userId }) => {
     const githubProfile = await ctx.runQuery("auth:getGithubProfile" as any, { userId });
     

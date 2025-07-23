@@ -5,7 +5,7 @@ import { mutation, query } from "./_generated/server";
 // Keeping for backward compatibility but redirecting to user table
 export const createUserProfile = mutation({
   args: {
-    authUserId: v.id("user"),
+    authUserId: v.id("users"),
     profilePicture: v.optional(v.string()),
     type: v.optional(v.string()),
     phoneNumber: v.optional(v.string()),
@@ -35,7 +35,7 @@ export const createUserProfile = mutation({
 });
 
 export const getUserProfile = query({
-  args: { authUserId: v.id("user") },
+  args: { authUserId: v.id("users") },
   handler: async (ctx, args) => {
     // With unified table, just return the user directly
     return await ctx.db.get(args.authUserId);
@@ -44,7 +44,7 @@ export const getUserProfile = query({
 
 export const updateUserProfile = mutation({
   args: {
-    userId: v.id("user"),
+    userId: v.id("users"),
     updates: v.object({
       profilePicture: v.optional(v.string()),
       type: v.optional(v.string()),
@@ -70,7 +70,7 @@ export const updateUserProfile = mutation({
 
 export const updateGitHubData = mutation({
   args: {
-    userId: v.id("user"),
+    userId: v.id("users"),
     githubData: v.object({
       githubId: v.string(),
       githubUsername: v.string(),
@@ -203,7 +203,7 @@ export const getUsersByType = query({
 
 export const updateKycStatus = mutation({
   args: {
-    userId: v.id("user"),
+    userId: v.id("users"),
     status: v.string(),
   },
   handler: async (ctx, args) => {
@@ -294,7 +294,7 @@ export const completeUserProfile = mutation({
 // Version that takes explicit userId for admin operations
 export const completeUserProfileWithId = mutation({
   args: {
-    userId: v.id("user"),
+    userId: v.id("users"),
     phoneNumber: v.optional(v.string()),
     countryCode: v.optional(v.string()),
     type: v.union(
@@ -362,7 +362,7 @@ export const completeUserProfileWithId = mutation({
 
 export const updateWallet = mutation({
   args: {
-    userId: v.id("user"),
+    userId: v.id("users"),
     amount: v.number(),
     operation: v.union(v.literal("add"), v.literal("subtract")),
   },
@@ -390,7 +390,7 @@ export const updateWallet = mutation({
 });
 
 export const getUserGitHubRepositories = query({
-  args: { userId: v.id("user") },
+  args: { userId: v.id("users") },
   handler: async (ctx, args) => {
     return await ctx.db
       .query("github_repositories")

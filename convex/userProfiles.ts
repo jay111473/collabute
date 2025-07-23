@@ -3,7 +3,7 @@ import { mutation, query } from "./_generated/server";
 
 // Get complete user profile with role-specific data
 export const getCompleteUserProfile = query({
-  args: { userId: v.id("user") },
+  args: { userId: v.id("users") },
   handler: async (ctx, args) => {
     const user = await ctx.db.get(args.userId);
     if (!user) return null;
@@ -55,7 +55,7 @@ export const getCompleteUserProfile = query({
 // Create developer profile
 export const createDeveloperProfile = mutation({
   args: {
-    userId: v.id("user"),
+    userId: v.id("users"),
     bio: v.optional(v.string()),
     skills: v.optional(v.array(v.string())),
     experience: v.optional(v.number()),
@@ -98,7 +98,7 @@ export const createDeveloperProfile = mutation({
 // Create lead profile
 export const createLeadProfile = mutation({
   args: {
-    userId: v.id("user"),
+    userId: v.id("users"),
     specializations: v.optional(v.array(v.string())),
     title: v.optional(v.string()),
     location: v.optional(v.string()),
@@ -131,7 +131,7 @@ export const createLeadProfile = mutation({
 // Create startup profile
 export const createStartupProfile = mutation({
   args: {
-    userId: v.id("user"),
+    userId: v.id("users"),
     companyName: v.string(),
     companyDescription: v.optional(v.string()),
     website: v.optional(v.string()),
@@ -165,7 +165,7 @@ export const createStartupProfile = mutation({
 // Create or update GitHub profile
 export const createGitHubProfile = mutation({
   args: {
-    userId: v.id("user"),
+    userId: v.id("users"),
     githubId: v.string(),
     githubUsername: v.string(),
     githubConnected: v.boolean(),
@@ -285,7 +285,7 @@ export const searchDevelopers = query({
 // Update user profile by type
 export const updateUserProfileByType = mutation({
   args: {
-    userId: v.id("user"),
+    userId: v.id("users"),
     profileData: v.any(),
   },
   handler: async (ctx, args) => {

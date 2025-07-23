@@ -10,8 +10,6 @@ export default function Layout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const router = useRouter();
-
   return (
     <>
       <AuthLoading>
@@ -19,11 +17,11 @@ export default function Layout({
           <div className="text-white">Loading...</div>
         </div>
       </AuthLoading>
-      
+
       <Unauthenticated>
         <UnauthenticatedRedirect />
       </Unauthenticated>
-      
+
       <Authenticated>
         <DashboardContent>{children}</DashboardContent>
       </Authenticated>
@@ -33,7 +31,7 @@ export default function Layout({
 
 function UnauthenticatedRedirect() {
   const router = useRouter();
-  
+
   useEffect(() => {
     router.push("/auth");
   }, [router]);
@@ -57,9 +55,5 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
     );
   }
 
-  return (
-    <DashboardLayout user={user}>
-      {children}
-    </DashboardLayout>
-  );
+  return <DashboardLayout user={user}>{children}</DashboardLayout>;
 }

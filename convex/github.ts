@@ -4,7 +4,7 @@ import { api } from "./_generated/api";
 
 // Get user's GitHub account from BetterAuth
 export const getUserGitHubAccount = query({
-  args: { userId: v.id("user") },
+  args: { userId: v.id("users") },
   handler: async (ctx, args) => {
     const account = await ctx.db
       .query("account")
@@ -21,7 +21,7 @@ export const getUserGitHubAccount = query({
 // Sync GitHub repositories for a user
 export const syncUserRepositories = mutation({
   args: {
-    userId: v.id("user"),
+    userId: v.id("users"),
     repositories: v.array(
       v.object({
         id: v.number(),
@@ -100,7 +100,7 @@ export const syncUserRepositories = mutation({
 // Get user's GitHub repositories
 export const getUserRepositories = query({
   args: {
-    userId: v.id("user"),
+    userId: v.id("users"),
     includePrivate: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
@@ -138,7 +138,7 @@ export const connectRepositoryToProject = mutation({
   args: {
     repositoryId: v.id("github_repositories"),
     projectId: v.id("projects"),
-    userId: v.id("user"),
+    userId: v.id("users"),
   },
   handler: async (ctx, args) => {
     // Verify user owns the repository
@@ -189,7 +189,7 @@ export const connectRepositoryToProject = mutation({
 export const disconnectRepositoryFromProject = mutation({
   args: {
     repositoryId: v.id("github_repositories"),
-    userId: v.id("user"),
+    userId: v.id("users"),
   },
   handler: async (ctx, args) => {
     const repository = await ctx.db.get(args.repositoryId);
@@ -328,7 +328,7 @@ export const getRepositoryStats = query({
 
 // Fetch user's GitHub repositories from GitHub API and store them
 export const fetchAndStoreRepositories = action({
-  args: { userId: v.id("user") },
+  args: { userId: v.id("users") },
   handler: async (ctx, { userId }) => {
     console.log("Fetching GitHub repositories for user:", userId);
     
@@ -395,7 +395,7 @@ export const fetchAndStoreRepositories = action({
 
 // Fetch user's GitHub activities/events
 export const fetchGithubActivities = action({
-  args: { userId: v.id("user") },
+  args: { userId: v.id("users") },
   handler: async (ctx, { userId }) => {
     console.log("Fetching GitHub activities for user:", userId);
     
@@ -438,7 +438,7 @@ export const fetchGithubActivities = action({
 
 // Fetch user profile data from GitHub API
 export const fetchGithubUserProfile = action({
-  args: { userId: v.id("user") },
+  args: { userId: v.id("users") },
   handler: async (ctx, { userId }) => {
     console.log("Fetching GitHub user profile for user:", userId);
     

@@ -11,6 +11,7 @@ export function useUserConvex() {
     isAuthenticated ? {} : "skip"
   );
 
+  // Loading if auth is loading, or if authenticated but query is still pending
   const loading = authLoading || (isAuthenticated && user === undefined);
 
   return {

@@ -45,12 +45,29 @@ function UnauthenticatedRedirect() {
 
 function DashboardContent({ children }: { children: React.ReactNode }) {
   const { user, loading } = useUserConvex();
+  const router = useRouter();
+
+  useEffect(() => {
+    // If not loading and no user found, redirect to auth
+    if (!loading && !user) {
+      router.push("/auth");
+    }
+  }, [loading, user, router]);
 
   // Show loading state while user data is being fetched
-  if (loading || !user) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-black">
         <div className="text-white">Loading user data...</div>
+      </div>
+    );
+  }
+
+  // If no user after loading, show loading while redirect happens
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-black">
+        <div className="text-white">Redirecting...</div>
       </div>
     );
   }

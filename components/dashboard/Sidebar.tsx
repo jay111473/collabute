@@ -24,6 +24,7 @@ import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
 import { useLinkStatus } from "next/link";
 import { User } from "@/types/convex";
+import { useAuthActions } from "@convex-dev/auth/react";
 
 // Loading indicator component for navigation with debouncing
 const NavigationLoadingIndicator = () => {
@@ -88,8 +89,7 @@ const SidebarLink = ({
 export default function Sidebar({ user }: { user: User }) {
   const pathname = usePathname();
   const router = useRouter();
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
-
+  const { signOut } = useAuthActions();
   const navItems: NavItem[] = [
     {
       name: "Dashboard",
@@ -158,39 +158,6 @@ export default function Sidebar({ user }: { user: User }) {
         user.type === "PROJECT_MANAGER" &&
         item.name === "Products")
   );
-  const handleLogout = async () => {
-    if (isLoggingOut) return;
-
-    setIsLoggingOut(true);
-    try {
-      // Get token from cookies
-      const token = getCookie("token");
-
-      // Call the logout endpoint
-      await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/users/logout`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      // Remove cookies
-      deleteCookie("token");
-      deleteCookie("isLoggedIn");
-      // Redirect to auth page
-      toast.success("Successfully logged out");
-      router.push("/auth");
-    } catch (error) {
-      console.error("Logout error:", error);
-      toast.error("Failed to logout. Please try again.");
-    } finally {
-      setIsLoggingOut(false);
-    }
-  };
-
   return (
     <div className="flex flex-col h-full bg-black">
       <div className="md:flex md:items-center md:justify-start md:gap-x-2 md:px-6 md:pt-4 md:pb-12 md:border-b md:border-white/10 hidden">
@@ -228,12 +195,11 @@ export default function Sidebar({ user }: { user: User }) {
       </div>
       <div className="p-4 border-t border-white/10">
         <button
-          onClick={handleLogout}
-          disabled={isLoggingOut}
+          onClick={() => void signOut()}
           className="flex items-center gap-3 rounded-lg px-3 py-2 w-full text-sm text-white hover:text-red-400 transition-all disabled:opacity-50"
         >
           <LogOut className="h-4 w-4" />
-          {isLoggingOut ? "Logging out..." : "Logout"}
+          Logout
         </button>
       </div>
     </div>

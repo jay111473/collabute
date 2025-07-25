@@ -6,10 +6,10 @@ import { useUserConvex } from "@/hooks/use-user-convex";
 
 export default function DashboardStats() {
   const { user } = useUserConvex();
-
+  console.log("DashboardStats user:", user);
   if (!user) return null;
 
-  if (user.type === "developer") {
+  if (user?.type === "DEVELOPER") {
     return (
       <div className="grid gap-4 md:grid-cols-2 md:gap-6 lg:grid-cols-3">
         <DashboardCard
@@ -20,7 +20,7 @@ export default function DashboardStats() {
         />
         <DashboardCard
           title="Balance"
-          value={`$${user.wallet}`}
+          value={`$${user?.wallet || 0}`}
           icon={DollarSign}
           subtext="+19% from last month"
         />
@@ -34,7 +34,7 @@ export default function DashboardStats() {
     );
   }
 
-  if (user.type === "startup") {
+  if (user.type === "STARTUP") {
     return (
       <div className="grid gap-4 md:grid-cols-2 md:gap-6 lg:grid-cols-2">
         <DashboardCard
@@ -45,7 +45,7 @@ export default function DashboardStats() {
         />
         <DashboardCard
           title="Balance"
-          value={`$${user.wallet}`}
+          value={`$${user?.wallet || 0}`}
           icon={DollarSign}
           subtext="+19% from last month"
         />

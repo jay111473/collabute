@@ -1,26 +1,23 @@
+"use client";
 import DashboardCard from "@/components/uikit/dashboard-card";
-import { getUser } from "@/lib/get-user";
+import { useUserConvex } from "@/hooks/use-user-convex";
 import { DollarSign } from "lucide-react";
 import React from "react";
-import DashboardLayout from "@/components/dashboard/dashboard-layout";
-import { redirect } from "next/navigation";
 
-const Payments = async () => {
-  const user = await getUser(2);
-  if (!user) {
-    redirect("/auth");
-  }
+const Payments = () => {
+  const { user } = useUserConvex();
+  
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
       <div className="grid gap-4 md:grid-cols-2 md:gap-4 lg:grid-cols-2">
         <DashboardCard
           title="Current Balance"
-          value={`$${user.wallet}`}
+          value={`$${user?.wallet}`}
           icon={DollarSign}
         />
         <DashboardCard
           title="To Withdraw"
-          value={`$${user?.developerFields?.withdrawableAmount}`}
+          value={`$${user}`}
           icon={DollarSign}
         />
       </div>

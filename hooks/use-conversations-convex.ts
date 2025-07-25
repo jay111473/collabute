@@ -5,7 +5,7 @@ import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 
 interface UseConversationsOptions {
-  userId: Id<"user">;
+  userId: Id<"users">;
   type?: string;
   projectId?: Id<"projects">;
   limit?: number;
@@ -18,12 +18,22 @@ export function useConversationsConvex(options: UseConversationsOptions): {
   createConversation: (data: {
     title: string;
     type: string;
-    participantIds?: Id<"user">[];
+    participantIds?: Id<"users">[];
     projectId?: Id<"projects">;
   }) => Promise<any>;
-  updateConversation: (conversationId: Id<"conversations">, updates: { title?: string; isArchived?: boolean }) => Promise<any>;
-  addParticipant: (conversationId: Id<"conversations">, participantId: Id<"user">, role?: string) => Promise<any>;
-  removeParticipant: (conversationId: Id<"conversations">, participantId: Id<"user">) => Promise<any>;
+  updateConversation: (
+    conversationId: Id<"conversations">,
+    updates: { title?: string; isArchived?: boolean }
+  ) => Promise<any>;
+  addParticipant: (
+    conversationId: Id<"conversations">,
+    participantId: Id<"users">,
+    role?: string
+  ) => Promise<any>;
+  removeParticipant: (
+    conversationId: Id<"conversations">,
+    participantId: Id<"users">
+  ) => Promise<any>;
   refetch: () => void;
 } {
   const { userId, type, projectId, limit } = options;
@@ -47,7 +57,7 @@ export function useConversationsConvex(options: UseConversationsOptions): {
     createConversation: async (data: {
       title: string;
       type: string;
-      participantIds?: Id<"user">[];
+      participantIds?: Id<"users">[];
       projectId?: Id<"projects">;
     }) => {
       return await createConversation({
@@ -58,14 +68,21 @@ export function useConversationsConvex(options: UseConversationsOptions): {
         participantIds: data.participantIds,
       });
     },
-    updateConversation: async (conversationId: Id<"conversations">, updates: { title?: string; isArchived?: boolean }) => {
+    updateConversation: async (
+      conversationId: Id<"conversations">,
+      updates: { title?: string; isArchived?: boolean }
+    ) => {
       return await updateConversation({
         conversationId,
         updates,
         userId,
       });
     },
-    addParticipant: async (conversationId: Id<"conversations">, participantId: Id<"user">, role?: string) => {
+    addParticipant: async (
+      conversationId: Id<"conversations">,
+      participantId: Id<"users">,
+      role?: string
+    ) => {
       return await addParticipant({
         conversationId,
         userId: participantId,
@@ -73,7 +90,10 @@ export function useConversationsConvex(options: UseConversationsOptions): {
         role,
       });
     },
-    removeParticipant: async (conversationId: Id<"conversations">, participantId: Id<"user">) => {
+    removeParticipant: async (
+      conversationId: Id<"conversations">,
+      participantId: Id<"users">
+    ) => {
       return await removeParticipant({
         conversationId,
         userId: participantId,
@@ -86,7 +106,10 @@ export function useConversationsConvex(options: UseConversationsOptions): {
   };
 }
 
-export function useConversationById(conversationId: Id<"conversations">, userId: Id<"user">): {
+export function useConversationById(
+  conversationId: Id<"conversations">,
+  userId: Id<"users">
+): {
   conversation: any;
   loading: boolean;
   error: null;
@@ -103,7 +126,10 @@ export function useConversationById(conversationId: Id<"conversations">, userId:
   };
 }
 
-export function useDirectConversation(userId1: Id<"user">, userId2: Id<"user">): {
+export function useDirectConversation(
+  userId1: Id<"users">,
+  userId2: Id<"users">
+): {
   conversation: any;
   loading: boolean;
   error: null;
@@ -114,17 +140,20 @@ export function useDirectConversation(userId1: Id<"user">, userId2: Id<"user">):
     userId2,
   });
 
-  const createDirectConversation = useMutation(api.conversations.createDirectConversation);
+  const createDirectConversation = useMutation(
+    api.conversations.createDirectConversation
+  );
 
   return {
     conversation,
     loading: conversation === undefined,
     error: null,
-    createDirectConversation: () => createDirectConversation({ userId1, userId2 }),
+    createDirectConversation: () =>
+      createDirectConversation({ userId1, userId2 }),
   };
 }
 
 // Backward compatibility
 export function useConversations(userId: string) {
-  return useConversationsConvex({ userId: userId as Id<"user"> });
+  return useConversationsConvex({ userId: userId as Id<"users"> });
 }

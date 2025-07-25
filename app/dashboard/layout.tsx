@@ -3,7 +3,7 @@ import React, { useEffect } from "react";
 import { Authenticated, Unauthenticated, AuthLoading } from "convex/react";
 import { useRouter } from "next/navigation";
 import DashboardLayout from "@/components/dashboard/dashboard-layout";
-import { useUserData } from "@/hooks/use-user-convex";
+import { useUserConvex } from "@/hooks/use-user-convex";
 
 export default function Layout({
   children,
@@ -18,9 +18,9 @@ export default function Layout({
         </div>
       </AuthLoading>
 
-      <Unauthenticated>
+      {/* <Unauthenticated>
         <UnauthenticatedRedirect />
-      </Unauthenticated>
+      </Unauthenticated> */}
 
       <Authenticated>
         <DashboardContent>{children}</DashboardContent>
@@ -44,7 +44,7 @@ function UnauthenticatedRedirect() {
 }
 
 function DashboardContent({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useUserData();
+  const { user, loading } = useUserConvex();
 
   // Show loading state while user data is being fetched
   if (loading || !user) {

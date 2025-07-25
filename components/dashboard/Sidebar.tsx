@@ -16,13 +16,14 @@ import {
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { User, NavItem } from "@/types/dashboard";
+import { NavItem } from "@/types/dashboard";
 import { toast } from "sonner";
 import { deleteCookie, getCookie } from "cookies-next";
 import axios from "axios";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
 import { useLinkStatus } from "next/link";
+import { User } from "@/types/convex";
 
 // Loading indicator component for navigation with debouncing
 const NavigationLoadingIndicator = () => {
@@ -150,12 +151,11 @@ export default function Sidebar({ user }: { user: User }) {
   const filteredNavItems = navItems.filter(
     (item) =>
       item.type === "cross" ||
-      item.type === user.type ||
       (item.type === "developer" &&
-        user.type === "projectManager" &&
+        user.type === "PROJECT_MANAGER" &&
         item.name === "Explore") ||
       (item.type === "startup" &&
-        user.type === "projectManager" &&
+        user.type === "PROJECT_MANAGER" &&
         item.name === "Products")
   );
   const handleLogout = async () => {

@@ -3,10 +3,10 @@
 import AccountSettings from "@/app/dashboard/settings/components/AccountSettings";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import PreferencesSettings from "@/app/dashboard/settings/components/PreferencesSettings";
-import { useUserData } from "@/hooks/use-user-convex";
+import { useUserConvex } from "@/hooks/use-user-convex";
 
 export default function SettingsClientWrapper() {
-  const { user, loading } = useUserData();
+  const { user, loading } = useUserConvex();
 
   if (loading || !user) {
     return null; // Loading will be handled by the loading.tsx file

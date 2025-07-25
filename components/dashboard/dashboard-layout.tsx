@@ -7,7 +7,7 @@ import Sidebar from "@/components/dashboard/Sidebar";
 import FloatingBottomBar from "@/components/dashboard/floating-bottom-bar";
 import Header from "@/components/dashboard/Header";
 import Image from "next/image";
-import { User } from "@/types/dashboard";
+import { User } from "@/types/convex";
 import { useFloatingNav } from "@/lib/hooks/use-floating-nav";
 
 interface DashboardLayoutProps {

@@ -21,21 +21,20 @@ import {
   DrawerContent,
   DrawerTrigger,
 } from "@/components/ui/drawer";
-import { Issue } from "@/types/dashboard";
 import { toast } from "sonner";
-import { 
-  Users, 
-  Percent, 
-  FileText, 
-  ChevronLeft, 
+import {
+  Users,
+  Percent,
+  FileText,
+  ChevronLeft,
   X,
   CircleDot,
   Clock,
   DollarSign,
-  Layers
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
+import { Issue } from "@/types/convex";
 
 const collaborationRequestSchema = z.object({
   percentageShare: z
@@ -50,7 +49,10 @@ const collaborationRequestSchema = z.object({
 
 interface CollaborationRequestDrawerProps {
   issue: Issue;
-  onRequest: (data: { percentageShare: number; taskDefinition: string }) => void;
+  onRequest: (data: {
+    percentageShare: number;
+    taskDefinition: string;
+  }) => void;
 }
 
 export function CollaborationRequestDrawer({
@@ -68,7 +70,9 @@ export function CollaborationRequestDrawer({
     },
   });
 
-  const onSubmit = async (values: z.infer<typeof collaborationRequestSchema>) => {
+  const onSubmit = async (
+    values: z.infer<typeof collaborationRequestSchema>
+  ) => {
     setIsSubmitting(true);
     try {
       await onRequest(values);
@@ -101,7 +105,9 @@ export function CollaborationRequestDrawer({
               <button className="p-2 hover:bg-white">
                 <ChevronLeft size={20} color="black" />
               </button>
-              <h3 className="text-lg font-medium">Request Issue Collaboration</h3>
+              <h3 className="text-lg font-medium">
+                Request Issue Collaboration
+              </h3>
             </div>
             <DrawerClose asChild>
               <button className="p-2 hover:bg-white">
@@ -109,7 +115,7 @@ export function CollaborationRequestDrawer({
               </button>
             </DrawerClose>
           </div>
-          
+
           {/* Issue Details Card */}
           <div className="border rounded-lg p-4 flex flex-col gap-4">
             <div className="flex justify-start items-center gap-3 text-sm">
@@ -123,7 +129,7 @@ export function CollaborationRequestDrawer({
                 className="font-medium text-xs"
                 variant="outline"
               >
-                {format(new Date(issue.createdAt), "MMM dd, yyyy")}
+                {format(new Date(issue._creationTime), "MMM dd, yyyy")}
               </Badge>
               <Badge
                 icon={<DollarSign className="text-darkPrimary" size={14} />}
@@ -189,11 +195,7 @@ export function CollaborationRequestDrawer({
 
               <div className="flex gap-3 pt-4">
                 <DrawerClose asChild>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="flex-1"
-                  >
+                  <Button type="button" variant="outline" className="flex-1">
                     Cancel
                   </Button>
                 </DrawerClose>

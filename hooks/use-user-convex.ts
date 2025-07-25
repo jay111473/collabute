@@ -1,22 +1,36 @@
-// BetterAuth removed - implement your own auth hooks here if needed
+"use client";
+
+import { useConvexAuth, useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
+
 export function useUserConvex() {
+  const { isAuthenticated, isLoading: authLoading } = useConvexAuth();
+
+  const user = useQuery(
+    api.userProfiles.getCurrentUser,
+    isAuthenticated ? {} : "skip"
+  );
+
+  const loading = authLoading || (isAuthenticated && user === undefined);
+
   return {
-    user: null,
-    loading: false,
+    user: user || null,
+    loading,
     error: null,
-    refetch: () => {},
+    refetch: () => {
+      // Convex handles refetching automatically through reactivity
+    },
   };
 }
 
-export function useUserData() {
-  return useUserConvex();
-}
-
 export function useAuthUser() {
+  const { isAuthenticated, isLoading } = useConvexAuth();
+  const { user, loading } = useUserConvex();
+
   return {
-    user: null,
-    session: null,
-    loading: false,
+    user,
+    session: isAuthenticated ? { user } : null,
+    loading: isLoading || loading,
     error: null,
   };
 }

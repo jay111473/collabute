@@ -34,10 +34,9 @@ const ROLE_OPTIONS: MultiSelectOption[] = DEVELOPER_ROLES.map((role) => ({
 
 interface DeveloperFieldsProps {
   form: UseFormReturn<CreateAccountFormData>;
-  errors?: { [key: string]: string | undefined };
 }
 
-export const DeveloperFields = ({ form, errors }: DeveloperFieldsProps) => {
+export const DeveloperFields = ({ form }: DeveloperFieldsProps) => {
   // Initialize the structure if missing
   useEffect(() => {
     if (!form.getValues("developerFields")) {
@@ -58,20 +57,10 @@ export const DeveloperFields = ({ form, errors }: DeveloperFieldsProps) => {
               selected={field.value || []}
               onChange={field.onChange}
               placeholder="Select your primary roles (at least one required)"
-              className={`bg-transparent ${
-                errors?.["developerFields.primaryRole"]
-                  ? "border-red-500"
-                  : "border-grayBorders"
-              }`}
+              className="bg-transparent border-grayBorders"
             />
           </FormControl>
-          {errors?.["developerFields.primaryRole"] ? (
-            <div className="text-red-500 text-xs mt-1">
-              {errors["developerFields.primaryRole"]}
-            </div>
-          ) : (
-            <FormMessage />
-          )}
+          <FormMessage />
           <p className="text-xs text-muted-foreground mt-1">
             Select all roles that describe your expertise. You can choose
             multiple options.

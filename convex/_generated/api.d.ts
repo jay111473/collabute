@@ -12,6 +12,8 @@ import type * as auth from "../auth.js";
 import type * as conversations from "../conversations.js";
 import type * as github from "../github.js";
 import type * as http from "../http.js";
+import type * as issues from "../issues.js";
+import type * as media from "../media.js";
 import type * as messages from "../messages.js";
 import type * as products from "../products.js";
 import type * as projects from "../projects.js";
@@ -37,6 +39,8 @@ declare const fullApi: ApiFromModules<{
   conversations: typeof conversations;
   github: typeof github;
   http: typeof http;
+  issues: typeof issues;
+  media: typeof media;
   messages: typeof messages;
   products: typeof products;
   projects: typeof projects;

@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { getAuthUserId } from "@convex-dev/auth/server";
 
 // This function is deprecated since user creation is now handled in auth.ts
 // Keeping for backward compatibility but redirecting to user table
@@ -170,11 +171,11 @@ export const getUsers = query({
 
     if (args.type) {
       users = await ctx.db
-        .query("user")
-        .withIndex("by_type", (q) => q.eq("type", args.type as any))
+        .query("users")
+        .filter((q) => q.eq(q.field("type"), args.type as any))
         .collect();
     } else {
-      users = await ctx.db.query("user").collect();
+      users = await ctx.db.query("users").collect();
     }
 
     // Filter and limit users
@@ -193,8 +194,8 @@ export const getUsersByType = query({
   },
   handler: async (ctx, args) => {
     const users = await ctx.db
-      .query("user")
-      .withIndex("by_type", (q) => q.eq("type", args.type as any))
+      .query("users")
+      .filter((q) => q.eq(q.field("type"), args.type as any))
       .take(args.limit || 20);
 
     return users;
@@ -239,14 +240,11 @@ export const completeUserProfile = mutation({
     ),
   },
   handler: async (ctx, args) => {
-    // Get current user from Better Auth
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    // Get current authenticated user ID
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
       throw new Error("Not authenticated");
     }
-
-    // The user ID from Better Auth is the unified user table ID
-    const userId = identity.subject as any;
 
     // Update core user profile
     await ctx.db.patch(userId, {

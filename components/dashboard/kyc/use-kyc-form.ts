@@ -6,7 +6,7 @@ import { personalInfoSchema, PersonalInfoFormData } from "./personal-info-form";
 import { businessInfoSchema, BusinessInfoFormData } from "./business-info-form";
 import { bankingInfoSchema, BankingInfoFormData } from "./banking-info-form";
 import { toast } from "sonner";
-import { useUserData } from "@/hooks/use-user-convex";
+import { useUserConvex } from "@/hooks/use-user-convex";
 
 type BankFormat = {
   accountFormat: string;
@@ -44,7 +44,7 @@ export const getBankFormatExample = (countryCode: string | null | undefined): Ba
 };
 
 export function useKycForm() {
-  const { user, loading: userLoading, refetch: refetchUser } = useUserData();
+  const { user, loading: userLoading, refetch: refetchUser } = useUserConvex();
   const [activeTab, setActiveTab] = useState("personal");
   const [bankFormat, setBankFormat] = useState<BankFormat>({
     accountFormat: "",

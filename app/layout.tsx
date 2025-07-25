@@ -8,6 +8,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import { CSPostHogProvider } from "./provider";
 import { UserProvider } from "./providers/UserContext";
 import { ConvexAuthNextjsServerProvider } from "@convex-dev/auth/nextjs/server";
+import { ConvexClientProvider } from "./providers/ConvexClientProvider";
 
 const plusJakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -44,9 +45,11 @@ export default function RootLayout({
                 enableSystem
                 disableTransitionOnChange
               >
-                <UserProvider>
-                  <div className="h-full">{children}</div>
-                </UserProvider>
+                <ConvexClientProvider>
+                  <UserProvider>
+                    <div className="h-full">{children}</div>
+                  </UserProvider>
+                </ConvexClientProvider>
               </ThemeProvider>
             </EmailProvider>
           </CSPostHogProvider>

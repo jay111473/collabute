@@ -14,10 +14,9 @@ const TEAM_SIZES: { label: string; value: TeamSize }[] = [
 
 interface StartupFieldsProps {
   form: UseFormReturn<CreateAccountFormData>;
-  errors?: { [key: string]: string | undefined };
 }
 
-export const StartupFields = ({ form, errors }: StartupFieldsProps) => {
+export const StartupFields = ({ form }: StartupFieldsProps) => {
   // When this component mounts, ensure startup fields are initialized
   useEffect(() => {
     if (!form.getValues("startupFields")) {
@@ -39,20 +38,12 @@ export const StartupFields = ({ form, errors }: StartupFieldsProps) => {
               <Input
                 placeholder="Enter your company name"
                 {...field}
-                className={`bg-transparent placeholder:bg-transparent ${
-                  errors?.["startupFields.companyName"] ? "border-red-500" : "border-grayBorders"
-                }`}
+                className="bg-transparent placeholder:bg-transparent border-grayBorders"
                 value={field.value ?? ""}
                 onChange={field.onChange}
               />
             </FormControl>
-            {errors?.["startupFields.companyName"] ? (
-              <div className="text-red-500 text-xs mt-1">
-                {errors["startupFields.companyName"]}
-              </div>
-            ) : (
-              <FormMessage />
-            )}
+            <FormMessage />
           </FormItem>
         )}
       />
@@ -74,7 +65,6 @@ export const StartupFields = ({ form, errors }: StartupFieldsProps) => {
                       field.value === option.value
                         ? "border-darkPrimary border-2 bg-darkPrimary/10 font-bold"
                         : "border-grayBorders bg-popover hover:bg-muted/50",
-                      errors?.["startupFields.teamSize"] && "border-red-500"
                     )}
                     onClick={() => {
                       field.onChange(option.value);
@@ -99,13 +89,7 @@ export const StartupFields = ({ form, errors }: StartupFieldsProps) => {
                 ))}
               </div>
             </FormControl>
-            {errors?.["startupFields.teamSize"] ? (
-              <div className="text-red-500 text-xs mt-1">
-                {errors["startupFields.teamSize"]}
-              </div>
-            ) : (
-              <FormMessage />
-            )}
+            <FormMessage />
             <p className="text-xs text-muted-foreground mt-1">
               Select the size that best describes your team.
             </p>

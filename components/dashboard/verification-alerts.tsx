@@ -5,16 +5,13 @@ import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { User } from "@/types/dashboard";
 import { useEffect } from "react";
 import { getCalApi } from "@calcom/embed-react";
+import { useUserConvex } from "@/hooks/use-user-convex";
 
-interface VerificationAlertsProps {
-  user: User;
-}
-
-export const VerificationAlerts = ({ user }: VerificationAlertsProps) => {
+export const VerificationAlerts = () => {
   const router = useRouter();
+  const { user } = useUserConvex();
 
   const showVerificationCalendar = () => {
     toast.success("Opening verification calendar...", {
@@ -43,7 +40,7 @@ export const VerificationAlerts = ({ user }: VerificationAlertsProps) => {
   return (
     <div className="space-y-2">
       {/* Account Verification Alert */}
-      {user.isVerified === false && (
+      {user?.isVerified === false && (
         <Alert className="bg-white/50 border-none flex flex-col md:flex-row md:items-center md:justify-between py-2 gap-2">
           <div className="flex items-center space-x-2">
             <AlertCircle className="h-4 w-4 text-white/80" />
@@ -66,7 +63,7 @@ export const VerificationAlerts = ({ user }: VerificationAlertsProps) => {
       )}
 
       {/* KYC Verification Alert */}
-      {user.kycStatus !== "verified" && (
+      {user?.kycStatus !== "PENDING" && (
         <Alert className="bg-darkGray flex flex-col md:flex-row md:items-center md:justify-between py-2 border-none gap-2">
           <div className="flex items-center space-x-2">
             <AlertCircle className="h-4 w-4 text-darkPrimary" />

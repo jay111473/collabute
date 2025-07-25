@@ -6,7 +6,7 @@ import { Id, Doc } from "@/convex/_generated/dataModel";
 
 interface UseMessagesOptions {
   conversationId: Id<"conversations">;
-  userId: Id<"user">;
+  userId: Id<"users">;
   limit?: number;
   before?: number;
 }
@@ -97,7 +97,7 @@ export function useMessageSearch(conversationId: Id<"conversations">, searchTerm
 }
 
 // Combined chat hook for easier usage
-export function useChatConvex(conversationId: Id<"conversations">, userId: Id<"user">): {
+export function useChatConvex(conversationId: Id<"conversations">, userId: Id<"users">): {
   messages: Doc<"messages">[];
   unreadCount: number;
   loading: boolean;
@@ -127,6 +127,6 @@ export function useChatConvex(conversationId: Id<"conversations">, userId: Id<"u
 export function useChat(conversationId: string, userId: string) {
   return useChatConvex(
     conversationId as Id<"conversations">,
-    userId as Id<"user">
+    userId as Id<"users">
   );
 }

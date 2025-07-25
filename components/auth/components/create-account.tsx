@@ -17,101 +17,101 @@ import { StartupFields } from "../StartupFields";
 import { useCreateAccount } from "@/components/auth/hooks/useCreateAccount";
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { authClient } from "@/lib/auth-client";
-import { toast } from "sonner";
+import { toast, Toaster } from "sonner";
 import type { CreateAccountFormData } from "@/types/auth.types";
 import { useRouter } from "next/navigation";
 import { useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
+import { useAuthActions } from "@convex-dev/auth/react";
+import { ConvexError } from "convex/values";
 
-// Define the form error type
-type FormErrors = {
-  [key: string]: string | undefined;
-};
 
 const CreateAccount = () => {
   const { form, showPassword, setShowPassword } = useCreateAccount();
   const accountType = form.watch("type");
   const router = useRouter();
-  const [formErrors, setFormErrors] = useState<FormErrors>({});
   const [isLoading, setIsLoading] = useState(false);
   const completeProfile = useMutation(api.users.completeUserProfile);
+  const { signIn } = useAuthActions();
 
-  // Handle form submission with Better Auth
+  // Handle form submission with Convex Auth
   const handleSubmit = async (values: CreateAccountFormData) => {
     setIsLoading(true);
+
+    const formData = new FormData();
+    formData.append("email", values.email);
+    formData.append("password", values.password);
+    formData.append("name", values.name);
+    formData.append("flow", "signUp");
+
     try {
-      // First, create the account with BetterAuth
-      await authClient.signUp.email(
-        {
-          email: values.email,
-          password: values.password,
-          name: values.name,
-        },
-        {
-          onError: (ctx) => {
-            toast.error(ctx.error.message || "Failed to create account");
-            setFormErrors({
-              form: ctx.error.message || "Failed to create account",
-            });
-            setIsLoading(false);
-          },
-          onSuccess: async () => {
-            try {
-              // Wait a moment for the user to be properly created in Convex
-              await new Promise((resolve) => setTimeout(resolve, 1000));
+      // Create account with Convex Auth
+      await signIn("password", formData);
+      
+      // Wait a moment for the user to be properly created in Convex
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
-              // Complete the user profile with additional fields
-              await completeProfile({
-                phoneNumber: values.phoneNumber || undefined,
-                countryCode: values.countryCode || undefined,
-                type: values.type.toUpperCase() as any,
-                developerFields: values.developerFields
-                  ? {
-                      primaryRole:
-                        values.developerFields.primaryRole || undefined,
-                    }
-                  : undefined,
-                startupFields: values.startupFields
-                  ? {
-                      companyName:
-                        values.startupFields.companyName || undefined,
-                      teamSize: values.startupFields.teamSize || undefined,
-                    }
-                  : undefined,
-              });
+      // Complete the user profile with additional fields
+      try {
+        await completeProfile({
+          phoneNumber: values.phoneNumber || undefined,
+          countryCode: values.countryCode || undefined,
+          type: values.type.toUpperCase() as any,
+          developerFields: values.developerFields
+            ? {
+                primaryRole:
+                  values.developerFields.primaryRole || undefined,
+              }
+            : undefined,
+          startupFields: values.startupFields
+            ? {
+                companyName:
+                  values.startupFields.companyName || undefined,
+                teamSize: values.startupFields.teamSize || undefined,
+              }
+            : undefined,
+        });
 
-              toast.success("Account created successfully!");
-              router.push("/dashboard");
-            } catch (profileError) {
-              toast.error(
-                "Account created, but profile completion failed. Please update your profile in settings."
-              );
-              router.push("/dashboard");
-            } finally {
-              setIsLoading(false);
-            }
-          },
-        }
-      );
-    } catch (err) {
-      toast.error("An unexpected error occurred");
-      setFormErrors({ form: "An unexpected error occurred" });
+        toast.success("Account created successfully!");
+        router.push("/dashboard");
+      } catch (profileError) {
+        toast.success("Account created successfully!", {
+          description: "Please complete your profile in settings."
+        });
+        router.push("/dashboard");
+      }
+    } catch (error: any) {
+      console.error("Sign up error:", error);
+      const errorMessage = error instanceof ConvexError
+        ? (error.data as { message: string }).message
+        : error.message || "Failed to create account";
+      
+      toast.error("Sign Up Failed", {
+        description: errorMessage,
+      });
+    } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <Form {...form}>
+    <>
+      <Toaster
+        theme="dark"
+        position="top-right"
+        toastOptions={{
+          style: {
+            background: "#18181B",
+            border: "1px solid #27272A",
+            color: "#ffffff",
+          },
+        }}
+      />
+      <Form {...form}>
       <form
         className="w-full max-w-full sm:max-w-[600px] md:max-w-[700px]"
         onSubmit={form.handleSubmit(handleSubmit)}
       >
-        {/* Only show form-level errors, not success messages */}
-        {formErrors.form &&
-          formErrors.form !== "User successfully created." && (
-            <div className="text-red-500 text-sm mb-4">{formErrors.form}</div>
-          )}
 
         {/* Fields */}
         <div className="space-y-4 md:space-y-6">
@@ -128,21 +128,11 @@ const CreateAccount = () => {
                   <FormControl>
                     <Input
                       placeholder="Enter your full name"
-                      className={`bg-transparent placeholder:bg-transparent ${
-                        formErrors.name
-                          ? "border-red-500"
-                          : "border-grayBorders"
-                      }`}
+                      className="bg-transparent placeholder:bg-transparent border-grayBorders"
                       {...field}
                     />
                   </FormControl>
-                  {formErrors.name ? (
-                    <div className="text-red-500 text-xs mt-1">
-                      {formErrors.name}
-                    </div>
-                  ) : (
-                    <FormMessage />
-                  )}
+                  <FormMessage />
                 </FormItem>
               )}
             />
@@ -160,16 +150,9 @@ const CreateAccount = () => {
                           value={field.value}
                           onValueChange={field.onChange}
                           placeholder="Country"
-                          className={`w-full ${
-                            formErrors.countryCode ? "border-red-500" : ""
-                          }`}
+                          className="w-full"
                         />
                       </FormControl>
-                      {formErrors.countryCode && (
-                        <div className="text-red-500 text-xs mt-1">
-                          {formErrors.countryCode}
-                        </div>
-                      )}
                     </FormItem>
                   )}
                 />
@@ -181,19 +164,10 @@ const CreateAccount = () => {
                       <FormControl>
                         <Input
                           placeholder="Enter your phone number"
-                          className={`bg-transparent placeholder:bg-transparent ${
-                            formErrors.phoneNumber
-                              ? "border-red-500"
-                              : "border-grayBorders"
-                          }`}
+                          className="bg-transparent placeholder:bg-transparent border-grayBorders"
                           {...field}
                         />
                       </FormControl>
-                      {formErrors.phoneNumber && (
-                        <div className="text-red-500 text-xs mt-1">
-                          {formErrors.phoneNumber}
-                        </div>
-                      )}
                     </FormItem>
                   )}
                 />
@@ -212,21 +186,11 @@ const CreateAccount = () => {
                   <FormControl>
                     <Input
                       placeholder="Enter your email"
-                      className={`bg-transparent placeholder:bg-transparent ${
-                        formErrors.email
-                          ? "border-red-500"
-                          : "border-grayBorders"
-                      }`}
+                      className="bg-transparent placeholder:bg-transparent border-grayBorders"
                       {...field}
                     />
                   </FormControl>
-                  {formErrors.email ? (
-                    <div className="text-red-500 text-xs mt-1">
-                      {formErrors.email}
-                    </div>
-                  ) : (
-                    <FormMessage />
-                  )}
+                  <FormMessage />
                 </FormItem>
               )}
             />
@@ -242,11 +206,7 @@ const CreateAccount = () => {
                       <Input
                         type={showPassword ? "text" : "password"}
                         placeholder="Enter your password"
-                        className={`bg-transparent placeholder:bg-transparent ${
-                          formErrors.password
-                            ? "border-red-500"
-                            : "border-grayBorders"
-                        }`}
+                        className="bg-transparent placeholder:bg-transparent border-grayBorders"
                         {...field}
                       />
                       <button
@@ -262,13 +222,7 @@ const CreateAccount = () => {
                       </button>
                     </div>
                   </FormControl>
-                  {formErrors.password ? (
-                    <div className="text-red-500 text-xs mt-1">
-                      {formErrors.password}
-                    </div>
-                  ) : (
-                    <FormMessage />
-                  )}
+                  <FormMessage />
                 </FormItem>
               )}
             />
@@ -277,12 +231,12 @@ const CreateAccount = () => {
           {/* Role-specific fields */}
           {accountType === "developer" && (
             <div className="grid grid-cols-1">
-              <DeveloperFields form={form} errors={formErrors} />
+              <DeveloperFields form={form} />
             </div>
           )}
           {accountType === "startup" && (
             <div className="grid grid-cols-1">
-              <StartupFields form={form} errors={formErrors} />
+              <StartupFields form={form} />
             </div>
           )}
         </div>
@@ -322,7 +276,8 @@ const CreateAccount = () => {
           </Button>
         </div>
       </form>
-    </Form>
+      </Form>
+    </>
   );
 };
 

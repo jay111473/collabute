@@ -4,7 +4,6 @@ import { Button, ButtonProps } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { useConversationsConvex } from "@/hooks/use-conversations-convex";
 import { useUserConvex } from "@/hooks/use-user-convex";
-import { CreateConversationData } from "@/types/chat";
 import { User } from "@/types/dashboard";
 
 interface ChatButtonProps {
@@ -23,7 +22,6 @@ export const ChatButton = ({
   targetUser,
   conversationType = "private",
   conversationName,
-  conversationDescription,
   relatedProject,
   variant = "outline",
   size = "sm",

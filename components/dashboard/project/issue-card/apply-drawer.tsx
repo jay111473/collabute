@@ -7,7 +7,6 @@ import {
   DrawerContent,
   DrawerTrigger,
 } from "@/components/ui/drawer";
-import { Issue } from "@/types/dashboard";
 import {
   ChevronLeft,
   CircleDot,
@@ -25,11 +24,16 @@ import { Circle } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { TiptapEditor } from "@/components/ui/tiptap-editor";
 import { FileUpload } from "@/components/ui/file-upload";
+import { Issue } from "@/types/convex";
+import { useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { useUserConvex } from "@/hooks/use-user-convex";
+import { Id } from "@/convex/_generated/dataModel";
 
 interface ApplyDrawerProps {
-  issue: Issue;
+  issue: Issue & { requests?: any[] }; // Extended to include requests for compatibility
   projectTitle: string;
-  onApply: (issueId: string) => void;
+  onApply: () => void;
 }
 
 export function ApplyDrawer({
@@ -40,22 +44,93 @@ export function ApplyDrawer({
   const [isOpen, setIsOpen] = useState(false);
   const [proposal, setProposal] = useState("");
   const [attachments, setAttachments] = useState<File[]>([]);
+  const [uploadedMediaIds, setUploadedMediaIds] = useState<Id<"media">[]>([]);
   const { label, color } = getStatusInfo(issue.status);
+  const { user } = useUserConvex();
+  const createApplication = useMutation(api.issues.createIssueApplication);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const generateUploadUrl = useMutation(api.media.generateUploadUrl);
+  const createMediaFromUpload = useMutation(api.media.createMediaFromUpload);
 
-  const handleApply = (e: React.MouseEvent) => {
+  
+  const uploadFiles = async (): Promise<Id<"media">[]> => {
+    if (!user || attachments.length === 0) return [];
+
+    const mediaIds: Id<"media">[] = [];
+
+    for (const file of attachments) {
+      try {
+        // Generate upload URL
+        const postUrl = await generateUploadUrl();
+        
+        // Upload file to storage
+        const result = await fetch(postUrl, {
+          method: "POST",
+          headers: { "Content-Type": file.type },
+          body: file,
+        });
+
+        if (!result.ok) {
+          throw new Error(`Failed to upload ${file.name}`);
+        }
+
+        const { storageId } = await result.json();
+
+        // Create media record
+        const { mediaId } = await createMediaFromUpload({
+          storageId,
+          fileName: file.name,
+          fileType: file.type,
+          userId: user.userId!,
+          fileSize: file.size,
+          description: `Attachment for issue application: ${file.name}`,
+        });
+
+        mediaIds.push(mediaId);
+      } catch (error) {
+        console.error(`Failed to upload ${file.name}:`, error);
+        throw error;
+      }
+    }
+
+    return mediaIds;
+  };
+
+  const handleApply = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    onApply(issue.id.toString());
-    setIsOpen(false);
+
+    if (!user || !proposal.trim()) return;
+
+    setIsSubmitting(true);
+    try {
+      // Upload files first and get media IDs
+      const mediaIds = await uploadFiles();
+      setUploadedMediaIds(mediaIds);
+
+      // Create application with media IDs
+      await createApplication({
+        issueId: issue._id,
+        proposal: proposal.trim(),
+        attachments: mediaIds.length > 0 ? mediaIds : undefined,
+      });
+
+      onApply(); // Call parent callback for any additional handling
+      setIsOpen(false);
+      setProposal(""); // Reset form
+      setAttachments([]);
+      setUploadedMediaIds([]);
+    } catch (error) {
+      console.error("Failed to submit application:", error);
+      // TODO: Show error toast to user
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <Drawer open={isOpen} onOpenChange={setIsOpen}>
       <DrawerTrigger asChild onClick={(e) => e.stopPropagation()}>
-        <Button
-          variant="primary"
-          size="sm"
-          className="py-2 px-5 text-black"
-        >
+        <Button variant="primary" size="sm" className="py-2 px-5 text-black">
           Apply
         </Button>
       </DrawerTrigger>
@@ -74,7 +149,7 @@ export function ApplyDrawer({
               </button>
             </DrawerClose>
           </div>
-          
+
           {/* Issue Details Card */}
           <div className="border rounded-lg p-4 flex flex-col gap-4">
             <div className="flex justify-start items-center gap-4 text-sm">
@@ -93,7 +168,7 @@ export function ApplyDrawer({
                 className="font-medium text-xs"
                 variant="outline"
               >
-                {format(new Date(issue.createdAt), "MMM dd, yyyy")}
+                {format(new Date(issue._creationTime), "MMM dd, yyyy")}
               </Badge>
               <Badge
                 icon={<DollarSign className="text-darkPrimary" size={14} />}
@@ -109,7 +184,7 @@ export function ApplyDrawer({
                 variant="outline"
               >
                 {issue.requests?.filter(
-                  (request) => request.requestStatus === "pending"
+                  (request: any) => request.requestStatus === "pending"
                 ).length || 0}{" "}
                 pending request
               </Badge>
@@ -166,11 +241,11 @@ export function ApplyDrawer({
             <DrawerClose asChild>
               <Button variant="outline">Cancel</Button>
             </DrawerClose>
-            <Button 
+            <Button
               onClick={handleApply}
-              disabled={!proposal.trim()}
+              disabled={!proposal.trim() || isSubmitting}
             >
-              Submit Application
+              {isSubmitting ? "Submitting..." : "Submit Application"}
             </Button>
           </div>
         </div>

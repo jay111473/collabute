@@ -16,12 +16,11 @@ import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
 import { Toaster } from "sonner";
 import { useEmail } from "@/app/providers/EmailContext";
-import { Eye, EyeOff } from "lucide-react";
-import { toast } from "sonner";
+import { Eye, EyeOff, ArrowLeft } from "lucide-react";
 import Image from "next/image";
-import { authClient } from "@/lib/auth-client";
 import { Authenticated, Unauthenticated, AuthLoading } from "convex/react";
 import { z } from "zod";
+import { useAuthActions } from "@convex-dev/auth/react";
 
 const loginformSchema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
@@ -32,7 +31,7 @@ const loginformSchema = z.object({
 
 function AuthenticatedRedirect() {
   const router = useRouter();
-  
+
   useEffect(() => {
     router.push("/dashboard");
   }, [router]);
@@ -46,8 +45,16 @@ function AuthenticatedRedirect() {
 
 function PasswordForm() {
   const [showPassword, setShowPassword] = useState(false);
-  const { email } = useEmail();
+  const { email, setEmail } = useEmail();
+  const { signIn } = useAuthActions();
   const router = useRouter();
+
+  // Redirect to main auth page if no email is set
+  useEffect(() => {
+    if (!email) {
+      router.push("/auth");
+    }
+  }, [email, router]);
 
   const form = useForm<z.infer<typeof loginformSchema>>({
     resolver: zodResolver(loginformSchema),
@@ -57,42 +64,32 @@ function PasswordForm() {
     },
   });
 
-  async function onSubmit(values: z.infer<typeof loginformSchema>) {
-    try {
-      toast.loading("Logging in...");
-      await authClient.signIn.email(
-        {
-          email: values.email,
-          password: values.password,
-        },
-        {
-          onError: (ctx) => {
-            toast.error(
-              ctx.error.message || "Failed to log in. Please try again."
-            );
-          },
-          onSuccess: () => {
-            toast.success("Successfully logged in!");
-            router.push("/dashboard");
-          },
-        }
-      );
-    } catch (err) {
-      toast.error("Failed to log in. Please try again.");
-    }
+  // Don't render if no email
+  if (!email) {
+    return null;
   }
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen py-2 bg-black">
       <Toaster />
       <div className="flex flex-col items-center justify-center gap-y-16 px-[80px] w-[500px] py-[90px] text-center rounded-md">
-        <div className="flex flex-col items-center justify-center gap-y-2">
+        <div className="flex flex-col items-center justify-center gap-y-2 relative">
+          <button
+            onClick={() => router.push("/auth")}
+            className="absolute -left-12 top-0 text-white hover:text-gray-300 transition-colors"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </button>
           <Image src="/logo.png" alt="logo" width={66} height={66} />
           <h1 className="text-3xl font-bold text-white">Collabute</h1>
         </div>
         <Form {...form}>
           <form
-            onSubmit={form.handleSubmit(onSubmit)}
+            onSubmit={(event) => {
+              event.preventDefault();
+              const formData = new FormData(event.currentTarget);
+              void signIn("password", formData);
+            }}
             className="space-y-3 w-full text-white"
           >
             <FormField
@@ -102,7 +99,12 @@ function PasswordForm() {
                 <FormItem className="flex flex-col items-start justify-center">
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter your email" {...field} />
+                    <Input
+                      placeholder="Enter your email"
+                      {...field}
+                      disabled
+                      className="bg-gray-800 text-gray-300 cursor-not-allowed"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -161,11 +163,11 @@ const Password = () => {
           <div className="text-white">Loading...</div>
         </div>
       </AuthLoading>
-      
+
       <Authenticated>
         <AuthenticatedRedirect />
       </Authenticated>
-      
+
       <Unauthenticated>
         <PasswordForm />
       </Unauthenticated>

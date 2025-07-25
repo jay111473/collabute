@@ -1,5 +1,58 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { getAuthUserId } from "@convex-dev/auth/server";
+
+// Get current authenticated user with complete profile
+export const getCurrentUser = query({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) return null;
+
+    // Get user directly by _id (which is the auth ID)
+    const user = await ctx.db.get(userId);
+    if (!user) return null;
+
+    let roleProfile = null;
+
+    // Get role-specific profile based on user type
+    switch (user.type) {
+      case "DEVELOPER":
+        roleProfile = await ctx.db
+          .query("developer_profiles")
+          .withIndex("by_user", (q) => q.eq("userId", user._id))
+          .first();
+        break;
+
+      case "LEAD":
+      case "PROJECT_MANAGER":
+        roleProfile = await ctx.db
+          .query("lead_profiles")
+          .withIndex("by_user", (q) => q.eq("userId", user._id))
+          .first();
+        break;
+
+      case "STARTUP":
+        roleProfile = await ctx.db
+          .query("startup_profiles")
+          .withIndex("by_user", (q) => q.eq("userId", user._id))
+          .first();
+        break;
+    }
+
+    // Get GitHub profile if connected
+    const githubProfile = await ctx.db
+      .query("github_profiles")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .first();
+
+    return {
+      ...user,
+      roleProfile,
+      githubProfile,
+    };
+  },
+});
 
 // Get complete user profile with role-specific data
 export const getCompleteUserProfile = query({
@@ -220,8 +273,8 @@ export const searchDevelopers = query({
   handler: async (ctx, args) => {
     // Get all developers
     const developers = await ctx.db
-      .query("user")
-      .withIndex("by_type", (q) => q.eq("type", "DEVELOPER"))
+      .query("users")
+      .filter((q: any) => q.eq(q.field("type"), "DEVELOPER"))
       .collect();
 
     // Get their profiles

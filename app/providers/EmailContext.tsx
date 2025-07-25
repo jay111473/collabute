@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode } from "react";
 
 interface EmailContextType {
   email: string;
@@ -9,8 +9,10 @@ interface EmailContextType {
 
 const EmailContext = createContext<EmailContextType | undefined>(undefined);
 
-export const EmailProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [email, setEmail] = useState('');
+export const EmailProvider: React.FC<{ children: ReactNode }> = ({
+  children,
+}) => {
+  const [email, setEmail] = useState("");
 
   return (
     <EmailContext.Provider value={{ email, setEmail }}>
@@ -22,7 +24,7 @@ export const EmailProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 export const useEmail = () => {
   const context = useContext(EmailContext);
   if (context === undefined) {
-    throw new Error('useEmail must be used within an EmailProvider');
+    throw new Error("useEmail must be used within an EmailProvider");
   }
   return context;
 };

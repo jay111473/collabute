@@ -13,11 +13,8 @@ import {
   Package,
 } from "lucide-react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { User, NavItem } from "@/types/dashboard";
-import { toast } from "sonner";
-import { deleteCookie, getCookie } from "cookies-next";
-import axios from "axios";
+import { usePathname } from "next/navigation";
+import { NavItem } from "@/types/dashboard";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import {
@@ -26,6 +23,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useAuthActions } from "@convex-dev/auth/react";
+import { User } from "@/types/convex";
 
 interface FloatingBottomBarProps {
   user: User;
@@ -33,8 +32,9 @@ interface FloatingBottomBarProps {
 
 export default function FloatingBottomBar({ user }: FloatingBottomBarProps) {
   const pathname = usePathname();
-  const router = useRouter();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const { signOut } = useAuthActions();
+
   const allNavItems: NavItem[] = [
     {
       name: "Home",
@@ -104,108 +104,96 @@ export default function FloatingBottomBar({ user }: FloatingBottomBarProps) {
 
   // Filter navigation items based on user type
   const filteredNavItems = allNavItems.filter(
-    (item) => item.type === "cross" || item.type === user.type ||
-    (item.type === "developer" && user.type === "projectManager" && item.name === "Explore") ||
-    (item.type === "startup" && user.type === "projectManager" && item.name === "Products")
+    (item) =>
+      item.type === "cross" ||
+      (item.type === "developer" &&
+        user.type === "PROJECT_MANAGER" &&
+        item.name === "Explore") ||
+      (item.type === "startup" &&
+        user.type === "PROJECT_MANAGER" &&
+        item.name === "Products")
   );
 
   // Sort by priority and take first 4 for main bar
-  const sortedItems = filteredNavItems.sort((a, b) => (a.priority || 0) - (b.priority || 0));
+  const sortedItems = filteredNavItems.sort(
+    (a, b) => (a.priority || 0) - (b.priority || 0)
+  );
   const mainBarItems = sortedItems.slice(0, 4);
   const dropdownItems = sortedItems.slice(4);
 
-  const handleLogout = async () => {
-    try {
-      const token = getCookie("token");
-      
-      await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/users/logout`, {}, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      
-      deleteCookie("token");
-      deleteCookie("isLoggedIn");
-      toast.success("Successfully logged out");
-      router.push("/auth");
-    } catch (error) {
-      console.error("Logout error:", error);
-      toast.error("Failed to logout. Please try again.");
-    }
-  };
-
-
-
-      return (
-      <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50">
-        {/* Subtle glow backdrop */}
-        <div className="absolute inset-0 bg-white/10 rounded-full blur-xl scale-110 -z-10" />
-        <div className="bg-black/90 backdrop-blur-xl border border-white/10 rounded-full px-8 py-4 shadow-2xl shadow-white/10">
-          <div className="flex items-center gap-8">
-            {/* Dropdown menu for additional items */}
-            {dropdownItems.length > 0 && (
-              <>
-                <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
-                  <DropdownMenuTrigger asChild>
-                    <button className="px-4 py-2 rounded-full transition-all duration-200 text-sm font-medium text-white/60 hover:text-white flex items-center gap-2">
-                      <Menu className="h-4 w-4" />
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent
-                    side="top"
-                    align="center"
-                    className="bg-black/90 backdrop-blur-xl border border-white/10 rounded-xl mb-2"
-                  >
-                    {dropdownItems.map((item) => (
-                      <DropdownMenuItem key={item.name} asChild>
-                        <Link
-                          href={item.path}
-                          className={cn(
-                            "flex items-center gap-3 px-4 py-3 text-sm transition-colors cursor-pointer",
-                            pathname === item.path
-                              ? "bg-white/20 text-white"
-                              : "text-white/70 hover:text-white hover:bg-white/10"
-                          )}
-                        >
-                          <item.icon className="h-4 w-4" />
-                          {item.name}
-                        </Link>
-                      </DropdownMenuItem>
-                    ))}
-                    <DropdownMenuItem asChild>
-                      <button
-                        onClick={handleLogout}
-                        className="flex items-center gap-3 px-4 py-3 text-sm text-white/70 hover:text-red-400 hover:bg-white/10 transition-colors cursor-pointer w-full"
-                      >
-                        <LogOut className="h-4 w-4" />
-                        Logout
-                      </button>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-
-                {/* Separator line */}
-                <div className="h-6 w-px bg-white/20" />
-              </>
-            )}
-
-            {/* Main navigation items */}
-            {mainBarItems.map((item) => (
-              <Link
-                key={item.name}
-                href={item.path}
-                className={cn(
-                  "px-4 py-2 rounded-full transition-all duration-200 text-sm font-medium whitespace-nowrap",
-                  pathname === item.path
-                    ? "text-white"
-                    : "text-white/60 hover:text-white"
-                )}
+  return (
+    <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50">
+      {/* Subtle glow backdrop */}
+      <div className="absolute inset-0 bg-white/10 rounded-full blur-xl scale-110 -z-10" />
+      <div className="bg-black/90 backdrop-blur-xl border border-white/10 rounded-full px-8 py-4 shadow-2xl shadow-white/10">
+        <div className="flex items-center gap-8">
+          {/* Dropdown menu for additional items */}
+          {dropdownItems.length > 0 && (
+            <>
+              <DropdownMenu
+                open={isDropdownOpen}
+                onOpenChange={setIsDropdownOpen}
               >
-                {item.name}
-              </Link>
-            ))}
-          </div>
+                <DropdownMenuTrigger asChild>
+                  <button className="px-4 py-2 rounded-full transition-all duration-200 text-sm font-medium text-white/60 hover:text-white flex items-center gap-2">
+                    <Menu className="h-4 w-4" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  side="top"
+                  align="center"
+                  className="bg-black/90 backdrop-blur-xl border border-white/10 rounded-xl mb-2"
+                >
+                  {dropdownItems.map((item) => (
+                    <DropdownMenuItem key={item.name} asChild>
+                      <Link
+                        href={item.path}
+                        className={cn(
+                          "flex items-center gap-3 px-4 py-3 text-sm transition-colors cursor-pointer",
+                          pathname === item.path
+                            ? "bg-white/20 text-white"
+                            : "text-white/70 hover:text-white hover:bg-white/10"
+                        )}
+                      >
+                        <item.icon className="h-4 w-4" />
+                        {item.name}
+                      </Link>
+                    </DropdownMenuItem>
+                  ))}
+                  <DropdownMenuItem asChild>
+                    <button
+                      onClick={() => void signOut()}
+                      className="flex items-center gap-3 px-4 py-3 text-sm text-white/70 hover:text-red-400 hover:bg-white/10 transition-colors cursor-pointer w-full"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      Logout
+                    </button>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              {/* Separator line */}
+              <div className="h-6 w-px bg-white/20" />
+            </>
+          )}
+
+          {/* Main navigation items */}
+          {mainBarItems.map((item) => (
+            <Link
+              key={item.name}
+              href={item.path}
+              className={cn(
+                "px-4 py-2 rounded-full transition-all duration-200 text-sm font-medium whitespace-nowrap",
+                pathname === item.path
+                  ? "text-white"
+                  : "text-white/60 hover:text-white"
+              )}
+            >
+              {item.name}
+            </Link>
+          ))}
         </div>
       </div>
-    );
-} 
+    </div>
+  );
+}

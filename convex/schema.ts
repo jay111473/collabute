@@ -1,9 +1,12 @@
 import { defineSchema, defineTable } from "convex/server";
-import { v } from "convex/values";
+import { v, Infer } from "convex/values";
 import { authTables } from "@convex-dev/auth/server";
 
-// Enums
-const UserType = v.union(
+// ==============================
+// ENUM VALIDATORS
+// ==============================
+
+export const UserTypeValidator = v.union(
   v.literal("DEVELOPER"),
   v.literal("STARTUP"),
   v.literal("DESIGNER"),
@@ -11,13 +14,13 @@ const UserType = v.union(
   v.literal("PROJECT_MANAGER")
 );
 
-const KycStatus = v.union(
+export const KycStatusValidator = v.union(
   v.literal("PENDING"),
   v.literal("VERIFIED"),
   v.literal("REJECTED")
 );
 
-const ExperienceLevel = v.union(
+export const ExperienceLevelValidator = v.union(
   v.literal("JUNIOR"),
   v.literal("MID_LEVEL"),
   v.literal("SENIOR"),
@@ -25,63 +28,145 @@ const ExperienceLevel = v.union(
   v.literal("ARCHITECT")
 );
 
-const ProjectStatus = v.union(
+export const ProjectStatusValidator = v.union(
   v.literal("PLANNED"),
   v.literal("IN_PROGRESS"),
   v.literal("COMPLETED"),
   v.literal("ON_HOLD")
 );
 
-const IssueStatus = v.union(
+export const IssueStatusValidator = v.union(
   v.literal("OPEN"),
   v.literal("IN_PROGRESS"),
   v.literal("RESOLVED"),
   v.literal("CLOSED")
 );
 
-const MessageType = v.union(
+export const MessageTypeValidator = v.union(
   v.literal("TEXT"),
   v.literal("IMAGE"),
   v.literal("FILE"),
   v.literal("SYSTEM")
 );
 
+export const ApplicationStatusValidator = v.union(
+  v.literal("pending"),
+  v.literal("accepted"),
+  v.literal("rejected"),
+  v.literal("withdrawn")
+);
+
+// ==============================
+// TYPE EXPORTS
+// ==============================
+
+export type UserType = Infer<typeof UserTypeValidator>;
+export type KycStatus = Infer<typeof KycStatusValidator>;
+export type ExperienceLevel = Infer<typeof ExperienceLevelValidator>;
+export type ProjectStatus = Infer<typeof ProjectStatusValidator>;
+export type IssueStatus = Infer<typeof IssueStatusValidator>;
+export type MessageType = Infer<typeof MessageTypeValidator>;
+export type ApplicationStatus = Infer<typeof ApplicationStatusValidator>;
+
+// ==============================
+// FIELD VALIDATORS
+// ==============================
+
+export const userFields = {
+  name: v.optional(v.string()),
+  image: v.optional(v.string()),
+  email: v.optional(v.string()),
+  emailVerificationTime: v.optional(v.number()),
+  profilePicture: v.optional(v.id("media")),
+  type: v.optional(UserTypeValidator),
+  phoneNumber: v.optional(v.string()),
+  countryCode: v.optional(v.string()),
+  country: v.optional(v.string()),
+  industry: v.optional(v.string()),
+  roleId: v.optional(v.id("roles")),
+  isVerified: v.optional(v.boolean()),
+  kycStatus: v.optional(KycStatusValidator),
+  earlybird: v.optional(v.boolean()),
+  wallet: v.optional(v.number()),
+};
+
+export const projectFields = {
+  title: v.string(),
+  slug: v.string(),
+  description: v.string(),
+  longDescription: v.optional(v.string()),
+  logoUrl: v.optional(v.string()),
+  type: v.optional(v.string()),
+  status: ProjectStatusValidator,
+  state: v.optional(v.string()),
+  startDate: v.number(),
+  endDate: v.optional(v.number()),
+  budget: v.optional(v.number()),
+  ownerId: v.id("users"),
+  teamLeadId: v.optional(v.id("users")),
+  stacks: v.optional(v.array(v.string())),
+  tags: v.optional(v.array(v.string())),
+  milestones: v.optional(v.any()),
+  productId: v.optional(v.id("products")),
+  repositoryId: v.optional(v.id("github_repositories")),
+};
+
+export const issueFields = {
+  title: v.string(),
+  slug: v.string(),
+  description: v.optional(v.string()),
+  longDescription: v.optional(v.string()),
+  type: v.optional(v.string()),
+  category: v.optional(v.array(v.string())),
+  status: IssueStatusValidator,
+  priority: v.optional(v.string()),
+  budget: v.optional(v.number()),
+  onboardingVideoLink: v.optional(v.string()),
+  onboardingVideoUrl: v.optional(v.string()),
+  onboardingThumbnailUrl: v.optional(v.string()),
+  projectId: v.id("projects"),
+  assigneeIds: v.optional(v.array(v.id("users"))),
+  reporterId: v.id("users"),
+  labels: v.optional(v.array(v.string())),
+  githubIssueNumber: v.optional(v.number()),
+  githubUrl: v.optional(v.string()),
+  lastSyncAt: v.optional(v.number()),
+};
+
+export const messageFields = {
+  content: v.string(),
+  type: MessageTypeValidator,
+  conversationId: v.id("conversations"),
+  senderId: v.id("users"),
+  replyToId: v.optional(v.id("messages")),
+  attachments: v.optional(v.array(v.id("media"))),
+  isEdited: v.boolean(),
+  editedAt: v.optional(v.number()),
+  isDeleted: v.boolean(),
+  deletedAt: v.optional(v.number()),
+};
+
+// ==============================
+// SCHEMA DEFINITION
+// ==============================
+
 export default defineSchema({
   // Auth tables
   ...authTables,
-  // Business user profile data
-  users: defineTable({
-    userId: v.string(), // User identifier
-    name: v.string(),
-    email: v.string(),
-    profilePicture: v.optional(v.id("media")),
-    type: UserType,
-    phoneNumber: v.optional(v.string()),
-    countryCode: v.optional(v.string()),
-    country: v.optional(v.string()),
-    industry: v.optional(v.string()),
-    roleId: v.optional(v.id("roles")),
-    isVerified: v.boolean(),
-    kycStatus: KycStatus,
-    earlybird: v.boolean(),
-    wallet: v.number(),
-  }).index("by_user", ["userId"]),
 
-  media: defineTable({
-    userId: v.string(),
-    url: v.string(),
-    type: v.optional(v.string()), // e.g., "image", "video", "document"
-    createdAt: v.number(),
-    description: v.optional(v.string()),
-  }),
+  // ==============================
+  // USER TABLES
+  // ==============================
 
-  // Developer-specific profile data
+  users: defineTable(userFields)
+    .index("email", ["email"]),
+
   developer_profiles: defineTable({
-    userId: v.string(),
+    userId: v.id("users"),
     bio: v.optional(v.string()),
     skills: v.optional(v.array(v.string())),
     experience: v.optional(v.number()),
-    experienceLevel: v.optional(ExperienceLevel),
+    experienceLevel: v.optional(ExperienceLevelValidator),
     availability: v.optional(v.string()),
     preferredWorkType: v.optional(v.string()),
     hourlyRate: v.optional(v.number()),
@@ -94,9 +179,8 @@ export default defineSchema({
     .index("by_experience_level", ["experienceLevel"])
     .index("by_availability", ["availability"]),
 
-  // Lead/Manager-specific profile data
   lead_profiles: defineTable({
-    userId: v.string(),
+    userId: v.id("users"),
     specializations: v.optional(v.array(v.string())),
     title: v.optional(v.string()),
     location: v.optional(v.string()),
@@ -110,9 +194,8 @@ export default defineSchema({
     .index("by_specialization", ["specializations"])
     .index("by_location", ["location"]),
 
-  // Startup-specific profile data
   startup_profiles: defineTable({
-    userId: v.string(),
+    userId: v.id("users"),
     companyName: v.string(),
     companyDescription: v.optional(v.string()),
     website: v.optional(v.string()),
@@ -127,9 +210,8 @@ export default defineSchema({
     .index("by_company", ["companyName"])
     .index("by_funding_stage", ["fundingStage"]),
 
-  // GitHub integration data - separate table for better performance
   github_profiles: defineTable({
-    userId: v.string(),
+    userId: v.id("users"),
     githubId: v.string(),
     githubUsername: v.string(),
     githubConnected: v.boolean(),
@@ -153,36 +235,11 @@ export default defineSchema({
     permissions: v.array(v.string()),
   }).index("by_name", ["name"]),
 
-  projects: defineTable({
-    title: v.string(),
-    slug: v.string(),
-    description: v.string(),
-    longDescription: v.optional(v.string()),
-    logoUrl: v.optional(v.string()),
-    type: v.optional(v.string()),
-    status: ProjectStatus,
-    state: v.optional(v.string()),
-    startDate: v.number(),
-    endDate: v.optional(v.number()),
-    budget: v.optional(v.number()),
+  // ==============================
+  // PROJECT TABLES
+  // ==============================
 
-    // Owner and Team
-    ownerId: v.id("users"),
-    teamLeadId: v.optional(v.id("users")),
-
-    // Technical
-    stacks: v.optional(v.array(v.string())),
-    tags: v.optional(v.array(v.string())),
-
-    // Milestones stored as object
-    milestones: v.optional(v.any()),
-
-    // Product Association
-    productId: v.optional(v.id("products")),
-
-    // Repository
-    repositoryId: v.optional(v.id("github_repositories")),
-  })
+  projects: defineTable(projectFields)
     .index("by_owner", ["ownerId"])
     .index("by_slug", ["slug"])
     .index("by_status", ["status"]),
@@ -197,43 +254,33 @@ export default defineSchema({
     .index("by_user", ["userId"])
     .index("by_project_user", ["projectId", "userId"]),
 
-  issues: defineTable({
-    title: v.string(),
-    slug: v.string(),
-    description: v.optional(v.string()),
-    longDescription: v.optional(v.string()),
-    type: v.optional(v.string()),
-    category: v.optional(v.array(v.string())),
-    status: IssueStatus,
-    priority: v.optional(v.string()),
-    budget: v.optional(v.number()),
+  // ==============================
+  // ISSUE TABLES
+  // ==============================
 
-    // Media
-    onboardingVideoLink: v.optional(v.string()),
-    onboardingVideoUrl: v.optional(v.string()),
-    onboardingThumbnailUrl: v.optional(v.string()),
-
-    // Relationships
-    projectId: v.id("projects"),
-    assigneeIds: v.optional(v.array(v.string())),
-    reporterId: v.string(),
-
-    // Labels
-    labels: v.optional(v.array(v.string())),
-
-    // GitHub integration fields
-    githubIssueNumber: v.optional(v.number()),
-    githubUrl: v.optional(v.string()),
-    lastSyncAt: v.optional(v.number()),
-  })
+  issues: defineTable(issueFields)
     .index("by_project", ["projectId"])
     .index("by_status", ["status"])
     .index("by_reporter", ["reporterId"])
     .index("by_slug", ["slug"])
     .index("by_github_number", ["githubIssueNumber", "projectId"]),
 
+  issue_applications: defineTable({
+    issueId: v.id("issues"),
+    applicantId: v.id("users"),
+    proposal: v.string(),
+    attachments: v.optional(v.array(v.id("media"))),
+    status: ApplicationStatusValidator,
+    appliedAt: v.number(),
+    reviewedAt: v.optional(v.number()),
+    reviewedById: v.optional(v.id("users")),
+  })
+    .index("by_issue", ["issueId"])
+    .index("by_applicant", ["applicantId"])
+    .index("by_status", ["status"]),
+
   collaboration_requests: defineTable({
-    developerId: v.string(),
+    developerId: v.id("users"),
     issueId: v.id("issues"),
     percentageShare: v.number(),
     taskDefinition: v.optional(v.string()),
@@ -244,12 +291,16 @@ export default defineSchema({
     .index("by_issue", ["issueId"])
     .index("by_status", ["status"]),
 
+  // ==============================
+  // GITHUB INTEGRATION
+  // ==============================
+
   github_repositories: defineTable({
     githubId: v.number(),
     name: v.string(),
     fullName: v.string(),
     description: v.optional(v.string()),
-    ownerId: v.string(),
+    ownerId: v.id("users"),
     private: v.boolean(),
     htmlUrl: v.string(),
     cloneUrl: v.string(),
@@ -259,14 +310,16 @@ export default defineSchema({
     defaultBranch: v.string(),
     isActive: v.boolean(),
     lastSyncAt: v.number(),
-
-    // Project association
     projectId: v.optional(v.id("projects")),
   })
     .index("by_github_id", ["githubId"])
     .index("by_owner", ["ownerId"])
     .index("by_project", ["projectId"])
     .index("by_full_name", ["fullName"]),
+
+  // ==============================
+  // COMMUNICATION TABLES
+  // ==============================
 
   conversations: defineTable({
     title: v.string(),
@@ -277,10 +330,8 @@ export default defineSchema({
     isArchived: v.boolean(),
     archivedAt: v.optional(v.number()),
     messageCount: v.number(),
-
-    // Relationships
     projectId: v.optional(v.id("projects")),
-    createdById: v.optional(v.string()),
+    createdById: v.optional(v.id("users")),
     lastMessageId: v.optional(v.id("messages")),
   })
     .index("by_project", ["projectId"])
@@ -300,30 +351,25 @@ export default defineSchema({
     .index("by_user", ["userId"])
     .index("by_conversation_user", ["conversationId", "userId"]),
 
-  messages: defineTable({
-    content: v.string(),
-    type: MessageType,
-
-    // Relationships
-    conversationId: v.id("conversations"),
-    senderId: v.id("users"),
-    replyToId: v.optional(v.id("messages")),
-
-    // Media
-    attachments: v.optional(v.array(v.id("media"))),
-
-    // Status
-    isEdited: v.boolean(),
-    editedAt: v.optional(v.number()),
-    isDeleted: v.boolean(),
-    deletedAt: v.optional(v.number()),
-  })
+  messages: defineTable(messageFields)
     .index("by_conversation", ["conversationId"])
     .index("by_sender", ["senderId"])
     .index("by_reply_to", ["replyToId"]),
 
+  // ==============================
+  // UTILITY TABLES
+  // ==============================
+
+  media: defineTable({
+    userId: v.id("users"),
+    url: v.string(),
+    type: v.optional(v.string()),
+    createdAt: v.number(),
+    description: v.optional(v.string()),
+  }),
+
   transactions: defineTable({
-    userId: v.string(),
+    userId: v.id("users"),
     amount: v.number(),
     type: v.string(),
     method: v.string(),

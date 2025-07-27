@@ -1,21 +1,46 @@
 "use client";
 
 import { FC } from "react";
-import { User } from "@/types/dashboard";
+import { useQuery, Preloaded, usePreloadedQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { User } from "@/types/convex";
 import { useDeveloperFilters } from "./hooks/useDeveloperFilters";
 import { DeveloperSectionHeader } from "./DevelopersHeader";
 import { DeveloperFilterBar } from "./DevelopersFilterBar";
 import { DeveloperGrid } from "./DevelopersGrid";
 
+// Type for developer with profile data
+type DeveloperWithProfile = User & {
+  developerProfile: {
+    bio?: string;
+    skills?: string[];
+    experience?: number;
+    experienceLevel?: string;
+    availability?: string;
+    hourlyRate?: number;
+    portfolio?: string[];
+  } | null;
+  githubProfile: {
+    githubUsername: string;
+    publicRepos?: number;
+    followers?: number;
+  } | null;
+  repositoriesCount: number;
+  issuesWorkedOn: number;
+};
+
 interface DevelopersClientProps {
-  developers: User[];
+  developers: Preloaded<typeof api.users.getDevelopersWithProfiles>;
 }
 
 /**
  * Client component for the developers page
  * Manages filters, search, and displaying developers in two sections
  */
-const DevelopersClient: FC<DevelopersClientProps> = ({ developers }) => {
+const DevelopersClient: FC<DevelopersClientProps> = ({ developers: preloadedDevelopers }) => {
+  // Use preloaded data with real-time updates
+  const developers = usePreloadedQuery(preloadedDevelopers) as DeveloperWithProfile[];
+
   // Initialize filters from URL search params
   const {
     search,
@@ -43,10 +68,11 @@ const DevelopersClient: FC<DevelopersClientProps> = ({ developers }) => {
     })
     .slice(0, 3);
 
-  // Helper function to calculate rating (same logic as in DeveloperCard)
-  function calculateRating(developer: User): number {
-    const experience = developer.developerFields?.experience || 0;
-    const projectCount = developer.developerFields?.issues?.length || 0;
+  // Helper function to calculate rating based on Convex data structure
+  function calculateRating(developer: DeveloperWithProfile): number {
+    const experience = developer.developerProfile?.experience || 0;
+    const projectCount = developer.issuesWorkedOn || 0;
+    const repoCount = developer.repositoriesCount || 0;
 
     let rating = 3.5;
 
@@ -56,6 +82,9 @@ const DevelopersClient: FC<DevelopersClientProps> = ({ developers }) => {
 
     if (projectCount >= 10) rating += 0.4;
     else if (projectCount >= 5) rating += 0.2;
+
+    if (repoCount >= 5) rating += 0.3;
+    else if (repoCount >= 2) rating += 0.1;
 
     return Math.min(5.0, Math.round(rating * 10) / 10);
   }

@@ -10,6 +10,7 @@
 
 import type * as admin from "../admin.js";
 import type * as auth from "../auth.js";
+import type * as blogs from "../blogs.js";
 import type * as conversations from "../conversations.js";
 import type * as github from "../github.js";
 import type * as github_repositories from "../github_repositories.js";
@@ -42,6 +43,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   admin: typeof admin;
   auth: typeof auth;
+  blogs: typeof blogs;
   conversations: typeof conversations;
   github: typeof github;
   github_repositories: typeof github_repositories;

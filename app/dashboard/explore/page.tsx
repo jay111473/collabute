@@ -1,26 +1,33 @@
 import React from "react";
 import { ExploreComponent } from "@/components/dashboard/projects/explore";
-import { getProjects } from "@/lib/get-projects";
-import { getUser } from "@/lib/get-user";
-import { redirect } from "next/navigation";
+import { preloadQuery } from "convex/nextjs";
+import { api } from "@/convex/_generated/api";
 
 export const dynamic = "force-dynamic";
 
 const Explore = async ({ searchParams }: { searchParams: Promise<any> }) => {
   const { page } = await searchParams;
-  const projectsData = await getProjects(page);
-  const user = await getUser(2);
-  if (!user) {
-    redirect("/auth");
-  }
+
+  const preloaded = await preloadQuery(api.projects.getProjects, {
+    limit: 10,
+    page: page || 1,
+  });
+
+  const projectsData = (preloaded._valueJSON as any) || {
+    projects: [],
+    currentPage: 1,
+    totalPages: 1,
+    hasMore: false,
+  };
+
   return (
     <ExploreComponent
-      projects={projectsData.docs}
+      projects={projectsData.projects}
       pagination={{
-        currentPage: projectsData.page,
+        currentPage: projectsData.currentPage,
         totalPages: projectsData.totalPages,
-        hasNextPage: projectsData.hasNextPage,
-        hasPrevPage: projectsData.hasPrevPage,
+        hasNextPage: projectsData.hasMore,
+        hasPrevPage: projectsData.currentPage > 1,
       }}
     />
   );

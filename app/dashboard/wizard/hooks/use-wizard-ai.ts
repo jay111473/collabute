@@ -31,25 +31,19 @@ export function useWizardAi(): UseWizardAiReturn {
   ): Promise<FeatureComparisonData | null> => {
     setIsLoading(true);
     try {
-      const response = await fetch("/api/wizard-industry-competitors-ai", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ projectIdea }),
-      });
+      // TODO: Replace with Convex function for AI feature comparison
+      // Mock data for now
+      const mockData = {
+        categories: [
+          { name: "Technology", description: "Tech solutions" },
+        ],
+        competitors: [
+          { name: "Example Competitor", description: "Sample competitor" },
+        ],
+      };
 
-      const data = await response.json();
-
-      if (data.error) {
-        return null;
-      }
-
-      if (data.categories?.length > 0 && data.competitors?.length > 0) {
-        // Update the legacy state for backward compatibility
-        setSuggestedCompetitors(data.competitors);
-        return data;
-      }
-
-      return null;
+      setSuggestedCompetitors(mockData.competitors);
+      return mockData as FeatureComparisonData;
     } catch (error) {
       return null;
     } finally {
@@ -62,23 +56,18 @@ export function useWizardAi(): UseWizardAiReturn {
   ): Promise<BusinessComparisonData | null> => {
     setIsLoading(true);
     try {
-      const response = await fetch("/api/wizard-business-comparison-ai", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ projectIdea }),
-      });
+      // TODO: Replace with Convex function for AI business comparison
+      // Mock data for now
+      const mockData = {
+        categories: [
+          { name: "Business", description: "Business category" },
+        ],
+        competitors: [
+          { name: "Business Competitor", description: "Sample business competitor" },
+        ],
+      };
 
-      const data = await response.json();
-
-      if (data.error) {
-        return null;
-      }
-
-      if (data.categories?.length > 0 && data.competitors?.length > 0) {
-        return data;
-      }
-
-      return null;
+      return mockData as BusinessComparisonData;
     } catch (error) {
       return null;
     } finally {
@@ -94,31 +83,29 @@ export function useWizardAi(): UseWizardAiReturn {
   }): Promise<ProjectsResponse | null> => {
     setIsLoading(true);
     try {
-      const response = await fetch("/api/wizard-project-creator", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(projectInfo),
-      });
+      // TODO: Replace with Convex function for AI project generation
+      // Mock data for now
+      const mockProjects = [
+        {
+          id: "1",
+          name: "Sample Project",
+          description: "A sample project based on your idea",
+          estimatedDuration: 30,
+          complexity: "medium" as const,
+        },
+      ];
 
-      const data = await response.json();
+      setSuggestedProjects(mockProjects);
+      setTotalEstimatedDuration(30);
+      setCriticalPath(["1"]);
+      setParallelizationOpportunities([]);
 
-      if (data.projects) {
-        setSuggestedProjects(data.projects);
-        setTotalEstimatedDuration(data.totalEstimatedDuration || 0);
-        setCriticalPath(data.criticalPath || []);
-        setParallelizationOpportunities(
-          data.parallelizationOpportunities || []
-        );
-
-        return {
-          projects: data.projects,
-          totalEstimatedDuration: data.totalEstimatedDuration || 0,
-          criticalPath: data.criticalPath || [],
-          parallelizationOpportunities: data.parallelizationOpportunities || [],
-        };
-      }
-
-      return null;
+      return {
+        projects: mockProjects,
+        totalEstimatedDuration: 30,
+        criticalPath: ["1"],
+        parallelizationOpportunities: [],
+      };
     } catch (error) {
       return null;
     } finally {
@@ -133,51 +120,30 @@ export function useWizardAi(): UseWizardAiReturn {
   ): Promise<TracksResponse | null> => {
     setIsLoading(true);
     try {
-      const response = await fetch("/api/wizard-tracks-generator", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          projectInfo,
-          competitors,
-          projects,
-        }),
-      });
+      // TODO: Replace with Convex function for AI tracks generation
+      // Mock data for now
+      const mockTracks = [
+        {
+          id: "1",
+          name: "Development Track",
+          description: "Main development track",
+          estimatedDuration: 20,
+          complexity: "medium" as const,
+        },
+      ];
 
-      const data = await response.json();
+      setSuggestedTracks(mockTracks);
+      setTotalEstimatedDuration(20);
+      setCriticalPath(["1"]);
+      setParallelizationOpportunities([]);
 
-      if (data.error) {
-        return null;
-      }
-
-      if (data.tracks?.length > 0) {
-        setSuggestedTracks(data.tracks);
-        
-        // Update timeline data if available
-        if (data.totalEstimatedDuration) {
-          setTotalEstimatedDuration(data.totalEstimatedDuration);
-        }
-        if (data.criticalPath) {
-          setCriticalPath(data.criticalPath);
-        }
-        if (data.parallelizationOpportunities) {
-          // Convert track-based parallelization to project-based for backward compatibility
-          const projectParallelization = data.parallelizationOpportunities.map((opp: any) => ({
-            projectIds: opp.trackIds || [], // Map trackIds to projectIds for compatibility
-            description: opp.description,
-          }));
-          setParallelizationOpportunities(projectParallelization);
-        }
-
-        return {
-          platformAnalysis: data.platformAnalysis,
-          tracks: data.tracks,
-          totalEstimatedDuration: data.totalEstimatedDuration || 0,
-          criticalPath: data.criticalPath || [],
-          parallelizationOpportunities: data.parallelizationOpportunities || [],
-        };
-      }
-
-      return null;
+      return {
+        platformAnalysis: { recommended: "web", alternatives: ["mobile"] },
+        tracks: mockTracks,
+        totalEstimatedDuration: 20,
+        criticalPath: ["1"],
+        parallelizationOpportunities: [],
+      };
     } catch (error) {
       return null;
     } finally {

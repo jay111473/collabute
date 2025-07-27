@@ -24,20 +24,17 @@ export function useGitHubAccess(userId: string | null) {
     setError(null);
 
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/github/repository-check?userId=${userId}`
-      );
-
-      if (!response.ok) {
-        throw new Error(`Failed to check GitHub access: ${response.statusText}`);
-      }
-
-      const data: GitHubAccessStatus = await response.json();
+      // TODO: Replace with Convex function for GitHub access check
+      // For now, assume GitHub access is available
+      const data: GitHubAccessStatus = {
+        success: true,
+        canCreateRepositories: true,
+        githubConnected: true,
+        githubUsername: "user",
+        error: null,
+        oauthUrl: null,
+      };
       setStatus(data);
-      
-      if (!data.success) {
-        setError(data.error || "Failed to verify GitHub access");
-      }
     } catch (err) {
       let errorMessage = "Failed to check GitHub access";
       
@@ -69,11 +66,8 @@ export function useGitHubAccess(userId: string | null) {
 
     try {
       const currentStep = new URLSearchParams(window.location.search).get("step") || "0";
-      const callbackUrl = encodeURIComponent(
-        `${window.location.origin}/dashboard/wizard?github_auth_success=true&step=${currentStep}`
-      );
-      
-      window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/api/oauth/github/login?callback_url=${callbackUrl}`;
+      // TODO: Replace with Convex GitHub OAuth flow
+      console.log("GitHub connection would be initiated here");
     } catch (err) {
       console.error("Error initiating GitHub connection:", err);
       setError("Failed to initiate GitHub connection. Please try again.");

@@ -457,3 +457,72 @@ export const list = query({
     return users.slice(offset, offset + limit);
   },
 });
+
+// Get developers with their profiles and populated data
+export const getDevelopersWithProfiles = query({
+  args: {
+    limit: v.optional(v.number()),
+    search: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    // Get all developers
+    const developers = await ctx.db
+      .query("users")
+      .filter((q) => q.eq(q.field("type"), "DEVELOPER"))
+      .take(args.limit || 50);
+
+    // Populate each developer with their profile and additional data
+    const developersWithProfiles = await Promise.all(
+      developers.map(async (developer) => {
+        // Get developer profile
+        const developerProfile = await ctx.db
+          .query("developer_profiles")
+          .withIndex("by_user", (q) => q.eq("userId", developer._id))
+          .first();
+
+        // Get GitHub profile
+        const githubProfile = await ctx.db
+          .query("github_profiles")
+          .withIndex("by_user", (q) => q.eq("userId", developer._id))
+          .first();
+
+        // Get user's repositories count
+        const repositoriesCount = await ctx.db
+          .query("github_repositories")
+          .withIndex("by_owner", (q) => q.eq("ownerId", developer._id))
+          .collect()
+          .then((repos) => repos.length);
+
+        // Get user's issues (projects they've worked on)
+        const issuesWorkedOn = await ctx.db
+          .query("issues")
+          .filter((q) => q.eq(q.field("assigneeIds"), [developer._id]))
+          .collect()
+          .then((issues) => issues.length);
+
+        return {
+          ...developer,
+          developerProfile,
+          githubProfile,
+          repositoriesCount,
+          issuesWorkedOn,
+        };
+      })
+    );
+
+    // Apply search filter if provided
+    if (args.search) {
+      const searchTerm = args.search.toLowerCase();
+      return developersWithProfiles.filter(
+        (dev) =>
+          dev.name?.toLowerCase().includes(searchTerm) ||
+          dev.developerProfile?.skills?.some((skill) =>
+            skill.toLowerCase().includes(searchTerm)
+          ) ||
+          dev.country?.toLowerCase().includes(searchTerm)
+      );
+    }
+
+    return developersWithProfiles;
+  },
+});

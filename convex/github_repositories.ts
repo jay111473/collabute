@@ -1,5 +1,3 @@
-"use client";
-
 import { v } from "convex/values";
 import { query, mutation } from "./_generated/server";
 
@@ -172,5 +170,14 @@ export const unlinkFromProject = mutation({
     return await ctx.db.patch(args.id, {
       projectId: undefined,
     });
+  },
+});
+
+// Count all repositories
+export const count = query({
+  args: {},
+  handler: async (ctx) => {
+    const repositories = await ctx.db.query("github_repositories").collect();
+    return repositories.length;
   },
 });

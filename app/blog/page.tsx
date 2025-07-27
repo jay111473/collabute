@@ -3,11 +3,7 @@ import { Metadata, Viewport } from "next";
 import { BlogHeroServer } from "@/components/blog/blog-hero-server";
 import { BlogClientWrapper } from "@/components/blog/blog-client-wrapper";
 import { blogService } from "@/lib/services/blog-service";
-import {
-  extractCategoriesFromBlogs,
-  extractTagsFromBlogs,
-  getFeaturedBlogs,
-} from "@/lib/utils/blog-utils";
+import { getFeaturedBlogs } from "@/lib/utils/blog-utils";
 import Link from "next/link";
 
 // Generate viewport configuration
@@ -44,12 +40,10 @@ export const metadata: Metadata = {
 
 const BlogPage = async () => {
   try {
-    // Fetch blog data - categories and tags are included
-    const blogs = await blogService.getBlogs();
+    // Fetch all blog data from Convex
+    const { blogs, categories, tags } = await blogService.getBlogsData();
 
-    // Extract data using utility functions
-    const categories = extractCategoriesFromBlogs(blogs);
-    const tags = extractTagsFromBlogs(blogs);
+    // Get featured blogs using utility function
     const featuredBlogs = getFeaturedBlogs(blogs);
 
     return (
@@ -92,8 +86,6 @@ const BlogPage = async () => {
       </div>
     );
   } catch (error) {
-    console.error("Error loading blog page:", error);
-
     // During build time, return a static fallback instead of interactive elements
     if (process.env.NODE_ENV === "production" && !process.env.VERCEL_URL) {
       return (

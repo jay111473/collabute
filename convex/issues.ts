@@ -260,7 +260,7 @@ export const updateCollaborationRequestStatus = mutation({
 // Get all issues (for dashboard)
 export const getAllIssues = query({
   args: {
-    status: v.union(),
+    status: v.optional(v.string()),
     limit: v.optional(v.number()),
     offset: v.optional(v.number()),
   },

@@ -11,6 +11,8 @@ export function AdminDashboard() {
   const projectCount = useQuery(api.projects.count);
   const issueCount = useQuery(api.issues.count);
   const messageCount = useQuery(api.messages.count);
+  const transactionCount = useQuery(api.transactions.count);
+  const productCount = useQuery(api.products.count);
   
   const stats = [
     {
@@ -39,13 +41,13 @@ export function AdminDashboard() {
     },
     {
       title: "Transactions",
-      value: 0, // Will implement count query
+      value: transactionCount ?? 0,
       icon: CreditCard,
       description: "Payment transactions",
     },
     {
       title: "Products",
-      value: 0, // Will implement count query
+      value: productCount ?? 0,
       icon: Building,
       description: "Available products",
     },

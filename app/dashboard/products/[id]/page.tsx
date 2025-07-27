@@ -89,7 +89,7 @@ export default function ProductDetailsPage() {
     );
   }
 
-  const projects = Array.isArray(product.projects)
+  const projects = Array.isArray(product?.projects)
     ? product.projects.filter(
         (p): p is Project => typeof p === "object" && p !== null
       )

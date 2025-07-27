@@ -1,5 +1,3 @@
-"use client";
-
 import { v } from "convex/values";
 import { query, mutation } from "./_generated/server";
 
@@ -151,5 +149,14 @@ export const getStats = query({
     );
     
     return stats;
+  },
+});
+
+// Count all transactions
+export const count = query({
+  args: {},
+  handler: async (ctx) => {
+    const transactions = await ctx.db.query("transactions").collect();
+    return transactions.length;
   },
 });

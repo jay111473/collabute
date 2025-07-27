@@ -56,6 +56,12 @@ export const ApplicationStatusValidator = v.union(
   v.literal("withdrawn")
 );
 
+export const BlogStatusValidator = v.union(
+  v.literal("draft"),
+  v.literal("published"),
+  v.literal("archived")
+);
+
 // ==============================
 // TYPE EXPORTS
 // ==============================
@@ -67,6 +73,7 @@ export type ProjectStatus = Infer<typeof ProjectStatusValidator>;
 export type IssueStatus = Infer<typeof IssueStatusValidator>;
 export type MessageType = Infer<typeof MessageTypeValidator>;
 export type ApplicationStatus = Infer<typeof ApplicationStatusValidator>;
+export type BlogStatus = Infer<typeof BlogStatusValidator>;
 
 // ==============================
 // FIELD VALIDATORS
@@ -88,6 +95,7 @@ export const userFields = {
   kycStatus: v.optional(KycStatusValidator),
   earlybird: v.optional(v.boolean()),
   wallet: v.optional(v.number()),
+  projects: v.optional(v.array(v.id("projects"))),
 };
 
 export const projectFields = {
@@ -391,4 +399,61 @@ export default defineSchema({
   })
     .index("by_category", ["category"])
     .index("by_active", ["isActive"]),
+
+  // ==============================
+  // BLOG TABLES
+  // ==============================
+
+  blogs: defineTable({
+    title: v.string(),
+    slug: v.string(),
+    description: v.optional(v.string()),
+    profilePicture: v.optional(v.id("media")),
+    thumbnail: v.optional(v.id("media")),
+    category: v.optional(v.id("categories")),
+    tags: v.optional(v.array(v.id("tags"))),
+    richtext: v.optional(v.any()),
+    status: v.optional(BlogStatusValidator),
+    publishedAt: v.optional(v.number()),
+    updatedAt: v.number(),
+    meta: v.optional(
+      v.object({
+        title: v.optional(v.string()),
+        description: v.optional(v.string()),
+        image: v.optional(v.id("media")),
+      })
+    ),
+    faq: v.optional(
+      v.array(
+        v.object({
+          id: v.optional(v.string()),
+          question: v.optional(v.string()),
+          answer: v.optional(v.string()),
+        })
+      )
+    ),
+    authorId: v.optional(v.id("users")),
+  })
+    .index("by_slug", ["slug"])
+    .index("by_status", ["status"])
+    .index("by_category", ["category"])
+    .index("by_author", ["authorId"])
+    .index("by_published", ["publishedAt"]),
+
+  categories: defineTable({
+    name: v.string(),
+    slug: v.string(),
+    description: v.optional(v.string()),
+    color: v.optional(v.string()),
+  })
+    .index("by_slug", ["slug"])
+    .index("by_name", ["name"]),
+
+  tags: defineTable({
+    name: v.string(),
+    slug: v.string(),
+    color: v.optional(v.string()),
+  })
+    .index("by_slug", ["slug"])
+    .index("by_name", ["name"]),
 });

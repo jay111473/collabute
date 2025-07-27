@@ -218,3 +218,12 @@ export const getActiveProducts = query({
       .take(args.limit || 20);
   },
 });
+
+// Count all products
+export const count = query({
+  args: {},
+  handler: async (ctx) => {
+    const products = await ctx.db.query("products").collect();
+    return products.length;
+  },
+});

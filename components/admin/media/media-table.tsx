@@ -52,7 +52,7 @@ export function MediaTable() {
     userId: "",
   });
 
-  const media = useQuery(api.media.list, {}) as Media[] | undefined;
+  const media = useQuery(api.media.adminList, {}) as Media[] | undefined;
   const createMedia = useMutation(api.media.create);
 
   const filteredMedia = media?.filter(

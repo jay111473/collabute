@@ -58,6 +58,9 @@ export type ConversationParticipant = Doc<"conversation_participants">;
 export type Message = Doc<"messages">;
 export type Transaction = Doc<"transactions">;
 export type Product = Doc<"products">;
+export type Blog = Doc<"blogs">;
+export type Category = Doc<"categories">;
+export type Tag = Doc<"tags">;
 
 // ID types for all tables
 export type UserId = Id<"users">;
@@ -77,6 +80,9 @@ export type ConversationParticipantId = Id<"conversation_participants">;
 export type MessageId = Id<"messages">;
 export type TransactionId = Id<"transactions">;
 export type ProductId = Id<"products">;
+export type BlogId = Id<"blogs">;
+export type CategoryId = Id<"categories">;
+export type TagId = Id<"tags">;
 
 // Insert types (without system fields) for mutations
 export type UserInsert = WithoutSystemFields<User>;
@@ -99,6 +105,9 @@ export type ConversationParticipantInsert =
 export type MessageInsert = WithoutSystemFields<Message>;
 export type TransactionInsert = WithoutSystemFields<Transaction>;
 export type ProductInsert = WithoutSystemFields<Product>;
+export type BlogInsert = WithoutSystemFields<Blog>;
+export type CategoryInsert = WithoutSystemFields<Category>;
+export type TagInsert = WithoutSystemFields<Tag>;
 
 // Partial update types for mutations
 export type UserUpdate = Partial<UserInsert>;
@@ -119,6 +128,9 @@ export type ConversationParticipantUpdate =
 export type MessageUpdate = Partial<MessageInsert>;
 export type TransactionUpdate = Partial<TransactionInsert>;
 export type ProductUpdate = Partial<ProductInsert>;
+export type BlogUpdate = Partial<BlogInsert>;
+export type CategoryUpdate = Partial<CategoryInsert>;
+export type TagUpdate = Partial<TagInsert>;
 
 // Common filter types for queries
 export type UserFilter = {
@@ -182,4 +194,18 @@ export type IssueWithDetails = Issue & {
   project: Project;
   assignees: User[];
   reporter: User;
+};
+
+// Blog with populated data
+export type BlogWithDetails = Blog & {
+  category: Category | null;
+  tags: (Tag | null)[];
+  profilePicture: Media | null;
+  thumbnail: Media | null;
+  author: User | null;
+  meta?: {
+    title?: string;
+    description?: string;
+    image: Media | null;
+  };
 };

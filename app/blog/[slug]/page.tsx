@@ -4,17 +4,9 @@ import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
-import { blogService } from "@/lib/services/blog-service";
+import { api } from "@/convex/_generated/api";
+import { fetchQuery } from "convex/nextjs";
 import { CopyLinkButton } from "@/components/blog/copy-link-button";
-import {
-  getMediaUrl,
-  getCategoryName,
-  getCategoryColor,
-  formatBlogDate,
-  extractTextFromRichText,
-  getReadingTime,
-  getBlogTags,
-} from "@/lib/utils/blog-utils";
 
 interface BlogDetailPageProps {
   params: Promise<{
@@ -28,7 +20,7 @@ export async function generateMetadata({
 }: BlogDetailPageProps): Promise<Metadata> {
   try {
     const { slug } = await params;
-    const blog = await blogService.getBlogBySlug(slug);
+    const blog = await fetchQuery(api.blogs.getBlogBySlug, { slug });
 
     if (!blog) {
       return {
@@ -37,20 +29,20 @@ export async function generateMetadata({
       };
     }
 
-    const imageUrl = getMediaUrl(blog.profilePicture);
-    const description =
-      blog.description || extractTextFromRichText(blog.richtext).slice(0, 160);
+    const imageUrl = blog.profilePicture?.url || "/icons/user-avatar.png";
+    const description = blog.description || "";
 
     return {
       title: blog.meta?.title || blog.title,
       description: blog.meta?.description || description,
-      keywords: getBlogTags(blog).map((tag) => tag.name),
       openGraph: {
         title: blog.title,
         description: description,
         type: "article",
-        publishedTime: blog.publishedAt || undefined,
-        modifiedTime: blog.updatedAt,
+        publishedTime: blog.publishedAt
+          ? new Date(blog.publishedAt).toISOString()
+          : undefined,
+        modifiedTime: new Date(blog.updatedAt).toISOString(),
         images: [
           {
             url: imageUrl,
@@ -79,19 +71,27 @@ export async function generateMetadata({
 const BlogDetailPage = async ({ params }: BlogDetailPageProps) => {
   try {
     const { slug } = await params;
-    const blog = await blogService.getBlogBySlug(slug);
+    const blog = await fetchQuery(api.blogs.getBlogBySlug, { slug });
 
     if (!blog || !blog.publishedAt) {
       notFound();
     }
 
-    const categoryName = getCategoryName(blog.category);
-    const categoryColor = getCategoryColor(blog.category);
-    const imageUrl = getMediaUrl(blog.profilePicture);
-    const publishedDate = formatBlogDate(blog.publishedAt);
-    const tags = getBlogTags(blog);
-    const content = extractTextFromRichText(blog.richtext);
-    const readingTime = getReadingTime(content);
+    const categoryName = blog.category?.name || "Uncategorized";
+    const categoryColor = blog.category?.color || "#6B7280";
+    const imageUrl = blog.profilePicture?.url || "/icons/user-avatar.png";
+    const publishedDate = new Date(blog.publishedAt).toLocaleDateString(
+      "en-US",
+      {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      }
+    );
+    const tags = blog.tags?.filter(Boolean) || [];
+    const content = blog.richtext ? "Content available" : "No content";
+    const readingTime = 5; // Simple fallback
+    const authorName = blog.author?.name || "Anonymous";
 
     return (
       <div className="min-h-screen bg-black">
@@ -113,9 +113,7 @@ const BlogDetailPage = async ({ params }: BlogDetailPageProps) => {
             <header className="mb-8 sm:mb-12">
               {/* Author and meta info */}
               <div className="flex flex-wrap items-center gap-2 sm:gap-4 mb-6 sm:mb-8 text-xs sm:text-sm">
-                <span className="text-zinc-300 font-medium">
-                  Karri Saarinen
-                </span>
+                <span className="text-zinc-300 font-medium">{authorName}</span>
                 <span className="text-zinc-500">•</span>
                 <time className="text-zinc-500">{publishedDate}</time>
                 <span className="text-zinc-500">•</span>
@@ -185,10 +183,10 @@ const BlogDetailPage = async ({ params }: BlogDetailPageProps) => {
                 <div className="flex flex-wrap gap-2">
                   {tags.map((tag) => (
                     <span
-                      key={tag.id}
+                      key={tag?._id}
                       className="inline-flex items-center px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-medium bg-zinc-900 text-zinc-400 hover:bg-zinc-800 transition-colors cursor-pointer"
                     >
-                      #{tag.name}
+                      #{tag?.name}
                     </span>
                   ))}
                 </div>

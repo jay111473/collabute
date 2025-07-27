@@ -37,7 +37,7 @@ function convexUserToDashboardUser(
   if (!convexUser) return null;
 
   return {
-    id: 0, // Temporary ID for compatibility
+    id: parseInt(convexUser._id.replace("users:", "")), // Convert ID to number
     name: convexUser.name || "",
     email: convexUser.email || "",
     type: (convexUser.type?.toLowerCase() as any) || "developer",

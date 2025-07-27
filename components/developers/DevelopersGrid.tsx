@@ -1,9 +1,29 @@
 import { FC } from "react";
 import DeveloperCard from "./DeveloperCard";
-import { User } from "@/types/dashboard";
+import { User } from "@/types/convex";
+
+// Type for developer with profile data
+type DeveloperWithProfile = User & {
+  developerProfile: {
+    bio?: string;
+    skills?: string[];
+    experience?: number;
+    experienceLevel?: string;
+    availability?: string;
+    hourlyRate?: number;
+    portfolio?: string[];
+  } | null;
+  githubProfile: {
+    githubUsername: string;
+    publicRepos?: number;
+    followers?: number;
+  } | null;
+  repositoriesCount: number;
+  issuesWorkedOn: number;
+};
 
 interface DeveloperGridProps {
-  developers: User[];
+  developers: DeveloperWithProfile[];
   isLoading: boolean;
   variant?: "featured" | "compact";
 }
@@ -71,7 +91,7 @@ export const DeveloperGrid: FC<DeveloperGridProps> = ({
     <div className={`grid ${gridCols} gap-6`}>
       {developers.map((developer) => (
         <DeveloperCard
-          key={developer.id}
+          key={developer._id}
           developer={developer}
           variant={variant}
         />

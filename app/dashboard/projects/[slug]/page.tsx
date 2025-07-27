@@ -1,6 +1,8 @@
 import React from "react";
-import { getProject } from "@/lib/get-project";
+import { preloadQuery } from "convex/nextjs";
+import { api } from "@/convex/_generated/api";
 import ProjectDetailsView from "@/components/dashboard/projects/project-details-view";
+import { redirect } from "next/navigation";
 
 const ProjectDetailsPage = async ({
   params,
@@ -8,7 +10,16 @@ const ProjectDetailsPage = async ({
   params: Promise<{ slug: string }>;
 }) => {
   const { slug } = await params;
-  const project = await getProject(slug);
+  
+  const preloaded = await preloadQuery(api.projects.getProjectBySlug, {
+    slug,
+  });
+  
+  const project = preloaded._valueJSON as any;
+  
+  if (!project) {
+    redirect("/dashboard/projects");
+  }
 
   return (
     <div className="flex h-full min-h-screen">

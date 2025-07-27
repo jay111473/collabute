@@ -136,7 +136,7 @@ const BlogDetailPage = async ({ params }: BlogDetailPageProps) => {
 
               {/* Category and reading time */}
               <div className="flex flex-wrap items-center gap-3 sm:gap-4 mb-6 sm:mb-8">
-                <span 
+                <span
                   className="inline-flex items-center px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs font-medium"
                   style={{
                     backgroundColor: `${categoryColor}20`,

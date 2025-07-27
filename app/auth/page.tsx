@@ -8,13 +8,11 @@ import { useAuthActions } from "@convex-dev/auth/react";
 import { ArrowRightIcon, Eye, EyeOff } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { toast, Toaster } from "sonner";
 import { ConvexError } from "convex/values";
 
 function AuthForm() {
   const { signIn } = useAuthActions();
-  const router = useRouter();
   const [emailInput, setEmailInput] = useState("");
   const [passwordInput, setPasswordInput] = useState("");
   const [isValidEmail, setIsValidEmail] = useState(false);
@@ -36,11 +34,6 @@ function AuthForm() {
     if (isValidEmail) {
       setShowPasswordField(true);
     }
-  };
-
-  const handleEditEmail = () => {
-    setShowPasswordField(false);
-    setPasswordInput("");
   };
 
   const handlePasswordSubmit = async () => {

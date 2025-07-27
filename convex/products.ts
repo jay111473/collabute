@@ -1,6 +1,53 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 
+// List all products with optional filtering
+export const list = query({
+  args: {
+    category: v.optional(v.string()),
+    isActive: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    let q = ctx.db.query("products");
+    
+    if (args.category) {
+      q = q.withIndex("by_category", (q) => q.eq("category", args.category));
+    } else if (args.isActive !== undefined) {
+      q = q.withIndex("by_active", (q) => q.eq("isActive", args.isActive));
+    }
+    
+    return await q.collect();
+  },
+});
+
+// Get product by ID
+export const get = query({
+  args: { id: v.id("products") },
+  handler: async (ctx, args) => {
+    return await ctx.db.get(args.id);
+  },
+});
+
+// Create new product
+export const create = mutation({
+  args: {
+    name: v.string(),
+    description: v.optional(v.string()),
+    category: v.optional(v.string()),
+    price: v.optional(v.number()),
+    isActive: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    return await ctx.db.insert("products", {
+      name: args.name,
+      description: args.description,
+      category: args.category,
+      price: args.price,
+      isActive: args.isActive ?? true,
+    });
+  },
+});
+
 export const createProduct = mutation({
   args: {
     name: v.string(),
@@ -82,6 +129,26 @@ export const getProductById = query({
   },
 });
 
+// Update product
+export const update = mutation({
+  args: {
+    id: v.id("products"),
+    name: v.optional(v.string()),
+    description: v.optional(v.string()),
+    category: v.optional(v.string()),
+    price: v.optional(v.number()),
+    isActive: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    const { id, ...updates } = args;
+    const filteredUpdates = Object.fromEntries(
+      Object.entries(updates).filter(([_, value]) => value !== undefined)
+    );
+    
+    return await ctx.db.patch(id, filteredUpdates);
+  },
+});
+
 export const updateProduct = mutation({
   args: {
     productId: v.id("products"),
@@ -96,6 +163,27 @@ export const updateProduct = mutation({
   handler: async (ctx, args) => {
     await ctx.db.patch(args.productId, args.updates);
     return true;
+  },
+});
+
+// Delete product
+export const remove = mutation({
+  args: { id: v.id("products") },
+  handler: async (ctx, args) => {
+    return await ctx.db.delete(args.id);
+  },
+});
+
+// Toggle product active status
+export const toggleActive = mutation({
+  args: { id: v.id("products") },
+  handler: async (ctx, args) => {
+    const product = await ctx.db.get(args.id);
+    if (!product) throw new Error("Product not found");
+    
+    return await ctx.db.patch(args.id, {
+      isActive: !product.isActive,
+    });
   },
 });
 

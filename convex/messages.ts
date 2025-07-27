@@ -112,6 +112,32 @@ export const editMessage = mutation({
   },
 });
 
+export const updateMessage = mutation({
+  args: {
+    messageId: v.id("messages"),
+    updates: v.object({
+      content: v.optional(v.string()),
+      type: v.optional(v.string()),
+      isRead: v.optional(v.boolean()),
+    }),
+  },
+  handler: async (ctx, args) => {
+    const message = await ctx.db.get(args.messageId);
+    if (!message) {
+      throw new Error("Message not found");
+    }
+
+    const updates: any = { ...args.updates };
+    if (args.updates.content) {
+      updates.isEdited = true;
+      updates.editedAt = Date.now();
+    }
+
+    await ctx.db.patch(args.messageId, updates);
+    return true;
+  },
+});
+
 export const deleteMessage = mutation({
   args: {
     messageId: v.id("messages"),
@@ -246,5 +272,56 @@ export const searchMessages = query({
     );
 
     return messagesWithSenders;
+  },
+});
+
+// Create message (admin)
+export const create = mutation({
+  args: {
+    senderId: v.id("users"),
+    receiverId: v.optional(v.id("users")),
+    conversationId: v.id("conversations"),
+    content: v.string(),
+    type: v.optional(v.string()),
+    isRead: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    return await ctx.db.insert("messages", {
+      senderId: args.senderId,
+      conversationId: args.conversationId,
+      content: args.content,
+      type: (args.type as "TEXT" | "IMAGE" | "FILE" | "SYSTEM") || "TEXT",
+      isEdited: false,
+      isDeleted: false,
+    });
+  },
+});
+
+// Admin queries
+export const count = query({
+  args: {},
+  handler: async (ctx) => {
+    const messages = await ctx.db.query("messages")
+      .filter((q) => q.eq(q.field("isDeleted"), false))
+      .collect();
+    return messages.length;
+  },
+});
+
+export const list = query({
+  args: {
+    limit: v.optional(v.number()),
+    offset: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const messages = await ctx.db.query("messages")
+      .filter((q) => q.eq(q.field("isDeleted"), false))
+      .order("desc")
+      .collect();
+    
+    const offset = args.offset || 0;
+    const limit = args.limit || 50;
+    
+    return messages.slice(offset, offset + limit);
   },
 });

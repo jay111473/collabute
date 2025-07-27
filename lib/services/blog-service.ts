@@ -26,7 +26,6 @@ const getApiBaseUrl = (): string => {
   return apiUrl;
 };
 
-
 export const blogService = {
   async getBlogs(): Promise<Blog[]> {
     try {

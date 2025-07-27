@@ -102,6 +102,7 @@ export const projectFields = {
   startDate: v.number(),
   endDate: v.optional(v.number()),
   budget: v.optional(v.number()),
+  isPublic: v.optional(v.boolean()),
   ownerId: v.id("users"),
   teamLeadId: v.optional(v.id("users")),
   stacks: v.optional(v.array(v.string())),
@@ -158,8 +159,7 @@ export default defineSchema({
   // USER TABLES
   // ==============================
 
-  users: defineTable(userFields)
-    .index("email", ["email"]),
+  users: defineTable(userFields).index("email", ["email"]),
 
   developer_profiles: defineTable({
     userId: v.id("users"),

@@ -55,6 +55,36 @@ export const getMediaByType = query({
   },
 });
 
+// List all media with optional filtering
+export const list = query({
+  args: {
+    userId: v.optional(v.id("users")),
+    type: v.optional(v.string()),
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const limit = args.limit ?? 100;
+    let q = ctx.db.query("media");
+    
+    if (args.userId) {
+      q = q.filter((q) => q.eq(q.field("userId"), args.userId));
+    }
+    
+    if (args.type) {
+      q = q.filter((q) => q.eq(q.field("type"), args.type));
+    }
+    
+    return await q.order("desc").take(limit);
+  },
+});
+
+export const get = query({
+  args: { id: v.id("media") },
+  handler: async (ctx, args) => {
+    return await ctx.db.get(args.id);
+  },
+});
+
 export const getAllMedia = query({
   args: {
     limit: v.optional(v.number()),
@@ -73,6 +103,24 @@ export const getAllMedia = query({
 // ==============================
 // MUTATIONS
 // ==============================
+
+export const create = mutation({
+  args: {
+    userId: v.id("users"),
+    url: v.string(),
+    type: v.optional(v.string()),
+    description: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    return await ctx.db.insert("media", {
+      userId: args.userId,
+      url: args.url,
+      type: args.type,
+      description: args.description,
+      createdAt: Date.now(),
+    });
+  },
+});
 
 export const createMedia = mutation({
   args: {
@@ -127,6 +175,23 @@ export const createMediaFromUpload = mutation({
   },
 });
 
+export const update = mutation({
+  args: {
+    id: v.id("media"),
+    url: v.optional(v.string()),
+    type: v.optional(v.string()),
+    description: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const { id, ...updates } = args;
+    const filteredUpdates = Object.fromEntries(
+      Object.entries(updates).filter(([_, value]) => value !== undefined)
+    );
+    
+    return await ctx.db.patch(id, filteredUpdates);
+  },
+});
+
 export const updateMedia = mutation({
   args: {
     id: v.id("media"),
@@ -152,6 +217,13 @@ export const updateMedia = mutation({
 
     await ctx.db.patch(id, filteredUpdates);
     return await ctx.db.get(id);
+  },
+});
+
+export const remove = mutation({
+  args: { id: v.id("media") },
+  handler: async (ctx, args) => {
+    return await ctx.db.delete(args.id);
   },
 });
 

@@ -1,39 +1,7 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { getAuthUserId } from "@convex-dev/auth/server";
-
-// This function is deprecated since user creation is now handled in auth.ts
-// Keeping for backward compatibility but redirecting to user table
-export const createUserProfile = mutation({
-  args: {
-    authUserId: v.id("users"),
-    profilePicture: v.optional(v.string()),
-    type: v.optional(v.string()),
-    phoneNumber: v.optional(v.string()),
-    countryCode: v.optional(v.string()),
-    country: v.optional(v.string()),
-    industry: v.optional(v.string()),
-  },
-  handler: async (ctx, args) => {
-    // Since we have a unified user table, just update the existing user
-    const user = await ctx.db.get(args.authUserId);
-    if (!user) {
-      throw new Error("User not found");
-    }
-
-    // Update the user with additional profile data
-    await ctx.db.patch(args.authUserId, {
-      profilePicture: args.profilePicture || user.profilePicture,
-      type: (args.type as any) || user.type,
-      phoneNumber: args.phoneNumber || user.phoneNumber,
-      countryCode: args.countryCode || user.countryCode,
-      country: args.country || user.country,
-      industry: args.industry || user.industry,
-    });
-
-    return args.authUserId;
-  },
-});
+import { KycStatusValidator } from "./schema";
 
 export const getUserProfile = query({
   args: { authUserId: v.id("users") },
@@ -53,6 +21,7 @@ export const updateUserProfile = mutation({
       countryCode: v.optional(v.string()),
       country: v.optional(v.string()),
       industry: v.optional(v.string()),
+      kycStatus: v.optional(v.union(KycStatusValidator)), // e.g., "VERIFIED", "PENDING", "REJECTED"
     }),
   },
   handler: async (ctx, args) => {
@@ -368,6 +337,8 @@ export const updateWallet = mutation({
     const user = await ctx.db.get(args.userId);
     if (!user) {
       throw new Error("User not found");
+    } else if (user.wallet === undefined) {
+      throw new Error("User wallet not initialized");
     }
 
     const newAmount =
@@ -394,5 +365,95 @@ export const getUserGitHubRepositories = query({
       .query("github_repositories")
       .withIndex("by_owner", (q) => q.eq("ownerId", args.userId))
       .collect();
+  },
+});
+
+export const getGitHubAccessToken = query({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new Error("Not authenticated");
+    }
+
+    const githubProfile = await ctx.db
+      .query("github_profiles")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .first();
+
+    return githubProfile?.githubAccessToken || null;
+  },
+});
+
+// Admin create user mutation
+export const create = mutation({
+  args: {
+    email: v.string(),
+    name: v.optional(v.string()),
+    role: v.optional(
+      v.union(
+        v.literal("DEVELOPER"),
+        v.literal("STARTUP"),
+        v.literal("DESIGNER"),
+        v.literal("LEAD"),
+        v.literal("PROJECT_MANAGER")
+      )
+    ),
+    isActive: v.optional(v.boolean()),
+    profileData: v.optional(
+      v.object({
+        phoneNumber: v.optional(v.string()),
+        country: v.optional(v.string()),
+        industry: v.optional(v.string()),
+      })
+    ),
+  },
+  handler: async (ctx, args) => {
+    // Check if user with this email already exists
+    const existingUser = await ctx.db
+      .query("users")
+      .filter((q) => q.eq(q.field("email"), args.email))
+      .first();
+
+    if (existingUser) {
+      throw new Error("User with this email already exists");
+    }
+
+    const userId = await ctx.db.insert("users", {
+      email: args.email,
+      name: args.name,
+      type: args.role as any,
+      phoneNumber: args.profileData?.phoneNumber,
+      country: args.profileData?.country,
+      industry: args.profileData?.industry,
+      wallet: 0,
+      isVerified: args.isActive ?? false,
+      kycStatus: "PENDING" as any,
+    });
+
+    return userId;
+  },
+});
+
+// Admin queries
+export const count = query({
+  args: {},
+  handler: async (ctx) => {
+    const users = await ctx.db.query("users").collect();
+    return users.length;
+  },
+});
+
+export const list = query({
+  args: {
+    limit: v.optional(v.number()),
+    offset: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const users = await ctx.db.query("users").collect();
+    const offset = args.offset || 0;
+    const limit = args.limit || 50;
+
+    return users.slice(offset, offset + limit);
   },
 });

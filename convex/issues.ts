@@ -16,7 +16,7 @@ export const createIssue = mutation({
     onboardingVideoUrl: v.optional(v.string()),
     onboardingThumbnailUrl: v.optional(v.string()),
     projectId: v.id("projects"),
-    assigneeIds: v.optional(v.array(v.string())),
+    assigneeIds: v.optional(v.array(v.id("users"))),
     labels: v.optional(v.array(v.string())),
   },
   handler: async (ctx, args) => {
@@ -33,6 +33,7 @@ export const createIssue = mutation({
       slug,
       status: "OPEN",
       reporterId: userId,
+      assigneeIds: args?.assigneeIds || [],
     });
 
     return issueId;
@@ -168,7 +169,7 @@ export const updateIssue = mutation({
       status: v.optional(v.string()),
       priority: v.optional(v.string()),
       budget: v.optional(v.number()),
-      assigneeIds: v.optional(v.array(v.string())),
+      assigneeIds: v.optional(v.array(v.id("users"))),
       labels: v.optional(v.array(v.string())),
     }),
   },
@@ -213,7 +214,6 @@ export const deleteIssue = mutation({
     return true;
   },
 });
-
 
 // Create collaboration request
 export const createCollaborationRequest = mutation({
@@ -390,5 +390,28 @@ export const updateApplicationStatus = mutation({
     });
 
     return true;
+  },
+});
+
+// Admin queries
+export const count = query({
+  args: {},
+  handler: async (ctx) => {
+    const issues = await ctx.db.query("issues").collect();
+    return issues.length;
+  },
+});
+
+export const list = query({
+  args: {
+    limit: v.optional(v.number()),
+    offset: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const issues = await ctx.db.query("issues").collect();
+    const offset = args.offset || 0;
+    const limit = args.limit || 50;
+
+    return issues.slice(offset, offset + limit);
   },
 });

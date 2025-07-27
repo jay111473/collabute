@@ -469,3 +469,26 @@ export const getProjectStats = query({
     };
   },
 });
+
+// Admin queries
+export const count = query({
+  args: {},
+  handler: async (ctx) => {
+    const projects = await ctx.db.query("projects").collect();
+    return projects.length;
+  },
+});
+
+export const list = query({
+  args: {
+    limit: v.optional(v.number()),
+    offset: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const projects = await ctx.db.query("projects").collect();
+    const offset = args.offset || 0;
+    const limit = args.limit || 50;
+    
+    return projects.slice(offset, offset + limit);
+  },
+});

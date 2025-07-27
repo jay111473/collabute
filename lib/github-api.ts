@@ -1,4 +1,6 @@
-import { authClient } from "./auth-client";
+import { convexAuthNextjsToken } from "@convex-dev/auth/nextjs/server";
+import { ConvexHttpClient } from "convex/browser";
+import { api } from "@/convex/_generated/api";
 
 export interface GitHubRepository {
   id: number;
@@ -135,28 +137,18 @@ export class GitHubAPI {
 
 export async function getGitHubAccessToken(): Promise<string | null> {
   try {
-    const session = await authClient.getSession();
-    if (!session?.data?.user) {
+    const token = await convexAuthNextjsToken();
+    if (!token) {
       return null;
     }
 
-    // Get GitHub account from BetterAuth
-    const response = await fetch("/api/auth/accounts", {
-      headers: {
-        Authorization: `Bearer ${session.data.session.token}`,
-      },
-    });
+    // Create authenticated Convex client
+    const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
+    convex.setAuth(token);
 
-    if (!response.ok) {
-      return null;
-    }
-
-    const accounts = await response.json();
-    const githubAccount = accounts.find(
-      (account: any) => account.provider === "github"
-    );
-
-    return githubAccount?.access_token || null;
+    // Get GitHub access token from Convex
+    const githubToken = await convex.query(api.users.getGitHubAccessToken);
+    return githubToken;
   } catch (error) {
     console.error("Error getting GitHub access token:", error);
     return null;

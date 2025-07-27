@@ -6,6 +6,8 @@ import {
 
 const isSignInPage = createRouteMatcher(["/auth"]);
 const isProtectedRoute = createRouteMatcher(["/dashboard(.*)"]);
+const isAdminRoute = createRouteMatcher(["/admin(.*)"]);
+const isAdminLogin = createRouteMatcher(["/admin/login", "/admin/setup"]);
 
 export default convexAuthNextjsMiddleware(async (request, { convexAuth }) => {
   if (isSignInPage(request) && (await convexAuth.isAuthenticated())) {
@@ -13,6 +15,13 @@ export default convexAuthNextjsMiddleware(async (request, { convexAuth }) => {
   }
   if (isProtectedRoute(request) && !(await convexAuth.isAuthenticated())) {
     return nextjsMiddlewareRedirect(request, "/auth");
+  }
+  
+  // Admin routes protection - allow login and setup pages without auth
+  if (isAdminRoute(request) && !isAdminLogin(request)) {
+    if (!(await convexAuth.isAuthenticated())) {
+      return nextjsMiddlewareRedirect(request, "/admin/login");
+    }
   }
 });
 

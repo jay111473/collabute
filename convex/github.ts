@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation, query, action } from "./_generated/server";
 import { api } from "./_generated/api";
+import { getAuthUserId } from "@convex-dev/auth/server";
 
 // Get user's GitHub account from BetterAuth
 export const getUserGitHubAccount = query({
@@ -21,7 +22,6 @@ export const getUserGitHubAccount = query({
 // Sync GitHub repositories for a user
 export const syncUserRepositories = mutation({
   args: {
-    userId: v.id("users"),
     repositories: v.array(
       v.object({
         id: v.number(),
@@ -39,8 +39,14 @@ export const syncUserRepositories = mutation({
     ),
   },
   handler: async (ctx, args) => {
+    // Get current authenticated user ID
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new Error("Not authenticated");
+    }
+
     // Get user's profile directly from unified user table
-    const userProfile = await ctx.db.get(args.userId);
+    const userProfile = await ctx.db.get(userId);
 
     if (!userProfile) {
       throw new Error("User profile not found");

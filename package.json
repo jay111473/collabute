@@ -10,7 +10,10 @@
     "build:staging": "env-cmd -f .env.staging next build",
     "build:production": "env-cmd -f .env.production next build",
     "start:staging": "env-cmd -f .env.staging next start",
-    "start:production": "env-cmd -f .env.production next start"
+    "start:production": "env-cmd -f .env.production next start",
+    "seed:admin": "node scripts/seed-admin.js",
+    "seed:admin:help": "echo 'Usage: bun run seed:admin [admin@example.com]'",
+    "check:admin": "node scripts/check-admin.js"
   },
   "dependencies": {
     "@ai-sdk/amazon-bedrock": "2.2.11",
@@ -93,6 +96,7 @@
     "@types/node": "^20.17.22",
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",
+    "dotenv": "^17.2.1",
     "env-cmd": "^10.1.0",
     "eslint": "^8.57.1",
     "eslint-config-next": "14.2.5",

@@ -8,15 +8,20 @@
  * @module
  */
 
+import type * as admin from "../admin.js";
 import type * as auth from "../auth.js";
 import type * as conversations from "../conversations.js";
 import type * as github from "../github.js";
+import type * as github_repositories from "../github_repositories.js";
 import type * as http from "../http.js";
 import type * as issues from "../issues.js";
 import type * as media from "../media.js";
 import type * as messages from "../messages.js";
 import type * as products from "../products.js";
 import type * as projects from "../projects.js";
+import type * as roles from "../roles.js";
+import type * as seed from "../seed.js";
+import type * as transactions from "../transactions.js";
 import type * as userProfiles from "../userProfiles.js";
 import type * as users from "../users.js";
 
@@ -35,15 +40,20 @@ import type {
  * ```
  */
 declare const fullApi: ApiFromModules<{
+  admin: typeof admin;
   auth: typeof auth;
   conversations: typeof conversations;
   github: typeof github;
+  github_repositories: typeof github_repositories;
   http: typeof http;
   issues: typeof issues;
   media: typeof media;
   messages: typeof messages;
   products: typeof products;
   projects: typeof projects;
+  roles: typeof roles;
+  seed: typeof seed;
+  transactions: typeof transactions;
   userProfiles: typeof userProfiles;
   users: typeof users;
 }>;

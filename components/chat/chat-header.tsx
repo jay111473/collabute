@@ -3,7 +3,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Conversation, Participant } from "@/types/chat";
-import { Media, User } from "@/types/dashboard";
+import { Media, User } from "@/types/convex";
 
 interface ChatHeaderProps {
   conversation: Conversation;
@@ -20,17 +20,17 @@ export const ChatHeader = ({
   const getConversationDisplay = () => {
     if (conversation.type === "private") {
       const otherParticipant = conversation.participants.find(
-        (p) => (p.user as User).id.toString() !== currentUserId
+        (p) => (p.user as User)._id.toString() !== currentUserId
       );
       const otherUser = otherParticipant?.user as User;
 
       return {
         title: otherUser?.name || "Unknown User",
         avatar: otherUser?.profilePicture,
-        subtitle: onlineUsers.includes(otherUser?.id?.toString() || "")
+        subtitle: onlineUsers.includes(otherUser?._id.toString() || "")
           ? "Online"
           : "Offline",
-        isOnline: onlineUsers.includes(otherUser?.id?.toString() || ""),
+        isOnline: onlineUsers.includes(otherUser?._id.toString() || ""),
       };
     }
 
@@ -38,7 +38,7 @@ export const ChatHeader = ({
       (p) => !p.leftAt
     );
     const onlineCount = activeParticipants.filter((p) =>
-      onlineUsers.includes((p.user as User).id.toString())
+      onlineUsers.includes((p.user as User)._id.toString())
     ).length;
 
     return {

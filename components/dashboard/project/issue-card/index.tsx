@@ -1,6 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import RectangleStack from "@/public/icons/rectangle-stack";
-import { Issue } from "@/types/dashboard";
+import { Issue } from "@/types/convex";
 import { Circle, CircleDot, Clock } from "lucide-react";
 import { getBulbColor, getStatusInfo } from "@/lib/utils";
 import { motion } from "framer-motion";

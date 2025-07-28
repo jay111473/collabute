@@ -367,3 +367,162 @@ export const list = query({
     return await q.order("desc").take(limit);
   },
 });
+
+// ==============================
+// UTILITY FUNCTIONS FOR SAFE MEDIA ACCESS
+// ==============================
+
+export const getMediaUrl = query({
+  args: { 
+    mediaId: v.optional(v.id("media")) 
+  },
+  handler: async (ctx, args) => {
+    if (!args.mediaId) return null;
+    
+    const media = await ctx.db.get(args.mediaId);
+    return media?.url || null;
+  },
+});
+
+export const getMultipleMedia = query({
+  args: { 
+    mediaIds: v.array(v.id("media")) 
+  },
+  handler: async (ctx, args) => {
+    const mediaPromises = args.mediaIds.map(id => ctx.db.get(id));
+    const mediaResults = await Promise.all(mediaPromises);
+    
+    // Return map of ID to media object for easy lookup
+    const mediaMap: Record<string, any> = {};
+    args.mediaIds.forEach((id, index) => {
+      if (mediaResults[index]) {
+        mediaMap[id] = mediaResults[index];
+      }
+    });
+    
+    return mediaMap;
+  },
+});
+
+export const getMediaByIds = query({
+  args: { 
+    ids: v.array(v.id("media")) 
+  },
+  handler: async (ctx, args) => {
+    if (args.ids.length === 0) return [];
+    
+    const mediaPromises = args.ids.map(id => ctx.db.get(id));
+    const mediaResults = await Promise.all(mediaPromises);
+    
+    // Filter out null results and return valid media objects
+    return mediaResults.filter(Boolean);
+  },
+});
+
+export const getSafeMediaUrl = query({
+  args: { 
+    mediaId: v.optional(v.id("media")),
+    fallbackUrl: v.optional(v.string())
+  },
+  handler: async (ctx, args) => {
+    if (!args.mediaId) return args.fallbackUrl || null;
+    
+    try {
+      const media = await ctx.db.get(args.mediaId);
+      return media?.url || args.fallbackUrl || null;
+    } catch (error) {
+      console.error("Error fetching media:", error);
+      return args.fallbackUrl || null;
+    }
+  },
+});
+
+// Batch media fetcher with user profiles
+export const getUsersWithMedia = query({
+  args: { 
+    userIds: v.array(v.id("users")) 
+  },
+  handler: async (ctx, args) => {
+    const usersPromises = args.userIds.map(id => ctx.db.get(id));
+    const users = await Promise.all(usersPromises);
+    
+    // Get all profile picture IDs
+    const profilePictureIds = users
+      .filter(Boolean)
+      .map(user => user!.profilePicture)
+      .filter(Boolean) as Id<"media">[];
+    
+    // Fetch all media in one batch
+    const mediaPromises = profilePictureIds.map(id => ctx.db.get(id));
+    const mediaResults = await Promise.all(mediaPromises);
+    
+    // Create media lookup map
+    const mediaMap: Record<string, any> = {};
+    profilePictureIds.forEach((id, index) => {
+      if (mediaResults[index]) {
+        mediaMap[id] = mediaResults[index];
+      }
+    });
+    
+    // Return users with populated media
+    return users.map(user => {
+      if (!user) return null;
+      
+      return {
+        ...user,
+        profilePictureMedia: user.profilePicture ? mediaMap[user.profilePicture] : null,
+      };
+    }).filter(Boolean);
+  },
+});
+
+// ==============================
+// MEDIA VALIDATION AND HELPERS
+// ==============================
+
+export const validateMediaAccess = query({
+  args: { 
+    mediaId: v.id("media"),
+    userId: v.id("users")
+  },
+  handler: async (ctx, args) => {
+    const media = await ctx.db.get(args.mediaId);
+    
+    if (!media) {
+      return { hasAccess: false, reason: "Media not found" };
+    }
+    
+    // Check if user owns the media or if it's public
+    if (media.userId === args.userId) {
+      return { hasAccess: true, media };
+    }
+    
+    // For now, allow access to all media (adjust based on your privacy requirements)
+    return { hasAccess: true, media };
+  },
+});
+
+export const getMediaWithValidation = query({
+  args: { 
+    mediaId: v.id("media"),
+    requestingUserId: v.optional(v.id("users"))
+  },
+  handler: async (ctx, args) => {
+    const media = await ctx.db.get(args.mediaId);
+    
+    if (!media) return null;
+    
+    // If no requesting user, return basic info only
+    if (!args.requestingUserId) {
+      return {
+        _id: media._id,
+        url: media.url,
+        type: media.type,
+        description: media.description,
+      };
+    }
+    
+    // Return full media object if user has access
+    return media;
+  },
+});

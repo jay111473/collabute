@@ -9,6 +9,7 @@ import Header from "@/components/dashboard/Header";
 import Image from "next/image";
 import { User } from "@/types/convex";
 import { useFloatingNav } from "@/lib/hooks/use-floating-nav";
+import { CommandPalette } from "@/components/ui/command-palette";
 
 interface DashboardLayoutProps {
   user: User;
@@ -64,6 +65,9 @@ const DashboardLayout = ({
 
         {/* Floating Bottom Bar */}
         <FloatingBottomBar user={user} />
+        
+        {/* Command Palette */}
+        <CommandPalette user={user} />
       </div>
     );
   }
@@ -125,6 +129,9 @@ const DashboardLayout = ({
         {/* Page content */}
         <main className="flex-1 overflow-y-auto p-4 lg:p-6">{children}</main>
       </div>
+      
+      {/* Command Palette */}
+      <CommandPalette user={user} />
     </div>
   );
 };

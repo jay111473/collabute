@@ -1,8 +1,8 @@
 import { formatDistanceToNow } from "date-fns";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Conversation } from "@/types/chat";
-import { Media, User } from "@/types/dashboard";
+import { User } from "@/types/convex";
+import { SafeAvatar } from "@/components/ui/safe-avatar";
 import { cn } from "@/lib/utils";
 
 interface ConversationItemProps {
@@ -22,7 +22,7 @@ export const ConversationItem = ({
   const getConversationDisplay = () => {
     if (conversation.type === "private") {
       const otherParticipant = conversation.participants.find(
-        (p) => (p.user as User).id.toString() !== currentUserId
+        (p) => (p.user as User)._id.toString() !== currentUserId
       );
       const otherUser = otherParticipant?.user as User;
 
@@ -44,22 +44,14 @@ export const ConversationItem = ({
 
   // Check if there are unread messages
   const currentParticipant = conversation.participants.find(
-    (p) => (p.user as User).id.toString() === currentUserId
+    (p) => (p.user as User)._id.toString() === currentUserId
   );
   const lastReadMessageId = currentParticipant?.lastReadMessage?.id;
   const hasUnreadMessages =
     conversation.lastMessage &&
     conversation.lastMessage.id !== lastReadMessageId;
 
-  // Get initials for avatar fallback
-  const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map((word) => word[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
-  };
+
 
   return (
     <div
@@ -72,12 +64,13 @@ export const ConversationItem = ({
       )}
     >
       {/* Avatar */}
-      <Avatar className="w-12 h-12">
-        <AvatarImage src={(avatar as Media)?.url || ""} alt={title} />
-        <AvatarFallback className="bg-darkGray text-white">
-          {getInitials(title)}
-        </AvatarFallback>
-      </Avatar>
+      <SafeAvatar 
+        user={conversation.type === "private"
+          ? (conversation.participants.find(p => (p.user as User)._id.toString() !== currentUserId)?.user as User)
+          : { name: title, profilePicture: avatar?._id }
+        }
+        size="lg"
+      />
 
       {/* Content */}
       <div className="flex-1 min-w-0">

@@ -14,9 +14,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { NavItem } from "@/types/dashboard";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { useState } from "react"  ;
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,7 +34,7 @@ export default function FloatingBottomBar({ user }: FloatingBottomBarProps) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const { signOut } = useAuthActions();
 
-  const allNavItems: NavItem[] = [
+  const allNavItems = [
     {
       name: "Home",
       shortName: "Home",
@@ -49,7 +48,7 @@ export default function FloatingBottomBar({ user }: FloatingBottomBarProps) {
       shortName: "Explore",
       icon: Compass,
       path: "/dashboard/explore",
-      type: "developer",
+        type: "DEVELOPER",
       priority: 2,
     },
     {
@@ -57,7 +56,7 @@ export default function FloatingBottomBar({ user }: FloatingBottomBarProps) {
       shortName: "Products",
       icon: Package,
       path: "/dashboard/products",
-      type: "startup",
+      type: "STARTUP",
       priority: 2,
     },
     {
@@ -73,7 +72,7 @@ export default function FloatingBottomBar({ user }: FloatingBottomBarProps) {
       shortName: "Managers",
       icon: CompassIcon,
       path: "/dashboard/leads",
-      type: "startup",
+      type: "STARTUP",
       priority: 3,
     },
     {
@@ -106,10 +105,10 @@ export default function FloatingBottomBar({ user }: FloatingBottomBarProps) {
   const filteredNavItems = allNavItems.filter(
     (item) =>
       item.type === "cross" ||
-      (item.type === "developer" &&
+      (item.type === "DEVELOPER" &&
         user.type === "PROJECT_MANAGER" &&
         item.name === "Explore") ||
-      (item.type === "startup" &&
+      (item.type === "STARTUP" &&
         user.type === "PROJECT_MANAGER" &&
         item.name === "Products")
   );

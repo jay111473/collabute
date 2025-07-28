@@ -4,7 +4,7 @@ import { Button, ButtonProps } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { useConversationsConvex } from "@/hooks/use-conversations-convex";
 import { useUserConvex } from "@/hooks/use-user-convex";
-import { User } from "@/types/dashboard";
+import { User } from "@/types/convex";
 
 interface ChatButtonProps {
   targetUser: User;
@@ -43,7 +43,10 @@ export const ChatButton = ({
       // In a real implementation, you'd want to check existing conversations
 
       const conversation = await createConversation({
-        title: conversationType !== "private" ? conversationName || `Chat with ${targetUser.name}` : `Chat with ${targetUser.name}`,
+        title:
+          conversationType !== "private"
+            ? conversationName || `Chat with ${targetUser.name}`
+            : `Chat with ${targetUser.name}`,
         type: conversationType,
         participantIds: [(targetUser as any)._id],
         projectId: relatedProject as any,

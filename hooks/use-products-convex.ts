@@ -3,23 +3,7 @@
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id, Doc } from "@/convex/_generated/dataModel";
-import { Product } from "@/types/dashboard";
-
-// Transform Convex Doc to legacy Product type for backward compatibility
-function transformProduct(doc: Doc<"products">): Product {
-  return {
-    id: doc._id as any, // Convert Convex ID to number-like
-    name: doc.name,
-    description: doc.description || null,
-    projects: null, // Products don't have projects in Convex schema
-    owner: null, // Not implemented in current Convex schema
-    foundingDate: null,
-    cto: null,
-    fundingInformation: undefined,
-    updatedAt: new Date(doc._creationTime).toISOString(),
-    createdAt: new Date(doc._creationTime).toISOString(),
-  };
-}
+import { Product } from "@/types/convex";
 
 interface UseProductsOptions {
   page?: number;
@@ -47,7 +31,7 @@ export function useProductsConvex(options: UseProductsOptions = {}): {
   });
 
   return {
-    products: result?.products ? result.products.map(transformProduct) : [],
+    products: result?.products || [],
     totalPages: result?.totalPages || 0,
     currentPage: result?.currentPage || 1,
     totalProducts: result?.totalProducts || 0,
@@ -67,7 +51,7 @@ export function useProductById(productId: Id<"products">): {
   const product = useQuery(api.products.getProductById, { productId });
 
   return {
-    product: product ? transformProduct(product) : undefined,
+    product: product || undefined,
     loading: product === undefined,
     error: null,
   };
@@ -87,7 +71,7 @@ export function useProductsByCategory(
   });
 
   return {
-    products: products ? products.map(transformProduct) : [],
+    products: products || [],
     loading: products === undefined,
     error: null,
   };
@@ -101,7 +85,7 @@ export function useActiveProducts(limit?: number): {
   const products = useQuery(api.products.getActiveProducts, { limit });
 
   return {
-    products: products ? products.map(transformProduct) : [],
+    products: products || [],
     loading: products === undefined,
     error: null,
   };

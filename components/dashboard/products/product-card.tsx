@@ -2,7 +2,7 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Product } from "@/types/dashboard";
+import { Product } from "@/types/convex";
 import { Package, Building2, Calendar, Users, FolderOpen } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import Link from "next/link";
@@ -38,7 +38,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
   const fundingInfo = formatFunding(product.fundingInformation);
 
   return (
-    <Link href={`/dashboard/products/${product.id}`}>
+    <Link href={`/dashboard/products/${product._id}`}>
       <Card
         className={cn(
           "group relative overflow-hidden bg-darkGray border-grayBorders hover:border-darkPrimary/50 transition-all duration-200 cursor-pointer",
@@ -109,8 +109,8 @@ export function ProductCard({ product, className }: ProductCardProps) {
           <div className="mt-4 pt-4 border-t border-gray-700">
             <div className="flex items-center justify-between text-xs text-gray-400">
               <span>
-                Updated{" "}
-                {formatDistanceToNow(new Date(product.updatedAt), {
+                Created{" "}
+                {formatDistanceToNow(new Date(product._creationTime), {
                   addSuffix: true,
                 })}
               </span>

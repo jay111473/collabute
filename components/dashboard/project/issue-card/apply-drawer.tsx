@@ -81,7 +81,7 @@ export function ApplyDrawer({
           storageId,
           fileName: file.name,
           fileType: file.type,
-          userId: user.userId!,
+          userId: user._id,
           fileSize: file.size,
           description: `Attachment for issue application: ${file.name}`,
         });

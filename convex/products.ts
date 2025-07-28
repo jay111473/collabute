@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { Id } from "./_generated/dataModel";
 
 // List all products with optional filtering
 export const list = query({
@@ -9,13 +10,15 @@ export const list = query({
   },
   handler: async (ctx, args) => {
     let q = ctx.db.query("products");
-    
+
     if (args.category) {
       q = q.withIndex("by_category", (q) => q.eq("category", args.category));
     } else if (args.isActive !== undefined) {
-      q = q.withIndex("by_active", (q) => q.eq("isActive", args.isActive));
+      q = q.withIndex("by_active", (q) =>
+        q.eq("isActive", args.isActive ?? true)
+      );
     }
-    
+
     return await q.collect();
   },
 });
@@ -144,7 +147,7 @@ export const update = mutation({
     const filteredUpdates = Object.fromEntries(
       Object.entries(updates).filter(([_, value]) => value !== undefined)
     );
-    
+
     return await ctx.db.patch(id, filteredUpdates);
   },
 });
@@ -180,7 +183,7 @@ export const toggleActive = mutation({
   handler: async (ctx, args) => {
     const product = await ctx.db.get(args.id);
     if (!product) throw new Error("Product not found");
-    
+
     return await ctx.db.patch(args.id, {
       isActive: !product.isActive,
     });
@@ -206,6 +209,32 @@ export const getProductsByCategory = query({
       .withIndex("by_category", (q) => q.eq("category", args.category))
       .filter((q) => q.eq(q.field("isActive"), true))
       .take(args.limit || 20);
+  },
+});
+
+export const getProductsTeamLeads = query({
+  args: { productId: v.id("products"), limit: v.optional(v.number()) },
+  handler: async (ctx, args) => {
+    const projects = await ctx.db
+      .query("projects")
+      .withIndex("by_product", (q) => q.eq("productId", args.productId))
+      .collect();
+
+    const teamLeadsIds = projects
+      .map((project) => project.teamLeadId)
+      .filter(Boolean);
+    
+    const uniqueTeamLeadsIds = [...new Set(teamLeadsIds)];
+    
+    const teamLeads = await Promise.all(
+      uniqueTeamLeadsIds.map(async (id) => {
+        if (!id) return null;
+        const user = await ctx.db.get(id);
+        return user;
+      })
+    );
+
+    return teamLeads.filter(Boolean);
   },
 });
 

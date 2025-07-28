@@ -9,12 +9,12 @@ export default function DashboardStats() {
   console.log("DashboardStats user:", user);
   if (!user) return null;
 
-  if (user?.type === "DEVELOPER") {
+  if (user?.type === "DEVELOPER" || user?.type === "PROJECT_MANAGER") {
     return (
       <div className="grid gap-4 md:grid-cols-2 md:gap-6 lg:grid-cols-3">
         <DashboardCard
           title="Issues"
-          value={(user as any).developerFields?.issues?.length || 0}
+          value={0} // TODO: Fetch issues from Convex
           icon={GitPullRequest}
           subtext="+180.1% from last month"
         />
@@ -26,7 +26,7 @@ export default function DashboardStats() {
         />
         <DashboardCard
           title="Total Payments"
-          value={`$${(user as any).developerFields?.totalPayment || 0}`}
+          value={`$0`} // TODO: Fetch from developer profile
           icon={ArrowLeftRight}
           subtext="+20.1% from last month"
         />
@@ -34,12 +34,12 @@ export default function DashboardStats() {
     );
   }
 
-  if (user.type === "STARTUP") {
+  if (user.type === "STARTUP" || user.type === "LEAD") {
     return (
       <div className="grid gap-4 md:grid-cols-2 md:gap-6 lg:grid-cols-2">
         <DashboardCard
           title="Total Projects"
-          value={(user as any)?.projects?.length || 0}
+          value={0} // TODO: Fetch user's projects from Convex
           icon={GitPullRequest}
           subtext="+180.1% from last month"
         />

@@ -103,6 +103,9 @@ export const getProjects = query({
       filteredProjects = filteredProjects.filter((p) => p.type === args.type);
     }
 
+    // Sort by creation time (newest first)
+    filteredProjects.sort((a, b) => b._creationTime - a._creationTime);
+
     // Calculate pagination
     const page = args.page || 1;
     const limit = args.limit || 10;
@@ -118,7 +121,16 @@ export const getProjects = query({
           ? await ctx.db.get(project.teamLeadId)
           : null;
 
-        // Owner and teamLead data is directly available from unified user table
+        // Get media for owner and team lead
+        let ownerProfilePicture = null;
+        if (owner?.profilePicture) {
+          ownerProfilePicture = await ctx.db.get(owner.profilePicture);
+        }
+
+        let teamLeadProfilePicture = null;
+        if (teamLead?.profilePicture) {
+          teamLeadProfilePicture = await ctx.db.get(teamLead.profilePicture);
+        }
 
         // Get repository if connected
         const repository = project.repositoryId
@@ -139,25 +151,80 @@ export const getProjects = query({
           .collect()
           .then((collaborators) => collaborators.length);
 
+        // Get collaborators with user data
+        const collaborators = await ctx.db
+          .query("project_collaborators")
+          .withIndex("by_project", (q) => q.eq("projectId", project._id))
+          .collect();
+
+        const collaboratorsWithData = await Promise.all(
+          collaborators.map(async (collab) => {
+            const user = await ctx.db.get(collab.userId);
+            let profilePicture = null;
+            if (user?.profilePicture) {
+              profilePicture = await ctx.db.get(user.profilePicture);
+            }
+
+            return {
+              ...collab,
+              user: user
+                ? {
+                    ...user,
+                    profilePicture: profilePicture,
+                  }
+                : null,
+            };
+          })
+        );
+
         return {
           ...project,
+          // Format dates as ISO strings for frontend
+          startDate: new Date(project.startDate).toISOString(),
+          endDate: project.endDate
+            ? new Date(project.endDate).toISOString()
+            : null,
+          createdAt: new Date(project._creationTime).toISOString(),
+          updatedAt: new Date(project._creationTime).toISOString(),
+
+          // Populate owner with media
           owner: owner
             ? {
                 ...owner,
-                name: owner.name,
-                email: owner.email,
+                profilePicture: ownerProfilePicture,
               }
             : null,
+
+          // Populate team lead with media
           teamLead: teamLead
             ? {
                 ...teamLead,
-                name: teamLead.name,
-                email: teamLead.email,
+                profilePicture: teamLeadProfilePicture,
               }
             : null,
+
           repository,
           issueCount,
           collaboratorCount,
+          collaborators: collaboratorsWithData,
+
+          // Transform milestones with proper defaults
+          milestones: project.milestones || {
+            ideaRefinement: "not-started",
+            documentation: "not-started",
+            design: "not-started",
+            development: "not-started",
+            testing: "not-started",
+            launch: "not-started",
+            maintenance: "not-started",
+            scaling: "not-started",
+          },
+
+          // Transform stacks to expected format
+          stacks: project.stacks || [],
+
+          // Transform tags to expected format
+          tags: project.tags?.map((tag) => ({ tag, id: tag })) || [],
         };
       })
     );
@@ -189,18 +256,71 @@ export const getProjectBySlug = query({
       ? await ctx.db.get(project.teamLeadId)
       : null;
 
-    // Owner and teamLead data is directly available from unified user table
+    // Get media for owner and team lead
+    let ownerProfilePicture = null;
+    if (owner?.profilePicture) {
+      ownerProfilePicture = await ctx.db.get(owner.profilePicture);
+    }
+
+    let teamLeadProfilePicture = null;
+    if (teamLead?.profilePicture) {
+      teamLeadProfilePicture = await ctx.db.get(teamLead.profilePicture);
+    }
 
     // Get repository
     const repository = project.repositoryId
       ? await ctx.db.get(project.repositoryId)
       : null;
 
-    // Get issues
+    // Get issues with populated data
     const issues = await ctx.db
       .query("issues")
       .withIndex("by_project", (q) => q.eq("projectId", project._id))
       .collect();
+
+    const issuesWithData = await Promise.all(
+      issues.map(async (issue) => {
+        const reporter = await ctx.db.get(issue.reporterId);
+        let reporterProfilePicture = null;
+        if (reporter?.profilePicture) {
+          reporterProfilePicture = await ctx.db.get(reporter.profilePicture);
+        }
+
+        // Get assignees if any
+        const assignees = issue.assigneeIds
+          ? await Promise.all(
+              issue.assigneeIds.map(async (assigneeId) => {
+                const assignee = await ctx.db.get(assigneeId);
+                let assigneeProfilePicture = null;
+                if (assignee?.profilePicture) {
+                  assigneeProfilePicture = await ctx.db.get(
+                    assignee.profilePicture
+                  );
+                }
+                return assignee
+                  ? {
+                      ...assignee,
+                      profilePicture: assigneeProfilePicture,
+                    }
+                  : null;
+              })
+            )
+          : [];
+
+        return {
+          ...issue,
+          createdAt: new Date(issue._creationTime).toISOString(),
+          updatedAt: new Date(issue._creationTime).toISOString(),
+          reporter: reporter
+            ? {
+                ...reporter,
+                profilePicture: reporterProfilePicture,
+              }
+            : null,
+          assignees: assignees.filter(Boolean),
+        };
+      })
+    );
 
     // Get collaborators
     const collaborators = await ctx.db
@@ -211,13 +331,18 @@ export const getProjectBySlug = query({
     const collaboratorsWithData = await Promise.all(
       collaborators.map(async (collab) => {
         const user = await ctx.db.get(collab.userId);
+        let profilePicture = null;
+        if (user?.profilePicture) {
+          profilePicture = await ctx.db.get(user.profilePicture);
+        }
+
         return {
           ...collab,
+          joinedAt: new Date(collab.joinedAt).toISOString(),
           user: user
             ? {
                 ...user,
-                name: user.name,
-                email: user.email,
+                profilePicture: profilePicture,
               }
             : null,
         };
@@ -226,24 +351,59 @@ export const getProjectBySlug = query({
 
     return {
       ...project,
+      // Format dates as ISO strings
+      startDate: new Date(project.startDate).toISOString(),
+      endDate: project.endDate ? new Date(project.endDate).toISOString() : null,
+      createdAt: new Date(project._creationTime).toISOString(),
+      updatedAt: new Date(project._creationTime).toISOString(),
+
+      // Populate owner with media
       owner: owner
         ? {
             ...owner,
-            name: owner.name,
-            email: owner.email,
+            profilePicture: ownerProfilePicture,
           }
         : null,
+
+      // Populate team lead with media
       teamLead: teamLead
         ? {
             ...teamLead,
-            name: teamLead.name,
-            email: teamLead.email,
+            profilePicture: teamLeadProfilePicture,
           }
         : null,
+
       repository,
-      issues,
+      issues: issuesWithData,
       collaborators: collaboratorsWithData,
+
+      // Transform milestones with proper defaults
+      milestones: project.milestones || {
+        ideaRefinement: "not-started",
+        documentation: "not-started",
+        design: "not-started",
+        development: "not-started",
+        testing: "not-started",
+        launch: "not-started",
+        maintenance: "not-started",
+        scaling: "not-started",
+      },
+
+      // Transform stacks and tags
+      stacks: project.stacks || [],
+      tags: project.tags?.map((tag) => ({ tag, id: tag })) || [],
     };
+  },
+});
+
+export const getProjectsByProductId = query({
+  args: { productId: v.id("products") },
+  handler: async (ctx, args) => {
+    const projects = await ctx.db
+      .query("projects")
+      .withIndex("by_product", (q) => q.eq("productId", args.productId))
+      .collect();
+    return projects;
   },
 });
 
@@ -470,6 +630,127 @@ export const getProjectStats = query({
   },
 });
 
+// Simple projects query for direct usage (replaces the hook)
+export const getAllProjects = query({
+  args: {
+    ownerId: v.optional(v.id("users")),
+    status: v.optional(v.string()),
+    type: v.optional(v.string()),
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    let projects;
+
+    if (args.ownerId) {
+      projects = await ctx.db
+        .query("projects")
+        .withIndex("by_owner", (q) => q.eq("ownerId", args.ownerId!))
+        .collect();
+    } else {
+      projects = await ctx.db.query("projects").collect();
+    }
+
+    // Apply filters
+    if (args.status) {
+      projects = projects.filter((p) => p.status === args.status);
+    }
+
+    if (args.type) {
+      projects = projects.filter((p) => p.type === args.type);
+    }
+
+    // Sort by creation time (newest first)
+    projects.sort((a, b) => b._creationTime - a._creationTime);
+
+    // Apply limit
+    if (args.limit) {
+      projects = projects.slice(0, args.limit);
+    }
+
+    // Populate with media and additional data
+    const projectsWithData = await Promise.all(
+      projects.map(async (project) => {
+        const owner = await ctx.db.get(project.ownerId);
+        const teamLead = project.teamLeadId
+          ? await ctx.db.get(project.teamLeadId)
+          : null;
+
+        // Get media
+        let ownerProfilePicture = null;
+        if (owner?.profilePicture) {
+          ownerProfilePicture = await ctx.db.get(owner.profilePicture);
+        }
+
+        let teamLeadProfilePicture = null;
+        if (teamLead?.profilePicture) {
+          teamLeadProfilePicture = await ctx.db.get(teamLead.profilePicture);
+        }
+
+        // Get counts
+        const issueCount = await ctx.db
+          .query("issues")
+          .withIndex("by_project", (q) => q.eq("projectId", project._id))
+          .collect()
+          .then((issues) => issues.length);
+
+        const collaboratorCount = await ctx.db
+          .query("project_collaborators")
+          .withIndex("by_project", (q) => q.eq("projectId", project._id))
+          .collect()
+          .then((collaborators) => collaborators.length);
+
+        return {
+          ...project,
+          // Format dates as ISO strings
+          startDate: new Date(project.startDate).toISOString(),
+          endDate: project.endDate
+            ? new Date(project.endDate).toISOString()
+            : null,
+          createdAt: new Date(project._creationTime).toISOString(),
+          updatedAt: new Date(project._creationTime).toISOString(),
+
+          // Populate owner with media
+          owner: owner
+            ? {
+                ...owner,
+                profilePicture: ownerProfilePicture,
+              }
+            : null,
+
+          // Populate team lead with media
+          teamLead: teamLead
+            ? {
+                ...teamLead,
+                profilePicture: teamLeadProfilePicture,
+              }
+            : null,
+
+          // Add counts
+          issueCount,
+          collaboratorCount,
+
+          // Transform data to expected format
+          milestones: project.milestones || {
+            ideaRefinement: "not-started",
+            documentation: "not-started",
+            design: "not-started",
+            development: "not-started",
+            testing: "not-started",
+            launch: "not-started",
+            maintenance: "not-started",
+            scaling: "not-started",
+          },
+
+          stacks: project.stacks || [],
+          tags: project.tags?.map((tag) => ({ tag, id: tag })) || [],
+        };
+      })
+    );
+
+    return projectsWithData;
+  },
+});
+
 // Admin queries
 export const count = query({
   args: {},
@@ -488,7 +769,7 @@ export const list = query({
     const projects = await ctx.db.query("projects").collect();
     const offset = args.offset || 0;
     const limit = args.limit || 50;
-    
+
     return projects.slice(offset, offset + limit);
   },
 });

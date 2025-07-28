@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Product } from "@/types/dashboard";
+import { Product } from "@/types/convex";
 import { ProductCard } from "./product-card";
 import { Input } from "@/components/ui/input";
 import { Search, Package, FolderOpen } from "lucide-react";
@@ -44,11 +44,11 @@ const ProductsComponent = ({ products }: ProductsComponentProps) => {
       switch (sortBy) {
         case "newest":
           return (
-            new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+            new Date(b._creationTime).getTime() - new Date(a._creationTime).getTime()
           );
         case "oldest":
           return (
-            new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime()
+            new Date(a._creationTime).getTime() - new Date(b._creationTime).getTime()
           );
         case "name-asc":
           return a.name.localeCompare(b.name);
@@ -148,7 +148,7 @@ const ProductsComponent = ({ products }: ProductsComponentProps) => {
         ) : (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {filteredAndSortedProducts?.map((product) => (
-              <ProductCard key={product.id} product={product} />
+              <ProductCard key={product._id} product={product} />
             ))}
           </div>
         )}

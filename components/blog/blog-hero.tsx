@@ -1,19 +1,27 @@
-'use client';
+"use client";
 
 import React from "react";
 import Image from "next/image";
-import { Blog } from "@/types/blog";
-import { getMediaUrl, getCategoryName, getCategoryColor, getAuthorInitials } from "@/lib/utils/blog-utils";
+import { BlogWithDetails } from "@/types/convex";
+import {
+  getMediaUrl,
+  getCategoryName,
+  getCategoryColor,
+  getAuthorInitials,
+} from "@/lib/utils/blog-utils";
 
 interface BlogHeroProps {
-  featuredBlogs: Blog[];
+  featuredBlogs: BlogWithDetails[];
   isLoading: boolean;
 }
 
-export const BlogHero: React.FC<BlogHeroProps> = ({ featuredBlogs, isLoading }) => {
+export const BlogHero: React.FC<BlogHeroProps> = ({
+  featuredBlogs,
+  isLoading,
+}) => {
   const renderVisual = (type: string) => {
     const baseClasses = "absolute inset-0 opacity-20";
-    
+
     switch (type) {
       case "wave":
         return (
@@ -38,7 +46,9 @@ export const BlogHero: React.FC<BlogHeroProps> = ({ featuredBlogs, isLoading }) 
         );
       case "dots":
         return (
-          <div className={`${baseClasses} bg-gradient-to-br from-darkPrimary/30 via-transparent to-transparent`}>
+          <div
+            className={`${baseClasses} bg-gradient-to-br from-darkPrimary/30 via-transparent to-transparent`}
+          >
             <div className="absolute inset-4 bg-[radial-gradient(circle_at_50%_50%,rgba(198,157,248,0.3)_1px,transparent_1px)] bg-[length:20px_20px]" />
           </div>
         );
@@ -98,12 +108,14 @@ export const BlogHero: React.FC<BlogHeroProps> = ({ featuredBlogs, isLoading }) 
             <div
               key={index}
               className={`bg-zinc-900/40 backdrop-blur-sm border border-zinc-800/50 rounded-2xl p-6 animate-pulse ${
-                index === 0 ? 'md:col-span-2 lg:col-span-2' : ''
+                index === 0 ? "md:col-span-2 lg:col-span-2" : ""
               }`}
             >
               <div className="space-y-4">
                 <div className="w-20 h-6 bg-zinc-700 rounded-full" />
-                <div className={`bg-zinc-700 rounded ${index === 0 ? 'h-8' : 'h-6'}`} />
+                <div
+                  className={`bg-zinc-700 rounded ${index === 0 ? "h-8" : "h-6"}`}
+                />
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 bg-zinc-700 rounded-full" />
                   <div className="w-24 h-4 bg-zinc-700 rounded" />
@@ -152,25 +164,25 @@ export const BlogHero: React.FC<BlogHeroProps> = ({ featuredBlogs, isLoading }) 
           const categoryName = getCategoryName(post.category);
           const categoryColor = getCategoryColor(post.category);
           const thumbnailUrl = getMediaUrl(post.thumbnail);
-          
+
           return (
             <article
-              key={post.id}
+              key={post._id}
               className={`group relative bg-zinc-900/40 backdrop-blur-sm border border-zinc-800/50 rounded-2xl p-6 hover:border-darkPrimary/30 transition-all duration-300 hover:bg-zinc-900/60 cursor-pointer overflow-hidden ${
-                index === 0 ? 'md:col-span-2 lg:col-span-2' : ''
+                index === 0 ? "md:col-span-2 lg:col-span-2" : ""
               }`}
             >
               {/* Visual background */}
               {renderVisual(getVisualType(index))}
-              
+
               {/* Gradient overlay */}
               <div className="absolute inset-0 bg-gradient-to-br from-darkPrimary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl" />
-              
+
               {/* Content */}
               <div className="relative z-10 space-y-4">
                 {/* Category */}
                 <div>
-                  <span 
+                  <span
                     className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium border"
                     style={{
                       backgroundColor: `${categoryColor}15`,
@@ -183,9 +195,11 @@ export const BlogHero: React.FC<BlogHeroProps> = ({ featuredBlogs, isLoading }) 
                 </div>
 
                 {/* Title */}
-                <h3 className={`font-semibold text-white leading-snug group-hover:text-darkPrimary/90 transition-colors duration-200 ${
-                  index === 0 ? 'text-2xl' : 'text-lg'
-                }`}>
+                <h3
+                  className={`font-semibold text-white leading-snug group-hover:text-darkPrimary/90 transition-colors duration-200 ${
+                    index === 0 ? "text-2xl" : "text-lg"
+                  }`}
+                >
                   {post.title}
                 </h3>
 
@@ -196,7 +210,7 @@ export const BlogHero: React.FC<BlogHeroProps> = ({ featuredBlogs, isLoading }) 
                   </p>
                 )}
 
-                {/* Author placeholder - since we don't have author data in the Blog type */}
+                {/* Author */}
                 <div className="flex items-center gap-3 pt-2">
                   <div className="relative">
                     <div className="w-8 h-8 rounded-full bg-zinc-700 flex items-center justify-center overflow-hidden ring-2 ring-zinc-800 group-hover:ring-darkPrimary/30 transition-all duration-200">
@@ -209,10 +223,10 @@ export const BlogHero: React.FC<BlogHeroProps> = ({ featuredBlogs, isLoading }) 
                         onError={(e) => {
                           // Fallback to initials if image fails
                           const target = e.target as HTMLImageElement;
-                          target.style.display = 'none';
+                          target.style.display = "none";
                           const parent = target.parentElement;
                           if (parent) {
-                            parent.innerHTML = `<span class="text-white text-xs font-semibold">${getAuthorInitials('Author')}</span>`;
+                            parent.innerHTML = `<span class="text-white text-xs font-semibold">${getAuthorInitials("Author")}</span>`;
                           }
                         }}
                       />
@@ -221,15 +235,21 @@ export const BlogHero: React.FC<BlogHeroProps> = ({ featuredBlogs, isLoading }) 
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-zinc-300 truncate">
-                      Author
+                      {post.author?.name || post.author?.email || "Author"}
                     </p>
                   </div>
                 </div>
               </div>
 
               {/* Hover border effect */}
-              <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-darkPrimary/20 via-transparent to-darkPrimary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" 
-                   style={{ padding: '1px', background: 'linear-gradient(135deg, rgba(198, 157, 248, 0.2), transparent, rgba(198, 157, 248, 0.1))' }}>
+              <div
+                className="absolute inset-0 rounded-2xl bg-gradient-to-r from-darkPrimary/20 via-transparent to-darkPrimary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+                style={{
+                  padding: "1px",
+                  background:
+                    "linear-gradient(135deg, rgba(198, 157, 248, 0.2), transparent, rgba(198, 157, 248, 0.1))",
+                }}
+              >
                 <div className="w-full h-full bg-zinc-900/40 rounded-2xl" />
               </div>
             </article>

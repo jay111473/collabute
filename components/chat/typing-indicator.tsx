@@ -1,6 +1,6 @@
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Participant } from "@/types/chat";
-import { Media, User } from "@/types/dashboard";
+import { User } from "@/types/convex";
+import { SafeAvatar } from "@/components/ui/safe-avatar";
 
 interface TypingIndicatorProps {
   typingUsers: string[];
@@ -15,20 +15,10 @@ export const TypingIndicator = ({
 
   // Get user details for typing users
   const typingParticipants = participants.filter((p) =>
-    typingUsers.includes((p.user as User).id.toString())
+    typingUsers.includes((p.user as User)._id.toString())
   );
 
   if (typingParticipants.length === 0) return null;
-
-  // Get initials for avatar fallback
-  const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map((word) => word[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
-  };
 
   // Generate typing text
   const getTypingText = () => {
@@ -46,20 +36,7 @@ export const TypingIndicator = ({
   return (
     <div className="flex items-center gap-3">
       {/* Show avatar for first typing user */}
-      <div className="w-8 h-8">
-        <Avatar className="w-8 h-8">
-          <AvatarImage
-            src={
-              ((typingParticipants[0].user as User).profilePicture as Media)
-                .url || ""
-            }
-            alt={(typingParticipants[0].user as User).name}
-          />
-          <AvatarFallback className="bg-darkGray text-white text-xs">
-            {getInitials((typingParticipants[0].user as User).name)}
-          </AvatarFallback>
-        </Avatar>
-      </div>
+      <SafeAvatar user={typingParticipants[0].user as User} size="md" />
 
       {/* Typing indicator */}
       <div className="flex items-center gap-2">

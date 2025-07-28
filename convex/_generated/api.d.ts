@@ -25,6 +25,7 @@ import type * as seed from "../seed.js";
 import type * as transactions from "../transactions.js";
 import type * as userProfiles from "../userProfiles.js";
 import type * as users from "../users.js";
+import type * as wizard from "../wizard.js";
 
 import type {
   ApiFromModules,
@@ -58,6 +59,7 @@ declare const fullApi: ApiFromModules<{
   transactions: typeof transactions;
   userProfiles: typeof userProfiles;
   users: typeof users;
+  wizard: typeof wizard;
 }>;
 declare const fullApiWithMounts: typeof fullApi;
 

@@ -16,10 +16,6 @@ import {
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { NavItem } from "@/types/dashboard";
-import { toast } from "sonner";
-import { deleteCookie, getCookie } from "cookies-next";
-import axios from "axios";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
 import { useLinkStatus } from "next/link";
@@ -90,7 +86,7 @@ export default function Sidebar({ user }: { user: User }) {
   const pathname = usePathname();
   const router = useRouter();
   const { signOut } = useAuthActions();
-  const navItems: NavItem[] = [
+  const navItems = [
     {
       name: "Dashboard",
       icon: LayoutPanelLeft,
@@ -101,7 +97,7 @@ export default function Sidebar({ user }: { user: User }) {
       name: "Products",
       icon: Package,
       path: "/dashboard/products",
-      type: "startup",
+      type: "STARTUP",
     },
     {
       name: "My Projects",
@@ -113,19 +109,19 @@ export default function Sidebar({ user }: { user: User }) {
       name: "Explore",
       icon: Compass,
       path: "/dashboard/explore",
-      type: "developer",
+      type: "DEVELOPER",
     },
     {
       name: "Project Managers",
       icon: CompassIcon,
       path: "/dashboard/leads",
-      type: "startup",
+      type: "STARTUP",
     },
     {
       name: "Developers",
       icon: Users,
       path: "/dashboard/developers",
-      type: "projectManager",
+      type: "PROJECT_MANAGER",
     },
     {
       name: "Chat",
@@ -151,12 +147,9 @@ export default function Sidebar({ user }: { user: User }) {
   const filteredNavItems = navItems.filter(
     (item) =>
       item.type === "cross" ||
-      (item.type === "developer" &&
-        user.type === "PROJECT_MANAGER" &&
-        item.name === "Explore") ||
-      (item.type === "startup" &&
-        user.type === "PROJECT_MANAGER" &&
-        item.name === "Products")
+      item.type === user.type ||
+      (item.type === "DEVELOPER" && user.type === "PROJECT_MANAGER") ||
+      (item.type === "STARTUP" && user.type === "PROJECT_MANAGER")
   );
   return (
     <div className="flex flex-col h-full bg-black">

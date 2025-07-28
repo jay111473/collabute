@@ -1,8 +1,8 @@
 import { Metadata } from "next";
-import { User } from "@/types/dashboard";
 import ProjectManagersClient from "@/components/leads/ProjectLeadsClient";
 import { preloadQuery } from "convex/nextjs";
 import { api } from "@/convex/_generated/api";
+import { User } from "@/types/convex";
 
 export const metadata: Metadata = {
   title: "Project Managers | Dashboard | Collabute",

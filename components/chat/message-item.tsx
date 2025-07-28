@@ -1,30 +1,25 @@
-import { formatDistanceToNow } from 'date-fns'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Badge } from '@/components/ui/badge'
-import { Message } from '@/types/chat'
-import { Media, User } from '@/types/dashboard'
-import { cn } from '@/lib/utils'
+import { formatDistanceToNow } from "date-fns";
+import { Badge } from "@/components/ui/badge";
+import { EnhancedMessage } from "@/types/convex";
+import { SafeAvatar } from "@/components/ui/safe-avatar";
+import { cn } from "@/lib/utils";
 
 interface MessageItemProps {
-  message: Message
-  currentUserId: string
-  showAvatar: boolean
+  message: EnhancedMessage;
+  currentUserId: string;
+  showAvatar: boolean;
 }
 
-export const MessageItem = ({ message, currentUserId, showAvatar }: MessageItemProps) => {
-  const sender = message.sender as User
-  const isCurrentUser = sender.id.toString() === currentUserId
-  const isSystemMessage = message.type === 'system'
+export const MessageItem = ({
+  message,
+  currentUserId,
+  showAvatar,
+}: MessageItemProps) => {
+  const sender = message.sender;
+  const isCurrentUser = sender?._id.toString() === currentUserId;
+  const isSystemMessage = message.type === "SYSTEM";
 
-  // Get initials for avatar fallback
-  const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map(word => word[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2)
-  }
+
 
   // System messages (like user joined, left, etc.)
   if (isSystemMessage) {
@@ -34,77 +29,90 @@ export const MessageItem = ({ message, currentUserId, showAvatar }: MessageItemP
           {message.content}
         </div>
       </div>
-    )
+    );
   }
 
   // Deleted messages
   if (message.isDeleted) {
     return (
-      <div className={cn(
-        'flex gap-3',
-        isCurrentUser ? 'justify-end' : 'justify-start'
-      )}>
+      <div
+        className={cn(
+          "flex gap-3",
+          isCurrentUser ? "justify-end" : "justify-start"
+        )}
+      >
         {!isCurrentUser && showAvatar && (
           <div className="w-8 h-8" /> // Placeholder for alignment
         )}
-        <div className={cn(
-          'max-w-xs lg:max-w-md px-3 py-2 rounded-lg',
-          'bg-darkGray/30 border border-gray-600 text-gray-500 italic'
-        )}>
+        <div
+          className={cn(
+            "max-w-xs lg:max-w-md px-3 py-2 rounded-lg",
+            "bg-darkGray/30 border border-gray-600 text-gray-500 italic"
+          )}
+        >
           This message was deleted
         </div>
         {isCurrentUser && showAvatar && (
           <div className="w-8 h-8" /> // Placeholder for alignment
         )}
       </div>
-    )
+    );
   }
 
   return (
-    <div className={cn(
-      'flex gap-3',
-      isCurrentUser ? 'justify-end' : 'justify-start'
-    )}>
+    <div
+      className={cn(
+        "flex gap-3",
+        isCurrentUser ? "justify-end" : "justify-start"
+      )}
+    >
       {/* Avatar for other users */}
       {!isCurrentUser && (
         <div className="w-8 h-8">
           {showAvatar ? (
-            <Avatar className="w-8 h-8">
-              <AvatarImage 
-                src={(sender.profilePicture as Media)?.url || ""}
-                alt={sender.name}
-              />
-              <AvatarFallback className="bg-darkGray text-white text-xs">
-                {getInitials(sender.name)}
-              </AvatarFallback>
-            </Avatar>
+            <SafeAvatar 
+              user={{
+                _id: sender?._id,
+                name: sender?.name,
+                profilePicture: sender?.profilePicture?._id
+              }}
+              size="md"
+            />
           ) : null}
         </div>
       )}
 
       {/* Message Content */}
-      <div className={cn(
-        'max-w-xs lg:max-w-md',
-        isCurrentUser ? 'order-2' : 'order-1'
-      )}>
+      <div
+        className={cn(
+          "max-w-xs lg:max-w-md",
+          isCurrentUser ? "order-2" : "order-1"
+        )}
+      >
         {/* Sender name and timestamp (for other users) */}
         {!isCurrentUser && showAvatar && (
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-sm font-medium text-gray-300">{sender.name}</span>
+            <span className="text-sm font-medium text-gray-300">
+              {sender?.name || "Unknown User"}
+            </span>
             <span className="text-xs text-gray-500">
-              {formatDistanceToNow(new Date(message.createdAt), { addSuffix: true })}
+              {formatDistanceToNow(new Date(message.createdAt), {
+                addSuffix: true,
+              })}
             </span>
           </div>
         )}
 
         {/* Message bubble */}
-        <div className={cn(
-          'px-3 py-2 rounded-lg break-words',
-          isCurrentUser
-            ? 'bg-darkPrimary text-white'
-            : 'bg-darkGray text-white',
-          message.isOptimistic && 'opacity-70'
-        )}>
+        <div
+          className={cn(
+            "px-3 py-2 rounded-lg break-words",
+            isCurrentUser
+              ? "bg-darkPrimary text-white"
+              : "bg-darkGray text-white",
+            message.isOptimistic && "opacity-70"
+          )}
+        >
           {/* Reply indicator */}
           {message.replyTo && (
             <div className="mb-2 p-2 bg-black/20 rounded border-l-2 border-gray-500">
@@ -125,7 +133,9 @@ export const MessageItem = ({ message, currentUserId, showAvatar }: MessageItemP
         {isCurrentUser && (
           <div className="flex justify-end mt-1">
             <span className="text-xs text-gray-500">
-              {formatDistanceToNow(new Date(message.createdAt), { addSuffix: true })}
+              {formatDistanceToNow(new Date(message.createdAt), {
+                addSuffix: true,
+              })}
             </span>
             {message.isOptimistic && (
               <Badge variant="outline" className="ml-2 text-xs">
@@ -137,9 +147,7 @@ export const MessageItem = ({ message, currentUserId, showAvatar }: MessageItemP
       </div>
 
       {/* Avatar placeholder for current user */}
-      {isCurrentUser && (
-        <div className="w-8 h-8 order-1" />
-      )}
+      {isCurrentUser && <div className="w-8 h-8 order-1" />}
     </div>
-  )
-} 
+  );
+};

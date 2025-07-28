@@ -250,7 +250,8 @@ export default defineSchema({
   projects: defineTable(projectFields)
     .index("by_owner", ["ownerId"])
     .index("by_slug", ["slug"])
-    .index("by_status", ["status"]),
+    .index("by_status", ["status"])
+    .index("by_product", ["productId"]),
 
   project_collaborators: defineTable({
     projectId: v.id("projects"),

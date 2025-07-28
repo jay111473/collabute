@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useAction } from "convex/react";
+import { api } from "@/convex/_generated/api";
 import {
   GeneratedProject,
   ProjectsResponse,
@@ -8,43 +10,52 @@ import {
   FeatureComparisonData,
   BusinessComparisonData,
   TracksResponse,
-  UseWizardAiReturn
+  UseWizardAiReturn,
 } from "@/types/wizard";
 
 export function useWizardAi(): UseWizardAiReturn {
   const [isLoading, setIsLoading] = useState(false);
-  const [suggestedIndustries, setSuggestedIndustries] = useState<Industry[]>([]);
-  const [suggestedCompetitors, setSuggestedCompetitors] = useState<Competitor[]>([]);
-  const [suggestedProjects, setSuggestedProjects] = useState<GeneratedProject[]>([]);
-  const [suggestedTracks, setSuggestedTracks] = useState<ProjectTrack[]>([]);
-  const [totalEstimatedDuration, setTotalEstimatedDuration] = useState<number>(0);
-  const [criticalPath, setCriticalPath] = useState<string[]>([]);
-  const [parallelizationOpportunities, setParallelizationOpportunities] = useState<
-    Array<{
-      projectIds: string[];
-      description: string;
-    }>
+  const [suggestedIndustries, setSuggestedIndustries] = useState<Industry[]>(
+    []
+  );
+  const [suggestedCompetitors, setSuggestedCompetitors] = useState<
+    Competitor[]
   >([]);
+  const [suggestedProjects, setSuggestedProjects] = useState<
+    GeneratedProject[]
+  >([]);
+  const [suggestedTracks, setSuggestedTracks] = useState<ProjectTrack[]>([]);
+  const [totalEstimatedDuration, setTotalEstimatedDuration] =
+    useState<number>(0);
+  const [criticalPath, setCriticalPath] = useState<string[]>([]);
+  const [parallelizationOpportunities, setParallelizationOpportunities] =
+    useState<
+      Array<{
+        projectIds: string[];
+        description: string;
+      }>
+    >([]);
+
+  // Convex actions
+  const generateFeatureComparison = useAction(
+    api.wizard.generateFeatureComparison
+  );
+  const generateBusinessComparison = useAction(
+    api.wizard.generateBusinessComparison
+  );
+  const generateProjects = useAction(api.wizard.generateProjects);
+  const generateTracks = useAction(api.wizard.generateTracks);
 
   const fetchFeatureComparison = async (
     projectIdea: string
   ): Promise<FeatureComparisonData | null> => {
     setIsLoading(true);
     try {
-      // TODO: Replace with Convex function for AI feature comparison
-      // Mock data for now
-      const mockData = {
-        categories: [
-          { name: "Technology", description: "Tech solutions" },
-        ],
-        competitors: [
-          { name: "Example Competitor", description: "Sample competitor" },
-        ],
-      };
-
-      setSuggestedCompetitors(mockData.competitors);
-      return mockData as FeatureComparisonData;
+      const result = await generateFeatureComparison({ projectIdea });
+      setSuggestedCompetitors(result.competitors);
+      return result;
     } catch (error) {
+      console.error("Error fetching feature comparison:", error);
       return null;
     } finally {
       setIsLoading(false);
@@ -56,19 +67,10 @@ export function useWizardAi(): UseWizardAiReturn {
   ): Promise<BusinessComparisonData | null> => {
     setIsLoading(true);
     try {
-      // TODO: Replace with Convex function for AI business comparison
-      // Mock data for now
-      const mockData = {
-        categories: [
-          { name: "Business", description: "Business category" },
-        ],
-        competitors: [
-          { name: "Business Competitor", description: "Sample business competitor" },
-        ],
-      };
-
-      return mockData as BusinessComparisonData;
+      const result = await generateBusinessComparison({ projectIdea });
+      return result;
     } catch (error) {
+      console.error("Error fetching business comparison:", error);
       return null;
     } finally {
       setIsLoading(false);
@@ -83,30 +85,21 @@ export function useWizardAi(): UseWizardAiReturn {
   }): Promise<ProjectsResponse | null> => {
     setIsLoading(true);
     try {
-      // TODO: Replace with Convex function for AI project generation
-      // Mock data for now
-      const mockProjects = [
-        {
-          id: "1",
-          name: "Sample Project",
-          description: "A sample project based on your idea",
-          estimatedDuration: 30,
-          complexity: "medium" as const,
-        },
-      ];
+      const result = await generateProjects({
+        name: projectInfo.name,
+        description: projectInfo.description,
+        industries: projectInfo.industries,
+        projectPlatforms: projectInfo.projectPlatforms,
+      });
 
-      setSuggestedProjects(mockProjects);
-      setTotalEstimatedDuration(30);
-      setCriticalPath(["1"]);
-      setParallelizationOpportunities([]);
+      setSuggestedProjects(result.projects);
+      setTotalEstimatedDuration(result.totalEstimatedDuration);
+      setCriticalPath(result.criticalPath);
+      setParallelizationOpportunities(result.parallelizationOpportunities);
 
-      return {
-        projects: mockProjects,
-        totalEstimatedDuration: 30,
-        criticalPath: ["1"],
-        parallelizationOpportunities: [],
-      };
+      return result;
     } catch (error) {
+      console.error("Error fetching projects:", error);
       return null;
     } finally {
       setIsLoading(false);
@@ -120,31 +113,27 @@ export function useWizardAi(): UseWizardAiReturn {
   ): Promise<TracksResponse | null> => {
     setIsLoading(true);
     try {
-      // TODO: Replace with Convex function for AI tracks generation
-      // Mock data for now
-      const mockTracks = [
-        {
-          id: "1",
-          name: "Development Track",
-          description: "Main development track",
-          estimatedDuration: 20,
-          complexity: "medium" as const,
-        },
-      ];
+      const result = await generateTracks({
+        projectInfo,
+        competitors,
+        projects,
+      });
 
-      setSuggestedTracks(mockTracks);
-      setTotalEstimatedDuration(20);
-      setCriticalPath(["1"]);
-      setParallelizationOpportunities([]);
+      setSuggestedTracks(result.tracks);
+      setTotalEstimatedDuration(result.totalEstimatedDuration);
+      setCriticalPath(result.criticalPath);
+      // Convert trackIds to projectIds for compatibility
+      const convertedOpportunities = result.parallelizationOpportunities.map(
+        (opp) => ({
+          projectIds: opp.trackIds || [],
+          description: opp.description,
+        })
+      );
+      setParallelizationOpportunities(convertedOpportunities);
 
-      return {
-        platformAnalysis: { recommended: "web", alternatives: ["mobile"] },
-        tracks: mockTracks,
-        totalEstimatedDuration: 20,
-        criticalPath: ["1"],
-        parallelizationOpportunities: [],
-      };
+      return result;
     } catch (error) {
+      console.error("Error fetching tracks:", error);
       return null;
     } finally {
       setIsLoading(false);

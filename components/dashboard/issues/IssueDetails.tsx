@@ -13,7 +13,7 @@ import { ChatButton } from "@/components/chat/chat-button";
 import { CollaborationRequestDrawer } from "./collaboration-request-drawer";
 import { useUserConvex } from "@/hooks/use-user-convex";
 import { User as ConvexUser } from "@/types/convex";
-import { User as DashboardUser } from "@/types/dashboard";
+import { User } from "@/types/convex";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 
@@ -29,23 +29,6 @@ function isConvexUser(value: unknown): value is ConvexUser {
     typeof (value as any).email === "string"
   );
 }
-
-// Helper function to convert Convex User to Dashboard User format
-function convexUserToDashboardUser(
-  convexUser: ConvexUser | null
-): DashboardUser | null {
-  if (!convexUser) return null;
-
-  return {
-    id: parseInt(convexUser._id.replace("users:", "")), // Convert ID to number
-    name: convexUser.name || "",
-    email: convexUser.email || "",
-    type: (convexUser.type?.toLowerCase() as any) || "developer",
-    updatedAt: new Date(convexUser._creationTime).toISOString(),
-    createdAt: new Date(convexUser._creationTime).toISOString(),
-  } as DashboardUser;
-}
-
 interface DetailRowProps {
   icon: React.ReactNode;
   label: string;
@@ -124,9 +107,6 @@ export default function IssueDetails({ issueId }: IssueDetailsProps) {
       );
     });
 
-  // Convert project owner to dashboard user format for ChatButton
-  const dashboardProjectOwner = convexUserToDashboardUser(projectOwner);
-
   return (
     <div className="flex flex-col gap-4 py-4 bg-black text-white w-full">
       <div className="flex items-center gap-3 px-4">
@@ -151,9 +131,9 @@ export default function IssueDetails({ issueId }: IssueDetailsProps) {
               ${issue.budget}
             </span>
           </div>
-          {dashboardProjectOwner && (
+          {projectOwner && (
             <ChatButton
-              targetUser={dashboardProjectOwner}
+              targetUser={projectOwner}
               conversationType="project"
               conversationName={`${project?.title} - Issue Discussion`}
               conversationDescription={`Discussion about: ${issue.title}`}

@@ -1,14 +1,18 @@
-import { MessageItem } from './message-item'
-import { Skeleton } from '@/components/ui/skeleton'
-import { Message } from '@/types/chat'
+import { MessageItem } from "./message-item";
+import { Skeleton } from "@/components/ui/skeleton";
+import { EnhancedMessage } from "@/types/convex";
 
 interface MessageListProps {
-  messages: Message[]
-  currentUserId: string
-  loading: boolean
+  messages: EnhancedMessage[];
+  currentUserId: string;
+  loading: boolean;
 }
 
-export const MessageList = ({ messages, currentUserId, loading }: MessageListProps) => {
+export const MessageList = ({
+  messages,
+  currentUserId,
+  loading,
+}: MessageListProps) => {
   if (loading) {
     return (
       <div className="space-y-4">
@@ -22,35 +26,40 @@ export const MessageList = ({ messages, currentUserId, loading }: MessageListPro
           </div>
         ))}
       </div>
-    )
+    );
   }
 
   if (messages.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-32 text-center">
         <div className="text-gray-400 mb-2">No messages yet</div>
-        <div className="text-gray-500 text-sm">Send a message to start the conversation</div>
+        <div className="text-gray-500 text-sm">
+          Send a message to start the conversation
+        </div>
       </div>
-    )
+    );
   }
 
   return (
     <div className="space-y-4">
       {messages.map((message, index) => {
-        const previousMessage = index > 0 ? messages[index - 1] : null
-        const showAvatar = !previousMessage || 
-          previousMessage.sender !== message.sender ||
-          (new Date(message.createdAt).getTime() - new Date(previousMessage.createdAt).getTime()) > 300000 // 5 minutes
+        const previousMessage = index > 0 ? messages[index - 1] : null;
+        const showAvatar =
+          !previousMessage ||
+          previousMessage.senderId !== message.senderId ||
+          new Date(message._creationTime).getTime() -
+            new Date(previousMessage._creationTime).getTime() >
+            300000; // 5 minutes
 
         return (
           <MessageItem
-            key={message.id}
+            key={message._id}
             message={message}
             currentUserId={currentUserId}
             showAvatar={showAvatar}
           />
-        )
+        );
       })}
     </div>
-  )
-} 
+  );
+};

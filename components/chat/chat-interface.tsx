@@ -1,7 +1,7 @@
 import { useRef, useEffect } from 'react'
 import { useChatConvex } from '@/hooks/use-messages-convex'
 import { Conversation } from '@/types/chat'
-import { User } from '@/types/dashboard'
+import { User } from '@/types/convex'
 import { ChatHeader } from './chat-header'
 import { MessageList } from './message-list'
 import { MessageInput } from './message-input'

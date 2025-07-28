@@ -11,6 +11,17 @@ export const getUserProfile = query({
   },
 });
 
+export const currentUser = query({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await getAuthUserId(ctx);
+    if (userId === null) {
+      return null;
+    }
+    return await ctx.db.get(userId);
+  },
+});
+
 export const updateUserProfile = mutation({
   args: {
     userId: v.id("users"),
@@ -524,5 +535,22 @@ export const getDevelopersWithProfiles = query({
     }
 
     return developersWithProfiles;
+  },
+});
+
+// Get developers with their profiles and populated data
+export const getDeveloperProfile = query({
+  args: {
+    userId: v.id("users"),
+  },
+  handler: async (ctx, args) => {
+    // Get user by ID
+    const user = await ctx.db.get(args.userId);
+    const developerFields = await ctx.db
+      .query("developer_profiles")
+      .withIndex("by_user", (q) => q.eq("userId", args.userId))
+      .first();
+
+    return { user: user, developerFields: developerFields };
   },
 });

@@ -181,6 +181,22 @@ export type MessageWithUser = Message & {
   sender: User;
 };
 
+// Enhanced message type as returned by chat functions
+export type EnhancedMessage = Message & {
+  id: string; // Backward compatibility
+  createdAt: string;
+  updatedAt: string;
+  sender: {
+    _id: Id<"users">;
+    id: Id<"users">;
+    name: string;
+    email?: string;
+    profilePicture?: Media | null;
+  } | null;
+  replyTo?: Message | null;
+  isOptimistic?: boolean;
+};
+
 // Project with populated data
 export type ProjectWithDetails = Project & {
   owner: User;

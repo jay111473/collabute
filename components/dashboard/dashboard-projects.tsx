@@ -1,20 +1,37 @@
 "use client";
 
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RecentProjectCard } from "@/components/dashboard/projects/recent-project-card";
-import { useProjectsConvex } from "@/hooks/use-projects-convex";
-import { Project } from "@/types/dashboard";
+import { Doc } from "@/convex/_generated/dataModel";
 
-const RecentProjectsList = ({ projects }: { projects: Project[] }) => (
+type ProjectWithData = Doc<"projects"> & {
+  owner?: any;
+  teamLead?: any;
+  issueCount?: number;
+  collaboratorCount?: number;
+  startDate: string;
+  endDate?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  milestones: any;
+  stacks: string[];
+  tags: Array<{ tag: string; id: string }>;
+};
+
+const RecentProjectsList = ({ projects }: { projects: ProjectWithData[] }) => (
   <div className="space-y-3">
     {projects.slice(0, 3).map((project) => (
-      <RecentProjectCard key={project.id} project={project} />
+      <RecentProjectCard key={project._id} project={project} />
     ))}
   </div>
 );
 
 export default function DashboardProjects() {
-  const { projects, loading, error } = useProjectsConvex({ limit: 3 });
+  const projects = useQuery(api.projects.getAllProjects, { limit: 3 });
+  const loading = projects === undefined;
+  const error = null; // Convex handles errors gracefully
 
   if (loading) {
     return (

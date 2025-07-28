@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { User } from "@/types/dashboard";
-import { personalInfoSchema, PersonalInfoFormData } from "./personal-info-form";
-import { businessInfoSchema, BusinessInfoFormData } from "./business-info-form";
-import { bankingInfoSchema, BankingInfoFormData } from "./banking-info-form";
+import { PersonalInfoFormData } from "./personal-info-form";
+import { BusinessInfoFormData } from "./business-info-form";
+import { BankingInfoFormData } from "./banking-info-form";
 import { toast } from "sonner";
 import { useUserConvex } from "@/hooks/use-user-convex";
 
@@ -15,7 +14,9 @@ type BankFormat = {
 };
 
 // Function to get bank account format example based on country
-export const getBankFormatExample = (countryCode: string | null | undefined): BankFormat => {
+export const getBankFormatExample = (
+  countryCode: string | null | undefined
+): BankFormat => {
   const examples: Record<string, BankFormat> = {
     US: {
       accountFormat: "123456789012",
@@ -64,38 +65,39 @@ export function useKycForm() {
 
   const handlePersonalSubmit = async (data: PersonalInfoFormData) => {
     console.log("Personal form data:", data);
-    
+
     setLoading(true);
     setError(null);
-    
+
     try {
-      const response = await fetch('/api/kyc/personal-info', {
-        method: 'POST',
+      const response = await fetch("/api/kyc/personal-info", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(data),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to submit personal information');
+        throw new Error("Failed to submit personal information");
       }
 
       // Refresh user data to get updated KYC status
       await refetchUser();
-      
+
       toast.success("Personal information saved");
-      
+
       // Change tab based on user type
-      if (user?.type === "startup") {
+      if (user?.type === "STARTUP") {
         setActiveTab("business");
       } else {
         setActiveTab("banking");
       }
-      
+
       return { success: true };
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'An error occurred';
+      const errorMessage =
+        err instanceof Error ? err.message : "An error occurred";
       setError(errorMessage);
       return { success: false, error: errorMessage };
     } finally {
@@ -105,34 +107,35 @@ export function useKycForm() {
 
   const handleBusinessSubmit = async (data: BusinessInfoFormData) => {
     console.log("Business form data:", data);
-    
+
     setLoading(true);
     setError(null);
-    
+
     try {
-      const response = await fetch('/api/kyc/business-info', {
-        method: 'POST',
+      const response = await fetch("/api/kyc/business-info", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(data),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to submit business information');
+        throw new Error("Failed to submit business information");
       }
 
       // Refresh user data to get updated KYC status
       await refetchUser();
-      
+
       toast.success("Business information submitted for verification");
-      
+
       // Submit for verification
       // submitVerification();
-      
+
       return { success: true };
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'An error occurred';
+      const errorMessage =
+        err instanceof Error ? err.message : "An error occurred";
       setError(errorMessage);
       return { success: false, error: errorMessage };
     } finally {
@@ -142,34 +145,35 @@ export function useKycForm() {
 
   const handleBankingSubmit = async (data: BankingInfoFormData) => {
     console.log("Banking form data:", data);
-    
+
     setLoading(true);
     setError(null);
-    
+
     try {
-      const response = await fetch('/api/kyc/banking-info', {
-        method: 'POST',
+      const response = await fetch("/api/kyc/banking-info", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(data),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to submit banking information');
+        throw new Error("Failed to submit banking information");
       }
 
       // Refresh user data to get updated KYC status
       await refetchUser();
-      
+
       toast.success("Banking information submitted for verification");
-      
+
       // Submit for verification
       // submitVerification();
-      
+
       return { success: true };
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'An error occurred';
+      const errorMessage =
+        err instanceof Error ? err.message : "An error occurred";
       setError(errorMessage);
       return { success: false, error: errorMessage };
     } finally {
@@ -191,4 +195,4 @@ export function useKycForm() {
   };
 }
 
-export default useKycForm; 
+export default useKycForm;

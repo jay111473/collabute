@@ -3,6 +3,7 @@
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id, Doc } from "@/convex/_generated/dataModel";
+import { EnhancedMessage } from "@/types/convex";
 
 interface UseMessagesOptions {
   conversationId: Id<"conversations">;
@@ -12,7 +13,7 @@ interface UseMessagesOptions {
 }
 
 export function useMessagesConvex(options: UseMessagesOptions): {
-  messages: Doc<"messages">[];
+  messages: EnhancedMessage[];
   unreadCount: number;
   loading: boolean;
   error: null;
@@ -24,21 +25,21 @@ export function useMessagesConvex(options: UseMessagesOptions): {
 } {
   const { conversationId, userId, limit, before } = options;
 
-  const messages = useQuery(api.messages.getMessages, {
+  const messages = useQuery(api.chat.getMessages, {
     conversationId,
     limit,
     before,
   });
 
-  const unreadCount = useQuery(api.messages.getUnreadCount, {
+  const unreadCount = useQuery(api.chat.getUnreadCount, {
     conversationId,
     userId,
   });
 
-  const sendMessage = useMutation(api.messages.sendMessage);
-  const editMessage = useMutation(api.messages.editMessage);
-  const deleteMessage = useMutation(api.messages.deleteMessage);
-  const markAsRead = useMutation(api.messages.markAsRead);
+  const sendMessage = useMutation(api.chat.sendMessage);
+  const editMessage = useMutation(api.chat.editMessage);
+  const deleteMessage = useMutation(api.chat.deleteMessage);
+  const markAsRead = useMutation(api.chat.markAsRead);
 
   return {
     messages: messages || [],
@@ -80,12 +81,12 @@ export function useMessagesConvex(options: UseMessagesOptions): {
 }
 
 export function useMessageSearch(conversationId: Id<"conversations">, searchTerm: string, limit?: number): {
-  messages: Doc<"messages">[];
+  messages: EnhancedMessage[];
   loading: boolean;
   error: null;
 } {
   const messages = useQuery(
-    api.messages.searchMessages,
+    api.chat.searchMessages,
     searchTerm.trim() ? { conversationId, searchTerm, limit } : "skip"
   );
 
@@ -98,7 +99,7 @@ export function useMessageSearch(conversationId: Id<"conversations">, searchTerm
 
 // Combined chat hook for easier usage
 export function useChatConvex(conversationId: Id<"conversations">, userId: Id<"users">): {
-  messages: Doc<"messages">[];
+  messages: EnhancedMessage[];
   unreadCount: number;
   loading: boolean;
   error: null;
@@ -111,7 +112,7 @@ export function useChatConvex(conversationId: Id<"conversations">, userId: Id<"u
   conversationLoading: boolean;
 } {
   const messagesHook = useMessagesConvex({ conversationId, userId });
-  const conversation = useQuery(api.conversations.getConversationById, {
+  const conversation = useQuery(api.chat.getConversationById, {
     conversationId,
     userId,
   });

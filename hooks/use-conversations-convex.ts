@@ -38,17 +38,17 @@ export function useConversationsConvex(options: UseConversationsOptions): {
 } {
   const { userId, type, projectId, limit } = options;
 
-  const conversations = useQuery(api.conversations.getConversations, {
+  const conversations = useQuery(api.chat.getConversations, {
     userId,
     type,
     projectId,
     limit,
   });
 
-  const createConversation = useMutation(api.conversations.createConversation);
+  const createConversation = useMutation(api.chat.createConversation);
   const updateConversation = useMutation(api.conversations.updateConversation);
-  const addParticipant = useMutation(api.conversations.addParticipant);
-  const removeParticipant = useMutation(api.conversations.removeParticipant);
+  const addParticipant = useMutation(api.chat.addParticipant);
+  const removeParticipant = useMutation(api.chat.removeParticipant);
 
   return {
     conversations: (conversations || []).filter(Boolean),
@@ -114,7 +114,7 @@ export function useConversationById(
   loading: boolean;
   error: null;
 } {
-  const conversation = useQuery(api.conversations.getConversationById, {
+  const conversation = useQuery(api.chat.getConversationById, {
     conversationId,
     userId,
   });
@@ -135,13 +135,13 @@ export function useDirectConversation(
   error: null;
   createDirectConversation: () => Promise<any>;
 } {
-  const conversation = useQuery(api.conversations.getDirectConversation, {
+  const conversation = useQuery(api.chat.getDirectConversation, {
     userId1,
     userId2,
   });
 
   const createDirectConversation = useMutation(
-    api.conversations.createDirectConversation
+    api.chat.createDirectConversation
   );
 
   return {

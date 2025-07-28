@@ -1,5 +1,76 @@
 import type { BlogWithDetails, Category, Tag } from "@/types/convex";
 
+// Missing utility functions that components are trying to import
+export function getMediaUrl(media: any): string {
+  // Handle different media formats
+  if (!media) return "/placeholder-image.jpg";
+  
+  // If it's a Convex media object with url
+  if (typeof media === "object" && media.url) {
+    return media.url;
+  }
+  
+  // If it's a string URL
+  if (typeof media === "string") {
+    return media;
+  }
+  
+  return "/placeholder-image.jpg";
+}
+
+export function getCategoryName(category: any): string {
+  if (!category) return "Uncategorized";
+  
+  // If it's a populated category object
+  if (typeof category === "object" && category.name) {
+    return category.name;
+  }
+  
+  // Fallback
+  return "Uncategorized";
+}
+
+export function getCategoryColor(category: any): string {
+  if (!category) return "#6366f1"; // Default color
+  
+  // If it's a populated category object with color
+  if (typeof category === "object" && category.color) {
+    return category.color;
+  }
+  
+  // Default colors based on category name
+  const categoryName = getCategoryName(category).toLowerCase();
+  const colorMap: Record<string, string> = {
+    "engineering": "#10b981",
+    "product": "#3b82f6", 
+    "design": "#8b5cf6",
+    "business": "#f59e0b",
+    "tutorial": "#ef4444",
+    "news": "#06b6d4",
+  };
+  
+  return colorMap[categoryName] || "#6366f1";
+}
+
+export function getAuthorInitials(authorName: string): string {
+  if (!authorName) return "A";
+  
+  return authorName
+    .split(" ")
+    .map(name => name.charAt(0).toUpperCase())
+    .slice(0, 2)
+    .join("");
+}
+
+export function formatBlogDate(timestamp: number): string {
+  const date = new Date(timestamp);
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short", 
+    day: "numeric"
+  });
+}
+
 export function extractCategoriesFromBlogs(
   blogs: BlogWithDetails[]
 ): Category[] {

@@ -1,12 +1,12 @@
 'use client'
 
 import React, { useState, useCallback } from 'react'
-import { Blog, Category, Tag } from '@/types/blog'
+import { BlogWithDetails, Category, Tag } from '@/types/convex'
 import { BlogFiltersInteractive } from './blog-filters-interactive'
 import { BlogList } from './blog-list'
 
 interface BlogClientWrapperProps {
-  initialBlogs: Blog[]
+  initialBlogs: BlogWithDetails[]
   categories: Category[]
   tags: Tag[]
 }
@@ -16,11 +16,11 @@ export const BlogClientWrapper: React.FC<BlogClientWrapperProps> = ({
   categories,
   tags
 }) => {
-  const [filteredBlogs, setFilteredBlogs] = useState<Blog[]>(
-    initialBlogs.filter(blog => blog.publishedAt)
+  const [filteredBlogs, setFilteredBlogs] = useState<BlogWithDetails[]>(
+    initialBlogs.filter(blog => blog.status === 'published' && blog.publishedAt)
   )
 
-  const handleFilteredBlogsChange = useCallback((blogs: Blog[]) => {
+  const handleFilteredBlogsChange = useCallback((blogs: BlogWithDetails[]) => {
     setFilteredBlogs(blogs)
   }, [])
 

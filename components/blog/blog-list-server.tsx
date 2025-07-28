@@ -1,11 +1,11 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Blog } from "@/types/blog";
+import { BlogWithDetails } from "@/types/convex";
 import { getMediaUrl, getCategoryName, formatBlogDate, getAuthorInitials } from "@/lib/utils/blog-utils";
 
 interface BlogListServerProps {
-  blogs: Blog[];
+  blogs: BlogWithDetails[];
 }
 
 export const BlogListServer: React.FC<BlogListServerProps> = ({ blogs }) => {
@@ -33,10 +33,10 @@ export const BlogListServer: React.FC<BlogListServerProps> = ({ blogs }) => {
             const categoryName = getCategoryName(post.category);
             const thumbnailUrl = getMediaUrl(post.thumbnail);
             const publishedDate = post.publishedAt ? formatBlogDate(post.publishedAt) : 'Draft';
-            const blogUrl = post.slug ? `/blog/${post.slug}` : `/blog/${post.id}`;
+            const blogUrl = post.slug ? `/blog/${post.slug}` : `/blog/${post._id}`;
             
             return (
-              <Link key={post.id} href={blogUrl}>
+              <Link key={post._id} href={blogUrl}>
                 <article className="group flex items-center justify-between py-4 px-4 rounded-xl hover:bg-zinc-800/30 transition-all duration-200 cursor-pointer">
                   {/* Left side - Title and category */}
                   <div className="flex-1 min-w-0 mr-6">
@@ -57,7 +57,7 @@ export const BlogListServer: React.FC<BlogListServerProps> = ({ blogs }) => {
                     </time>
                   </div>
 
-                  {/* Right side - Author placeholder */}
+                  {/* Right side - Author */}
                   <div className="flex items-center">
                     <div className="flex -space-x-2">
                       <div className="relative w-8 h-8 rounded-full bg-zinc-700 flex items-center justify-center overflow-hidden ring-2 ring-zinc-900 group-hover:ring-darkPrimary/30 transition-all duration-200">
@@ -67,6 +67,16 @@ export const BlogListServer: React.FC<BlogListServerProps> = ({ blogs }) => {
                           width={32}
                           height={32}
                           className="rounded-full object-cover"
+                          onError={(e) => {
+                            // Fallback to initials if image fails
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = 'none';
+                            const parent = target.parentElement;
+                            if (parent) {
+                              const authorName = post.author?.name || 'Author';
+                              parent.innerHTML = `<span class="text-white text-xs font-semibold">${getAuthorInitials(authorName)}</span>`;
+                            }
+                          }}
                         />
                       </div>
                     </div>

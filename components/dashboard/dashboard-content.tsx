@@ -9,7 +9,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { truncateToFourWords } from "@/lib/utils";
-import { User, Project, Issue } from "@/types/convex";
+import { User, EnhancedProject, Issue } from "@/types/convex";
 import DashboardCard from "@/components/uikit/dashboard-card";
 import { RecentProjectCard } from "@/components/dashboard/projects/recent-project-card";
 import FloatingBottomBar from "@/components/dashboard/floating-bottom-bar";
@@ -30,7 +30,7 @@ interface DashboardContentProps {
   user?: User;
 }
 
-const RecentProjectsList = ({ projects }: { projects: Project[] }) => (
+const RecentProjectsList = ({ projects }: { projects: EnhancedProject[] }) => (
   <div className="space-y-3">
     {projects.slice(0, 3).map((project) => (
       <RecentProjectCard key={project._id} project={project} />
@@ -112,7 +112,6 @@ const DashboardContent = ({ user: propUser }: DashboardContentProps) => {
 
   const projects = useQuery(api.projects.getAllProjects, { limit: 6 });
   const projectsLoading = projects === undefined;
-  const projectsError = null;
   const { isFloatingNavEnabled } = useFloatingNav();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);

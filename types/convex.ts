@@ -225,3 +225,26 @@ export type BlogWithDetails = Blog & {
     image: Media | null;
   };
 };
+
+// Enhanced project type as returned by getAllProjects API
+export type EnhancedProject = Omit<Project, 'startDate' | 'endDate' | 'tags'> & {
+  // Date fields transformed to ISO strings
+  startDate: string;
+  endDate: string | null;
+  createdAt: string;
+  updatedAt: string;
+  
+  // Populated owner with media - more flexible type to match actual API response
+  owner: any; // Temporarily using any to avoid complex nested type issues
+  
+  // Populated team lead with media
+  teamLead: any; // Temporarily using any to avoid complex nested type issues
+  
+  // Additional counts
+  issueCount: number;
+  collaboratorCount: number;
+  
+  // Enhanced fields - tags is transformed to objects with tag and id
+  stacks: string[];
+  tags: { tag: string; id: string }[];
+};

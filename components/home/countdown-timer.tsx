@@ -22,7 +22,7 @@ const CountdownTimer = () => {
   });
 
   useEffect(() => {
-    const targetDate = new Date("July 30, 2025 12:00:00").getTime();
+    const targetDate = new Date("July 31, 2025 12:00:00").getTime();
 
     const calculateTimeLeft = () => {
       const now = new Date().getTime();

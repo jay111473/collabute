@@ -6,7 +6,7 @@ import React from "react";
 
 const SolutionsComponent = () => {
   return (
-    <div className="w-full mt-16 sm:mt-20 md:mt-24 px-4 sm:px-6 md:px-8 lg:px-12 xl:px-24">
+    <div className="w-full mt-16 sm:mt-20 md:mt-24 px-4 sm:px-6 md:px-8 lg:px-12 xl:px-24 bg-background">
       {/* Hero Section - Full Screen Split */}
       <section className="w-full min-h-[60vh] sm:min-h-[50vh] relative flex items-center">
         <div className="container px-0 relative z-10">
@@ -39,8 +39,8 @@ const SolutionsComponent = () => {
       </section>
 
       {/* For Founders Section - Diagonal Layout */}
-      <section className="w-full relative py-16 sm:py-20 md:py-24 lg:py-32 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-darkPrimary/5 to-transparent transform -skew-y-1"></div>
+      <section className="w-full relative py-16 sm:py-20 md:py-24 lg:py-32 overflow-hidden1">
+        <div className="absolute transform -skew-y-1"></div>
         <div className="container px-0 relative z-10">
           <div className="grid lg:grid-cols-3 gap-8 sm:gap-12 lg:gap-16 items-start">
             {/* Founders Badge and Title */}
@@ -95,7 +95,7 @@ const SolutionsComponent = () => {
       {/* For Developers Section - Asymmetric Layout */}
       <section className="w-full relative py-16 sm:py-20 md:py-24 lg:py-32">
         <div className="container px-0">
-          <div className="grid lg:grid-cols-5 gap-8 sm:gap-12 lg:gap-16 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 sm:gap-12 lg:gap-16 items-center">
             {/* Left - Large Image */}
             <div className="hidden lg:block lg:col-span-2 order-2 lg:order-1">
               <div className="relative h-[400px] sm:h-[500px] md:h-[600px] rounded-2xl sm:rounded-3xl overflow-hidden">
@@ -109,7 +109,7 @@ const SolutionsComponent = () => {
             </div>
 
             {/* Right - Content */}
-            <div className="lg:col-span-3 lg:col-span-5 order-1 lg:order-2 space-y-8 sm:space-y-12">
+            <div className="col-span-1 lg:col-span-3 order-1 lg:order-2 space-y-8 sm:space-y-12">
               <div className="space-y-4 sm:space-y-6">
                 <AIBadge text="For Developers" />
                 <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white">

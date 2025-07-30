@@ -32,9 +32,7 @@ export function Header() {
   }, []);
 
   return (
-    <motion.header
-      className="w-full fixed top-0 left-0 right-0 z-[100] flex justify-center items-center"
-    >
+    <motion.header className="w-full fixed top-0 left-0 right-0 z-[100] flex justify-center items-center">
       <div className="w-full px-4 sm:px-6 md:px-8 lg:w-[90%] xl:w-[85%] 2xl:w-[80%] my-4">
         <motion.div
           className={`backdrop-blur-xl border rounded-2xl shadow-2xl transition-all duration-300 ${
@@ -54,9 +52,7 @@ export function Header() {
                 {navigationLinks.slice(0, 3).map((link, index) => {
                   const isActive = pathname === link.href;
                   return (
-                    <div
-                      key={link.href}
-                    >
+                    <div key={link.href}>
                       <Link
                         href={link.href}
                         className={`relative px-4 py-2 text-sm font-medium transition-all duration-300 rounded-lg group ${
@@ -77,8 +73,8 @@ export function Header() {
               </div>
             </nav>
 
-            {/* Logo at Center */}
-            <div className="flex justify-center">
+            {/* Logo - Left on mobile, Center on desktop */}
+            <div className="flex justify-start md:justify-center flex-1">
               <Link href="/" className="flex items-center space-x-3">
                 <Image
                   src="/logo.png"
@@ -99,9 +95,7 @@ export function Header() {
                 {navigationLinks.slice(3, 6).map((link, index) => {
                   const isActive = pathname === link.href;
                   return (
-                    <div
-                      key={link.href}
-                    >
+                    <div key={link.href}>
                       <Link
                         href={link.href}
                         className={`relative px-4 py-2 text-sm font-medium transition-all duration-300 rounded-lg group ${
@@ -122,7 +116,7 @@ export function Header() {
               </div>
             </nav>
 
-            {/* Mobile Menu Button with animation */}
+            {/* Mobile Menu Button with animation - Right side */}
             <motion.button
               onClick={() => setIsMobileMenuOpen(true)}
               className="md:hidden p-2 relative group"

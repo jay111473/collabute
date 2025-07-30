@@ -100,8 +100,9 @@ const PricingComponent = () => {
             Choose Your <span className="text-white/80">Path</span>
           </h1>
           <p className="text-gray-400 text-xl leading-relaxed max-w-3xl">
-            Your skills deserve recognition and fair compensation. Collabute integrates seamlessly with GitHub,
-            allowing you to contribute effectively and earn based on your contributions.
+            Your skills deserve recognition and fair compensation. Collabute
+            integrates seamlessly with GitHub, allowing you to contribute
+            effectively and earn based on your contributions.
           </p>
         </div>
       </section>
@@ -145,7 +146,6 @@ const PricingComponent = () => {
                     : "border-white/10 bg-darkGray/50"
                 }`}
               >
-
                 <div className="p-8 h-full flex flex-col">
                   {/* Plan Header */}
                   <div className="space-y-6 mb-12">
@@ -193,12 +193,11 @@ const PricingComponent = () => {
                         plan.price === "Free" ? "secondary" : "darkPrimary"
                       }
                     >
-                      {plan.price === "Free" 
-                        ? "Go with Free" 
-                        : plan.name.includes("Startup") 
+                      {plan.price === "Free"
+                        ? "Go with Free"
+                        : plan.name.includes("Startup")
                           ? "Go with Startup Pro"
-                          : "Go with Developer Pro"
-                      }
+                          : "Go with Developer Pro"}
                     </PricingButton>
                   </div>
                 </div>

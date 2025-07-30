@@ -1,26 +1,31 @@
-'use client'
+"use client";
 
-import React from 'react'
-import Link from 'next/link'
-import { Button } from '@/components/ui/button'
-import { X, Sparkles } from 'lucide-react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { cn } from '@/lib/utils'
+import React from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { X, Sparkles } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { cn } from "@/lib/utils";
 
 interface MobileMenuProps {
-  isOpen: boolean
-  onClose: () => void
-  navigationLinks: Array<{ href: string; label: string }>
-  pathname: string
+  isOpen: boolean;
+  onClose: () => void;
+  navigationLinks: Array<{ href: string; label: string }>;
+  pathname: string;
 }
 
-export function MobileMenu({ isOpen, onClose, navigationLinks, pathname }: MobileMenuProps) {
+export function MobileMenu({
+  isOpen,
+  onClose,
+  navigationLinks,
+  pathname,
+}: MobileMenuProps) {
   return (
     <AnimatePresence>
       {isOpen && (
         <>
           {/* Overlay with blur effect */}
-          <motion.div 
+          <motion.div
             className="fixed inset-0 bg-black/60 backdrop-blur-sm md:hidden"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -38,7 +43,7 @@ export function MobileMenu({ isOpen, onClose, navigationLinks, pathname }: Mobil
             transition={{ duration: 0.4, ease: "easeOut" }}
           >
             {/* Header with close button */}
-            <motion.div 
+            <motion.div
               className="flex items-center justify-between p-6 border-b border-white/10"
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -79,8 +84,8 @@ export function MobileMenu({ isOpen, onClose, navigationLinks, pathname }: Mobil
                         href={link.href}
                         className={cn(
                           "relative block py-4 px-4 text-lg font-medium rounded-xl transition-all duration-300 group",
-                          isActive 
-                            ? "text-purple-400 bg-purple-500/10" 
+                          isActive
+                            ? "text-purple-400 bg-purple-500/10"
                             : "text-white/80 hover:text-white hover:bg-white/5"
                         )}
                         onClick={onClose}
@@ -108,21 +113,21 @@ export function MobileMenu({ isOpen, onClose, navigationLinks, pathname }: Mobil
             </nav>
 
             {/* Actions with enhanced styling */}
-            <motion.div 
+            <motion.div
               className="border-t border-white/10 p-6 space-y-4"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.6 }}
             >
-              <Button 
-                variant="outline" 
-                className="w-full bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-purple-500/50 transition-all duration-300" 
+              <Button
+                variant="outline"
+                className="w-full bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-purple-500/50 transition-all duration-300"
                 asChild
               >
                 <Link href="/auth">Login</Link>
               </Button>
-              <Button 
-                className="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 transition-all duration-300 shadow-lg shadow-purple-500/25" 
+              <Button
+                className="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 transition-all duration-300 shadow-lg shadow-purple-500/25"
                 asChild
               >
                 <Link href="/auth/onboarding">Sign up</Link>
@@ -132,5 +137,5 @@ export function MobileMenu({ isOpen, onClose, navigationLinks, pathname }: Mobil
         </>
       )}
     </AnimatePresence>
-  )
-} 
+  );
+}

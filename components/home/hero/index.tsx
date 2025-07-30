@@ -30,15 +30,15 @@ const Hero = () => {
 
         {/* Main title */}
         <h1 className="text-2xl md:text-4xl lg:text-[52px] 2xl:text-[62px] font-bold leading-tight">
-          <span className="text-darkPrimary">Ship Now</span>{" "}
+          <span className="text-darkPrimary">Build Now</span>{" "}
           <span className="text-white">& Forever</span>
         </h1>
 
         {/* Subtitle */}
-        <p className="text-gray-400 md:text-md text-xs xl:text-base 2xl:text-base text-center mt-2 mb-4 md:mt-6 md:mb-8">
-          Where Entrepreneurs and Developers Collaborate Seamlessly
+        <p className="text-white md:text-md text-xs xl:text-base 2xl:text-base text-center mt-2 mb-4 md:mt-6 md:mb-8">
+          All in one solution to manage and launch your product
           <br />
-          to Bring Ideas to Life—Faster and Smarter.
+          Collaborate, ship & scale.
         </p>
 
         {/* CTA Buttons */}

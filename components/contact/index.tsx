@@ -2,8 +2,10 @@
 
 import AIBadge from "@/components/uikit/ai-badge";
 import { Button } from "@/components/ui/button";
-import { Mail, Twitter } from "lucide-react";
+import { Mail } from "lucide-react";
+import { FaDiscord } from "react-icons/fa";
 import React from "react";
+import Image from "next/image";
 
 const ContactComponent = () => {
   const handleEmailContact = () => {
@@ -12,6 +14,10 @@ const ContactComponent = () => {
 
   const handleTwitterContact = () => {
     window.open("https://twitter.com/collabute", "_blank");
+  };
+
+  const handleDiscordContact = () => {
+    window.open("https://discord.gg/7q3BBpEvwP", "_blank");
   };
 
   return (
@@ -34,7 +40,7 @@ const ContactComponent = () => {
       <section className="w-full relative py-8 sm:py-12">
         <div className="container px-0">
           <div className="max-w-3xl mx-auto">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {/* Email Contact */}
               <div className="text-center space-y-4">
                 <div className="w-12 h-12 bg-darkPrimary rounded-full flex items-center justify-center mx-auto">
@@ -47,7 +53,7 @@ const ContactComponent = () => {
                   <p className="text-gray-400 text-sm">
                     Send us an email directly
                   </p>
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     <p className="text-darkPrimary font-semibold text-base sm:text-lg">
                       team@collabute.com
                     </p>
@@ -64,7 +70,7 @@ const ContactComponent = () => {
               {/* Twitter/X Contact */}
               <div className="text-center space-y-4">
                 <div className="w-12 h-12 bg-darkPrimary rounded-full flex items-center justify-center mx-auto">
-                  <Twitter className="w-6 h-6 text-white" />
+                  <Image src="/twitterx.png" alt="X" width={24} height={24} />
                 </div>
                 <div className="space-y-3">
                   <h2 className="text-xl sm:text-2xl font-bold text-white">
@@ -73,7 +79,7 @@ const ContactComponent = () => {
                   <p className="text-gray-400 text-sm">
                     Connect with us on social media
                   </p>
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     <p className="text-darkPrimary font-semibold text-base sm:text-lg">
                       @collabute
                     </p>
@@ -83,6 +89,33 @@ const ContactComponent = () => {
                       className="border-white/20 hover:border-darkPrimary text-white hover:text-darkPrimary px-6 py-2"
                     >
                       Follow on X
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Discord Contact */}
+              <div className="text-center space-y-4">
+                <div className="w-12 h-12 bg-darkPrimary rounded-full flex items-center justify-center mx-auto">
+                  <FaDiscord size={24} className="text-white" />
+                </div>
+                <div className="space-y-3">
+                  <h2 className="text-xl sm:text-2xl font-bold text-white">
+                    Join Discord
+                  </h2>
+                  <p className="text-gray-400 text-sm">
+                    Chat with our community
+                  </p>
+                  <div className="space-y-3">
+                    <p className="text-darkPrimary font-semibold text-base sm:text-lg">
+                      discord.gg/7q3BBpEvwP
+                    </p>
+                    <Button
+                      onClick={handleDiscordContact}
+                      variant="outline"
+                      className="border-white/20 hover:border-darkPrimary text-white hover:text-darkPrimary px-6 py-2"
+                    >
+                      Join Server
                     </Button>
                   </div>
                 </div>

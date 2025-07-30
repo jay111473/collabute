@@ -1,5 +1,4 @@
-import { Sparkles } from "lucide-react";
-import React from "react";
+import GlowIcon from "@/public/icons/glow-icon";
 
 interface AIBadgeProps {
   text: string;
@@ -10,8 +9,10 @@ const AIBadge = ({ text }: AIBadgeProps) => {
     <div className="relative mb-4 md:mb-8 w-max">
       <div className="absolute -top-[1px] left-1/2 -translate-x-1/2 w-[80px] h-[2px] bg-gradient-to-r from-transparent via-white/50 to-transparent" />
       <div className="relative inline-flex items-center gap-2 px-3 py-2 rounded-full border border-white/20">
-        <Sparkles className="w-3 h-3 md:w-5 md:h-5 text-purple-400" />
-        <span className="text-xs md:text-sm font-medium text-white">{text}</span>
+        <GlowIcon />
+        <span className="text-xs md:text-sm font-medium text-white">
+          {text}
+        </span>
       </div>
     </div>
   );

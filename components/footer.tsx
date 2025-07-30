@@ -2,153 +2,66 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { FaTwitter, FaLinkedin, FaInstagram, FaDiscord } from "react-icons/fa";
-
-type FooterLinkProps = {
-  href: string;
-  label: string;
-};
-
-const FooterLink = ({ href, label }: FooterLinkProps) => (
-  <Link
-    href={href}
-    className="text-gray-400 hover:text-white transition-colors duration-200"
-  >
-    {label}
-  </Link>
-);
-
-type FooterColumnProps = {
-  title: string;
-  links: Array<FooterLinkProps>;
-};
-
-const FooterColumn = ({ title, links }: FooterColumnProps) => (
-  <div>
-    <h3 className="text-white text-lg font-medium mb-4">{title}</h3>
-    <div className="flex flex-col space-y-3">
-      {links.map((link) => (
-        <FooterLink key={link.href} href={link.href} label={link.label} />
-      ))}
-    </div>
-  </div>
-);
-
-const SocialLink = ({
-  href,
-  icon: Icon,
-}: {
-  href: string;
-  icon: React.ComponentType<{ size: number }>;
-}) => (
-  <Link href={href} className="text-gray-400 hover:text-white">
-    <Icon size={20} />
-  </Link>
-);
-
-const FooterBackgroundEffects = () => (
-  <>
-    {/* Base dark background */}
-    <div className="absolute inset-0 z-0 footer-base-bg" />
-
-    {/* Starry background with top-focused mask */}
-    <div className="absolute inset-0 z-0 footer-starry-bg" />
-
-    {/* Top radial gradient for purple glow - brightened but still purple */}
-    <div className="absolute inset-0 z-0 footer-purple-glow" />
-
-    {/* Additional purple accent at the very top - brightened but still purple */}
-    <div className="absolute top-0 left-0 right-0 h-[120px] z-0 footer-top-accent" />
-
-    {/* Dark vignette effect around the edges */}
-    <div className="absolute inset-0 z-0 footer-vignette" />
-  </>
-);
+import { FaDiscord, FaGithub } from "react-icons/fa";
 
 const Footer = () => {
-  const socialLinks = [
-    { href: "https://twitter.com", icon: FaTwitter },
-    { href: "https://linkedin.com", icon: FaLinkedin },
-    { href: "https://instagram.com", icon: FaInstagram },
-    { href: "https://discord.com", icon: FaDiscord },
-  ];
-
-  const footerColumns = [
-    {
-      title: "Products",
-      links: [
-        { href: "/about-us", label: "About Us" },
-        { href: "/contact-us", label: "Contact Us" },
-        { href: "/terms-of-service", label: "Terms of Service" },
-      ],
-    },
-    {
-      title: "Support",
-      links: [
-        { href: "/docs", label: "Docs" },
-        { href: "/feedbacks", label: "Feedbacks" },
-      ],
-    },
-  ];
-
   return (
-    <footer className="w-screen bg-black pt-16 mx-0 px-0">
-      <div className=" z-10 w-full footer-container">
-        <div className="relative footer-content w-full">
-          <FooterBackgroundEffects />
+    <footer className="w-full border-t border-gray-800 bg-background py-8">
+      <div className="container mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-6">
+        {/* Logo */}
+        <div className="flex items-center">
+          <Image
+            src="/logo.png"
+            alt="Collabute"
+            width={32}
+            height={32}
+            className="mr-2"
+          />
+          <span className="text-white text-xl font-bold">Collabute</span>
+        </div>
 
-          {/* Content container */}
-          <div className="relative z-10 h-full flex flex-col justify-between w-full">
-            {/* Top section with logo, social links and navigation */}
-            <div
-              className="flex flex-col md:flex-row justify-center md:justify-between md:gap-[90px] "
-              style={{ gap: "40px" }}
-            >
-              {/* Logo and social links - centered on mobile, normal on desktop */}
-              <div className="mb-8 md:mb-0 flex flex-col items-center md:items-start">
-                <div className="flex items-center mb-6">
-                  <Image
-                    src="/logo.png"
-                    alt="Collabute"
-                    width={48}
-                    height={48}
-                    className="mr-2"
-                  />
-                  <span className="text-white text-2xl font-bold">
-                    Collabute
-                  </span>
-                </div>
+        {/* Legal Links */}
+        <div className="flex items-center gap-6 text-sm">
+          <Link
+            href="/terms"
+            className="text-gray-400 hover:text-white transition-colors"
+          >
+            Terms & Conditions
+          </Link>
+          <Link
+            href="/privacy"
+            className="text-gray-400 hover:text-white transition-colors"
+          >
+            Privacy Policy
+          </Link>
+        </div>
 
-                <div className="flex space-x-6">
-                  {socialLinks.map((link) => (
-                    <SocialLink
-                      key={link.href}
-                      href={link.href}
-                      icon={link.icon}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              {/* Navigation columns */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-8 md:gap-16">
-                {footerColumns.map((column) => (
-                  <FooterColumn
-                    key={column.title}
-                    title={column.title}
-                    links={column.links}
-                  />
-                ))}
-              </div>
-            </div>
-
-            {/* Copyright - moved to bottom */}
-            <div className="text-center py-4 mt-16">
-              <p className="text-gray-500">
-                © Collabute 2025. ALL RIGHTS RESERVED
-              </p>
-            </div>
-          </div>
+        {/* Social Links */}
+        <div className="flex items-center gap-4">
+          <Link
+            href="https://x.com/collabute"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-gray-400 hover:text-white transition-colors opacity-60 hover:opacity-100"
+          >
+            <Image src="/twitterx.png" alt="X" width={20} height={20} />
+          </Link>
+          <Link
+            href="https://discord.gg/7q3BBpEvwP"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-gray-400 hover:text-white transition-colors"
+          >
+            <FaDiscord size={20} />
+          </Link>
+          <Link
+            href="https://github.com/muperdev/collabute"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-gray-400 hover:text-white transition-colors"
+          >
+            <FaGithub size={20} />
+          </Link>
         </div>
       </div>
     </footer>

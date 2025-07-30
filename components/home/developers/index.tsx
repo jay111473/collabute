@@ -45,7 +45,7 @@ function Developers() {
             integrates seamlessly with GitHub, allowing you to contribute
             effectively and earn based on your contributions.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8 md:mb-16">
+          {/* <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8 md:mb-16">
             <CosmicButton className="px-6 py-2.5 rounded-md text-white font-medium w-full sm:w-auto">
               Join as a Developer
             </CosmicButton>
@@ -55,7 +55,7 @@ function Developers() {
             >
               Perks & Benefits
             </Button>
-          </div>
+          </div> */}
         </div>
       </div>
       <div className="flex flex-col md:flex-row justify-between items-start gap-6 md:gap-x-4 px-4 w-full max-w-[1400px]">

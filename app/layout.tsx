@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans } from "next/font/google";
+import { Space_Grotesk } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
 import "./globals.css";
 import { EmailProvider } from "./providers/EmailContext";
@@ -7,21 +7,18 @@ import { ThemeProvider } from "./providers/ThemeProvider";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { CSPostHogProvider } from "./provider";
 import { UserProvider } from "./providers/UserContext";
-const plusJakarta = Plus_Jakarta_Sans({
+import { Header } from "@/components/header";
+import Footer from "@/components/footer";
+
+const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
-  weight: ["300", "400", "500", "700"],
-  variable: "--font-plus-jakarta",
+  weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-space-grotesk",
 });
 
 export const metadata: Metadata = {
   title: `Collabute`,
   description: "Shake hands with startups and earn like never before!",
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 1,
-    userScalable: false,
-  },
 };
 
 export default function RootLayout({
@@ -30,8 +27,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full">
-      <body className={`${plusJakarta.className} h-full`}>
+    <html lang="en">
+      <body className={`${spaceGrotesk.className}`}>
         <SpeedInsights />
         <CSPostHogProvider>
           <EmailProvider>
@@ -42,9 +39,9 @@ export default function RootLayout({
               disableTransitionOnChange
             >
               <UserProvider>
-                <div className="h-full">
-                  {children}
-                </div>
+                <Header />
+                {children}
+                <Footer />
               </UserProvider>
             </ThemeProvider>
           </EmailProvider>

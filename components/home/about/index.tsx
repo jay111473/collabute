@@ -14,15 +14,16 @@ function About() {
           <div>
             <AIBadge text="Entrepreneurs" />
             <h2 className="text-2xl md:text-[36px] font-bold text-white mt-4 mb-6">
-              Think, Build, Succeed,{" "}
-              <span className="text-darkPrimary">Faster</span>
+              Speed Without <span className="text-darkPrimary">Compromise</span>
             </h2>
             <p className="text-gray-400 mb-8">
-              In today&apos;s competitive market, timing is everything.
-              Collabute connects you instantly with skilled developers,
-              eliminating the delays of traditional hiring processes.
+              Smart development means building it
+              right from the start. We use AI-accelerated planning and
+              experienced developers to deliver quality products quickly, so you
+              launch with confidence knowing your product is ready for real
+              users.
             </p>
-            <div className="flex flex-wrap gap-4">
+            {/* <div className="flex flex-wrap gap-4">
               <CosmicButton>Bring Your Idea to Life</CosmicButton>
               <Button
                 variant="outline"
@@ -30,7 +31,7 @@ function About() {
               >
                 How it works
               </Button>
-            </div>
+            </div> */}
           </div>
           <div>
             <Image

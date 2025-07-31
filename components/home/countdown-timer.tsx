@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { FaTwitter, FaDiscord, FaGithub } from "react-icons/fa";
+import { FaDiscord, FaGithub } from "react-icons/fa";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";

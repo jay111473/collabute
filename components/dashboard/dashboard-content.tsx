@@ -79,8 +79,8 @@ const IssuesTable = ({ issues }: { issues: Issue[] }) => (
                 issue.priority === "high"
                   ? "bg-red-500/10 text-red-500 border-red-500/20"
                   : issue.priority === "medium"
-                  ? "bg-amber-500/10 text-amber-500 border-amber-500/20"
-                  : "bg-green-500/10 text-green-500 border-green-500/20"
+                    ? "bg-amber-500/10 text-amber-500 border-amber-500/20"
+                    : "bg-green-500/10 text-green-500 border-green-500/20"
               }`}
             >
               {issue.priority.charAt(0).toUpperCase() + issue.priority.slice(1)}
@@ -103,11 +103,11 @@ const IssuesTable = ({ issues }: { issues: Issue[] }) => (
 );
 
 const DashboardContent = ({ user }: DashboardContentProps) => {
-  const { 
-    projects, 
-    loading: projectsLoading, 
+  const {
+    projects,
+    loading: projectsLoading,
     error: projectsError,
-    refetch: refetchProjects 
+    refetch: refetchProjects,
   } = useProjectsData({ limit: 6 });
   const { isFloatingNavEnabled } = useFloatingNav();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -121,8 +121,8 @@ const DashboardContent = ({ user }: DashboardContentProps) => {
     };
 
     checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
   // Close the mobile menu when switching to desktop view
@@ -156,7 +156,9 @@ const DashboardContent = ({ user }: DashboardContentProps) => {
   if (projectsError) {
     return (
       <div className="p-6 text-center">
-        <p className="text-red-500 mb-4">Error loading projects: {projectsError}</p>
+        <p className="text-red-500 mb-4">
+          Error loading projects: {projectsError}
+        </p>
         <Button onClick={refetchProjects} variant="outline">
           Try Again
         </Button>

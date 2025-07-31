@@ -74,7 +74,7 @@ const config = {
         shine: "shine 8s cubic-bezier(0.4, 0, 0.2, 1) infinite",
       },
       fontFamily: {
-        sans: ["var(--font-plus-jakarta)"],
+        sans: ["var(--font-space-grotesk)"],
       },
     },
   },
@@ -124,16 +124,16 @@ const config = {
     },
     function ({ addUtilities }: PluginAPI) {
       const newUtilities = {
-        '.scrollbar-hide': {
+        ".scrollbar-hide": {
           /* IE and Edge */
-          '-ms-overflow-style': 'none',
+          "-ms-overflow-style": "none",
           /* Firefox */
-          'scrollbar-width': 'none',
+          "scrollbar-width": "none",
           /* Safari and Chrome */
-          '&::-webkit-scrollbar': {
-            display: 'none'
-          }
-        }
+          "&::-webkit-scrollbar": {
+            display: "none",
+          },
+        },
       };
       addUtilities(newUtilities);
     },

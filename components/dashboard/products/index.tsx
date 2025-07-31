@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Product } from "@/types/convex";
+import { ProductWithProjects } from "@/types/convex";
 import { ProductCard } from "./product-card";
 import { Input } from "@/components/ui/input";
 import { Search, Package, FolderOpen } from "lucide-react";
@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/select";
 
 interface ProductsComponentProps {
-  products: Product[];
+  products: ProductWithProjects[];
 }
 
 const ProductsComponent = ({ products }: ProductsComponentProps) => {
@@ -44,11 +44,13 @@ const ProductsComponent = ({ products }: ProductsComponentProps) => {
       switch (sortBy) {
         case "newest":
           return (
-            new Date(b._creationTime).getTime() - new Date(a._creationTime).getTime()
+            new Date(b._creationTime).getTime() -
+            new Date(a._creationTime).getTime()
           );
         case "oldest":
           return (
-            new Date(a._creationTime).getTime() - new Date(b._creationTime).getTime()
+            new Date(a._creationTime).getTime() -
+            new Date(b._creationTime).getTime()
           );
         case "name-asc":
           return a.name.localeCompare(b.name);

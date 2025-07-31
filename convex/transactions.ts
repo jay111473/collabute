@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { query, mutation } from "./_generated/server";
+import type { Transaction } from "../types/convex";
 
 // List all transactions with optional filtering
 export const list = query({
@@ -9,17 +10,24 @@ export const list = query({
     status: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    let q = ctx.db.query("transactions");
-    
     if (args.userId) {
-      q = q.withIndex("by_user", (q) => q.eq("userId", args.userId));
+      return await ctx.db
+        .query("transactions")
+        .withIndex("by_user", (q) => q.eq("userId", args.userId!))
+        .collect();
     } else if (args.projectId) {
-      q = q.withIndex("by_project", (q) => q.eq("projectId", args.projectId));
+      return await ctx.db
+        .query("transactions")
+        .withIndex("by_project", (q) => q.eq("projectId", args.projectId!))
+        .collect();
     } else if (args.status) {
-      q = q.withIndex("by_status", (q) => q.eq("status", args.status));
+      return await ctx.db
+        .query("transactions")
+        .withIndex("by_status", (q) => q.eq("status", args.status!))
+        .collect();
     }
     
-    return await q.collect();
+    return await ctx.db.query("transactions").collect();
   },
 });
 

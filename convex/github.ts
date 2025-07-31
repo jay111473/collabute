@@ -1,18 +1,17 @@
 import { v } from "convex/values";
 import { mutation, query, action } from "./_generated/server";
-import { api } from "./_generated/api";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import type { GitHubRepository, GitHubActivity, GitHubUserProfile } from "../types/convex";
 
-// Get user's GitHub account from BetterAuth
+// Get user's GitHub account from github_profiles table
 export const getUserGitHubAccount = query({
   args: { userId: v.id("users") },
   handler: async (ctx, args) => {
     const account = await ctx.db
-      .query("account")
-      .withIndex("userId", (q) =>
+      .query("github_profiles")
+      .withIndex("by_user", (q) =>
         q.eq("userId", args.userId)
       )
-      .filter((q) => q.eq(q.field("provider"), "github"))
       .first();
 
     return account;
@@ -363,7 +362,7 @@ export const fetchAndStoreRepositories = action({
       console.log(`Fetched ${repos.length} repositories from GitHub`);
       
       // Prepare repository data for sync
-      const repoData = repos.map((repo: any) => ({
+      const repoData = repos.map((repo: GitHubRepository) => ({
         id: repo.id,
         name: repo.name,
         fullName: repo.full_name,
@@ -387,7 +386,7 @@ export const fetchAndStoreRepositories = action({
       await ctx.runMutation("auth:updateGithubProfile" as any, {
         userId,
         githubUsername: repos[0]?.owner?.login,
-        publicRepos: repos.filter((r: any) => !r.private).length,
+        publicRepos: repos.filter((r: GitHubRepository) => !r.private).length,
       });
 
       console.log(`Synced ${syncedRepoIds.length} repositories`);
@@ -429,7 +428,7 @@ export const fetchGithubActivities = action({
       console.log(`Fetched ${activities.length} activities from GitHub`);
       
       // Filter relevant activities (commits, PRs, issues, repository creation)
-      const relevantActivities = activities.filter((activity: any) => 
+      const relevantActivities = activities.filter((activity: GitHubActivity) => 
         ['PushEvent', 'PullRequestEvent', 'IssuesEvent', 'CreateEvent', 'ForkEvent'].includes(activity.type)
       );
 

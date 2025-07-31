@@ -3,7 +3,7 @@
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id, Doc } from "@/convex/_generated/dataModel";
-import { Product } from "@/types/convex";
+import { Product, ProductWithProjects } from "@/types/convex";
 
 interface UseProductsOptions {
   page?: number;
@@ -83,6 +83,31 @@ export function useActiveProducts(limit?: number): {
   error: null;
 } {
   const products = useQuery(api.products.getActiveProducts, { limit });
+
+  return {
+    products: products || [],
+    loading: products === undefined,
+    error: null,
+  };
+}
+
+// Hook for products with their associated projects
+export function useProductsWithProjects(options: {
+  userId?: Id<"users">;
+  category?: string;
+  isActive?: boolean;
+} = {}): {
+  products: ProductWithProjects[];
+  loading: boolean;
+  error: null;
+} {
+  const { userId, category, isActive = true } = options;
+
+  const products = useQuery(api.products.getProductsWithProjects, {
+    userId,
+    category,
+    isActive,
+  });
 
   return {
     products: products || [],

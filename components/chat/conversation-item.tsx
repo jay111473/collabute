@@ -1,7 +1,7 @@
 import { formatDistanceToNow } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { Conversation } from "@/types/chat";
-import { User } from "@/types/convex";
+import { User, Media } from "@/types/convex";
 import { SafeAvatar } from "@/components/ui/safe-avatar";
 import { cn } from "@/lib/utils";
 
@@ -51,8 +51,6 @@ export const ConversationItem = ({
     conversation.lastMessage &&
     conversation.lastMessage.id !== lastReadMessageId;
 
-
-
   return (
     <div
       onClick={onClick}
@@ -64,10 +62,13 @@ export const ConversationItem = ({
       )}
     >
       {/* Avatar */}
-      <SafeAvatar 
-        user={conversation.type === "private"
-          ? (conversation.participants.find(p => (p.user as User)._id.toString() !== currentUserId)?.user as User)
-          : { name: title, profilePicture: avatar?._id }
+      <SafeAvatar
+        user={
+          conversation.type === "private"
+            ? (conversation.participants.find(
+                (p) => (p.user as User)._id.toString() !== currentUserId
+              )?.user as User)
+            : { name: title, profilePicture: (avatar as Media)?._id || null }
         }
         size="lg"
       />

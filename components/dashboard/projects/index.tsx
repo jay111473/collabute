@@ -10,24 +10,15 @@ import { Skeleton } from "@/components/ui/skeleton";
 import ProjectIcon from "@/public/icons/project";
 import Image from "next/image";
 import Link from "next/link";
-import { Project, Media, User, Issue } from "@/types/convex";
-
-// Extended Project type with populated relations
-type ProjectWithData = Project & {
-  teamLead?: User;
-  owner?: User;
-  issues?: any[];
-  collaborators?: any[];
-  collabuters?: any[];
-  projectState?: string;
-  updatedAt?: number;
-};
+import { Project, Media, User, EnhancedProject } from "@/types/convex";
+import { api } from "@/convex/_generated/api";
+import { useQuery } from "convex/react";
 
 function ProjectHeader({
   project,
   progressData,
 }: {
-  project: ProjectWithData;
+  project: EnhancedProject;
   progressData: {
     total: number;
     done: number;
@@ -57,7 +48,7 @@ function ProjectHeader({
             icon={<Users className="h-4 w-4 text-darkPrimary" />}
             variant="outline"
           >
-            Collaboraters {project.collabuters?.length || 0}
+            Collaborators {project.collaboratorCount || 0}
           </Badge>
           <Badge
             className="font-medium !text-xs"
@@ -201,8 +192,11 @@ function ProjectHeader({
   );
 }
 
-const MyProjectCard = ({ project }: { project: ProjectWithData }) => {
-  const progressData = calculateDetailedProgress(project.issues as Issue[]);
+const MyProjectCard = ({ project }: { project: EnhancedProject }) => {
+  const issues = useQuery(api.issues.getIssuesByProject, {
+    projectId: project._id,
+  });
+  const progressData = calculateDetailedProgress(issues || []);
 
   return (
     <Link
@@ -211,7 +205,7 @@ const MyProjectCard = ({ project }: { project: ProjectWithData }) => {
     >
       <main className="flex flex-1 flex-col gap-4 lg:gap-6 w-full">
         <Card
-          className={`flex flex-col gap-2 py-5 px-2 bg-darkGray text-white w-full ${project.projectState === "under-review" ? "border-2 border-gray-500" : "border-none"}`}
+          className={`flex flex-col gap-2 py-5 px-2 bg-darkGray text-white w-full ${project.state === "under-review" ? "border-2 border-gray-500" : "border-none"}`}
         >
           <Suspense fallback={<Skeleton className="h-20 w-full" />}>
             <ProjectHeader project={project} progressData={progressData} />

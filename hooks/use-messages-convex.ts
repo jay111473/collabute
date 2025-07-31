@@ -80,7 +80,11 @@ export function useMessagesConvex(options: UseMessagesOptions): {
   };
 }
 
-export function useMessageSearch(conversationId: Id<"conversations">, searchTerm: string, limit?: number): {
+export function useMessageSearch(
+  conversationId: Id<"conversations">,
+  searchTerm: string,
+  limit?: number
+): {
   messages: EnhancedMessage[];
   loading: boolean;
   error: null;
@@ -98,7 +102,10 @@ export function useMessageSearch(conversationId: Id<"conversations">, searchTerm
 }
 
 // Combined chat hook for easier usage
-export function useChatConvex(conversationId: Id<"conversations">, userId: Id<"users">): {
+export function useChatConvex(
+  conversationId: Id<"conversations">,
+  userId: Id<"users">
+): {
   messages: EnhancedMessage[];
   unreadCount: number;
   loading: boolean;

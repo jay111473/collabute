@@ -22,7 +22,12 @@ export const isUserAdmin = query({
     }
 
     // Check if role has admin permissions
-    return (role.permissions && Array.isArray(role.permissions) && role.permissions.includes("admin")) || role.name === "admin";
+    return (
+      (role.permissions &&
+        Array.isArray(role.permissions) &&
+        role.permissions.includes("admin")) ||
+      role.name === "admin"
+    );
   },
 });
 
@@ -46,7 +51,11 @@ export const getAdminStatus = query({
     if (user.roleId) {
       role = await ctx.db.get(user.roleId);
       if (role) {
-        isAdmin = (role.permissions && Array.isArray(role.permissions) && role.permissions.includes("admin")) || role.name === "admin";
+        isAdmin =
+          (role.permissions &&
+            Array.isArray(role.permissions) &&
+            role.permissions.includes("admin")) ||
+          role.name === "admin";
       }
     }
 
@@ -58,12 +67,14 @@ export const getAdminStatus = query({
         email: user.email,
         image: user.image,
       },
-      role: role ? {
-        id: role._id,
-        name: role.name,
-        displayName: role.displayName,
-        permissions: role.permissions || [],
-      } : null,
+      role: role
+        ? {
+            id: role._id,
+            name: role.name,
+            displayName: role.displayName,
+            permissions: role.permissions || [],
+          }
+        : null,
     };
   },
 });
@@ -72,8 +83,10 @@ export const getAdminStatus = query({
 export const ensureAdminRole = mutation({
   args: {},
   handler: async (ctx) => {
-    console.warn("ensureAdminRole is deprecated. Use the seed script: bun run seed:admin");
-    
+    console.warn(
+      "ensureAdminRole is deprecated. Use the seed script: bun run seed:admin"
+    );
+
     // Check if admin role already exists
     const existingAdminRole = await ctx.db
       .query("roles")
@@ -90,7 +103,14 @@ export const ensureAdminRole = mutation({
       displayName: "Administrator",
       description: "Full system access and administrative privileges",
       isActive: true,
-      permissions: ["admin", "read", "write", "delete", "manage_users", "manage_projects"],
+      permissions: [
+        "admin",
+        "read",
+        "write",
+        "delete",
+        "manage_users",
+        "manage_projects",
+      ],
     });
 
     return adminRoleId;
@@ -116,16 +136,31 @@ export const assignAdminRole = mutation({
     }
 
     const currentRole = await ctx.db.get(currentUser.roleId);
-    const hasAdminPermission = currentRole && (
-      (currentRole.permissions && Array.isArray(currentRole.permissions) && currentRole.permissions.includes("admin")) || 
-      currentRole.name === "admin"
-    );
+    const hasAdminPermission =
+      currentRole &&
+      ((currentRole.permissions &&
+        Array.isArray(currentRole.permissions) &&
+        currentRole.permissions.includes("admin")) ||
+        currentRole.name === "admin");
     if (!hasAdminPermission) {
       throw new Error("Not authorized - admin privileges required");
     }
 
     // Ensure admin role exists
-    const adminRoleId = await ensureAdminRole(ctx, {});
+    const adminRoleId = await ctx.db.insert("roles", {
+      name: "admin",
+      displayName: "Administrator",
+      description: "Full system access and administrative privileges",
+      isActive: true,
+      permissions: [
+        "admin",
+        "read",
+        "write",
+        "delete",
+        "manage_users",
+        "manage_projects",
+      ],
+    });
 
     // Assign admin role to target user
     await ctx.db.patch(args.userId, {
@@ -171,7 +206,20 @@ export const createFirstAdmin = mutation({
     }
 
     // Ensure admin role exists
-    const adminRoleId = await ensureAdminRole(ctx, {});
+    const adminRoleId = await ctx.db.insert("roles", {
+      name: "admin",
+      displayName: "Administrator",
+      description: "Full system access and administrative privileges",
+      isActive: true,
+      permissions: [
+        "admin",
+        "read",
+        "write",
+        "delete",
+        "manage_users",
+        "manage_projects",
+      ],
+    });
 
     // Assign admin role
     await ctx.db.patch(user._id, {

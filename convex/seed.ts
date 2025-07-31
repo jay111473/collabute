@@ -181,14 +181,14 @@ export const seedDatabase = mutation({
 
     try {
       // 1. Seed admin role
-      results.adminRole = await seedAdminRole(ctx, {});
+      results.adminRole = await ctx.runMutation("seed:seedAdminRole" as any, {});
 
       // 2. Seed default roles
-      results.defaultRoles = await seedDefaultRoles(ctx, {});
+      results.defaultRoles = await ctx.runMutation("seed:seedDefaultRoles" as any, {});
 
       // 3. Assign admin role to user if email provided
       if (args.adminEmail) {
-        results.adminAssignment = await assignAdminRoleByEmail(ctx, {
+        results.adminAssignment = await ctx.runMutation("seed:assignAdminRoleByEmail" as any, {
           email: args.adminEmail,
         });
       }

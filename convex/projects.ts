@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import type { EnhancedProject } from "../types/convex";
 
 export const createProject = mutation({
   args: {
@@ -407,6 +408,17 @@ export const getProjectsByProductId = query({
   },
 });
 
+export const getProjectsCountByProductId = query({
+  args: { productId: v.id("products") },
+  handler: async (ctx, args) => {
+    const projects = await ctx.db
+      .query("projects")
+      .withIndex("by_product", (q) => q.eq("productId", args.productId))
+      .collect();
+    return projects.length;
+  },
+});
+
 export const updateProject = mutation({
   args: {
     projectId: v.id("projects"),
@@ -747,7 +759,254 @@ export const getAllProjects = query({
       })
     );
 
-    return projectsWithData;
+    return projectsWithData as EnhancedProject[];
+  },
+});
+
+// Optimized query for project details view
+export const getProjectDetailsById = query({
+  args: { projectId: v.id("projects") },
+  handler: async (ctx, args) => {
+    const project = await ctx.db.get(args.projectId);
+    if (!project) return null;
+
+    // Get owner and team lead with profile pictures
+    const owner = await ctx.db.get(project.ownerId);
+    const teamLead = project.teamLeadId
+      ? await ctx.db.get(project.teamLeadId)
+      : null;
+
+    let ownerProfilePicture = null;
+    if (owner?.profilePicture) {
+      ownerProfilePicture = await ctx.db.get(owner.profilePicture);
+    }
+
+    let teamLeadProfilePicture = null;
+    if (teamLead?.profilePicture) {
+      teamLeadProfilePicture = await ctx.db.get(teamLead.profilePicture);
+    }
+
+    // Get issues for status counts (not full data to optimize performance)
+    const issues = await ctx.db
+      .query("issues")
+      .withIndex("by_project", (q) => q.eq("projectId", project._id))
+      .collect();
+
+    // Get collaborators with user data and profile pictures
+    const collaborators = await ctx.db
+      .query("project_collaborators")
+      .withIndex("by_project", (q) => q.eq("projectId", project._id))
+      .collect();
+
+    const collaboratorsWithData = await Promise.all(
+      collaborators.map(async (collab) => {
+        const user = await ctx.db.get(collab.userId);
+        let profilePicture = null;
+        if (user?.profilePicture) {
+          profilePicture = await ctx.db.get(user.profilePicture);
+        }
+
+        return {
+          ...collab,
+          joinedAt: new Date(collab.joinedAt).toISOString(),
+          user: user
+            ? {
+                ...user,
+                profilePicture: profilePicture,
+              }
+            : null,
+        };
+      })
+    );
+
+    // Get repository if connected
+    const repository = project.repositoryId
+      ? await ctx.db.get(project.repositoryId)
+      : null;
+
+    return {
+      ...project,
+      // Format dates as ISO strings
+      startDate: new Date(project.startDate).toISOString(),
+      endDate: project.endDate ? new Date(project.endDate).toISOString() : null,
+      createdAt: new Date(project._creationTime).toISOString(),
+      updatedAt: new Date(project._creationTime).toISOString(),
+
+      // Populate owner with media
+      owner: owner
+        ? {
+            ...owner,
+            profilePicture: ownerProfilePicture,
+          }
+        : null,
+
+      // Populate team lead with media
+      teamLead: teamLead
+        ? {
+            ...teamLead,
+            profilePicture: teamLeadProfilePicture,
+          }
+        : null,
+
+      // Add repository
+      repository,
+
+      // Add issues for progress calculation (minimal data for performance)
+      issues: issues.map((issue) => ({
+        _id: issue._id,
+        status: issue.status,
+        title: issue.title,
+        priority: issue.priority,
+      })),
+
+      // Add collaborators with user data
+      collaborators: collaboratorsWithData,
+
+      // Add counts for quick access
+      issueCount: issues.length,
+      collaboratorCount: collaborators.length,
+
+      // Transform milestones with proper defaults
+      milestones: project.milestones || {
+        ideaRefinement: "not-started",
+        documentation: "not-started",
+        design: "not-started",
+        development: "not-started",
+        testing: "not-started",
+        launch: "not-started",
+        maintenance: "not-started",
+        scaling: "not-started",
+      },
+
+      // Transform stacks and tags
+      stacks: project.stacks || [],
+      tags: project.tags?.map((tag) => ({ tag, id: tag })) || [],
+    };
+  },
+});
+
+export const getProjectDetailsBySlug = query({
+  args: { slug: v.string() },
+  handler: async (ctx, args) => {
+    const project = await ctx.db
+      .query("projects")
+      .withIndex("by_slug", (q) => q.eq("slug", args.slug))
+      .first();
+
+    if (!project) return null;
+
+    // Get owner and team lead with profile pictures
+    const owner = await ctx.db.get(project.ownerId);
+    const teamLead = project.teamLeadId
+      ? await ctx.db.get(project.teamLeadId)
+      : null;
+
+    let ownerProfilePicture = null;
+    if (owner?.profilePicture) {
+      ownerProfilePicture = await ctx.db.get(owner.profilePicture);
+    }
+
+    let teamLeadProfilePicture = null;
+    if (teamLead?.profilePicture) {
+      teamLeadProfilePicture = await ctx.db.get(teamLead.profilePicture);
+    }
+
+    // Get issues for status counts (not full data to optimize performance)
+    const issues = await ctx.db
+      .query("issues")
+      .withIndex("by_project", (q) => q.eq("projectId", project._id))
+      .collect();
+
+    // Get collaborators with user data and profile pictures
+    const collaborators = await ctx.db
+      .query("project_collaborators")
+      .withIndex("by_project", (q) => q.eq("projectId", project._id))
+      .collect();
+
+    const collaboratorsWithData = await Promise.all(
+      collaborators.map(async (collab) => {
+        const user = await ctx.db.get(collab.userId);
+        let profilePicture = null;
+        if (user?.profilePicture) {
+          profilePicture = await ctx.db.get(user.profilePicture);
+        }
+
+        return {
+          ...collab,
+          joinedAt: new Date(collab.joinedAt).toISOString(),
+          user: user
+            ? {
+                ...user,
+                profilePicture: profilePicture,
+              }
+            : null,
+        };
+      })
+    );
+
+    // Get repository if connected
+    const repository = project.repositoryId
+      ? await ctx.db.get(project.repositoryId)
+      : null;
+
+    return {
+      ...project,
+      // Format dates as ISO strings
+      startDate: new Date(project.startDate).toISOString(),
+      endDate: project.endDate ? new Date(project.endDate).toISOString() : null,
+      createdAt: new Date(project._creationTime).toISOString(),
+      updatedAt: new Date(project._creationTime).toISOString(),
+
+      // Populate owner with media
+      owner: owner
+        ? {
+            ...owner,
+            profilePicture: ownerProfilePicture,
+          }
+        : null,
+
+      // Populate team lead with media
+      teamLead: teamLead
+        ? {
+            ...teamLead,
+            profilePicture: teamLeadProfilePicture,
+          }
+        : null,
+
+      // Add repository
+      repository,
+
+      // Add issues for progress calculation (minimal data for performance)
+      issues: issues.map((issue) => ({
+        _id: issue._id,
+        status: issue.status,
+        title: issue.title,
+        priority: issue.priority,
+      })),
+
+      // Add collaborators with user data
+      collaborators: collaboratorsWithData,
+
+      // Add counts for quick access
+      issueCount: issues.length,
+      collaboratorCount: collaborators.length,
+
+      // Transform milestones with proper defaults
+      milestones: project.milestones || {
+        ideaRefinement: "not-started",
+        documentation: "not-started",
+        design: "not-started",
+        development: "not-started",
+        testing: "not-started",
+        launch: "not-started",
+        maintenance: "not-started",
+        scaling: "not-started",
+      },
+
+      // Transform stacks and tags
+      stacks: project.stacks || [],
+      tags: project.tags?.map((tag) => ({ tag, id: tag })) || [],
+    };
   },
 });
 

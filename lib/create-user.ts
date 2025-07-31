@@ -1,4 +1,4 @@
-import { User } from "@/types/dashboard";
+import { User } from "@/types/convex";
 import { generateSecurePassword } from "@/lib/utils/crypto";
 
 export async function createUser(user: Partial<User>) {

@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import type { ConversationParticipantWithUser } from "../types/convex";
 
 export const createConversation = mutation({
   args: {
@@ -103,20 +104,18 @@ export const getConversations = query({
           .filter((q) => q.eq(q.field("leftAt"), undefined))
           .collect();
 
-        const participantsWithData = await Promise.all(
+        const participantsWithData: ConversationParticipantWithUser[] = await Promise.all(
           allParticipants.map(async (p) => {
-            const user = await ctx.db
-              .query("users")
-              .withIndex("by_user", (q) => q.eq("userId", p.userId))
-              .first();
+            const user = await ctx.db.get(p.userId);
             return {
               ...p,
               user: user
                 ? {
-                    ...user,
+                    _id: user._id,
                     name: user.name,
                     email: user.email,
                     image: user.profilePicture,
+                    profilePicture: user.profilePicture,
                   }
                 : null,
             };
@@ -210,17 +209,18 @@ export const getConversationById = query({
       .filter((q) => q.eq(q.field("leftAt"), undefined))
       .collect();
 
-    const participantsWithData = await Promise.all(
+    const participantsWithData: ConversationParticipantWithUser[] = await Promise.all(
       participants.map(async (p) => {
         const user = await ctx.db.get(p.userId);
         return {
           ...p,
           user: user
             ? {
-                ...user,
+                _id: user._id,
                 name: user.name,
                 email: user.email,
                 image: user.profilePicture,
+                profilePicture: user.profilePicture,
               }
             : null,
         };

@@ -2,7 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Divider } from "@/components/uikit/divider";
 import { Progress } from "@/components/ui/progress";
-import { Project } from "@/types/dashboard";
+import { Project } from "@/types/convex";
 import { truncateText } from "@/lib/utils";
 import { GitPullRequest } from "lucide-react";
 import Link from "next/link";
@@ -11,6 +11,9 @@ import {
   getMilestoneShadow,
   getMilestoneStats,
 } from "@/lib/utils/milestone-utils";
+import { getIssuesByProject } from "@/convex/issues";
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
 
 interface ProjectCardProps {
   project: Project;
@@ -20,7 +23,9 @@ export const ProjectCard = ({ project }: ProjectCardProps) => {
   const milestonePhase = getCurrentMilestonePhase(project.milestones);
   const milestoneShadow = getMilestoneShadow(project.milestones);
   const milestoneStats = getMilestoneStats(project.milestones);
-
+  const issues = useQuery(api.issues.getIssuesByProject, {
+    projectId: project._id,
+  });
   return (
     <Link href={`/dashboard/explore/${project.slug}`}>
       <div className="relative mt-3">
@@ -54,7 +59,7 @@ export const ProjectCard = ({ project }: ProjectCardProps) => {
                     }
                     variant="outline"
                   >
-                    {project.issues?.length} issues
+                    {issues?.length} issues
                   </Badge>
                 </div>
                 <p className="text-white/60 truncate">

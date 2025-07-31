@@ -1,6 +1,5 @@
-
 import { Badge } from "@/components/ui/badge";
-import { Project } from "@/types/dashboard";
+import { Project } from "@/types/convex";
 import { format } from "date-fns";
 import { ArrowDownLeft, ArrowUpRight, Clock, Clock1 } from "lucide-react";
 

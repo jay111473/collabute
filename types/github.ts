@@ -253,4 +253,12 @@ export interface GitHubActor {
     activities: GitHubActivity[];
     commits: GitHubCommit[];
     stats: GitHubStats;
+  }
+
+  /**
+   * GitHub activities section data
+   */
+  export interface GitHubActivityData {
+    activities: GitHubActivity[];
+    totalCount: number;
   } 

@@ -1,7 +1,7 @@
 "use client";
 
 import { FC } from "react";
-import { User } from "@/types/dashboard";
+import { User } from "@/types/convex";
 import { useProjectManagerFilters } from "./hooks/useLeadFilters";
 import { ProjectManagerSectionHeader } from "./LeadHeader";
 import { ProjectManagerFilterBar } from "./LeadFilterBar";

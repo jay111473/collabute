@@ -1,4 +1,5 @@
 import { query } from "./_generated/server";
+import { Id } from "./_generated/dataModel";
 import { v } from "convex/values";
 
 export const getBlogBySlug = query({
@@ -15,16 +16,21 @@ export const getBlogBySlug = query({
     }
 
     // Get related data
-    const [category, tags, profilePicture, thumbnail, author] = await Promise.all([
-      blog.category ? ctx.db.get(blog.category) : null,
-      blog.tags ? Promise.all(blog.tags.map(tagId => ctx.db.get(tagId))) : [],
-      blog.profilePicture ? ctx.db.get(blog.profilePicture) : null,
-      blog.thumbnail ? ctx.db.get(blog.thumbnail) : null,
-      blog.authorId ? ctx.db.get(blog.authorId) : null,
-    ]);
+    const [category, tags, profilePicture, thumbnail, author] =
+      await Promise.all([
+        blog.category ? ctx.db.get(blog.category) : null,
+        blog.tags
+          ? Promise.all(blog.tags.map((tagId) => ctx.db.get(tagId)))
+          : [],
+        blog.profilePicture ? ctx.db.get(blog.profilePicture) : null,
+        blog.thumbnail ? ctx.db.get(blog.thumbnail) : null,
+        blog.authorId ? ctx.db.get(blog.authorId) : null,
+      ]);
 
     // Get meta image if exists
-    const metaImage = blog.meta?.image ? await ctx.db.get(blog.meta.image) : null;
+    const metaImage = blog.meta?.image
+      ? await ctx.db.get(blog.meta.image)
+      : null;
 
     return {
       ...blog,
@@ -33,10 +39,12 @@ export const getBlogBySlug = query({
       profilePicture,
       thumbnail,
       author,
-      meta: blog.meta ? {
-        ...blog.meta,
-        image: metaImage,
-      } : undefined,
+      meta: blog.meta
+        ? {
+            ...blog.meta,
+            image: metaImage,
+          }
+        : undefined,
     };
   },
 });
@@ -53,13 +61,16 @@ export const getBlogs = query({
     // Get related data for all blogs
     const blogsWithRelatedData = await Promise.all(
       blogs.map(async (blog) => {
-        const [category, tags, profilePicture, thumbnail, author] = await Promise.all([
-          blog.category ? ctx.db.get(blog.category) : null,
-          blog.tags ? Promise.all(blog.tags.map(tagId => ctx.db.get(tagId))) : [],
-          blog.profilePicture ? ctx.db.get(blog.profilePicture) : null,
-          blog.thumbnail ? ctx.db.get(blog.thumbnail) : null,
-          blog.authorId ? ctx.db.get(blog.authorId) : null,
-        ]);
+        const [category, tags, profilePicture, thumbnail, author] =
+          await Promise.all([
+            blog.category ? ctx.db.get(blog.category) : null,
+            blog.tags
+              ? Promise.all(blog.tags.map((tagId) => ctx.db.get(tagId)))
+              : [],
+            blog.profilePicture ? ctx.db.get(blog.profilePicture) : null,
+            blog.thumbnail ? ctx.db.get(blog.thumbnail) : null,
+            blog.authorId ? ctx.db.get(blog.authorId) : null,
+          ]);
 
         return {
           ...blog,
@@ -89,13 +100,16 @@ export const getBlogsByCategory = query({
     // Get related data for all blogs
     const blogsWithRelatedData = await Promise.all(
       blogs.map(async (blog) => {
-        const [category, tags, profilePicture, thumbnail, author] = await Promise.all([
-          blog.category ? ctx.db.get(blog.category) : null,
-          blog.tags ? Promise.all(blog.tags.map(tagId => ctx.db.get(tagId))) : [],
-          blog.profilePicture ? ctx.db.get(blog.profilePicture) : null,
-          blog.thumbnail ? ctx.db.get(blog.thumbnail) : null,
-          blog.authorId ? ctx.db.get(blog.authorId) : null,
-        ]);
+        const [category, tags, profilePicture, thumbnail, author] =
+          await Promise.all([
+            blog.category ? ctx.db.get(blog.category) : null,
+            blog.tags
+              ? Promise.all(blog.tags.map((tagId) => ctx.db.get(tagId)))
+              : [],
+            blog.profilePicture ? ctx.db.get(blog.profilePicture) : null,
+            blog.thumbnail ? ctx.db.get(blog.thumbnail) : null,
+            blog.authorId ? ctx.db.get(blog.authorId) : null,
+          ]);
 
         return {
           ...blog,
@@ -131,7 +145,7 @@ export const getBlogsByTag = query({
   handler: async (ctx, args) => {
     const blogs = await ctx.db
       .query("blogs")
-      .filter((q) => 
+      .filter((q) =>
         q.and(
           q.eq(q.field("status"), "published"),
           q.neq(q.field("tags"), undefined)
@@ -141,20 +155,23 @@ export const getBlogsByTag = query({
       .collect();
 
     // Filter blogs that contain the specified tag
-    const filteredBlogs = blogs.filter(blog => 
-      blog.tags && blog.tags.includes(args.tagId)
+    const filteredBlogs = blogs.filter(
+      (blog) => blog.tags && blog.tags.includes(args.tagId)
     );
 
     // Get related data for filtered blogs
     const blogsWithRelatedData = await Promise.all(
       filteredBlogs.map(async (blog) => {
-        const [category, tags, profilePicture, thumbnail, author] = await Promise.all([
-          blog.category ? ctx.db.get(blog.category) : null,
-          blog.tags ? Promise.all(blog.tags.map(tagId => ctx.db.get(tagId))) : [],
-          blog.profilePicture ? ctx.db.get(blog.profilePicture) : null,
-          blog.thumbnail ? ctx.db.get(blog.thumbnail) : null,
-          blog.authorId ? ctx.db.get(blog.authorId) : null,
-        ]);
+        const [category, tags, profilePicture, thumbnail, author] =
+          await Promise.all([
+            blog.category ? ctx.db.get(blog.category) : null,
+            blog.tags
+              ? Promise.all(blog.tags.map((tagId) => ctx.db.get(tagId)))
+              : [],
+            blog.profilePicture ? ctx.db.get(blog.profilePicture) : null,
+            blog.thumbnail ? ctx.db.get(blog.thumbnail) : null,
+            blog.authorId ? ctx.db.get(blog.authorId) : null,
+          ]);
 
         return {
           ...blog,
@@ -172,16 +189,16 @@ export const getBlogsByTag = query({
 });
 
 export const getBlogsWithPagination = query({
-  args: { 
+  args: {
     limit: v.optional(v.number()),
     offset: v.optional(v.number()),
     categoryId: v.optional(v.id("categories")),
-    tagId: v.optional(v.id("tags"))
+    tagId: v.optional(v.id("tags")),
   },
   handler: async (ctx, args) => {
     const limit = args.limit || 10;
     const offset = args.offset || 0;
-    
+
     let query = ctx.db
       .query("blogs")
       .withIndex("by_status", (q) => q.eq("status", "published"))
@@ -197,12 +214,12 @@ export const getBlogsWithPagination = query({
     }
 
     const allBlogs = await query.collect();
-    
+
     // Apply tag filter if provided
     let filteredBlogs = allBlogs;
     if (args.tagId) {
-      filteredBlogs = allBlogs.filter(blog => 
-        blog.tags && blog.tags.includes(args.tagId)
+      filteredBlogs = allBlogs.filter(
+        (blog) => blog.tags && blog.tags.includes(args.tagId as Id<"tags">)
       );
     }
 
@@ -212,13 +229,16 @@ export const getBlogsWithPagination = query({
     // Get related data for paginated blogs
     const blogsWithRelatedData = await Promise.all(
       paginatedBlogs.map(async (blog) => {
-        const [category, tags, profilePicture, thumbnail, author] = await Promise.all([
-          blog.category ? ctx.db.get(blog.category) : null,
-          blog.tags ? Promise.all(blog.tags.map(tagId => ctx.db.get(tagId))) : [],
-          blog.profilePicture ? ctx.db.get(blog.profilePicture) : null,
-          blog.thumbnail ? ctx.db.get(blog.thumbnail) : null,
-          blog.authorId ? ctx.db.get(blog.authorId) : null,
-        ]);
+        const [category, tags, profilePicture, thumbnail, author] =
+          await Promise.all([
+            blog.category ? ctx.db.get(blog.category) : null,
+            blog.tags
+              ? Promise.all(blog.tags.map((tagId) => ctx.db.get(tagId)))
+              : [],
+            blog.profilePicture ? ctx.db.get(blog.profilePicture) : null,
+            blog.thumbnail ? ctx.db.get(blog.thumbnail) : null,
+            blog.authorId ? ctx.db.get(blog.authorId) : null,
+          ]);
 
         return {
           ...blog,
@@ -234,7 +254,7 @@ export const getBlogsWithPagination = query({
     return {
       blogs: blogsWithRelatedData,
       total: filteredBlogs.length,
-      hasMore: offset + limit < filteredBlogs.length
+      hasMore: offset + limit < filteredBlogs.length,
     };
   },
 });
@@ -243,7 +263,7 @@ export const getFeaturedBlogs = query({
   args: { limit: v.optional(v.number()) },
   handler: async (ctx, args) => {
     const limit = args.limit || 3;
-    
+
     // Get most recent published blogs as featured
     const blogs = await ctx.db
       .query("blogs")
@@ -254,13 +274,16 @@ export const getFeaturedBlogs = query({
     // Get related data for featured blogs
     const blogsWithRelatedData = await Promise.all(
       blogs.map(async (blog) => {
-        const [category, tags, profilePicture, thumbnail, author] = await Promise.all([
-          blog.category ? ctx.db.get(blog.category) : null,
-          blog.tags ? Promise.all(blog.tags.map(tagId => ctx.db.get(tagId))) : [],
-          blog.profilePicture ? ctx.db.get(blog.profilePicture) : null,
-          blog.thumbnail ? ctx.db.get(blog.thumbnail) : null,
-          blog.authorId ? ctx.db.get(blog.authorId) : null,
-        ]);
+        const [category, tags, profilePicture, thumbnail, author] =
+          await Promise.all([
+            blog.category ? ctx.db.get(blog.category) : null,
+            blog.tags
+              ? Promise.all(blog.tags.map((tagId) => ctx.db.get(tagId)))
+              : [],
+            blog.profilePicture ? ctx.db.get(blog.profilePicture) : null,
+            blog.thumbnail ? ctx.db.get(blog.thumbnail) : null,
+            blog.authorId ? ctx.db.get(blog.authorId) : null,
+          ]);
 
         return {
           ...blog,

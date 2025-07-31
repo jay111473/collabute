@@ -243,7 +243,21 @@ export const completeUserProfile = mutation({
       if (!existingProfile) {
         await ctx.db.insert("developer_profiles", {
           userId: userId,
-          skills: args.developerFields.primaryRole,
+          primaryRole: args.developerFields.primaryRole,
+        });
+      }
+    }
+
+    if (args.type === "PROJECT_MANAGER" && args.developerFields?.primaryRole) {
+      const existingProfile = await ctx.db
+        .query("project_manager_profiles")
+        .withIndex("by_user", (q) => q.eq("userId", userId))
+        .first();
+
+      if (!existingProfile) {
+        await ctx.db.insert("project_manager_profiles", {
+          userId: userId,
+          primaryRole: args.developerFields.primaryRole,
         });
       }
     }
@@ -312,7 +326,21 @@ export const completeUserProfileWithId = mutation({
       if (!existingProfile) {
         await ctx.db.insert("developer_profiles", {
           userId: args.userId,
-          skills: args.developerFields.primaryRole,
+          primaryRole: args.developerFields.primaryRole,
+        });
+      }
+    }
+
+    if (args.type === "PROJECT_MANAGER" && args.developerFields?.primaryRole) {
+      const existingProfile = await ctx.db
+        .query("project_manager_profiles")
+        .withIndex("by_user", (q) => q.eq("userId", args.userId))
+        .first();
+
+      if (!existingProfile) {
+        await ctx.db.insert("project_manager_profiles", {
+          userId: args.userId,
+          primaryRole: args.developerFields.primaryRole,
         });
       }
     }
@@ -527,8 +555,8 @@ export const getDevelopersWithProfiles = query({
       return developersWithProfiles.filter(
         (dev) =>
           dev.name?.toLowerCase().includes(searchTerm) ||
-          dev.developerProfile?.skills?.some((skill) =>
-            skill.toLowerCase().includes(searchTerm)
+          dev.developerProfile?.skills?.some((item) =>
+            item.skill.toLowerCase().includes(searchTerm)
           ) ||
           dev.country?.toLowerCase().includes(searchTerm)
       );
@@ -552,5 +580,113 @@ export const getDeveloperProfile = query({
       .first();
 
     return { user: user, developerFields: developerFields };
+  },
+});
+
+// Get project managers with their profiles and populated data
+export const getProjectManagersWithProfiles = query({
+  args: {
+    limit: v.optional(v.number()),
+    search: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    // Get all project managers
+    const projectManagers = await ctx.db
+      .query("users")
+      .filter((q) => q.eq(q.field("type"), "PROJECT_MANAGER"))
+      .take(args.limit || 50);
+
+    // Populate each project manager with their profile and additional data
+    const projectManagersWithProfiles = await Promise.all(
+      projectManagers.map(async (projectManager) => {
+        // Get project manager profile
+        const projectManagerFields = await ctx.db
+          .query("project_manager_profiles")
+          .withIndex("by_user", (q) => q.eq("userId", projectManager._id))
+          .first();
+
+        // Get developer profile as fallback (for backwards compatibility)
+        const developerFields = await ctx.db
+          .query("developer_profiles")
+          .withIndex("by_user", (q) => q.eq("userId", projectManager._id))
+          .first();
+
+        // Get GitHub profile
+        const githubProfile = await ctx.db
+          .query("github_profiles")
+          .withIndex("by_user", (q) => q.eq("userId", projectManager._id))
+          .first();
+
+        // Get user's repositories count
+        const repositoriesCount = await ctx.db
+          .query("github_repositories")
+          .withIndex("by_owner", (q) => q.eq("ownerId", projectManager._id))
+          .collect()
+          .then((repos) => repos.length);
+
+        // Get projects managed by this user
+        const projectsManaged = await ctx.db
+          .query("projects")
+          .filter((q) => q.eq(q.field("teamLeadId"), projectManager._id))
+          .collect()
+          .then((projects) => projects.length);
+
+        return {
+          ...projectManager,
+          projectManagerFields,
+          developerFields, // Keep for backwards compatibility
+          githubProfile,
+          repositoriesCount,
+          projectsManaged,
+        };
+      })
+    );
+
+    // Apply search filter if provided
+    if (args.search) {
+      const searchTerm = args.search.toLowerCase();
+      return projectManagersWithProfiles.filter(
+        (pm) =>
+          pm.name?.toLowerCase().includes(searchTerm) ||
+          pm.projectManagerFields?.stack?.some((stackItem) =>
+            stackItem.name.toLowerCase().includes(searchTerm)
+          ) ||
+          pm.developerFields?.skills?.some((skill) =>
+            (typeof skill === "object" ? skill.skill : skill)
+              .toLowerCase()
+              .includes(searchTerm)
+          ) ||
+          pm.country?.toLowerCase().includes(searchTerm)
+      );
+    }
+
+    return projectManagersWithProfiles;
+  },
+});
+
+// Get project manager profile by user ID
+export const getProjectManagerProfile = query({
+  args: {
+    userId: v.id("users"),
+  },
+  handler: async (ctx, args) => {
+    // Get user by ID
+    const user = await ctx.db.get(args.userId);
+    const projectManagerFields = await ctx.db
+      .query("project_manager_profiles")
+      .withIndex("by_user", (q) => q.eq("userId", args.userId))
+      .first();
+
+    // Get developer profile as fallback
+    const developerFields = await ctx.db
+      .query("developer_profiles")
+      .withIndex("by_user", (q) => q.eq("userId", args.userId))
+      .first();
+
+    return {
+      user: user,
+      projectManagerFields: projectManagerFields,
+      developerFields: developerFields, // Keep for backwards compatibility
+    };
   },
 });

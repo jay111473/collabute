@@ -260,7 +260,12 @@ export const updateCollaborationRequestStatus = mutation({
 // Get all issues (for dashboard)
 export const getAllIssues = query({
   args: {
-    status: v.optional(v.string()),
+    status: v.union(
+      v.literal("OPEN"),
+      v.literal("IN_PROGRESS"),
+      v.literal("RESOLVED"),
+      v.literal("CLOSED")
+    ),
     limit: v.optional(v.number()),
     offset: v.optional(v.number()),
   },
@@ -296,6 +301,82 @@ export const getAllIssues = query({
     );
 
     return issuesWithData;
+  },
+});
+
+// Get issues with request counts (optimized for list views)
+export const getIssuesWithRequests = query({
+  args: {
+    projectId: v.optional(v.id("projects")),
+    status: v.optional(v.string()),
+    limit: v.optional(v.number()),
+    offset: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    let issues;
+
+    // Filter by project if provided
+    if (args.projectId) {
+      issues = await ctx.db
+        .query("issues")
+        .withIndex("by_project", (q) => q.eq("projectId", args.projectId!))
+        .collect();
+    } else {
+      issues = await ctx.db.query("issues").collect();
+    }
+
+    // Filter by status if provided
+    if (args.status) {
+      issues = issues.filter(issue => issue.status === args.status);
+    }
+
+    // Apply pagination
+    if (args.offset) {
+      issues = issues.slice(args.offset);
+    }
+    if (args.limit) {
+      issues = issues.slice(0, args.limit);
+    }
+
+    // Get request counts and basic project data for each issue
+    const issuesWithRequests = await Promise.all(
+      issues.map(async (issue) => {
+        // Get collaboration requests count
+        const collaborationRequests = await ctx.db
+          .query("collaboration_requests")
+          .withIndex("by_issue", (q) => q.eq("issueId", issue._id))
+          .collect();
+
+        // Get issue applications count  
+        const applications = await ctx.db
+          .query("issue_applications")
+          .withIndex("by_issue", (q) => q.eq("issueId", issue._id))
+          .collect();
+
+        // Combine both types of requests
+        const allRequests = [
+          ...collaborationRequests.map(req => ({ ...req, requestStatus: req.status })),
+          ...applications.map(app => ({ ...app, requestStatus: app.status }))
+        ];
+
+        // Get basic project data
+        const project = await ctx.db.get(issue.projectId);
+
+        return {
+          ...issue,
+          project,
+          requests: allRequests,
+          requestCounts: {
+            total: allRequests.length,
+            pending: allRequests.filter(req => req.requestStatus === "pending").length,
+            accepted: allRequests.filter(req => req.requestStatus === "accepted").length,
+            rejected: allRequests.filter(req => req.requestStatus === "rejected").length,
+          },
+        };
+      })
+    );
+
+    return issuesWithRequests;
   },
 });
 

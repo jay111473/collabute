@@ -106,7 +106,6 @@ const IssuesTable = ({ issues }: { issues: Issue[] }) => (
 );
 
 const DashboardContent = ({ user: propUser }: DashboardContentProps) => {
-  // Use the user from Convex hook, fallback to prop user for compatibility
   const { user: convexUser, loading: userLoading } = useUserConvex();
   const user = convexUser || propUser;
 

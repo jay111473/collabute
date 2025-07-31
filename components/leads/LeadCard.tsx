@@ -5,10 +5,25 @@ import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, Calendar, Github, Star, Bookmark, Code } from "lucide-react";
-import { User, Media, Stack } from "@/types/dashboard";
+import {
+  User,
+  Media,
+  DeveloperProfile,
+  ProjectManagerProfile,
+} from "@/types/convex";
+
+interface Stack {
+  name: string;
+  level?: string;
+}
+
+interface EnhancedUser extends User {
+  projectManagerFields?: ProjectManagerProfile;
+  developerFields?: DeveloperProfile;
+}
 
 interface ProjectManagerCardProps {
-  projectManager: User;
+  projectManager: EnhancedUser;
   variant?: "featured" | "compact";
 }
 
@@ -25,7 +40,9 @@ const formatDate = (date: Date): string => {
 /**
  * Extracts the profile picture URL from a project manager
  */
-const getProfilePictureUrl = (projectManager: User): string | undefined => {
+const getProfilePictureUrl = (
+  projectManager: EnhancedUser
+): string | undefined => {
   return projectManager.profilePicture &&
     typeof projectManager.profilePicture === "object"
     ? (projectManager.profilePicture as Media).url || undefined
@@ -35,10 +52,12 @@ const getProfilePictureUrl = (projectManager: User): string | undefined => {
 /**
  * Extracts stack names from a project manager
  */
-const getStackNames = (projectManager: User): string => {
+const getStackNames = (projectManager: EnhancedUser): string => {
   return (
     projectManager?.projectManagerFields?.stack
-      ?.map((stack) => (typeof stack === "object" ? (stack as Stack).name : ""))
+      ?.map((stack: any) =>
+        typeof stack === "object" ? (stack as Stack).name : ""
+      )
       .filter(Boolean)
       .join(", ") || ""
   );
@@ -47,10 +66,10 @@ const getStackNames = (projectManager: User): string => {
 /**
  * Gets skills from a project manager (stack names or skills)
  */
-const getSkills = (projectManager: User): string => {
+const getSkills = (projectManager: EnhancedUser): string => {
   const stackNames = getStackNames(projectManager);
   const skills = projectManager.developerFields?.skills
-    ?.map((skill) => skill.skill)
+    ?.map((skill: any) => (typeof skill === "object" ? skill.skill : skill))
     .join(", ");
 
   return stackNames || skills || "Not specified";
@@ -59,16 +78,15 @@ const getSkills = (projectManager: User): string => {
 /**
  * Gets the primary role for display
  */
-const getPrimaryRole = (projectManager: User): string => {
-  if (projectManager.developerFields?.primaryRole) {
-    return projectManager.developerFields.primaryRole[0];
+const getPrimaryRole = (projectManager: EnhancedUser): string => {
+  // Check project manager fields first
+  if (projectManager.projectManagerFields?.primaryRole?.[0]) {
+    return projectManager.projectManagerFields.primaryRole[0];
   }
 
-  if (
-    projectManager.developerFields?.primaryRole &&
-    Array.isArray(projectManager.developerFields.primaryRole)
-  ) {
-    return projectManager.developerFields.primaryRole[0] || "Project Manager";
+  // Fallback to developer fields
+  if (projectManager.developerFields?.primaryRole?.[0]) {
+    return projectManager.developerFields.primaryRole[0];
   }
 
   return "Project Manager";
@@ -77,7 +95,7 @@ const getPrimaryRole = (projectManager: User): string => {
 /**
  * Gets industry information from available fields
  */
-const getIndustry = (projectManager: User): string => {
+const getIndustry = (projectManager: EnhancedUser): string => {
   // Try to derive industry from stack or skills
   const stackNames = getStackNames(projectManager);
   if (
@@ -122,8 +140,11 @@ const getIndustry = (projectManager: User): string => {
 /**
  * Calculates a mock rating based on experience and projects
  */
-const calculateRating = (projectManager: User): number => {
-  const experience = projectManager.developerFields?.experience || 0;
+const calculateRating = (projectManager: EnhancedUser): number => {
+  const experience =
+    projectManager.projectManagerFields?.experience ||
+    projectManager.developerFields?.experience ||
+    0;
   const projectCount = projectManager.projects?.length || 0;
 
   // Base rating on experience and projects
@@ -154,13 +175,15 @@ const ProjectManagerCard: FC<ProjectManagerCardProps> = ({
   const currentProjects = projectManager.projects?.length || 0;
   const developmentProjects =
     (projectManager.projects?.length || 0) + currentProjects;
-  const experience = projectManager.developerFields?.experience || 0;
+  const experience = projectManager.projectManagerFields?.experience || 
+                    projectManager.developerFields?.experience || 0;
   const rating = calculateRating(projectManager);
   const industry = getIndustry(projectManager);
   const skills = getSkills(projectManager);
   const primaryRole = getPrimaryRole(projectManager);
   const location = projectManager.country || "Location not specified";
-  const githubProfile = projectManager.developerFields?.githubProfile;
+  const githubProfile = projectManager.projectManagerFields?.githubProfile || 
+                       projectManager.developerFields?.githubProfile;
 
   if (variant === "featured") {
     return (
@@ -175,13 +198,13 @@ const ProjectManagerCard: FC<ProjectManagerCardProps> = ({
           {profilePictureUrl ? (
             <img
               src={profilePictureUrl}
-              alt={projectManager.name}
+              alt={projectManager.name || "Profile"}
               className="w-full h-full object-cover grayscale"
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-gradient-to-b from-gray-700 to-gray-800">
               <div className="text-6xl font-bold text-white opacity-50">
-                {projectManager.name[0]}
+                {projectManager.name?.[0] || "U"}
               </div>
             </div>
           )}
@@ -192,7 +215,7 @@ const ProjectManagerCard: FC<ProjectManagerCardProps> = ({
           {/* Name with Verification */}
           <div className="flex items-center gap-2 mb-2">
             <h3 className="text-xl font-semibold text-white">
-              {projectManager.name}
+              {projectManager.name || "Unknown User"}
             </h3>
             <div className="w-5 h-5 bg-teal-500 rounded-full flex items-center justify-center">
               <svg
@@ -254,13 +277,13 @@ const ProjectManagerCard: FC<ProjectManagerCardProps> = ({
         <Avatar className="h-16 w-16">
           <AvatarImage src={profilePictureUrl} />
           <AvatarFallback className="bg-black text-white text-lg">
-            {projectManager.name[0]}
+            {projectManager.name?.[0] || "U"}
           </AvatarFallback>
         </Avatar>
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1">
             <h3 className="text-lg font-semibold text-white">
-              {projectManager.name}
+              {projectManager.name || "Unknown User"}
             </h3>
             <div className="w-4 h-4 bg-teal-500 rounded-full flex items-center justify-center">
               <svg

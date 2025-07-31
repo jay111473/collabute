@@ -5,6 +5,7 @@ import { useAction } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { GitHubClientSection } from "./github-client-section";
+import { GitHubActivityData } from "@/types/github";
 
 interface GitHubActivitySectionProps {
   token: string;
@@ -14,14 +15,14 @@ interface GitHubActivitySectionProps {
 /**
  * GitHub activity section (client component) that fetches data using Convex
  */
-export function GitHubActivitySection({ 
-  token, 
-  userId 
+export function GitHubActivitySection({
+  token,
+  userId,
 }: GitHubActivitySectionProps) {
-  const [githubData, setGithubData] = useState(null);
+  const [githubData, setGithubData] = useState<GitHubActivityData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   const fetchGithubActivities = useAction(api.github.fetchGithubActivities);
 
   useEffect(() => {
@@ -35,7 +36,7 @@ export function GitHubActivitySection({
       try {
         setIsLoading(true);
         setError(null);
-        
+
         const activities = await fetchGithubActivities({
           userId: userId as Id<"users">,
         });
@@ -49,9 +50,11 @@ export function GitHubActivitySection({
         setGithubData(transformedData);
       } catch (err) {
         console.error("Error fetching GitHub data:", err);
-        setError(err instanceof Error 
-          ? err.message 
-          : "Failed to fetch GitHub data. Please try again later.");
+        setError(
+          err instanceof Error
+            ? err.message
+            : "Failed to fetch GitHub data. Please try again later."
+        );
       } finally {
         setIsLoading(false);
       }
@@ -61,10 +64,10 @@ export function GitHubActivitySection({
   }, [userId, fetchGithubActivities]);
 
   return (
-    <GitHubClientSection 
-      githubData={githubData} 
-      isLoading={isLoading} 
+    <GitHubClientSection
+      githubData={githubData}
+      isLoading={isLoading}
       error={error}
     />
   );
-} 
+}

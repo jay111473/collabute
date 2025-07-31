@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { Id } from "./_generated/dataModel";
+import type { Product, User } from "../types/convex";
 
 // List all products with optional filtering
 export const list = query({
@@ -9,17 +10,19 @@ export const list = query({
     isActive: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
-    let q = ctx.db.query("products");
-
     if (args.category) {
-      q = q.withIndex("by_category", (q) => q.eq("category", args.category));
+      return await ctx.db
+        .query("products")
+        .withIndex("by_category", (q) => q.eq("category", args.category))
+        .collect();
     } else if (args.isActive !== undefined) {
-      q = q.withIndex("by_active", (q) =>
-        q.eq("isActive", args.isActive ?? true)
-      );
+      return await ctx.db
+        .query("products")
+        .withIndex("by_active", (q) => q.eq("isActive", args.isActive ?? true))
+        .collect();
     }
 
-    return await q.collect();
+    return await ctx.db.query("products").collect();
   },
 });
 
@@ -245,6 +248,74 @@ export const getActiveProducts = query({
       .query("products")
       .withIndex("by_active", (q) => q.eq("isActive", true))
       .take(args.limit || 20);
+  },
+});
+
+// Get products with their associated projects
+export const getProductsWithProjects = query({
+  args: {
+    userId: v.optional(v.id("users")),
+    category: v.optional(v.string()),
+    isActive: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    let products;
+
+    if (args.category) {
+      products = await ctx.db
+        .query("products")
+        .withIndex("by_category", (q) => q.eq("category", args.category))
+        .collect();
+    } else if (args.isActive !== undefined) {
+      products = await ctx.db
+        .query("products")
+        .withIndex("by_active", (q) => q.eq("isActive", args.isActive!))
+        .collect();
+    } else {
+      products = await ctx.db.query("products").collect();
+    }
+
+    // Get projects for each product
+    const productsWithProjects = await Promise.all(
+      products.map(async (product) => {
+        let projectsQuery = ctx.db
+          .query("projects")
+          .withIndex("by_product", (q) => q.eq("productId", product._id));
+
+        // If userId is provided, filter by user's projects
+        if (args.userId) {
+          projectsQuery = projectsQuery.filter((q) => 
+            q.eq(q.field("ownerId"), args.userId)
+          );
+        }
+
+        const projects = await projectsQuery.collect();
+
+        // Populate teamLead data for each project
+        const projectsWithTeamLeads = await Promise.all(
+          projects.map(async (project) => {
+            if (project.teamLeadId) {
+              const teamLead = await ctx.db.get(project.teamLeadId);
+              return {
+                ...project,
+                teamLead,
+              };
+            }
+            return {
+              ...project,
+              teamLead: null,
+            };
+          })
+        );
+
+        return {
+          ...product,
+          projects: projectsWithTeamLeads,
+        };
+      })
+    );
+
+    return productsWithProjects;
   },
 });
 

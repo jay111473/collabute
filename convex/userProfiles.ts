@@ -105,12 +105,18 @@ export const getCompleteUserProfile = query({
   },
 });
 
+// Helper function to transform skills from string array to object array
+const transformSkills = (skills: string[] | undefined) => {
+  if (!skills) return undefined;
+  return skills.map((skill) => ({ skill, level: undefined }));
+};
+
 // Create developer profile
 export const createDeveloperProfile = mutation({
   args: {
     userId: v.id("users"),
     bio: v.optional(v.string()),
-    skills: v.optional(v.array(v.string())),
+    skills: v.optional(v.array(v.string())), // Accept string array for convenience, transform internally
     experience: v.optional(v.number()),
     experienceLevel: v.optional(
       v.union(
@@ -128,7 +134,10 @@ export const createDeveloperProfile = mutation({
     resumeUrl: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const { userId, ...profileData } = args;
+    const { userId, skills, ...profileData } = args;
+
+    // Transform skills to the correct format
+    const transformedSkills = transformSkills(skills);
 
     // Check if profile already exists
     const existingProfile = await ctx.db
@@ -137,13 +146,17 @@ export const createDeveloperProfile = mutation({
       .first();
 
     if (existingProfile) {
-      await ctx.db.patch(existingProfile._id, profileData);
+      await ctx.db.patch(existingProfile._id, {
+        ...profileData,
+        skills: transformedSkills,
+      });
       return existingProfile._id;
     }
 
     return await ctx.db.insert("developer_profiles", {
       userId,
       ...profileData,
+      skills: transformedSkills,
     });
   },
 });
@@ -256,7 +269,7 @@ export const createGitHubProfile = mutation({
 // Search developers with filtering
 export const searchDevelopers = query({
   args: {
-    skills: v.optional(v.array(v.string())),
+    skills: v.optional(v.array(v.string())), // Keep as string array for search convenience
     experienceLevel: v.optional(
       v.union(
         v.literal("JUNIOR"),
@@ -299,7 +312,9 @@ export const searchDevelopers = query({
 
     if (args.skills?.length) {
       filteredDevelopers = filteredDevelopers.filter((dev) =>
-        dev.profile?.skills?.some((skill) => args.skills!.includes(skill))
+        dev.profile?.skills?.some((skillObj) =>
+          args.skills!.includes(skillObj.skill)
+        )
       );
     }
 

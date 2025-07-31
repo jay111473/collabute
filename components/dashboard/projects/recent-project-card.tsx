@@ -1,7 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { ProjectProgress } from "@/components/ui/progress";
-import { EnhancedProject, Issue, Media } from "@/types/convex";
-import { calculateDetailedProgress } from "@/lib/utils";
+import { EnhancedProject } from "@/types/convex";
 import Image from "next/image";
 import ProjectIcon from "@/public/icons/project";
 

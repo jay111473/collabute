@@ -44,7 +44,7 @@ export default function SettingsClientWrapper() {
               </TabsTrigger>
             </TabsList>
             <TabsContent value="account" className="p-6">
-              <AccountSettings user={user} />
+              <AccountSettings />
             </TabsContent>
             <TabsContent value="security" className="p-6">
               {/* TODO: Add security settings */}

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { stringify } from "qs-esm";
-import { Product, User } from "@/types/dashboard";
+import { Product, User } from "@/types/convex";
 
 interface UseProductsDataOptions {
   page?: number;
@@ -75,7 +75,7 @@ export function useProductsData(
             method: "GET",
             headers: {
               "Content-Type": "application/json",
-              "user": JSON.stringify(user),
+              user: JSON.stringify(user),
             },
           }
         );

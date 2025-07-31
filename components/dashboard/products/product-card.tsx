@@ -1,41 +1,32 @@
 "use client";
 
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Product } from "@/types/convex";
-import { Package, Building2, Calendar, Users, FolderOpen } from "lucide-react";
+import { ProductWithProjects } from "@/types/convex";
+import { Package, Users, FolderOpen } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 interface ProductCardProps {
-  product: Product;
+  product: ProductWithProjects;
   className?: string;
 }
-
-const formatFunding = (funding?: {
-  fundingStage?: string | null;
-  totalFundingRaised?: number | null;
-}) => {
-  if (!funding) return null;
-
-  const { fundingStage, totalFundingRaised } = funding;
-
-  if (fundingStage && totalFundingRaised) {
-    return `${fundingStage} - $${totalFundingRaised.toLocaleString()}`;
-  }
-
-  if (fundingStage) return fundingStage;
-  if (totalFundingRaised) return `$${totalFundingRaised.toLocaleString()}`;
-
-  return null;
-};
 
 export function ProductCard({ product, className }: ProductCardProps) {
   const projectCount = Array.isArray(product.projects)
     ? product.projects.length
     : 0;
-  const fundingInfo = formatFunding(product.fundingInformation);
+
+  // Get unique team leads (CTOs) from all projects
+  const teamLeads = Array.isArray(product.projects)
+    ? product.projects
+        .filter((project) => project.teamLead)
+        .map((project) => project.teamLead!)
+        .filter(
+          (lead, index, array) =>
+            array.findIndex((l) => l._id === lead._id) === index
+        )
+    : [];
 
   return (
     <Link href={`/dashboard/products/${product._id}`}>
@@ -71,37 +62,15 @@ export function ProductCard({ product, className }: ProductCardProps) {
               </span>
             </div>
 
-            {/* Founding Date */}
-            {product.foundingDate && (
-              <div className="flex items-center gap-2 text-sm text-gray-300">
-                <Calendar className="h-4 w-4" />
-                <span>
-                  Founded{" "}
-                  {formatDistanceToNow(new Date(product.foundingDate), {
-                    addSuffix: true,
-                  })}
-                </span>
-              </div>
-            )}
-
-            {/* CTO */}
-            {product.cto && typeof product.cto === "object" && (
+            {/* Team Leads (CTOs) */}
+            {teamLeads.length > 0 && (
               <div className="flex items-center gap-2 text-sm text-gray-300">
                 <Users className="h-4 w-4" />
-                <span>CTO: {product.cto.name}</span>
-              </div>
-            )}
-
-            {/* Funding Information */}
-            {fundingInfo && (
-              <div className="flex items-center gap-2">
-                <Building2 className="h-4 w-4 text-gray-400" />
-                <Badge
-                  variant="outline"
-                  className="text-xs bg-darkPrimary/10 text-darkPrimary border-darkPrimary/20"
-                >
-                  {fundingInfo}
-                </Badge>
+                <span>
+                  {teamLeads.length === 1
+                    ? `CTO: ${teamLeads[0].name}`
+                    : `CTOs: ${teamLeads.map((lead) => lead.name).join(", ")}`}
+                </span>
               </div>
             )}
           </div>

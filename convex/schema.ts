@@ -96,6 +96,7 @@ export const userFields = {
   earlybird: v.optional(v.boolean()),
   wallet: v.optional(v.number()),
   projects: v.optional(v.array(v.id("projects"))),
+  createdAt: v.optional(v.number()),
 };
 
 export const projectFields = {
@@ -172,7 +173,10 @@ export default defineSchema({
   developer_profiles: defineTable({
     userId: v.id("users"),
     bio: v.optional(v.string()),
-    skills: v.optional(v.array(v.string())),
+    skills: v.optional(v.array(v.object({
+      skill: v.string(),
+      level: v.optional(v.string()),
+    }))),
     experience: v.optional(v.number()),
     experienceLevel: v.optional(ExperienceLevelValidator),
     availability: v.optional(v.string()),
@@ -182,6 +186,8 @@ export default defineSchema({
     stripeAccountStatus: v.optional(v.string()),
     portfolio: v.optional(v.array(v.string())),
     resumeUrl: v.optional(v.string()),
+    primaryRole: v.optional(v.array(v.string())),
+    githubProfile: v.optional(v.string()),
   })
     .index("by_user", ["userId"])
     .index("by_experience_level", ["experienceLevel"])
@@ -201,6 +207,30 @@ export default defineSchema({
     .index("by_user", ["userId"])
     .index("by_specialization", ["specializations"])
     .index("by_location", ["location"]),
+
+  project_manager_profiles: defineTable({
+    userId: v.id("users"),
+    bio: v.optional(v.string()),
+    stack: v.optional(v.array(v.object({
+      name: v.string(),
+      level: v.optional(v.string()),
+    }))),
+    experience: v.optional(v.number()),
+    experienceLevel: v.optional(ExperienceLevelValidator),
+    availability: v.optional(v.string()),
+    preferredWorkType: v.optional(v.string()),
+    hourlyRate: v.optional(v.number()),
+    portfolio: v.optional(v.array(v.string())),
+    resumeUrl: v.optional(v.string()),
+    primaryRole: v.optional(v.array(v.string())),
+    githubProfile: v.optional(v.string()),
+    managementExperience: v.optional(v.number()),
+    teamSize: v.optional(v.number()),
+    projectTypes: v.optional(v.array(v.string())),
+  })
+    .index("by_user", ["userId"])
+    .index("by_experience_level", ["experienceLevel"])
+    .index("by_availability", ["availability"]),
 
   startup_profiles: defineTable({
     userId: v.id("users"),

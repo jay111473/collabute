@@ -1,4 +1,4 @@
-import { User } from "./dashboard";
+import { User } from "./convex";
 
 export type DeveloperRole =
   | "Frontend Developer"
@@ -71,4 +71,4 @@ export interface CreateAccountResponse {
   success: boolean;
   message: string;
   userId?: number;
-} 
+}

@@ -1,6 +1,6 @@
 "use client";
 
-import { Project } from "@/types/dashboard";
+import { EnhancedProject } from "@/types/convex";
 import MyProjectCard from "../projects";
 import { EmptyState } from "./EmptyState";
 import { Input } from "@/components/ui/input";
@@ -92,7 +92,7 @@ const ProjectSummaryBox = ({
  * MyProjectsComponent displays a user's projects and issues
  * Shows an empty state when no projects exist
  */
-const MyProjectsComponent = ({ projects }: { projects: Project[] }) => {
+const MyProjectsComponent = ({ projects }: { projects: EnhancedProject[] }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState("newest");
@@ -140,11 +140,13 @@ const MyProjectsComponent = ({ projects }: { projects: Project[] }) => {
       switch (sortBy) {
         case "newest":
           return (
-            new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+            new Date(b._creationTime).getTime() -
+            new Date(a._creationTime).getTime()
           );
         case "oldest":
           return (
-            new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime()
+            new Date(a._creationTime).getTime() -
+            new Date(b._creationTime).getTime()
           );
         case "progress":
           // Sort by completion percentage (assuming we can calculate this)
@@ -282,7 +284,7 @@ const MyProjectsComponent = ({ projects }: { projects: Project[] }) => {
         ) : (
           <div className="flex flex-col gap-4">
             {filteredAndSortedProjects?.map((project) => (
-              <MyProjectCard key={project.id} project={project} />
+              <MyProjectCard key={project._id} project={project} />
             ))}
           </div>
         )}

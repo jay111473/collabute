@@ -44,6 +44,7 @@ export type User = Doc<"users">;
 export type Media = Doc<"media">;
 export type DeveloperProfile = Doc<"developer_profiles">;
 export type LeadProfile = Doc<"lead_profiles">;
+export type ProjectManagerProfile = Doc<"project_manager_profiles">;
 export type StartupProfile = Doc<"startup_profiles">;
 export type GithubProfile = Doc<"github_profiles">;
 export type Role = Doc<"roles">;
@@ -67,6 +68,7 @@ export type UserId = Id<"users">;
 export type MediaId = Id<"media">;
 export type DeveloperProfileId = Id<"developer_profiles">;
 export type LeadProfileId = Id<"lead_profiles">;
+export type ProjectManagerProfileId = Id<"project_manager_profiles">;
 export type StartupProfileId = Id<"startup_profiles">;
 export type GithubProfileId = Id<"github_profiles">;
 export type RoleId = Id<"roles">;
@@ -89,6 +91,7 @@ export type UserInsert = WithoutSystemFields<User>;
 export type MediaInsert = WithoutSystemFields<Media>;
 export type DeveloperProfileInsert = WithoutSystemFields<DeveloperProfile>;
 export type LeadProfileInsert = WithoutSystemFields<LeadProfile>;
+export type ProjectManagerProfileInsert = WithoutSystemFields<ProjectManagerProfile>;
 export type StartupProfileInsert = WithoutSystemFields<StartupProfile>;
 export type GithubProfileInsert = WithoutSystemFields<GithubProfile>;
 export type RoleInsert = WithoutSystemFields<Role>;
@@ -114,6 +117,7 @@ export type UserUpdate = Partial<UserInsert>;
 export type MediaUpdate = Partial<MediaInsert>;
 export type DeveloperProfileUpdate = Partial<DeveloperProfileInsert>;
 export type LeadProfileUpdate = Partial<LeadProfileInsert>;
+export type ProjectManagerProfileUpdate = Partial<ProjectManagerProfileInsert>;
 export type StartupProfileUpdate = Partial<StartupProfileInsert>;
 export type GithubProfileUpdate = Partial<GithubProfileInsert>;
 export type RoleUpdate = Partial<RoleInsert>;
@@ -174,7 +178,7 @@ export type SearchArgs = {
 };
 
 // Profile union type for user profiles
-export type UserProfile = DeveloperProfile | LeadProfile | StartupProfile;
+export type UserProfile = DeveloperProfile | LeadProfile | ProjectManagerProfile | StartupProfile;
 
 // Message with populated user data
 export type MessageWithUser = Message & {
@@ -185,7 +189,7 @@ export type MessageWithUser = Message & {
 export type EnhancedMessage = Message & {
   id: string; // Backward compatibility
   createdAt: string;
-  updatedAt: string;
+  updatedAt?: string; // Optional since not all messages have this field
   sender: {
     _id: Id<"users">;
     id: Id<"users">;
@@ -226,6 +230,41 @@ export type BlogWithDetails = Blog & {
   };
 };
 
+// Project with populated team lead
+export type ProjectWithTeamLead = Project & {
+  teamLead: User | null;
+};
+
+// Product with populated projects (including team leads)
+export type ProductWithProjects = Product & {
+  projects: ProjectWithTeamLead[];
+};
+
+// Request data combining collaboration requests and issue applications
+export type IssueRequest = {
+  _id: string;
+  requestStatus: string | undefined;
+  applicantId?: Id<"users">;
+  developerId?: Id<"users">;
+  appliedAt?: number;
+  requestedAt?: number;
+};
+
+// Request counts for performance
+export type RequestCounts = {
+  total: number;
+  pending: number;
+  accepted: number;
+  rejected: number;
+};
+
+// Issue with populated request data
+export type IssueWithRequests = Issue & {
+  project: Project | null;
+  requests: IssueRequest[];
+  requestCounts: RequestCounts;
+};
+
 // Enhanced project type as returned by getAllProjects API
 export type EnhancedProject = Omit<Project, 'startDate' | 'endDate' | 'tags'> & {
   // Date fields transformed to ISO strings
@@ -234,11 +273,15 @@ export type EnhancedProject = Omit<Project, 'startDate' | 'endDate' | 'tags'> & 
   createdAt: string;
   updatedAt: string;
   
-  // Populated owner with media - more flexible type to match actual API response
-  owner: any; // Temporarily using any to avoid complex nested type issues
+  // Populated owner with media - includes profilePicture media object
+  owner: (User & {
+    profilePicture: Media | null;
+  }) | null;
   
-  // Populated team lead with media
-  teamLead: any; // Temporarily using any to avoid complex nested type issues
+  // Populated team lead with media - includes profilePicture media object
+  teamLead: (User & {
+    profilePicture: Media | null;
+  }) | null;
   
   // Additional counts
   issueCount: number;
@@ -247,4 +290,74 @@ export type EnhancedProject = Omit<Project, 'startDate' | 'endDate' | 'tags'> & 
   // Enhanced fields - tags is transformed to objects with tag and id
   stacks: string[];
   tags: { tag: string; id: string }[];
+  
+  // Milestones field from the actual return
+  milestones: {
+    ideaRefinement: string;
+    documentation: string;
+    design: string;
+    development: string;
+    testing: string;
+    launch: string;
+    maintenance: string;
+    scaling: string;
+  };
+};
+
+export type ConversationParticipantWithUser = ConversationParticipant & {
+  user: {
+    _id: Id<"users">;
+    name?: string;
+    email?: string;
+    image?: Id<"media"> | null;
+    profilePicture?: Id<"media"> | null;
+  } | null;
+};
+
+// Skill types
+export type Skill = {
+  skill: string;
+  level?: string;
+};
+
+// GitHub API types
+export type GitHubRepository = {
+  id: number;
+  name: string;
+  full_name: string;
+  description: string | null;
+  private: boolean;
+  html_url: string;
+  clone_url: string;
+  language: string | null;
+  stargazers_count: number;
+  forks_count: number;
+  default_branch: string;
+  owner: {
+    login: string;
+  };
+};
+
+export type GitHubActivity = {
+  id: string;
+  type: string;
+  actor: {
+    login: string;
+  };
+  repo: {
+    name: string;
+  };
+  payload: Record<string, unknown>;
+  created_at: string;
+};
+
+export type GitHubUserProfile = {
+  id: number;
+  login: string;
+  public_repos: number;
+  followers: number;
+  following: number;
+  name?: string;
+  email?: string;
+  avatar_url?: string;
 };

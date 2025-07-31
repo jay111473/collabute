@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { query, mutation } from "./_generated/server";
+import type { GithubRepository } from "../types/convex";
 
 // List all GitHub repositories
 export const list = query({
@@ -9,20 +10,36 @@ export const list = query({
     isActive: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
-    let q = ctx.db.query("github_repositories");
-    
     if (args.ownerId) {
-      q = q.withIndex("by_owner", (q) => q.eq("ownerId", args.ownerId));
+      const repositories = await ctx.db
+        .query("github_repositories")
+        .withIndex("by_owner", (q) => q.eq("ownerId", args.ownerId!))
+        .collect();
+
+      if (args.isActive !== undefined) {
+        return repositories.filter((repo) => repo.isActive === args.isActive);
+      }
+
+      return repositories;
     } else if (args.projectId) {
-      q = q.withIndex("by_project", (q) => q.eq("projectId", args.projectId));
+      const repositories = await ctx.db
+        .query("github_repositories")
+        .withIndex("by_project", (q) => q.eq("projectId", args.projectId!))
+        .collect();
+
+      if (args.isActive !== undefined) {
+        return repositories.filter((repo) => repo.isActive === args.isActive);
+      }
+
+      return repositories;
     }
-    
-    const repositories = await q.collect();
-    
+
+    const repositories = await ctx.db.query("github_repositories").collect();
+
     if (args.isActive !== undefined) {
-      return repositories.filter(repo => repo.isActive === args.isActive);
+      return repositories.filter((repo) => repo.isActive === args.isActive);
     }
-    
+
     return repositories;
   },
 });
@@ -39,7 +56,8 @@ export const get = query({
 export const getByGithubId = query({
   args: { githubId: v.number() },
   handler: async (ctx, args) => {
-    return await ctx.db.query("github_repositories")
+    return await ctx.db
+      .query("github_repositories")
       .withIndex("by_github_id", (q) => q.eq("githubId", args.githubId))
       .first();
   },
@@ -49,7 +67,8 @@ export const getByGithubId = query({
 export const getByFullName = query({
   args: { fullName: v.string() },
   handler: async (ctx, args) => {
-    return await ctx.db.query("github_repositories")
+    return await ctx.db
+      .query("github_repositories")
       .withIndex("by_full_name", (q) => q.eq("fullName", args.fullName))
       .first();
   },
@@ -59,7 +78,8 @@ export const getByFullName = query({
 export const getByOwner = query({
   args: { ownerId: v.id("users") },
   handler: async (ctx, args) => {
-    return await ctx.db.query("github_repositories")
+    return await ctx.db
+      .query("github_repositories")
       .withIndex("by_owner", (q) => q.eq("ownerId", args.ownerId))
       .collect();
   },
@@ -114,7 +134,7 @@ export const update = mutation({
     const filteredUpdates = Object.fromEntries(
       Object.entries(updates).filter(([_, value]) => value !== undefined)
     );
-    
+
     return await ctx.db.patch(id, filteredUpdates);
   },
 });
@@ -133,7 +153,7 @@ export const toggleActive = mutation({
   handler: async (ctx, args) => {
     const repo = await ctx.db.get(args.id);
     if (!repo) throw new Error("Repository not found");
-    
+
     return await ctx.db.patch(args.id, {
       isActive: !repo.isActive,
     });

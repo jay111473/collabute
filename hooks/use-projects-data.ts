@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { stringify } from "qs-esm";
-import { Project } from "@/types/dashboard";
+import { Project } from "@/types/convex";
 
 interface UseProjectsDataOptions {
   page?: number;

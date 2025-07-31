@@ -1,20 +1,16 @@
 import React from "react";
-import HeroSection from "./hero-section";
-import StorySection from "./story-section";
-import JourneySection from "./journey-section";
-import VisionSection from "./vision-section";
-import ApproachSection from "./approach-section";
-import TeamSection from "./team-section";
+import TurningIdeasSection from "./turning-ideas-section";
+import WhyWeCreatedSection from "./why-we-created-section";
+import WhatWeBuiltSection from "./what-we-built-section";
+import WhoWeAreSection from "./who-we-are-section";
 
 const AboutUsComponent = () => {
   return (
-    <div className="w-full py-24 space-y-36">
-      <HeroSection />
-      <StorySection />
-      <JourneySection />
-      <VisionSection />
-      <ApproachSection />
-      <TeamSection />
+    <div className="w-full">
+      <TurningIdeasSection />
+      <WhyWeCreatedSection />
+      <WhatWeBuiltSection />
+      <WhoWeAreSection />
     </div>
   );
 };

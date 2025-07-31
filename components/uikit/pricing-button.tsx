@@ -1,8 +1,10 @@
 import { ButtonHTMLAttributes } from "react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface PricingButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: "primary" | "secondary" | "disabled" | "darkPrimary";
   className?: string;
+  tooltipText?: string;
 }
 
 export function PricingButton({ 
@@ -10,6 +12,7 @@ export function PricingButton({
   className = "", 
   children, 
   disabled,
+  tooltipText,
   ...props 
 }: PricingButtonProps) {
   const baseClasses = "w-full py-4 px-6 rounded-xl font-medium text-sm transition-all duration-300 relative overflow-hidden group";
@@ -18,14 +21,14 @@ export function PricingButton({
     primary: "bg-gradient-to-r from-white to-gray-100 text-black hover:from-gray-100 hover:to-white hover:shadow-lg hover:shadow-white/20 transform hover:translate-y-[-2px] active:translate-y-0",
     secondary: "bg-gradient-to-r from-gray-800 to-gray-700 text-white border border-white/20 hover:from-gray-700 hover:to-gray-600 hover:border-white/30 transform hover:translate-y-[-2px] active:translate-y-0",
     darkPrimary: "bg-gradient-to-r from-darkPrimary to-darkPrimary/90 text-white hover:from-darkPrimary/90 hover:to-darkPrimary hover:shadow-lg hover:shadow-darkPrimary/20 transform hover:translate-y-[-2px] active:translate-y-0",
-    disabled: "bg-gray-600 text-gray-400 cursor-not-allowed"
+    disabled: "cursor-not-allowed"
   };
 
-  const currentVariant = disabled ? "disabled" : variant;
+  const currentVariant = variant;
 
-  return (
+  const buttonContent = (
     <button 
-      className={`${baseClasses} ${variantClasses[currentVariant]} ${className}`}
+      className={`${baseClasses} ${variantClasses[currentVariant]} ${disabled ? variantClasses.disabled : ""} ${className}`}
       disabled={disabled}
       {...props}
     >
@@ -37,4 +40,19 @@ export function PricingButton({
       )}
     </button>
   );
+
+  if (disabled && tooltipText) {
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          {buttonContent}
+        </TooltipTrigger>
+        <TooltipContent className="bg-darkGray border-white/20 text-white">
+          <p>{tooltipText}</p>
+        </TooltipContent>
+      </Tooltip>
+    );
+  }
+
+  return buttonContent;
 }

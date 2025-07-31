@@ -1,5 +1,4 @@
 import AboutUsComponent from "@/components/about";
-import Header from "@/components/header";
 import React from "react";
 
 const AboutUsPage = () => {

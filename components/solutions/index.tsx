@@ -175,7 +175,7 @@ const SolutionsComponent = () => {
       </section>
 
       {/* Final CTA Section - Centered Circle Layout */}
-      <section className="w-full relative py-16 sm:py-20 md:py-24 lg:py-32">
+      {/* <section className="w-full relative py-16 sm:py-20 md:py-24 lg:py-32">
         <div className="container px-0">
           <div className="text-center space-y-6 sm:space-y-8">
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white">
@@ -194,7 +194,7 @@ const SolutionsComponent = () => {
             </div>
           </div>
         </div>
-      </section>
+      </section> */}
     </div>
   );
 };

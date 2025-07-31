@@ -21,7 +21,7 @@ const WhyWeCreatedSection = () => {
           </p>
           
           <p>
-            We watched skilled professionals lose motivation on projects that didn't inspire them. 
+            We watched skilled professionals lose motivation on projects that didn&apos;t inspire them. 
             Saw founders with excellent concepts get trapped in complex approval processes.
           </p>
           

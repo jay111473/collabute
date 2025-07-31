@@ -25,19 +25,22 @@ const TurningIdeasSection = () => {
           <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white leading-tight">
             Turning Ideas Into Products
           </h1>
-          
+
           <div className="space-y-6 text-sm sm:text-base text-gray-300 leading-relaxed max-w-3xl mx-auto">
             <p className="text-base sm:text-lg font-semibold">
-              Every breakthrough starts with someone who sees a problem and thinks &quot;I can fix that.&quot;
+              Every breakthrough starts with someone who sees a problem and
+              thinks &quot;I can fix that.&quot;
             </p>
-            
+
             <p className="text-sm sm:text-base text-gray-400">
-              Maybe you&apos;re the person with the solution. Maybe you&apos;re the one who knows how to build it. 
-              Or maybe you&apos;re the one who can bring the right people together to make it happen.
+              Maybe you&apos;re the person with the solution. Maybe you&apos;re
+              the one who knows how to build it. Or maybe you&apos;re the one
+              who can bring the right people together to make it happen.
             </p>
-            
+
             <p className="text-base sm:text-lg font-semibold">
-              Great things happen when people with different skills work toward the same goal.
+              Great things happen when people with different skills work toward
+              the same goal.
             </p>
           </div>
         </div>
@@ -46,4 +49,4 @@ const TurningIdeasSection = () => {
   );
 };
 
-export default TurningIdeasSection; 
+export default TurningIdeasSection;

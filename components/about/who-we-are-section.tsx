@@ -10,22 +10,24 @@ const WhoWeAreSection = () => {
           <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white leading-tight">
             Who We Are
           </h2>
-          
+
           <div className="space-y-6 text-sm sm:text-base text-gray-400 leading-relaxed max-w-3xl mx-auto">
             <p className="text-base sm:text-lg text-gray-300">
-              We&apos;re a focused team that chose to build solutions instead of accepting problems.
+              We&apos;re a focused team that chose to build solutions instead of
+              accepting problems.
             </p>
-            
+
             <p>
-              Our backgrounds span development, design, and operations. We&apos;re united by 
-              the belief that work should be fulfilling rather than draining.
+              Our backgrounds span development, design, and operations.
+              We&apos;re united by the belief that work should be fulfilling
+              rather than draining.
             </p>
-            
+
             <p>
-              We maintain transparency, recognize achievements, and welcome conversations 
-              about what we&apos;re building.
+              We maintain transparency, recognize achievements, and welcome
+              conversations about what we&apos;re building.
             </p>
-            
+
             <p className="text-lg sm:text-xl font-semibold text-gray-300">
               Ready to create something great together?
             </p>
@@ -50,4 +52,4 @@ const WhoWeAreSection = () => {
   );
 };
 
-export default WhoWeAreSection; 
+export default WhoWeAreSection;

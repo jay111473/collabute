@@ -63,7 +63,7 @@ const Hero = () => {
             Platforms who trusted us and we brought their ideas into life
           </p>
 
-          <div className="hidden md:flex justify-center items-center gap-4 md:gap-8 opacity-60 overflow-x-auto">
+          <div className="hidden md:flex justify-center items-center gap-4 md:gap-8 opacity-50 overflow-x-auto">
             <Image
               src="/Group 289244.png"
               alt="RIAD Invest"

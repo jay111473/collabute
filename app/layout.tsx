@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans } from "next/font/google";
+import { Space_Grotesk } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
 import "./globals.css";
 import { EmailProvider } from "./providers/EmailContext";
@@ -9,22 +9,18 @@ import { CSPostHogProvider } from "./provider";
 import { UserProvider } from "./providers/UserContext";
 import { ConvexAuthNextjsServerProvider } from "@convex-dev/auth/nextjs/server";
 import { ConvexClientProvider } from "./providers/ConvexClientProvider";
+import Footer from "@/components/footer";
+import Header from "@/components/header";
 
-const plusJakarta = Plus_Jakarta_Sans({
+const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
-  weight: ["300", "400", "500", "700"],
-  variable: "--font-plus-jakarta",
+  weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-space-grotesk",
 });
 
 export const metadata: Metadata = {
   title: `Collabute`,
   description: "Shake hands with startups and earn like never before!",
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 1,
-    userScalable: false,
-  },
 };
 
 export default function RootLayout({
@@ -35,7 +31,7 @@ export default function RootLayout({
   return (
     <ConvexAuthNextjsServerProvider>
       <html lang="en" className="h-full">
-        <body className={`${plusJakarta.className} h-full`}>
+        <body className={`${spaceGrotesk.className} h-full`}>
           <SpeedInsights />
           <CSPostHogProvider>
             <EmailProvider>
@@ -47,7 +43,11 @@ export default function RootLayout({
               >
                 <ConvexClientProvider>
                   <UserProvider>
-                    <div className="h-full">{children}</div>
+                    <div className="h-full">
+                      <Header />
+                      {children}
+                      <Footer />
+                    </div>
                   </UserProvider>
                 </ConvexClientProvider>
               </ThemeProvider>

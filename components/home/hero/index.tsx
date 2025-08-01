@@ -1,60 +1,112 @@
 "use client";
 import React from "react";
-import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import AIBadge from "@/components/uikit/ai-badge";
 import { CosmicButton } from "@/components/uikit/cosmic-button";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 const Hero = () => {
   return (
-    <div className="w-full flex flex-col justify-start items-center min-h-[100vh] relative">
-      {/* Background Image */}
-      <div className="absolute w-full h-full flex justify-center items-center top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-        <div className="relative w-[900px] h-[900px] md:w-[700px] md:h-[700px] lg:w-[900px] lg:h-[900px] xl:w-[900px] xl:h-[900px] 2xl:w-[1500px] 2xl:h-[1200px]">
+    <div className="w-full flex flex-col justify-center items-center min-h-[70vh] relative bg-background">
+      {/* Network pattern background at top */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[300px] md:h-[400px]">
+        <div className="relative w-full h-full">
           <Image
-            src="/cc-center.png"
-            alt="Hero background"
+            src="/hero-bg.png"
+            alt="Network pattern background"
             fill
-            sizes="(max-width: 768px) 400px, (max-width: 1024px) 700px, (max-width: 1280px) 900px, (max-width: 1536px) 900px, 1600px"
             priority
-            style={{ objectFit: "contain" }}
+            style={{ objectFit: "cover" }}
+            className="opacity-60"
           />
         </div>
       </div>
 
-      {/* Content with increased z-index to appear above background */}
-      <div className="absolute flex flex-col justify-center items-center left-1/2 -translate-x-1/2 -translate-y-1/2 top-1/2 w-full mt-20">
+      {/* Content */}
+      <div className="relative z-10 flex flex-col justify-center items-center gap-y-2 max-w-4xl mx-auto px-4 text-center mt-[100px] md:mt-[250px]">
         {/* Innovation badge */}
         <AIBadge text="Innovation with ai" />
+
         {/* Main title */}
-        <h1 className="text-2xl md:text-4xl lg:text-[52px] 2xl:text-[62px] max-w-4xl mx-auto text-center relative z-20 font-bold">
-          <span className="bg-clip-text text-darkPrimary">
-            Collabute:{" "}
-          </span>
-          <span className="bg-clip-text text-transparent text-white">
-            Unite{" "}
-          </span>
-          <span className="text-white">to Create</span>
+        <h1 className="text-2xl md:text-4xl lg:text-[52px] 2xl:text-[62px] font-bold leading-tight">
+          <span className="text-darkPrimary">Build Now</span>{" "}
+          <span className="text-white">& Forever</span>
         </h1>
 
         {/* Subtitle */}
-        <p className="text-[#A091B9] md:text-md text-xs xl:text-base 2xl:text-lg text-center mt-2 mb-4 md:mt-6 md:mb-8 ">
-          Where Entrepreneurs and Developers Collaborate Seamlessly <br /> to
-          Bring Ideas to Life—Faster and Smarter.
+        <p className="text-white md:text-md text-xs xl:text-base 2xl:text-base text-center mt-2 mb-4 md:mt-6 md:mb-8">
+          All in one solution to manage and launch your product
+          <br />
+          Collaborate, ship & scale.
         </p>
 
         {/* CTA Buttons */}
         <div className="flex flex-row gap-4">
-          <CosmicButton>
-            Start your project
-          </CosmicButton>
-          <Button
-            size="lg"
-            variant="outline"
-            className="border-neutral-800 hover:bg-neutral-900 text-white px-4 py-2 md:px-8 md:py-4 !border-opacity-30 text-sm md:text-base"
-          >
-            Join as a Developer
-          </Button>
+          <Link href="/early-bird">
+            <CosmicButton>Start your project</CosmicButton>
+          </Link>
+          <Link href="/early-bird">
+            <Button
+              size="lg"
+              variant="outline"
+              className="border-neutral-800 hover:bg-neutral-900 text-white px-4 py-2 md:px-6 md:py-4 !border-opacity-30 text-xs md:text-sm"
+            >
+              Join as a Developer
+            </Button>
+          </Link>
+        </div>
+
+        {/* Company logos section */}
+        <div className="mt-12 md:mt-28 w-full">
+          <p className="text-gray-500 text-sm mb-8">
+            Platforms who trusted us and we brought their ideas into life
+          </p>
+
+          <div className="hidden md:flex justify-center items-center gap-4 md:gap-8 opacity-50 overflow-x-auto">
+            <Image
+              src="/Group 289244.png"
+              alt="RIAD Invest"
+              width={66}
+              height={31}
+              className="w-auto"
+            />
+            <Image
+              src="/Logo Kit-06 1.png"
+              alt="Avitazen"
+              width={66}
+              height={31}
+              className="w-auto"
+            />
+            <Image
+              src="/Frame 1.png"
+              alt="Kylix"
+              width={66}
+              height={31}
+              className="w-auto"
+            />
+            <Image
+              src="/trt-logo 1.png"
+              alt="TRT World"
+              width={66}
+              height={31}
+              className="w-auto"
+            />
+            <Image
+              src="/Bottles4you.png"
+              alt="Bottles4you"
+              width={66}
+              height={31}
+              className="w-auto"
+            />
+            <Image
+              src="/DomainDragon.png"
+              alt="Domain Dragon"
+              width={66}
+              height={31}
+              className="w-auto"
+            />
+          </div>
         </div>
       </div>
     </div>

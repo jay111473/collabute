@@ -1,5 +1,10 @@
 import React from "react";
-import { Rocket, Sparkles, DollarSign, Diamond } from "lucide-react";
+import {
+  Rocket,
+  Sparkles,
+  Waves,
+  MonitorSmartphone,
+} from "lucide-react";
 import AIBadge from "@/components/uikit/ai-badge";
 import { SpecialCard, SpecialCardContent } from "@/components/ui/special-card";
 
@@ -10,31 +15,30 @@ const Feature = () => {
         <div className="flex flex-col items-center text-center mb-16">
           <AIBadge text="Smart solution" />
           <h2 className="text-3xl md:text-4xl font-bold text-white">
-            <span className="text-purple-400">Your Technical Arm </span> in
-            Action
+            You Think It. We Build It.
           </h2>
         </div>
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           <FeatureCard
-            icon={<Rocket className="h-8 w-8 text-purple-400" />}
-            title="Speed to Market"
-            description="Launch your ideas faster with immediate access to top developers."
-          />
-          <FeatureCard
             icon={<Sparkles className="h-8 w-8 text-purple-400" />}
-            title="AI-Powered Project Management Tools"
-            description="Streamline project management and enhance collaboration."
+            title="AI-Accelerated Planning"
+            description="We turn your idea into a clear, step-by-step plan."
           />
           <FeatureCard
-            icon={<DollarSign className="h-8 w-8 text-purple-400" />}
-            title="Fair Compensation"
-            description="Developers earn based on their contributions, ensuring transparency and motivation."
+            icon={<Rocket className="h-8 w-8 text-purple-400" />}
+            title="Open Source Production"
+            description="We build on top of open source projects, ensuring transparency and collaboration."
           />
           <FeatureCard
-            icon={<Diamond className="h-8 w-8 text-purple-400" />}
-            title="Flexible Talent Pool"
-            description="Access the right talent for every project, from juniors to senior experts."
+            icon={<MonitorSmartphone className="h-8 w-8 text-purple-400" />}
+            title="Platform Agnostic"
+            description="You're not limited to web, mobile, or desktop. We build for all platforms."
+          />
+          <FeatureCard
+            icon={<Waves className="h-8 w-8 text-purple-400" />}
+            title="Fluid Framework"
+            description="Collabute has no shape, it takes shape around your architecture "
           />
         </div>
       </div>

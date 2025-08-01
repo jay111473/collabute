@@ -215,8 +215,7 @@ const EarlyBird = () => {
           className="
             flex flex-col items-center justify-center 
             gap-y-10 px-6 sm:px-12 w-full max-w-[500px] py-10 
-            text-center rounded-md bg-black/80 
-            shadow-[0_0_25px_rgba(255,255,255,0.15),0_0_10px_rgba(255,255,255,0.1),0_0_5px_rgba(187,134,252,0.25)]
+            text-center  
             relative
             before:content-[''] before:absolute before:inset-0 
             before:rounded-md before:shadow-[0_0_15px_5px_rgba(187,134,252,0.1)] 
@@ -224,13 +223,6 @@ const EarlyBird = () => {
           "
         >
           <div className="flex flex-col items-center justify-center gap-y-2 relative z-10">
-            <Image
-              src="/logo.png"
-              alt="Collabute Logo"
-              width={66}
-              height={66}
-            />
-            <h1 className="text-3xl font-bold text-white">Collabute</h1>
             <p className="text-sm text-gray-400 mt-3">
               Get exclusive access and benefits by signing up early
             </p>
@@ -279,16 +271,33 @@ const EarlyBird = () => {
 
               <FormField
                 control={form.control}
+                name="phoneNumber"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col items-start justify-center">
+                    <FormLabel>Phone Number (Optional)</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="+1234567890"
+                        {...field}
+                        className="text-base md:text-sm"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
                 name="type"
                 render={({ field }) => (
                   <FormItem className="flex flex-col items-start justify-center w-full">
-                    <FormLabel>What best describes you</FormLabel>
+                    <FormLabel>Role</FormLabel>
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
                     >
                       <FormControl>
-                        <SelectTrigger className="text-base md:text-sm">
+                        <SelectTrigger className="text-base md:text-sm text-gray-500">
                           <SelectValue placeholder="Select what best describes you" />
                         </SelectTrigger>
                       </FormControl>
@@ -302,24 +311,6 @@ const EarlyBird = () => {
                         </SelectItem>
                       </SelectContent>
                     </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="phoneNumber"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col items-start justify-center">
-                    <FormLabel>Phone Number (Optional)</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="+1234567890"
-                        {...field}
-                        className="text-base md:text-sm"
-                      />
-                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}

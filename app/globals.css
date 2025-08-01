@@ -2,7 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
-html, body {
+html,
+body {
   overflow-x: hidden;
   width: 100%;
   max-width: 100vw;
@@ -10,7 +11,9 @@ html, body {
 
 /* Mobile Input Focus Prevention - Prevents iOS zoom on input focus */
 @media (max-width: 767px) {
-  input, select, textarea {
+  input,
+  select,
+  textarea {
     font-size: 16px !important;
   }
 }
@@ -63,22 +66,24 @@ html, body {
 
 .cosmic-button {
   border-radius: 6px;
-  background: radial-gradient(
-      22.12% 100% at 48.06% 100%,
+  background:
+    radial-gradient(
+      0% 100% at 48.06% 100%,
       rgba(206, 172, 247, 0.5) 0%,
       rgba(17, 23, 61, 0) 100%
     ),
     radial-gradient(
       58.31% 100% at 48.06% 100%,
-      rgba(174, 120, 241, 0.5) 0%,
+      rgba(179, 119, 252, 0.5) 0%,
       rgba(17, 23, 61, 0) 100%
     ),
     rgba(46, 28, 69, 0.28);
   border-image: linear-gradient(
-    to bottom,
-    rgba(255, 255, 255, 0.2),
-    rgba(255, 255, 255, 0)
-  ) 1;
+      to bottom,
+      rgba(255, 255, 255, 0.2),
+      rgba(255, 255, 255, 0)
+    )
+    1;
 }
 
 /* Add these styles to your globals.css */
@@ -86,16 +91,16 @@ input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus,
 input:-webkit-autofill:active {
-    transition: background-color 5000s ease-in-out 0s;
-    -webkit-text-fill-color: inherit !important;
-    -webkit-box-shadow: 0 0 0px 1000px transparent inset;
+  transition: background-color 5000s ease-in-out 0s;
+  -webkit-text-fill-color: inherit !important;
+  -webkit-box-shadow: 0 0 0px 1000px transparent inset;
 }
 
 /* Firefox specific */
 input:-moz-autofill,
 input:-moz-autofill:focus {
-    background-color: transparent !important;
-    color: inherit !important;
+  background-color: transparent !important;
+  color: inherit !important;
 }
 
 /* For all browsers */
@@ -103,10 +108,10 @@ input:autofill,
 input:autofill:hover,
 input:autofill:focus,
 input:autofill:active {
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: inherit !important;
-    transition: background-color 5000s ease-in-out 0s;
-    box-shadow: inset 0 0 20px 20px transparent !important;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: inherit !important;
+  transition: background-color 5000s ease-in-out 0s;
+  box-shadow: inset 0 0 20px 20px transparent !important;
 }
 
 /* Footer Styles */
@@ -117,9 +122,9 @@ input:autofill:active {
 .footer-content {
   min-height: 511px;
   padding: 60px 0;
-  border-top: 1px solid rgba(220, 157, 248, 0.20);
-  border-bottom: 1px solid rgba(220, 157, 248, 0.20);
-  border-left: 1px solid rgba(220, 157, 248, 0.20);
+  border-top: 1px solid rgba(220, 157, 248, 0.2);
+  border-bottom: 1px solid rgba(220, 157, 248, 0.2);
+  border-left: 1px solid rgba(220, 157, 248, 0.2);
 }
 
 @media (min-width: 768px) {
@@ -135,22 +140,45 @@ input:autofill:active {
 }
 
 .footer-starry-bg {
-  background-image: url('/starry-background.png');
+  background-image: url("/starry-background.png");
   background-repeat: repeat;
   background-size: 400px 400px;
   opacity: 0.45;
   mix-blend-mode: screen;
-  mask: radial-gradient(120% 70% at 50% 0%, white 0%, rgba(255, 255, 255, 0.7) 10%, rgba(255, 255, 255, 0.3) 30%, transparent 60%);
-  -webkit-mask: radial-gradient(120% 70% at 50% 0%, white 0%, rgba(255, 255, 255, 0.7) 10%, rgba(255, 255, 255, 0.3) 30%, transparent 60%);
+  mask: radial-gradient(
+    120% 70% at 50% 0%,
+    white 0%,
+    rgba(255, 255, 255, 0.7) 10%,
+    rgba(255, 255, 255, 0.3) 30%,
+    transparent 60%
+  );
+  -webkit-mask: radial-gradient(
+    120% 70% at 50% 0%,
+    white 0%,
+    rgba(255, 255, 255, 0.7) 10%,
+    rgba(255, 255, 255, 0.3) 30%,
+    transparent 60%
+  );
 }
 
 .footer-purple-glow {
-  background: radial-gradient(120% 80% at 50% 0%, rgba(173, 98, 205, 0.438) 0%, rgba(178, 105, 209, 0.35) 20%, rgba(153, 121, 167, 0.1) 40%, rgba(56, 17, 61, 0) 60%);
+  background: radial-gradient(
+    120% 80% at 50% 0%,
+    rgba(173, 98, 205, 0.438) 0%,
+    rgba(178, 105, 209, 0.35) 20%,
+    rgba(153, 121, 167, 0.1) 40%,
+    rgba(56, 17, 61, 0) 60%
+  );
   mix-blend-mode: screen;
 }
 
 .footer-top-accent {
-  background: linear-gradient(to bottom, rgba(220, 157, 248, 0.35) 0%, rgba(220, 157, 248, 0.1) 70%, transparent 100%);
+  background: linear-gradient(
+    to bottom,
+    rgba(220, 157, 248, 0.35) 0%,
+    rgba(220, 157, 248, 0.1) 70%,
+    transparent 100%
+  );
   mix-blend-mode: screen;
 }
 

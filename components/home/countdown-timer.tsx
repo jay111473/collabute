@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { FaTwitter, FaDiscord, FaGithub } from "react-icons/fa";
+import { FaDiscord, FaGithub } from "react-icons/fa";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
@@ -22,7 +22,7 @@ const CountdownTimer = () => {
   });
 
   useEffect(() => {
-    const targetDate = new Date("July 30, 2025 12:00:00").getTime();
+    const targetDate = new Date("July 31, 2025 12:00:00").getTime();
 
     const calculateTimeLeft = () => {
       const now = new Date().getTime();
@@ -174,7 +174,7 @@ const CountdownTimer = () => {
           <Image src="/twitterx.png" alt="X" width={28} height={28} />
         </Link>
         <Link
-          href="https://discord.gg/3PUyPGF2"
+          href="https://discord.gg/7q3BBpEvwP"
           target="_blank"
           rel="noopener noreferrer"
           className="text-white hover:text-gray-300 transition-colors duration-300"

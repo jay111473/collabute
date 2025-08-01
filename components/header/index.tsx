@@ -9,10 +9,11 @@ import { MobileMenu } from "@/components/header/mobile-menu";
 
 const navigationLinks = [
   { href: "/", label: "Home" },
-  { href: "/our-solution", label: "Our Solution" },
-  { href: "/how-it-works", label: "How it works" },
+  { href: "/solutions", label: "Our Solution" },
+  { href: "/pricing", label: "Pricing" },
+  { href: "/blog", label: "Blog" },
+  { href: "/early-bird", label: "Early Bird" },
   { href: "/about-us", label: "About" },
-  { href: "/contact-us", label: "Contact us" },
 ];
 
 type HeaderProps = {

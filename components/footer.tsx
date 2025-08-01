@@ -97,58 +97,45 @@ const Footer = () => {
         <div className="relative footer-content w-full">
           <FooterBackgroundEffects />
 
-          {/* Content container */}
-          <div className="relative z-10 h-full flex flex-col justify-between w-full">
-            {/* Top section with logo, social links and navigation */}
-            <div
-              className="flex flex-col md:flex-row justify-center md:justify-between md:gap-[90px] "
-              style={{ gap: "40px" }}
+          {/* Legal Links */}
+          <div className="flex items-center gap-6 text-sm">
+            <Link
+              href="/terms"
+              className="text-gray-400 hover:text-white transition-colors"
             >
-              {/* Logo and social links - centered on mobile, normal on desktop */}
-              <div className="mb-8 md:mb-0 flex flex-col items-center md:items-start">
-                <div className="flex items-center mb-6">
-                  <Image
-                    src="/logo.png"
-                    alt="Collabute"
-                    width={48}
-                    height={48}
-                    className="mr-2"
-                  />
-                  <span className="text-white text-2xl font-bold">
-                    Collabute
-                  </span>
-                </div>
-
-                <div className="flex space-x-6">
-                  {socialLinks.map((link) => (
-                    <SocialLink
-                      key={link.href}
-                      href={link.href}
-                      icon={link.icon}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              {/* Navigation columns */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-8 md:gap-16">
-                {footerColumns.map((column) => (
-                  <FooterColumn
-                    key={column.title}
-                    title={column.title}
-                    links={column.links}
-                  />
-                ))}
-              </div>
-            </div>
-
-            {/* Copyright - moved to bottom */}
-            <div className="text-center py-4 mt-16">
-              <p className="text-gray-500">
-                © Collabute 2025. ALL RIGHTS RESERVED
-              </p>
-            </div>
+              Terms & Conditions
+            </Link>
+            <Link
+              href="/privacy"
+              className="text-gray-400 hover:text-white transition-colors"
+            >
+              Privacy Policy
+            </Link>
+            <Link
+              href="/contact"
+              className="text-gray-400 hover:text-white transition-colors"
+            >
+              Contact
+            </Link>
           </div>
+
+          {/* Navigation columns */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-8 md:gap-16">
+            {footerColumns.map((column) => (
+              <FooterColumn
+                key={column.title}
+                title={column.title}
+                links={column.links}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Copyright - moved to bottom */}
+        <div className="text-center py-4 mt-16">
+          <p className="text-gray-500">
+            © Collabute 2025. ALL RIGHTS RESERVED
+          </p>
         </div>
       </div>
     </footer>

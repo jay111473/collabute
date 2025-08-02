@@ -95,7 +95,7 @@ export function UserEditDialog({
       return (
         <Badge
           variant="secondary"
-          className="bg-yellow-100 text-yellow-800 border-yellow-200"
+          className="bg-yellow-900 text-yellow-300 border-yellow-700"
         >
           KYC Pending
         </Badge>
@@ -107,7 +107,7 @@ export function UserEditDialog({
     return (
       <Badge
         variant="outline"
-        className="bg-gray-50 text-gray-700 border-gray-300"
+        className="bg-darkGray2 text-gray-300 border-grayBorders"
       >
         Unverified
       </Badge>
@@ -119,7 +119,7 @@ export function UserEditDialog({
       return (
         <Badge
           variant="outline"
-          className="bg-gray-50 text-gray-700 border-gray-300"
+          className="bg-darkGray2 text-gray-300 border-grayBorders"
         >
           N/A
         </Badge>
@@ -132,11 +132,11 @@ export function UserEditDialog({
       },
       STARTUP: {
         variant: "secondary" as const,
-        className: "bg-purple-100 text-purple-800 border-purple-200",
+        className: "bg-purple-900 text-purple-300 border-purple-700",
       },
       DESIGNER: {
         variant: "outline" as const,
-        className: "bg-pink-50 text-pink-700 border-pink-300",
+        className: "bg-pink-900 text-pink-300 border-pink-700",
       },
       LEAD: {
         variant: "destructive" as const,
@@ -150,7 +150,7 @@ export function UserEditDialog({
 
     const config = badgeConfig[type as keyof typeof badgeConfig] || {
       variant: "outline" as const,
-      className: "bg-gray-50 text-gray-700 border-gray-300",
+      className: "bg-darkGray2 text-gray-300 border-grayBorders",
     };
 
     return (
@@ -164,7 +164,7 @@ export function UserEditDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-darkGray border-grayBorders">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <UserIcon className="h-5 w-5" />
@@ -173,18 +173,18 @@ export function UserEditDialog({
         </DialogHeader>
 
         <Tabs defaultValue="basic" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="basic">Basic Info</TabsTrigger>
-            <TabsTrigger value="profile">Profile</TabsTrigger>
-            <TabsTrigger value="system">System</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-3 bg-darkGray2">
+            <TabsTrigger value="basic" className="text-gray-300 data-[state=active]:bg-darkGray data-[state=active]:text-white">Basic Info</TabsTrigger>
+            <TabsTrigger value="profile" className="text-gray-300 data-[state=active]:bg-darkGray data-[state=active]:text-white">Profile</TabsTrigger>
+            <TabsTrigger value="system" className="text-gray-300 data-[state=active]:bg-darkGray data-[state=active]:text-white">System</TabsTrigger>
           </TabsList>
 
           <TabsContent value="basic" className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Name</Label>
+                <Label htmlFor="name" className="text-gray-300">Name</Label>
                 {mode === "view" ? (
-                  <p className="text-sm text-gray-900 bg-gray-50 px-3 py-2 rounded-md border">
+                  <p className="text-sm text-white bg-darkGray2 px-3 py-2 rounded-md border border-grayBorders">
                     {user.name || "N/A"}
                   </p>
                 ) : (
@@ -194,17 +194,17 @@ export function UserEditDialog({
                     onChange={(e) =>
                       setFormData({ ...formData, name: e.target.value })
                     }
-                    className="bg-white border-gray-300 text-gray-900"
+                    className="bg-darkGray border-grayBorders text-white"
                   />
                 )}
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email" className="text-gray-300">Email</Label>
                 {mode === "view" ? (
                   <div className="flex items-center gap-2">
-                    <Mail className="h-4 w-4 text-gray-500" />
-                    <p className="text-sm text-gray-900">{user.email}</p>
+                    <Mail className="h-4 w-4 text-gray-400" />
+                    <p className="text-sm text-white">{user.email}</p>
                   </div>
                 ) : (
                   <Input
@@ -214,7 +214,7 @@ export function UserEditDialog({
                     onChange={(e) =>
                       setFormData({ ...formData, email: e.target.value })
                     }
-                    className="bg-white border-gray-300 text-gray-900"
+                    className="bg-darkGray border-grayBorders text-white"
                   />
                 )}
               </div>
@@ -222,7 +222,7 @@ export function UserEditDialog({
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="type">User Type</Label>
+                <Label htmlFor="type" className="text-gray-300">User Type</Label>
                 {mode === "view" ? (
                   <div>{getUserTypeBadge(user.type)}</div>
                 ) : (
@@ -232,7 +232,7 @@ export function UserEditDialog({
                       setFormData({ ...formData, type: value })
                     }
                   >
-                    <SelectTrigger className="bg-white border-gray-300 text-gray-900">
+                    <SelectTrigger className="bg-darkGray border-grayBorders text-white">
                       <SelectValue placeholder="Select type" />
                     </SelectTrigger>
                     <SelectContent>
@@ -249,11 +249,11 @@ export function UserEditDialog({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="phone">Phone Number</Label>
+                <Label htmlFor="phone" className="text-gray-300">Phone Number</Label>
                 {mode === "view" ? (
                   <div className="flex items-center gap-2">
-                    <Phone className="h-4 w-4 text-gray-500" />
-                    <p className="text-sm text-gray-900">
+                    <Phone className="h-4 w-4 text-gray-400" />
+                    <p className="text-sm text-white">
                       {user.phoneNumber || "N/A"}
                     </p>
                   </div>
@@ -264,7 +264,7 @@ export function UserEditDialog({
                     onChange={(e) =>
                       setFormData({ ...formData, phoneNumber: e.target.value })
                     }
-                    className="bg-white border-gray-300 text-gray-900"
+                    className="bg-darkGray border-grayBorders text-white"
                   />
                 )}
               </div>
@@ -274,11 +274,11 @@ export function UserEditDialog({
           <TabsContent value="profile" className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="country">Country</Label>
+                <Label htmlFor="country" className="text-gray-300">Country</Label>
                 {mode === "view" ? (
                   <div className="flex items-center gap-2">
-                    <MapPin className="h-4 w-4 text-gray-500" />
-                    <p className="text-sm text-gray-900">
+                    <MapPin className="h-4 w-4 text-gray-400" />
+                    <p className="text-sm text-white">
                       {user.country || "N/A"}
                     </p>
                   </div>
@@ -289,15 +289,15 @@ export function UserEditDialog({
                     onChange={(e) =>
                       setFormData({ ...formData, country: e.target.value })
                     }
-                    className="bg-white border-gray-300 text-gray-900"
+                    className="bg-darkGray border-grayBorders text-white"
                   />
                 )}
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="industry">Industry</Label>
+                <Label htmlFor="industry" className="text-gray-300">Industry</Label>
                 {mode === "view" ? (
-                  <p className="text-sm text-gray-900 bg-gray-50 px-3 py-2 rounded-md border">
+                  <p className="text-sm text-white bg-darkGray2 px-3 py-2 rounded-md border border-grayBorders">
                     {user.industry || "N/A"}
                   </p>
                 ) : (
@@ -307,18 +307,18 @@ export function UserEditDialog({
                     onChange={(e) =>
                       setFormData({ ...formData, industry: e.target.value })
                     }
-                    className="bg-white border-gray-300 text-gray-900"
+                    className="bg-darkGray border-grayBorders text-white"
                   />
                 )}
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="wallet">Wallet Balance</Label>
+              <Label htmlFor="wallet" className="text-gray-300">Wallet Balance</Label>
               {mode === "view" ? (
                 <div className="flex items-center gap-2">
-                  <DollarSign className="h-4 w-4 text-gray-500" />
-                  <p className="text-sm text-gray-900 font-medium">
+                  <DollarSign className="h-4 w-4 text-gray-400" />
+                  <p className="text-sm text-white font-medium">
                     ${user.wallet || 0}
                   </p>
                 </div>
@@ -330,7 +330,7 @@ export function UserEditDialog({
                   onChange={(e) =>
                     setFormData({ ...formData, wallet: Number(e.target.value) })
                   }
-                  className="bg-white border-gray-300 text-gray-900"
+                  className="bg-darkGray border-grayBorders text-white"
                 />
               )}
             </div>
@@ -339,14 +339,14 @@ export function UserEditDialog({
           <TabsContent value="system" className="space-y-4">
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label>Status</Label>
+                <Label className="text-gray-300">Status</Label>
                 <div>{getStatusBadge(user)}</div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="kycStatus">KYC Status</Label>
+                <Label htmlFor="kycStatus" className="text-gray-300">KYC Status</Label>
                 {mode === "view" ? (
-                  <p className="text-sm text-gray-900 bg-gray-50 px-3 py-2 rounded-md border">
+                  <p className="text-sm text-white bg-darkGray2 px-3 py-2 rounded-md border border-grayBorders">
                     {user.kycStatus || "UNVERIFIED"}
                   </p>
                 ) : (
@@ -356,7 +356,7 @@ export function UserEditDialog({
                       setFormData({ ...formData, kycStatus: value })
                     }
                   >
-                    <SelectTrigger className="bg-white border-gray-300 text-gray-900">
+                    <SelectTrigger className="bg-darkGray border-grayBorders text-white">
                       <SelectValue placeholder="Select KYC status" />
                     </SelectTrigger>
                     <SelectContent>
@@ -378,23 +378,23 @@ export function UserEditDialog({
                       setFormData({ ...formData, isVerified: checked })
                     }
                   />
-                  <Label htmlFor="isVerified">Verified User</Label>
+                  <Label htmlFor="isVerified" className="text-gray-300">Verified User</Label>
                 </div>
               )}
 
               <div className="space-y-2">
-                <Label>Account Created</Label>
+                <Label className="text-gray-300">Account Created</Label>
                 <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-gray-500" />
-                  <p className="text-sm text-gray-900">
+                  <Calendar className="h-4 w-4 text-gray-400" />
+                  <p className="text-sm text-white">
                     {new Date(user._creationTime).toLocaleDateString()}
                   </p>
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label>User ID</Label>
-                <p className="text-xs text-gray-500 font-mono bg-gray-50 px-2 py-1 rounded border">
+                <Label className="text-gray-300">User ID</Label>
+                <p className="text-xs text-gray-400 font-mono bg-darkGray2 px-2 py-1 rounded border">
                   {user._id}
                 </p>
               </div>
@@ -406,7 +406,7 @@ export function UserEditDialog({
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
-            className="text-gray-900"
+            className="text-white bg-darkGray border-grayBorders hover:bg-darkGray2"
           >
             {mode === "view" ? "Close" : "Cancel"}
           </Button>

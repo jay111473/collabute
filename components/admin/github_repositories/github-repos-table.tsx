@@ -113,7 +113,7 @@ export function GitHubReposTable() {
       return (
         <Badge
           variant="outline"
-          className="bg-gray-50 text-gray-500 border-gray-200"
+          className="bg-darkGray2 text-gray-400 border-grayBorders"
         >
           N/A
         </Badge>
@@ -129,7 +129,7 @@ export function GitHubReposTable() {
     };
 
     const colorClass =
-      languageColors[language] || "bg-gray-100 text-gray-700 border-gray-300";
+      languageColors[language] || "bg-gray-100 text-gray-300 border-grayBorders";
 
     return (
       <Badge variant="outline" className={`text-xs ${colorClass}`}>
@@ -223,12 +223,12 @@ export function GitHubReposTable() {
             placeholder="Search repositories..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="bg-white border-gray-300 text-gray-900 placeholder-gray-500"
+            className="bg-darkGray border-grayBorders text-white placeholder-gray-400"
           />
         </div>
 
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2 text-sm text-gray-600">
+          <div className="flex items-center gap-2 text-sm text-gray-400">
             <Github className="h-4 w-4" />
             {filteredRepositories?.length || 0} repositories
           </div>
@@ -243,61 +243,61 @@ export function GitHubReposTable() {
         </div>
       </div>
 
-      <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
+      <div className="bg-darkGray border border-grayBorders rounded-lg shadow-sm">
         <Table>
           <TableHeader>
-            <TableRow className="bg-gray-50 border-b border-gray-200">
-              <TableHead className="text-gray-700 font-medium px-6 py-4">
+            <TableRow className="bg-darkGray2 border-b border-grayBorders">
+              <TableHead className="text-gray-300 font-medium px-6 py-4">
                 Repository
               </TableHead>
-              <TableHead className="text-gray-700 font-medium px-4 py-4">
+              <TableHead className="text-gray-300 font-medium px-4 py-4">
                 Visibility
               </TableHead>
-              <TableHead className="text-gray-700 font-medium px-4 py-4">
+              <TableHead className="text-gray-300 font-medium px-4 py-4">
                 Language
               </TableHead>
-              <TableHead className="text-gray-700 font-medium px-4 py-4">
+              <TableHead className="text-gray-300 font-medium px-4 py-4">
                 Stats
               </TableHead>
-              <TableHead className="text-gray-700 font-medium px-4 py-4">
+              <TableHead className="text-gray-300 font-medium px-4 py-4">
                 Status
               </TableHead>
-              <TableHead className="text-gray-700 font-medium px-4 py-4">
+              <TableHead className="text-gray-300 font-medium px-4 py-4">
                 Last Sync
               </TableHead>
-              <TableHead className="text-right text-gray-700 font-medium px-6 py-4">
+              <TableHead className="text-right text-gray-300 font-medium px-6 py-4">
                 Actions
               </TableHead>
             </TableRow>
           </TableHeader>
-          <TableBody className="bg-white">
+          <TableBody className="bg-darkGray">
             {filteredRepositories?.map((repo) => (
               <TableRow
                 key={repo._id}
-                className="border-b border-gray-100 hover:bg-blue-50 transition-colors duration-150"
+                className="border-b border-grayBorders hover:bg-darkGray2 transition-colors duration-150"
               >
                 <TableCell className="px-6 py-4">
                   <div className="flex items-start gap-3">
                     <Github className="h-5 w-5 text-gray-400 mt-0.5" />
                     <div>
                       <div className="flex items-center gap-2">
-                        <div className="font-medium text-gray-900">
+                        <div className="font-medium text-white">
                           {repo.name}
                         </div>
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="h-6 w-6 p-0 text-gray-400 hover:text-gray-600"
+                          className="h-6 w-6 p-0 text-gray-400 hover:text-gray-400"
                           onClick={() => window.open(repo.htmlUrl, "_blank")}
                         >
                           <ExternalLink className="h-3 w-3" />
                         </Button>
                       </div>
-                      <div className="text-sm text-gray-500">
+                      <div className="text-sm text-gray-400">
                         {repo.fullName}
                       </div>
                       {repo.description && (
-                        <div className="text-sm text-gray-600 mt-1 max-w-xs truncate">
+                        <div className="text-sm text-gray-400 mt-1 max-w-xs truncate">
                           {repo.description}
                         </div>
                       )}
@@ -312,11 +312,11 @@ export function GitHubReposTable() {
                 </TableCell>
                 <TableCell className="px-4 py-4">
                   <div className="flex flex-col gap-1">
-                    <div className="flex items-center gap-1 text-sm text-gray-700">
+                    <div className="flex items-center gap-1 text-sm text-gray-300">
                       <Star className="h-3 w-3 text-yellow-500" />
                       {formatNumber(repo.stargazersCount)}
                     </div>
-                    <div className="flex items-center gap-1 text-sm text-gray-700">
+                    <div className="flex items-center gap-1 text-sm text-gray-300">
                       <GitFork className="h-3 w-3 text-gray-400" />
                       {formatNumber(repo.forksCount)}
                     </div>
@@ -326,7 +326,7 @@ export function GitHubReposTable() {
                   {getStatusBadge(repo.isActive)}
                 </TableCell>
                 <TableCell className="px-4 py-4">
-                  <div className="text-sm text-gray-700">
+                  <div className="text-sm text-gray-300">
                     {formatDate(repo.lastSyncAt)}
                   </div>
                 </TableCell>
@@ -335,7 +335,7 @@ export function GitHubReposTable() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="text-gray-600 hover:text-blue-700 hover:bg-blue-100 transition-colors duration-150"
+                      className="text-gray-400 hover:text-blue-400 hover:bg-darkGray2 transition-colors duration-150"
                       onClick={() => handleViewRepository(repo)}
                     >
                       <Eye className="h-4 w-4" />
@@ -343,7 +343,7 @@ export function GitHubReposTable() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="text-gray-600 hover:text-amber-700 hover:bg-amber-100 transition-colors duration-150"
+                      className="text-gray-400 hover:text-amber-400 hover:bg-darkGray2 transition-colors duration-150"
                       onClick={() => handleEditRepository(repo)}
                     >
                       <Edit className="h-4 w-4" />
@@ -351,7 +351,7 @@ export function GitHubReposTable() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="text-red-600 hover:text-red-700 hover:bg-red-100 transition-colors duration-150"
+                      className="text-red-600 hover:text-red-300 hover:bg-darkGray2 transition-colors duration-150"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -364,7 +364,7 @@ export function GitHubReposTable() {
       </div>
 
       {filteredRepositories?.length === 0 && (
-        <div className="text-center py-8 text-gray-500">
+        <div className="text-center py-8 text-gray-400">
           No repositories found
         </div>
       )}
@@ -389,7 +389,7 @@ export function GitHubReposTable() {
                     githubId: parseInt(e.target.value) || 0,
                   })
                 }
-                className="bg-white border-gray-300 text-gray-900"
+                className="bg-darkGray border-grayBorders text-white"
               />
             </div>
 
@@ -402,7 +402,7 @@ export function GitHubReposTable() {
                 onChange={(e) =>
                   setFormData({ ...formData, name: e.target.value })
                 }
-                className="bg-white border-gray-300 text-gray-900"
+                className="bg-darkGray border-grayBorders text-white"
               />
             </div>
 
@@ -415,7 +415,7 @@ export function GitHubReposTable() {
                 onChange={(e) =>
                   setFormData({ ...formData, fullName: e.target.value })
                 }
-                className="bg-white border-gray-300 text-gray-900"
+                className="bg-darkGray border-grayBorders text-white"
               />
             </div>
 
@@ -428,7 +428,7 @@ export function GitHubReposTable() {
                 onChange={(e) =>
                   setFormData({ ...formData, description: e.target.value })
                 }
-                className="bg-white border-gray-300 min-h-[80px]"
+                className="bg-darkGray border-grayBorders min-h-[80px]"
               />
             </div>
 
@@ -441,7 +441,7 @@ export function GitHubReposTable() {
                 onChange={(e) =>
                   setFormData({ ...formData, ownerId: e.target.value })
                 }
-                className="bg-white border-gray-300 text-gray-900"
+                className="bg-darkGray border-grayBorders text-white"
               />
             </div>
 
@@ -454,7 +454,7 @@ export function GitHubReposTable() {
                 onChange={(e) =>
                   setFormData({ ...formData, htmlUrl: e.target.value })
                 }
-                className="bg-white border-gray-300 text-gray-900"
+                className="bg-darkGray border-grayBorders text-white"
               />
             </div>
 
@@ -467,7 +467,7 @@ export function GitHubReposTable() {
                 onChange={(e) =>
                   setFormData({ ...formData, cloneUrl: e.target.value })
                 }
-                className="bg-white border-gray-300 text-gray-900"
+                className="bg-darkGray border-grayBorders text-white"
               />
             </div>
 
@@ -480,7 +480,7 @@ export function GitHubReposTable() {
                 onChange={(e) =>
                   setFormData({ ...formData, language: e.target.value })
                 }
-                className="bg-white border-gray-300 text-gray-900"
+                className="bg-darkGray border-grayBorders text-white"
               />
             </div>
 
@@ -499,7 +499,7 @@ export function GitHubReposTable() {
                       stargazersCount: parseInt(e.target.value) || 0,
                     })
                   }
-                  className="bg-white border-gray-300 text-gray-900"
+                  className="bg-darkGray border-grayBorders text-white"
                 />
               </div>
 
@@ -517,7 +517,7 @@ export function GitHubReposTable() {
                       forksCount: parseInt(e.target.value) || 0,
                     })
                   }
-                  className="bg-white border-gray-300 text-gray-900"
+                  className="bg-darkGray border-grayBorders text-white"
                 />
               </div>
             </div>
@@ -531,7 +531,7 @@ export function GitHubReposTable() {
                 onChange={(e) =>
                   setFormData({ ...formData, defaultBranch: e.target.value })
                 }
-                className="bg-white border-gray-300 text-gray-900"
+                className="bg-darkGray border-grayBorders text-white"
               />
             </div>
 
@@ -544,7 +544,7 @@ export function GitHubReposTable() {
                 onChange={(e) =>
                   setFormData({ ...formData, projectId: e.target.value })
                 }
-                className="bg-white border-gray-300 text-gray-900"
+                className="bg-darkGray border-grayBorders text-white"
               />
             </div>
 

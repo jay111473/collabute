@@ -4,8 +4,8 @@ export default function AdminProjectsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Projects Management</h1>
-        <p className="text-gray-600">Manage projects and their collaborators</p>
+        <h1 className="text-2xl font-bold text-white">Projects Management</h1>
+        <p className="text-gray-400">Manage projects and their collaborators</p>
       </div>
       
       <ProjectsTable />

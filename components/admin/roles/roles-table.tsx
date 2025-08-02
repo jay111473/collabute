@@ -121,12 +121,12 @@ export function RolesTable() {
             placeholder="Search roles..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="bg-white border-gray-300 text-gray-900 placeholder-gray-500"
+            className="bg-darkGray border-grayBorders text-white placeholder-gray-400"
           />
         </div>
         
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2 text-sm text-gray-600">
+          <div className="flex items-center gap-2 text-sm text-gray-400">
             <Shield className="h-4 w-4" />
             {filteredRoles?.length || 0} roles
           </div>
@@ -141,33 +141,33 @@ export function RolesTable() {
         </div>
       </div>
 
-      <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
+      <div className="bg-darkGray border border-grayBorders rounded-lg shadow-sm">
         <Table>
           <TableHeader>
-            <TableRow className="bg-gray-50 border-b border-gray-200">
-              <TableHead className="text-gray-700 font-medium px-6 py-4">Name</TableHead>
-              <TableHead className="text-gray-700 font-medium px-4 py-4">Display Name</TableHead>
-              <TableHead className="text-gray-700 font-medium px-4 py-4">Description</TableHead>
-              <TableHead className="text-gray-700 font-medium px-4 py-4">Status</TableHead>
-              <TableHead className="text-gray-700 font-medium px-4 py-4">Permissions</TableHead>
-              <TableHead className="text-gray-700 font-medium px-4 py-4">Created</TableHead>
-              <TableHead className="text-right text-gray-700 font-medium px-6 py-4">Actions</TableHead>
+            <TableRow className="bg-darkGray2 border-b border-grayBorders">
+              <TableHead className="text-gray-300 font-medium px-6 py-4">Name</TableHead>
+              <TableHead className="text-gray-300 font-medium px-4 py-4">Display Name</TableHead>
+              <TableHead className="text-gray-300 font-medium px-4 py-4">Description</TableHead>
+              <TableHead className="text-gray-300 font-medium px-4 py-4">Status</TableHead>
+              <TableHead className="text-gray-300 font-medium px-4 py-4">Permissions</TableHead>
+              <TableHead className="text-gray-300 font-medium px-4 py-4">Created</TableHead>
+              <TableHead className="text-right text-gray-300 font-medium px-6 py-4">Actions</TableHead>
             </TableRow>
           </TableHeader>
-          <TableBody className="bg-white">
+          <TableBody className="bg-darkGray">
             {filteredRoles?.map((role) => (
-              <TableRow key={role._id} className="border-b border-gray-100 hover:bg-blue-50 transition-colors duration-150">
+              <TableRow key={role._id} className="border-b border-grayBorders hover:bg-darkGray2 transition-colors duration-150">
                 <TableCell className="px-6 py-4">
                   <div className="flex items-center gap-2">
                     <Shield className="h-4 w-4 text-gray-400" />
-                    <div className="font-medium text-gray-900">{role.name}</div>
+                    <div className="font-medium text-white">{role.name}</div>
                   </div>
                 </TableCell>
                 <TableCell className="px-4 py-4">
-                  <div className="text-gray-700">{role.displayName}</div>
+                  <div className="text-gray-300">{role.displayName}</div>
                 </TableCell>
                 <TableCell className="px-4 py-4">
-                  <div className="text-sm text-gray-600 max-w-xs truncate">
+                  <div className="text-sm text-gray-400 max-w-xs truncate">
                     {role.description || "No description"}
                   </div>
                 </TableCell>
@@ -180,19 +180,19 @@ export function RolesTable() {
                       </Badge>
                     ))}
                     {role.permissions && role.permissions.length > 2 && (
-                      <Badge variant="outline" className="text-xs bg-gray-100 text-gray-700 border-gray-300">
+                      <Badge variant="outline" className="text-xs bg-gray-100 text-gray-300 border-grayBorders">
                         +{role.permissions.length - 2}
                       </Badge>
                     )}
                     {(!role.permissions || role.permissions.length === 0) && (
-                      <Badge variant="outline" className="text-xs bg-gray-50 text-gray-500 border-gray-200">
+                      <Badge variant="outline" className="text-xs bg-darkGray2 text-gray-400 border-grayBorders">
                         No permissions
                       </Badge>
                     )}
                   </div>
                 </TableCell>
                 <TableCell className="px-4 py-4">
-                  <div className="text-sm text-gray-700">
+                  <div className="text-sm text-gray-300">
                     {formatDate(role._creationTime)}
                   </div>
                 </TableCell>
@@ -201,7 +201,7 @@ export function RolesTable() {
                     <Button 
                       variant="ghost" 
                       size="sm" 
-                      className="text-gray-600 hover:text-blue-700 hover:bg-blue-100 transition-colors duration-150"
+                      className="text-gray-400 hover:text-blue-400 hover:bg-darkGray2 transition-colors duration-150"
                       onClick={() => handleViewRole(role)}
                     >
                       <Eye className="h-4 w-4" />
@@ -209,12 +209,12 @@ export function RolesTable() {
                     <Button 
                       variant="ghost" 
                       size="sm" 
-                      className="text-gray-600 hover:text-amber-700 hover:bg-amber-100 transition-colors duration-150"
+                      className="text-gray-400 hover:text-amber-400 hover:bg-darkGray2 transition-colors duration-150"
                       onClick={() => handleEditRole(role)}
                     >
                       <Edit className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700 hover:bg-red-100 transition-colors duration-150">
+                    <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-300 hover:bg-darkGray2 transition-colors duration-150">
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
@@ -226,7 +226,7 @@ export function RolesTable() {
       </div>
 
       {filteredRoles?.length === 0 && (
-        <div className="text-center py-8 text-gray-500">
+        <div className="text-center py-8 text-gray-400">
           No roles found
         </div>
       )}
@@ -245,7 +245,7 @@ export function RolesTable() {
                 placeholder="e.g., admin, moderator"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="bg-white border-gray-300 text-gray-900"
+                className="bg-darkGray border-grayBorders text-white"
               />
             </div>
             
@@ -256,7 +256,7 @@ export function RolesTable() {
                 placeholder="e.g., Administrator, Moderator"
                 value={formData.displayName}
                 onChange={(e) => setFormData({ ...formData, displayName: e.target.value })}
-                className="bg-white border-gray-300 text-gray-900"
+                className="bg-darkGray border-grayBorders text-white"
               />
             </div>
             
@@ -267,7 +267,7 @@ export function RolesTable() {
                 placeholder="Role description..."
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                className="bg-white border-gray-300 min-h-[80px]"
+                className="bg-darkGray border-grayBorders min-h-[80px]"
               />
             </div>
             
@@ -278,7 +278,7 @@ export function RolesTable() {
                 placeholder="e.g., read, write, delete"
                 value={formData.permissions}
                 onChange={(e) => setFormData({ ...formData, permissions: e.target.value })}
-                className="bg-white border-gray-300 text-gray-900"
+                className="bg-darkGray border-grayBorders text-white"
               />
             </div>
             

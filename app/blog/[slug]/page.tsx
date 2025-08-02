@@ -7,6 +7,7 @@ import { ChevronLeft } from "lucide-react";
 import { api } from "@/convex/_generated/api";
 import { fetchQuery } from "convex/nextjs";
 import { CopyLinkButton } from "@/components/blog/copy-link-button";
+import { TiptapRenderer } from "@/components/ui/tiptap-renderer";
 
 interface BlogDetailPageProps {
   params: Promise<{
@@ -29,7 +30,7 @@ export async function generateMetadata({
       };
     }
 
-    const imageUrl = blog.profilePicture?.url || "/icons/user-avatar.png";
+    const imageUrl = blog.thumbnail?.url || blog.profilePicture?.url || "/icons/user-avatar.png";
     const description = blog.description || "";
 
     return {
@@ -79,7 +80,7 @@ const BlogDetailPage = async ({ params }: BlogDetailPageProps) => {
 
     const categoryName = blog.category?.name || "Uncategorized";
     const categoryColor = blog.category?.color || "#6B7280";
-    const imageUrl = blog.profilePicture?.url || "/icons/user-avatar.png";
+    const imageUrl = blog.thumbnail?.url || blog.profilePicture?.url || "/icons/user-avatar.png";
     const publishedDate = new Date(blog.publishedAt).toLocaleDateString(
       "en-US",
       {
@@ -89,9 +90,26 @@ const BlogDetailPage = async ({ params }: BlogDetailPageProps) => {
       }
     );
     const tags = blog.tags?.filter(Boolean) || [];
-    const content = blog.richtext ? "Content available" : "No content";
-    const readingTime = 5; // Simple fallback
+    const content = blog.content; // Tiptap JSON content
+    const readingTime = calculateReadingTime(content);
     const authorName = blog.author?.name || "Anonymous";
+
+    // Simple reading time calculation
+    function calculateReadingTime(tiptapContent: any): number {
+      if (!tiptapContent?.content) return 1;
+      
+      const extractText = (nodes: any[]): string => {
+        return nodes.map(node => {
+          if (node.type === 'text') return node.text || '';
+          if (node.content) return extractText(node.content);
+          return '';
+        }).join(' ');
+      };
+      
+      const text = extractText(tiptapContent.content);
+      const wordCount = text.split(/\s+/).filter(word => word.length > 0).length;
+      return Math.max(1, Math.ceil(wordCount / 200)); // 200 words per minute
+    }
 
     return (
       <div className="min-h-screen bg-black">
@@ -149,7 +167,7 @@ const BlogDetailPage = async ({ params }: BlogDetailPageProps) => {
               </div>
 
               {/* Featured image */}
-              {blog.profilePicture && (
+              {(blog.thumbnail || blog.profilePicture) && (
                 <div className="relative w-full h-48 sm:h-64 md:h-96 rounded-lg overflow-hidden mb-8 sm:mb-12">
                   <Image
                     src={imageUrl}
@@ -164,17 +182,10 @@ const BlogDetailPage = async ({ params }: BlogDetailPageProps) => {
 
             {/* Article content */}
             <article className="prose prose-invert prose-sm sm:prose-lg max-w-none">
-              <div className="text-zinc-300 leading-relaxed space-y-4 sm:space-y-6">
-                {blog.richtext ? (
-                  <div className="whitespace-pre-wrap leading-7 sm:leading-8 text-sm sm:text-base">
-                    {content}
-                  </div>
-                ) : (
-                  <div className="text-base sm:text-lg leading-7 sm:leading-8">
-                    <p>Content not available.</p>
-                  </div>
-                )}
-              </div>
+              <TiptapRenderer 
+                content={content} 
+                className="text-zinc-300 leading-relaxed space-y-4 sm:space-y-6"
+              />
             </article>
 
             {/* Tags */}

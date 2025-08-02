@@ -7,10 +7,9 @@ import { ThemeProvider } from "./providers/ThemeProvider";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { CSPostHogProvider } from "./provider";
 import { UserProvider } from "./providers/UserContext";
-import { ConvexAuthNextjsServerProvider } from "@convex-dev/auth/nextjs/server";
+import { LayoutWrapper } from "@/components/layout-wrapper";
 import { ConvexClientProvider } from "./providers/ConvexClientProvider";
-import Footer from "@/components/footer";
-import Header from "@/components/header";
+import { ConvexAuthNextjsServerProvider } from "@convex-dev/auth/nextjs/server";
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
@@ -29,9 +28,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ConvexAuthNextjsServerProvider>
-      <html lang="en" className="h-full">
-        <body className={`${spaceGrotesk.className} h-full`}>
+    <html lang="en">
+      <body className={`${spaceGrotesk.className}`}>
+        <ConvexAuthNextjsServerProvider>
           <SpeedInsights />
           <CSPostHogProvider>
             <EmailProvider>
@@ -43,19 +42,17 @@ export default function RootLayout({
               >
                 <ConvexClientProvider>
                   <UserProvider>
-                    <div className="h-full">
-                      <Header />
+                    <LayoutWrapper>
                       {children}
-                      <Footer />
-                    </div>
+                    </LayoutWrapper>
                   </UserProvider>
                 </ConvexClientProvider>
               </ThemeProvider>
             </EmailProvider>
           </CSPostHogProvider>
           <Analytics />
-        </body>
-      </html>
-    </ConvexAuthNextjsServerProvider>
+        </ConvexAuthNextjsServerProvider>
+      </body>
+    </html>
   );
 }

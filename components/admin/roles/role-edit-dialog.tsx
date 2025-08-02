@@ -60,7 +60,7 @@ export function RoleEditDialog({ role, isOpen, onOpenChange, mode }: RoleEditDia
     return isActive ? (
       <Badge variant="default" className="bg-green-600 text-white">Active</Badge>
     ) : (
-      <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-300">Inactive</Badge>
+      <Badge variant="outline" className="bg-darkGray2 text-gray-300 border-grayBorders">Inactive</Badge>
     );
   };
 
@@ -78,7 +78,7 @@ export function RoleEditDialog({ role, isOpen, onOpenChange, mode }: RoleEditDia
     const permissionLower = permission.toLowerCase();
     let config: { variant: "outline" | "default" | "secondary" | "destructive", className: string } = { 
       variant: "outline" as const, 
-      className: "bg-gray-50 text-gray-700 border-gray-300" 
+      className: "bg-darkGray2 text-gray-300 border-grayBorders" 
     };
     
     for (const [key, value] of Object.entries(badgeConfig)) {
@@ -124,7 +124,7 @@ export function RoleEditDialog({ role, isOpen, onOpenChange, mode }: RoleEditDia
               <div className="space-y-2">
                 <Label htmlFor="name">Role Name</Label>
                 {mode === "view" ? (
-                  <p className="text-sm text-gray-900 bg-gray-50 px-3 py-2 rounded-md border">
+                  <p className="text-sm text-white bg-darkGray2 px-3 py-2 rounded-md border">
                     {role.name}
                   </p>
                 ) : (
@@ -132,7 +132,7 @@ export function RoleEditDialog({ role, isOpen, onOpenChange, mode }: RoleEditDia
                     id="name"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="bg-white border-gray-300 text-gray-900"
+                    className="bg-darkGray border-grayBorders text-white"
                     placeholder="admin, user, moderator..."
                   />
                 )}
@@ -141,7 +141,7 @@ export function RoleEditDialog({ role, isOpen, onOpenChange, mode }: RoleEditDia
               <div className="space-y-2">
                 <Label htmlFor="displayName">Display Name</Label>
                 {mode === "view" ? (
-                  <p className="text-sm text-gray-900 bg-gray-50 px-3 py-2 rounded-md border">
+                  <p className="text-sm text-white bg-darkGray2 px-3 py-2 rounded-md border">
                     {role.displayName}
                   </p>
                 ) : (
@@ -149,7 +149,7 @@ export function RoleEditDialog({ role, isOpen, onOpenChange, mode }: RoleEditDia
                     id="displayName"
                     value={formData.displayName}
                     onChange={(e) => setFormData({ ...formData, displayName: e.target.value })}
-                    className="bg-white border-gray-300 text-gray-900"
+                    className="bg-darkGray border-grayBorders text-white"
                     placeholder="Administrator, User, Moderator..."
                   />
                 )}
@@ -159,7 +159,7 @@ export function RoleEditDialog({ role, isOpen, onOpenChange, mode }: RoleEditDia
             <div className="space-y-2">
               <Label htmlFor="description">Description</Label>
               {mode === "view" ? (
-                <p className="text-sm text-gray-900 bg-gray-50 px-3 py-2 rounded-md border min-h-[80px]">
+                <p className="text-sm text-white bg-darkGray2 px-3 py-2 rounded-md border min-h-[80px]">
                   {role.description || "N/A"}
                 </p>
               ) : (
@@ -167,7 +167,7 @@ export function RoleEditDialog({ role, isOpen, onOpenChange, mode }: RoleEditDia
                   id="description"
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="bg-white border-gray-300 text-gray-900 min-h-[80px]"
+                  className="bg-darkGray border-grayBorders text-white min-h-[80px]"
                   placeholder="Describe the role's purpose and responsibilities..."
                 />
               )}
@@ -205,13 +205,13 @@ export function RoleEditDialog({ role, isOpen, onOpenChange, mode }: RoleEditDia
                           getPermissionBadge(permission)
                         ))
                       ) : (
-                        <p className="text-sm text-gray-500">No permissions assigned</p>
+                        <p className="text-sm text-gray-400">No permissions assigned</p>
                       )}
                     </div>
                     {role.permissions && role.permissions.length > 0 && (
-                      <div className="bg-gray-50 p-3 rounded-md border">
-                        <p className="text-xs text-gray-600 mb-2">Permission List:</p>
-                        <ul className="text-sm text-gray-700 space-y-1">
+                      <div className="bg-darkGray2 p-3 rounded-md border">
+                        <p className="text-xs text-gray-400 mb-2">Permission List:</p>
+                        <ul className="text-sm text-gray-300 space-y-1">
                           {role.permissions.map((permission: string, index: number) => (
                             <li key={index} className="flex items-center gap-2">
                               <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
@@ -228,7 +228,7 @@ export function RoleEditDialog({ role, isOpen, onOpenChange, mode }: RoleEditDia
                       id="permissions"
                       value={formData.permissions.join(', ')}
                       onChange={(e) => handlePermissionsChange(e.target.value)}
-                      className="bg-white border-gray-300 text-gray-900"
+                      className="bg-darkGray border-grayBorders text-white"
                       placeholder="admin, create_users, delete_posts (comma separated)"
                     />
                     {formData.permissions.length > 0 && (
@@ -238,7 +238,7 @@ export function RoleEditDialog({ role, isOpen, onOpenChange, mode }: RoleEditDia
                             getPermissionBadge(permission)
                           ))}
                         </div>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-gray-400">
                           {formData.permissions.length} permission{formData.permissions.length !== 1 ? 's' : ''} assigned
                         </p>
                       </div>
@@ -249,22 +249,22 @@ export function RoleEditDialog({ role, isOpen, onOpenChange, mode }: RoleEditDia
 
               <div className="space-y-2">
                 <Label>Role Information</Label>
-                <div className="bg-gray-50 p-4 rounded-md border space-y-3">
+                <div className="bg-darkGray2 p-4 rounded-md border space-y-3">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">Name:</span>
-                    <span className="text-sm font-medium text-gray-900">{role.name}</span>
+                    <span className="text-sm text-gray-400">Name:</span>
+                    <span className="text-sm font-medium text-white">{role.name}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">Display Name:</span>
-                    <span className="text-sm text-gray-900">{role.displayName}</span>
+                    <span className="text-sm text-gray-400">Display Name:</span>
+                    <span className="text-sm text-white">{role.displayName}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">Status:</span>
+                    <span className="text-sm text-gray-400">Status:</span>
                     <div>{getStatusBadge(role.isActive)}</div>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">Permissions:</span>
-                    <span className="text-sm text-gray-900">{role.permissions?.length || 0}</span>
+                    <span className="text-sm text-gray-400">Permissions:</span>
+                    <span className="text-sm text-white">{role.permissions?.length || 0}</span>
                   </div>
                 </div>
               </div>
@@ -272,8 +272,8 @@ export function RoleEditDialog({ role, isOpen, onOpenChange, mode }: RoleEditDia
               <div className="space-y-2">
                 <Label>Role Hierarchy</Label>
                 <div className="flex items-center gap-2">
-                  <Users className="h-4 w-4 text-gray-500" />
-                  <p className="text-sm text-gray-900">
+                  <Users className="h-4 w-4 text-gray-400" />
+                  <p className="text-sm text-white">
                     {role.name === 'admin' ? 'Administrator (Highest Level)' : 
                      role.name === 'moderator' ? 'Moderator (Medium Level)' : 
                      'User (Standard Level)'}
@@ -293,24 +293,24 @@ export function RoleEditDialog({ role, isOpen, onOpenChange, mode }: RoleEditDia
               <div className="space-y-2">
                 <Label>Role Identifier</Label>
                 <div className="flex items-center gap-2">
-                  <Tag className="h-4 w-4 text-gray-500" />
-                  <p className="text-sm text-gray-900 font-mono">{role.name}</p>
+                  <Tag className="h-4 w-4 text-gray-400" />
+                  <p className="text-sm text-white font-mono">{role.name}</p>
                 </div>
               </div>
 
               <div className="space-y-2">
                 <Label>Permission Count</Label>
                 <div className="flex items-center gap-2">
-                  <Shield className="h-4 w-4 text-gray-500" />
-                  <p className="text-sm text-gray-900">{role.permissions?.length || 0} permissions</p>
+                  <Shield className="h-4 w-4 text-gray-400" />
+                  <p className="text-sm text-white">{role.permissions?.length || 0} permissions</p>
                 </div>
               </div>
 
               <div className="space-y-2">
                 <Label>Created</Label>
                 <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-gray-500" />
-                  <p className="text-sm text-gray-900">
+                  <Calendar className="h-4 w-4 text-gray-400" />
+                  <p className="text-sm text-white">
                     {new Date(role._creationTime).toLocaleDateString()}
                   </p>
                 </div>
@@ -318,29 +318,29 @@ export function RoleEditDialog({ role, isOpen, onOpenChange, mode }: RoleEditDia
 
               <div className="space-y-2">
                 <Label>Role ID</Label>
-                <p className="text-xs text-gray-500 font-mono bg-gray-50 px-2 py-1 rounded border">
+                <p className="text-xs text-gray-400 font-mono bg-darkGray2 px-2 py-1 rounded border">
                   {role._id}
                 </p>
               </div>
 
               <div className="space-y-2">
                 <Label>System Information</Label>
-                <div className="bg-gray-50 p-4 rounded-md border space-y-2">
+                <div className="bg-darkGray2 p-4 rounded-md border space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Created At:</span>
-                    <span className="text-gray-900">{new Date(role._creationTime).toLocaleString()}</span>
+                    <span className="text-gray-400">Created At:</span>
+                    <span className="text-white">{new Date(role._creationTime).toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Status:</span>
-                    <span className="text-gray-900">{role.isActive ? "Active" : "Inactive"}</span>
+                    <span className="text-gray-400">Status:</span>
+                    <span className="text-white">{role.isActive ? "Active" : "Inactive"}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Name:</span>
-                    <span className="text-gray-900 font-mono">{role.name}</span>
+                    <span className="text-gray-400">Name:</span>
+                    <span className="text-white font-mono">{role.name}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Display Name:</span>
-                    <span className="text-gray-900">{role.displayName}</span>
+                    <span className="text-gray-400">Display Name:</span>
+                    <span className="text-white">{role.displayName}</span>
                   </div>
                 </div>
               </div>
@@ -352,7 +352,7 @@ export function RoleEditDialog({ role, isOpen, onOpenChange, mode }: RoleEditDia
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
-            className="text-gray-900"
+            className="text-white"
           >
             {mode === "view" ? "Close" : "Cancel"}
           </Button>

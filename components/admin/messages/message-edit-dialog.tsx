@@ -98,7 +98,7 @@ export function MessageEditDialog({
 
     const config = badgeConfig[type as keyof typeof badgeConfig] || {
       variant: "outline" as const,
-      className: "bg-gray-50 text-gray-700 border-gray-300",
+      className: "bg-darkGray2 text-gray-300 border-grayBorders",
     };
 
     return (
@@ -155,7 +155,7 @@ export function MessageEditDialog({
             <div className="space-y-2">
               <Label htmlFor="content">Content</Label>
               {mode === "view" ? (
-                <p className="text-sm text-gray-900 bg-gray-50 px-3 py-2 rounded-md border min-h-[100px] whitespace-pre-wrap">
+                <p className="text-sm text-white bg-darkGray2 px-3 py-2 rounded-md border min-h-[100px] whitespace-pre-wrap">
                   {message.content}
                 </p>
               ) : (
@@ -165,7 +165,7 @@ export function MessageEditDialog({
                   onChange={(e) =>
                     setFormData({ ...formData, content: e.target.value })
                   }
-                  className="bg-white border-gray-300 text-gray-900 min-h-[100px]"
+                  className="bg-darkGray border-grayBorders text-white min-h-[100px]"
                   placeholder="Message content..."
                 />
               )}
@@ -183,7 +183,7 @@ export function MessageEditDialog({
                       value: "TEXT" | "IMAGE" | "FILE" | "SYSTEM"
                     ) => setFormData({ ...formData, type: value })}
                   >
-                    <SelectTrigger className="bg-white border-gray-300 text-gray-900">
+                    <SelectTrigger className="bg-darkGray border-grayBorders text-white">
                       <SelectValue placeholder="Select type" />
                     </SelectTrigger>
                     <SelectContent>
@@ -243,8 +243,8 @@ export function MessageEditDialog({
               <div className="space-y-2">
                 <Label>Conversation ID</Label>
                 <div className="flex items-center gap-2">
-                  <Hash className="h-4 w-4 text-gray-500" />
-                  <p className="text-sm text-gray-900 font-mono">
+                  <Hash className="h-4 w-4 text-gray-400" />
+                  <p className="text-sm text-white font-mono">
                     {message.conversationId}
                   </p>
                 </div>
@@ -253,8 +253,8 @@ export function MessageEditDialog({
               <div className="space-y-2">
                 <Label>Sender ID</Label>
                 <div className="flex items-center gap-2">
-                  <User className="h-4 w-4 text-gray-500" />
-                  <p className="text-sm text-gray-900 font-mono">
+                  <User className="h-4 w-4 text-gray-400" />
+                  <p className="text-sm text-white font-mono">
                     {message.senderId}
                   </p>
                 </div>
@@ -264,8 +264,8 @@ export function MessageEditDialog({
                 <div className="space-y-2">
                   <Label>Reply To</Label>
                   <div className="flex items-center gap-2">
-                    <Hash className="h-4 w-4 text-gray-500" />
-                    <p className="text-sm text-gray-900 font-mono">
+                    <Hash className="h-4 w-4 text-gray-400" />
+                    <p className="text-sm text-white font-mono">
                       {message.replyToId}
                     </p>
                   </div>
@@ -276,8 +276,8 @@ export function MessageEditDialog({
                 <div className="space-y-2">
                   <Label>Edited At</Label>
                   <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-gray-500" />
-                    <p className="text-sm text-gray-900">
+                    <Calendar className="h-4 w-4 text-gray-400" />
+                    <p className="text-sm text-white">
                       {new Date(message.editedAt).toLocaleString()}
                     </p>
                   </div>
@@ -288,8 +288,8 @@ export function MessageEditDialog({
                 <div className="space-y-2">
                   <Label>Deleted At</Label>
                   <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-gray-500" />
-                    <p className="text-sm text-gray-900">
+                    <Calendar className="h-4 w-4 text-gray-400" />
+                    <p className="text-sm text-white">
                       {new Date(message.deletedAt).toLocaleString()}
                     </p>
                   </div>
@@ -299,8 +299,8 @@ export function MessageEditDialog({
               <div className="space-y-2">
                 <Label>Created</Label>
                 <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-gray-500" />
-                  <p className="text-sm text-gray-900">
+                  <Calendar className="h-4 w-4 text-gray-400" />
+                  <p className="text-sm text-white">
                     {new Date(message._creationTime).toLocaleString()}
                   </p>
                 </div>
@@ -308,7 +308,7 @@ export function MessageEditDialog({
 
               <div className="space-y-2">
                 <Label>Message ID</Label>
-                <p className="text-xs text-gray-500 font-mono bg-gray-50 px-2 py-1 rounded border">
+                <p className="text-xs text-gray-400 font-mono bg-darkGray2 px-2 py-1 rounded border">
                   {message._id}
                 </p>
               </div>
@@ -320,7 +320,7 @@ export function MessageEditDialog({
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
-            className="text-gray-900"
+            className="text-white"
           >
             {mode === "view" ? "Close" : "Cancel"}
           </Button>

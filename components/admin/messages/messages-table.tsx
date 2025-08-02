@@ -59,13 +59,13 @@ export function MessagesTable() {
 
   const getTypeBadge = (type: string) => {
     const badgeConfig = {
-      TEXT: { variant: "outline" as const, className: "bg-gray-100 text-gray-700 border-gray-300" },
+      TEXT: { variant: "outline" as const, className: "bg-gray-100 text-gray-300 border-grayBorders" },
       IMAGE: { variant: "secondary" as const, className: "bg-blue-100 text-blue-800 border-blue-200" },
       FILE: { variant: "default" as const, className: "bg-green-600 text-white" },
       SYSTEM: { variant: "destructive" as const, className: "bg-red-600 text-white" },
     };
     
-    const config = badgeConfig[type as keyof typeof badgeConfig] || { variant: "outline" as const, className: "bg-gray-50 text-gray-700 border-gray-300" };
+    const config = badgeConfig[type as keyof typeof badgeConfig] || { variant: "outline" as const, className: "bg-darkGray2 text-gray-300 border-grayBorders" };
     
     return (
       <Badge variant={config.variant} className={config.className}>
@@ -134,12 +134,12 @@ export function MessagesTable() {
             placeholder="Search messages..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="bg-white border-gray-300 text-gray-900 placeholder-gray-500"
+            className="bg-darkGray border-grayBorders text-white placeholder-gray-400"
           />
         </div>
         
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2 text-sm text-gray-600">
+          <div className="flex items-center gap-2 text-sm text-gray-400">
             <MessageSquare className="h-4 w-4" />
             {filteredMessages?.length || 0} messages
           </div>
@@ -154,25 +154,25 @@ export function MessagesTable() {
         </div>
       </div>
 
-      <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
+      <div className="bg-darkGray border border-grayBorders rounded-lg shadow-sm">
         <Table>
           <TableHeader>
-            <TableRow className="bg-gray-50 border-b border-gray-200">
-              <TableHead className="text-gray-700 font-medium px-6 py-4">Content</TableHead>
-              <TableHead className="text-gray-700 font-medium px-4 py-4">Type</TableHead>
-              <TableHead className="text-gray-700 font-medium px-4 py-4">Sender</TableHead>
-              <TableHead className="text-gray-700 font-medium px-4 py-4">Conversation</TableHead>
-              <TableHead className="text-gray-700 font-medium px-4 py-4">Status</TableHead>
-              <TableHead className="text-gray-700 font-medium px-4 py-4">Date</TableHead>
-              <TableHead className="text-right text-gray-700 font-medium px-6 py-4">Actions</TableHead>
+            <TableRow className="bg-darkGray2 border-b border-grayBorders">
+              <TableHead className="text-gray-300 font-medium px-6 py-4">Content</TableHead>
+              <TableHead className="text-gray-300 font-medium px-4 py-4">Type</TableHead>
+              <TableHead className="text-gray-300 font-medium px-4 py-4">Sender</TableHead>
+              <TableHead className="text-gray-300 font-medium px-4 py-4">Conversation</TableHead>
+              <TableHead className="text-gray-300 font-medium px-4 py-4">Status</TableHead>
+              <TableHead className="text-gray-300 font-medium px-4 py-4">Date</TableHead>
+              <TableHead className="text-right text-gray-300 font-medium px-6 py-4">Actions</TableHead>
             </TableRow>
           </TableHeader>
-          <TableBody className="bg-white">
+          <TableBody className="bg-darkGray">
             {filteredMessages?.map((message) => (
-              <TableRow key={message._id} className="border-b border-gray-100 hover:bg-blue-50 transition-colors duration-150">
+              <TableRow key={message._id} className="border-b border-grayBorders hover:bg-darkGray2 transition-colors duration-150">
                 <TableCell className="px-6 py-4">
                   <div className="max-w-xs">
-                    <div className="font-medium text-gray-900">
+                    <div className="font-medium text-white">
                       {truncateContent(message.content)}
                     </div>
                     {message.isEdited && (
@@ -184,12 +184,12 @@ export function MessagesTable() {
                 </TableCell>
                 <TableCell className="px-4 py-4">{getTypeBadge(message.type)}</TableCell>
                 <TableCell className="px-4 py-4">
-                  <div className="text-sm text-gray-700">
+                  <div className="text-sm text-gray-300">
                     Sender ID: {message.senderId}
                   </div>
                 </TableCell>
                 <TableCell className="px-4 py-4">
-                  <div className="text-sm text-gray-700">
+                  <div className="text-sm text-gray-300">
                     {message.conversationId}
                   </div>
                 </TableCell>
@@ -206,14 +206,14 @@ export function MessagesTable() {
                       </Badge>
                     )}
                     {!message.isDeleted && !message.isEdited && (
-                      <Badge variant="outline" className="text-xs bg-gray-100 text-gray-700 border-gray-300">
+                      <Badge variant="outline" className="text-xs bg-gray-100 text-gray-300 border-grayBorders">
                         Normal
                       </Badge>
                     )}
                   </div>
                 </TableCell>
                 <TableCell className="px-4 py-4">
-                  <div className="flex items-center gap-1 text-sm text-gray-700">
+                  <div className="flex items-center gap-1 text-sm text-gray-300">
                     <Clock className="h-3 w-3" />
                     {formatDate(message._creationTime)}
                   </div>
@@ -223,7 +223,7 @@ export function MessagesTable() {
                     <Button 
                       variant="ghost" 
                       size="sm" 
-                      className="text-gray-600 hover:text-blue-700 hover:bg-blue-100 transition-colors duration-150"
+                      className="text-gray-400 hover:text-blue-400 hover:bg-darkGray2 transition-colors duration-150"
                       onClick={() => handleViewMessage(message)}
                     >
                       <Eye className="h-4 w-4" />
@@ -231,12 +231,12 @@ export function MessagesTable() {
                     <Button 
                       variant="ghost" 
                       size="sm" 
-                      className="text-gray-600 hover:text-amber-700 hover:bg-amber-100 transition-colors duration-150"
+                      className="text-gray-400 hover:text-amber-400 hover:bg-darkGray2 transition-colors duration-150"
                       onClick={() => handleEditMessage(message)}
                     >
                       <Edit className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700 hover:bg-red-100 transition-colors duration-150">
+                    <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-300 hover:bg-darkGray2 transition-colors duration-150">
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
@@ -248,7 +248,7 @@ export function MessagesTable() {
       </div>
 
       {filteredMessages?.length === 0 && (
-        <div className="text-center py-8 text-gray-500">
+        <div className="text-center py-8 text-gray-400">
           No messages found
         </div>
       )}
@@ -267,7 +267,7 @@ export function MessagesTable() {
                 placeholder="Enter sender user ID"
                 value={formData.senderId}
                 onChange={(e) => setFormData({ ...formData, senderId: e.target.value })}
-                className="bg-white border-gray-300 text-gray-900"
+                className="bg-darkGray border-grayBorders text-white"
               />
             </div>
             
@@ -278,7 +278,7 @@ export function MessagesTable() {
                 placeholder="Enter receiver user ID"
                 value={formData.receiverId}
                 onChange={(e) => setFormData({ ...formData, receiverId: e.target.value })}
-                className="bg-white border-gray-300 text-gray-900"
+                className="bg-darkGray border-grayBorders text-white"
               />
             </div>
             
@@ -289,14 +289,14 @@ export function MessagesTable() {
                 placeholder="Enter conversation ID"
                 value={formData.conversationId}
                 onChange={(e) => setFormData({ ...formData, conversationId: e.target.value })}
-                className="bg-white border-gray-300 text-gray-900"
+                className="bg-darkGray border-grayBorders text-white"
               />
             </div>
             
             <div className="space-y-2">
               <Label htmlFor="type">Message Type</Label>
               <Select value={formData.type} onValueChange={(value) => setFormData({ ...formData, type: value })}>
-                <SelectTrigger className="bg-white border-gray-300 text-gray-900">
+                <SelectTrigger className="bg-darkGray border-grayBorders text-white">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -315,7 +315,7 @@ export function MessagesTable() {
                 placeholder="Message content..."
                 value={formData.content}
                 onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                className="bg-white border-gray-300 min-h-[100px]"
+                className="bg-darkGray border-grayBorders min-h-[100px]"
               />
             </div>
           </div>

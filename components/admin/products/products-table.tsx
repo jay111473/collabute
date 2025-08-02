@@ -64,7 +64,7 @@ export function ProductsTable() {
   };
 
   const getCategoryBadge = (category?: string) => {
-    if (!category) return <Badge variant="outline" className="bg-gray-50 text-gray-500 border-gray-200">No Category</Badge>;
+    if (!category) return <Badge variant="outline" className="bg-darkGray2 text-gray-400 border-grayBorders">No Category</Badge>;
     
     const categoryColors: Record<string, string> = {
       "software": "bg-blue-100 text-blue-800 border-blue-200",
@@ -75,7 +75,7 @@ export function ProductsTable() {
       "physical": "bg-yellow-100 text-yellow-800 border-yellow-200",
     };
     
-    const colorClass = categoryColors[category.toLowerCase()] || "bg-gray-100 text-gray-700 border-gray-300";
+    const colorClass = categoryColors[category.toLowerCase()] || "bg-gray-100 text-gray-300 border-grayBorders";
     
     return (
       <Badge variant="outline" className={`text-xs ${colorClass}`}>
@@ -147,12 +147,12 @@ export function ProductsTable() {
             placeholder="Search products..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="bg-white border-gray-300 text-gray-900 placeholder-gray-500"
+            className="bg-darkGray border-grayBorders text-white placeholder-gray-400"
           />
         </div>
         
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2 text-sm text-gray-600">
+          <div className="flex items-center gap-2 text-sm text-gray-400">
             <Package className="h-4 w-4" />
             {filteredProducts?.length || 0} products
           </div>
@@ -167,43 +167,43 @@ export function ProductsTable() {
         </div>
       </div>
 
-      <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
+      <div className="bg-darkGray border border-grayBorders rounded-lg shadow-sm">
         <Table>
           <TableHeader>
-            <TableRow className="bg-gray-50 border-b border-gray-200">
-              <TableHead className="text-gray-700 font-medium px-6 py-4">Name</TableHead>
-              <TableHead className="text-gray-700 font-medium px-4 py-4">Category</TableHead>
-              <TableHead className="text-gray-700 font-medium px-4 py-4">Price</TableHead>
-              <TableHead className="text-gray-700 font-medium px-4 py-4">Status</TableHead>
-              <TableHead className="text-gray-700 font-medium px-4 py-4">Description</TableHead>
-              <TableHead className="text-gray-700 font-medium px-4 py-4">Created</TableHead>
-              <TableHead className="text-right text-gray-700 font-medium px-6 py-4">Actions</TableHead>
+            <TableRow className="bg-darkGray2 border-b border-grayBorders">
+              <TableHead className="text-gray-300 font-medium px-6 py-4">Name</TableHead>
+              <TableHead className="text-gray-300 font-medium px-4 py-4">Category</TableHead>
+              <TableHead className="text-gray-300 font-medium px-4 py-4">Price</TableHead>
+              <TableHead className="text-gray-300 font-medium px-4 py-4">Status</TableHead>
+              <TableHead className="text-gray-300 font-medium px-4 py-4">Description</TableHead>
+              <TableHead className="text-gray-300 font-medium px-4 py-4">Created</TableHead>
+              <TableHead className="text-right text-gray-300 font-medium px-6 py-4">Actions</TableHead>
             </TableRow>
           </TableHeader>
-          <TableBody className="bg-white">
+          <TableBody className="bg-darkGray">
             {filteredProducts?.map((product) => (
-              <TableRow key={product._id} className="border-b border-gray-100 hover:bg-blue-50 transition-colors duration-150">
+              <TableRow key={product._id} className="border-b border-grayBorders hover:bg-darkGray2 transition-colors duration-150">
                 <TableCell className="px-6 py-4">
                   <div className="flex items-center gap-2">
                     <Package className="h-4 w-4 text-gray-400" />
-                    <div className="font-medium text-gray-900">{product.name}</div>
+                    <div className="font-medium text-white">{product.name}</div>
                   </div>
                 </TableCell>
                 <TableCell className="px-4 py-4">{getCategoryBadge(product.category)}</TableCell>
                 <TableCell className="px-4 py-4">
-                  <div className="flex items-center gap-1 font-medium text-gray-900">
+                  <div className="flex items-center gap-1 font-medium text-white">
                     <DollarSign className="h-3 w-3 text-green-600" />
                     {formatPrice(product.price)}
                   </div>
                 </TableCell>
                 <TableCell className="px-4 py-4">{getStatusBadge(product.isActive)}</TableCell>
                 <TableCell className="px-4 py-4">
-                  <div className="text-sm text-gray-600 max-w-xs truncate">
+                  <div className="text-sm text-gray-400 max-w-xs truncate">
                     {product.description || "No description"}
                   </div>
                 </TableCell>
                 <TableCell className="px-4 py-4">
-                  <div className="flex items-center gap-1 text-sm text-gray-700">
+                  <div className="flex items-center gap-1 text-sm text-gray-300">
                     <Calendar className="h-3 w-3" />
                     {formatDate(product._creationTime)}
                   </div>
@@ -213,7 +213,7 @@ export function ProductsTable() {
                     <Button 
                       variant="ghost" 
                       size="sm" 
-                      className="text-gray-600 hover:text-blue-700 hover:bg-blue-100 transition-colors duration-150"
+                      className="text-gray-400 hover:text-blue-400 hover:bg-darkGray2 transition-colors duration-150"
                       onClick={() => handleViewProduct(product)}
                     >
                       <Eye className="h-4 w-4" />
@@ -221,12 +221,12 @@ export function ProductsTable() {
                     <Button 
                       variant="ghost" 
                       size="sm" 
-                      className="text-gray-600 hover:text-amber-700 hover:bg-amber-100 transition-colors duration-150"
+                      className="text-gray-400 hover:text-amber-400 hover:bg-darkGray2 transition-colors duration-150"
                       onClick={() => handleEditProduct(product)}
                     >
                       <Edit className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-700 hover:bg-red-100 transition-colors duration-150">
+                    <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-300 hover:bg-darkGray2 transition-colors duration-150">
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
@@ -238,7 +238,7 @@ export function ProductsTable() {
       </div>
 
       {filteredProducts?.length === 0 && (
-        <div className="text-center py-8 text-gray-500">
+        <div className="text-center py-8 text-gray-400">
           No products found
         </div>
       )}
@@ -257,7 +257,7 @@ export function ProductsTable() {
                 placeholder="Product name"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="bg-white border-gray-300 text-gray-900"
+                className="bg-darkGray border-grayBorders text-white"
               />
             </div>
             
@@ -268,7 +268,7 @@ export function ProductsTable() {
                 placeholder="e.g., software, hardware, service"
                 value={formData.category}
                 onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                className="bg-white border-gray-300 text-gray-900"
+                className="bg-darkGray border-grayBorders text-white"
               />
             </div>
             
@@ -282,7 +282,7 @@ export function ProductsTable() {
                 placeholder="0.00"
                 value={formData.price}
                 onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                className="bg-white border-gray-300 text-gray-900"
+                className="bg-darkGray border-grayBorders text-white"
               />
             </div>
             
@@ -293,7 +293,7 @@ export function ProductsTable() {
                 placeholder="Product description..."
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                className="bg-white border-gray-300 min-h-[80px]"
+                className="bg-darkGray border-grayBorders min-h-[80px]"
               />
             </div>
             

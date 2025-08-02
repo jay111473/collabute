@@ -173,10 +173,14 @@ export default defineSchema({
   developer_profiles: defineTable({
     userId: v.id("users"),
     bio: v.optional(v.string()),
-    skills: v.optional(v.array(v.object({
-      skill: v.string(),
-      level: v.optional(v.string()),
-    }))),
+    skills: v.optional(
+      v.array(
+        v.object({
+          skill: v.string(),
+          level: v.optional(v.string()),
+        })
+      )
+    ),
     experience: v.optional(v.number()),
     experienceLevel: v.optional(ExperienceLevelValidator),
     availability: v.optional(v.string()),
@@ -211,10 +215,14 @@ export default defineSchema({
   project_manager_profiles: defineTable({
     userId: v.id("users"),
     bio: v.optional(v.string()),
-    stack: v.optional(v.array(v.object({
-      name: v.string(),
-      level: v.optional(v.string()),
-    }))),
+    stack: v.optional(
+      v.array(
+        v.object({
+          name: v.string(),
+          level: v.optional(v.string()),
+        })
+      )
+    ),
     experience: v.optional(v.number()),
     experienceLevel: v.optional(ExperienceLevelValidator),
     availability: v.optional(v.string()),
@@ -401,7 +409,8 @@ export default defineSchema({
 
   media: defineTable({
     userId: v.id("users"),
-    url: v.string(),
+    url: v.string(), // Keep for backward compatibility
+    storageId: v.optional(v.id("_storage")), // Add storageId for fresh URL generation
     type: v.optional(v.string()),
     createdAt: v.number(),
     description: v.optional(v.string()),
@@ -443,7 +452,7 @@ export default defineSchema({
     thumbnail: v.optional(v.id("media")),
     category: v.optional(v.id("categories")),
     tags: v.optional(v.array(v.id("tags"))),
-    richtext: v.optional(v.any()),
+    content: v.optional(v.any()), // Tiptap JSON content
     status: v.optional(BlogStatusValidator),
     publishedAt: v.optional(v.number()),
     updatedAt: v.number(),

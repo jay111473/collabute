@@ -64,17 +64,17 @@ export function TransactionEditDialog({ transaction, isOpen, onOpenChange, mode 
   };
 
   const getStatusBadge = (status: string | undefined) => {
-    if (!status) return <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-300">N/A</Badge>;
+    if (!status) return <Badge variant="outline" className="bg-darkGray2 text-gray-300 border-grayBorders">N/A</Badge>;
     
     const badgeConfig = {
       PENDING: { variant: "secondary" as const, className: "bg-yellow-100 text-yellow-800 border-yellow-200" },
       COMPLETED: { variant: "default" as const, className: "bg-green-600 text-white" },
       FAILED: { variant: "destructive" as const, className: "bg-red-600 text-white" },
-      CANCELLED: { variant: "outline" as const, className: "bg-gray-100 text-gray-700 border-gray-300" },
+      CANCELLED: { variant: "outline" as const, className: "bg-gray-100 text-gray-300 border-grayBorders" },
       REFUNDED: { variant: "outline" as const, className: "bg-purple-100 text-purple-700 border-purple-300" },
     };
     
-    const config = badgeConfig[status as keyof typeof badgeConfig] || { variant: "outline" as const, className: "bg-gray-50 text-gray-700 border-gray-300" };
+    const config = badgeConfig[status as keyof typeof badgeConfig] || { variant: "outline" as const, className: "bg-darkGray2 text-gray-300 border-grayBorders" };
     
     return (
       <Badge variant={config.variant} className={config.className}>
@@ -84,7 +84,7 @@ export function TransactionEditDialog({ transaction, isOpen, onOpenChange, mode 
   };
 
   const getTypeBadge = (type: string | undefined) => {
-    if (!type) return <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-300">N/A</Badge>;
+    if (!type) return <Badge variant="outline" className="bg-darkGray2 text-gray-300 border-grayBorders">N/A</Badge>;
     
     const badgeConfig = {
       PAYMENT: { variant: "default" as const, className: "bg-blue-600 text-white" },
@@ -94,7 +94,7 @@ export function TransactionEditDialog({ transaction, isOpen, onOpenChange, mode 
       TRANSFER: { variant: "secondary" as const, className: "bg-orange-100 text-orange-800 border-orange-200" },
     };
     
-    const config = badgeConfig[type as keyof typeof badgeConfig] || { variant: "outline" as const, className: "bg-gray-50 text-gray-700 border-gray-300" };
+    const config = badgeConfig[type as keyof typeof badgeConfig] || { variant: "outline" as const, className: "bg-darkGray2 text-gray-300 border-grayBorders" };
     
     return (
       <Badge variant={config.variant} className={config.className}>
@@ -104,7 +104,7 @@ export function TransactionEditDialog({ transaction, isOpen, onOpenChange, mode 
   };
 
   const getMethodBadge = (method: string | undefined) => {
-    if (!method) return <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-300">N/A</Badge>;
+    if (!method) return <Badge variant="outline" className="bg-darkGray2 text-gray-300 border-grayBorders">N/A</Badge>;
     
     const badgeConfig = {
       CREDIT_CARD: { variant: "default" as const, className: "bg-blue-600 text-white" },
@@ -112,10 +112,10 @@ export function TransactionEditDialog({ transaction, isOpen, onOpenChange, mode 
       BANK_TRANSFER: { variant: "outline" as const, className: "bg-green-50 text-green-700 border-green-300" },
       PAYPAL: { variant: "outline" as const, className: "bg-yellow-50 text-yellow-700 border-yellow-300" },
       STRIPE: { variant: "outline" as const, className: "bg-purple-50 text-purple-700 border-purple-300" },
-      WALLET: { variant: "secondary" as const, className: "bg-gray-100 text-gray-700 border-gray-300" },
+      WALLET: { variant: "secondary" as const, className: "bg-gray-100 text-gray-300 border-grayBorders" },
     };
     
-    const config = badgeConfig[method as keyof typeof badgeConfig] || { variant: "outline" as const, className: "bg-gray-50 text-gray-700 border-gray-300" };
+    const config = badgeConfig[method as keyof typeof badgeConfig] || { variant: "outline" as const, className: "bg-darkGray2 text-gray-300 border-grayBorders" };
     
     return (
       <Badge variant={config.variant} className={config.className}>
@@ -149,8 +149,8 @@ export function TransactionEditDialog({ transaction, isOpen, onOpenChange, mode 
                 <Label htmlFor="amount">Amount</Label>
                 {mode === "view" ? (
                   <div className="flex items-center gap-2">
-                    <DollarSign className="h-4 w-4 text-gray-500" />
-                    <p className="text-lg font-semibold text-gray-900">${transaction.amount}</p>
+                    <DollarSign className="h-4 w-4 text-gray-400" />
+                    <p className="text-lg font-semibold text-white">${transaction.amount}</p>
                   </div>
                 ) : (
                   <Input
@@ -158,7 +158,7 @@ export function TransactionEditDialog({ transaction, isOpen, onOpenChange, mode 
                     type="number"
                     value={formData.amount}
                     onChange={(e) => setFormData({ ...formData, amount: Number(e.target.value) })}
-                    className="bg-white border-gray-300 text-gray-900"
+                    className="bg-darkGray border-grayBorders text-white"
                     placeholder="0.00"
                   />
                 )}
@@ -173,7 +173,7 @@ export function TransactionEditDialog({ transaction, isOpen, onOpenChange, mode 
                     value={formData.status} 
                     onValueChange={(value) => setFormData({ ...formData, status: value })}
                   >
-                    <SelectTrigger className="bg-white border-gray-300 text-gray-900">
+                    <SelectTrigger className="bg-darkGray border-grayBorders text-white">
                       <SelectValue placeholder="Select status" />
                     </SelectTrigger>
                     <SelectContent>
@@ -198,7 +198,7 @@ export function TransactionEditDialog({ transaction, isOpen, onOpenChange, mode 
                     value={formData.type} 
                     onValueChange={(value) => setFormData({ ...formData, type: value })}
                   >
-                    <SelectTrigger className="bg-white border-gray-300 text-gray-900">
+                    <SelectTrigger className="bg-darkGray border-grayBorders text-white">
                       <SelectValue placeholder="Select type" />
                     </SelectTrigger>
                     <SelectContent>
@@ -216,7 +216,7 @@ export function TransactionEditDialog({ transaction, isOpen, onOpenChange, mode 
                 <Label htmlFor="method">Payment Method</Label>
                 {mode === "view" ? (
                   <div className="flex items-center gap-2">
-                    <CreditCard className="h-4 w-4 text-gray-500" />
+                    <CreditCard className="h-4 w-4 text-gray-400" />
                     <div>{getMethodBadge(transaction.method)}</div>
                   </div>
                 ) : (
@@ -224,7 +224,7 @@ export function TransactionEditDialog({ transaction, isOpen, onOpenChange, mode 
                     value={formData.method} 
                     onValueChange={(value) => setFormData({ ...formData, method: value })}
                   >
-                    <SelectTrigger className="bg-white border-gray-300 text-gray-900">
+                    <SelectTrigger className="bg-darkGray border-grayBorders text-white">
                       <SelectValue placeholder="Select method" />
                     </SelectTrigger>
                     <SelectContent>
@@ -243,7 +243,7 @@ export function TransactionEditDialog({ transaction, isOpen, onOpenChange, mode 
             <div className="space-y-2">
               <Label htmlFor="description">Description</Label>
               {mode === "view" ? (
-                <p className="text-sm text-gray-900 bg-gray-50 px-3 py-2 rounded-md border min-h-[60px]">
+                <p className="text-sm text-white bg-darkGray2 px-3 py-2 rounded-md border min-h-[60px]">
                   {transaction.description || "N/A"}
                 </p>
               ) : (
@@ -251,7 +251,7 @@ export function TransactionEditDialog({ transaction, isOpen, onOpenChange, mode 
                   id="description"
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="bg-white border-gray-300 text-gray-900 min-h-[60px]"
+                  className="bg-darkGray border-grayBorders text-white min-h-[60px]"
                   placeholder="Transaction description..."
                 />
               )}
@@ -263,7 +263,7 @@ export function TransactionEditDialog({ transaction, isOpen, onOpenChange, mode 
               <div className="space-y-2">
                 <Label htmlFor="reference">Reference Number</Label>
                 {mode === "view" ? (
-                  <p className="text-sm text-gray-900 bg-gray-50 px-3 py-2 rounded-md border font-mono">
+                  <p className="text-sm text-white bg-darkGray2 px-3 py-2 rounded-md border font-mono">
                     {transaction.reference || "N/A"}
                   </p>
                 ) : (
@@ -271,7 +271,7 @@ export function TransactionEditDialog({ transaction, isOpen, onOpenChange, mode 
                     id="reference"
                     value={formData.reference}
                     onChange={(e) => setFormData({ ...formData, reference: e.target.value })}
-                    className="bg-white border-gray-300 text-gray-900 font-mono"
+                    className="bg-darkGray border-grayBorders text-white font-mono"
                     placeholder="REF-12345"
                   />
                 )}
@@ -279,21 +279,21 @@ export function TransactionEditDialog({ transaction, isOpen, onOpenChange, mode 
 
               <div className="space-y-2">
                 <Label>Transaction Summary</Label>
-                <div className="bg-gray-50 p-4 rounded-md border space-y-3">
+                <div className="bg-darkGray2 p-4 rounded-md border space-y-3">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">Amount:</span>
-                    <span className="text-lg font-semibold text-gray-900">${transaction.amount}</span>
+                    <span className="text-sm text-gray-400">Amount:</span>
+                    <span className="text-lg font-semibold text-white">${transaction.amount}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">Type:</span>
+                    <span className="text-sm text-gray-400">Type:</span>
                     <div>{getTypeBadge(transaction.type)}</div>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">Method:</span>
+                    <span className="text-sm text-gray-400">Method:</span>
                     <div>{getMethodBadge(transaction.method)}</div>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">Status:</span>
+                    <span className="text-sm text-gray-400">Status:</span>
                     <div>{getStatusBadge(transaction.status)}</div>
                   </div>
                 </div>
@@ -302,8 +302,8 @@ export function TransactionEditDialog({ transaction, isOpen, onOpenChange, mode 
               <div className="space-y-2">
                 <Label>User Information</Label>
                 <div className="flex items-center gap-2">
-                  <Users className="h-4 w-4 text-gray-500" />
-                  <p className="text-sm text-gray-900">{transaction.userId}</p>
+                  <Users className="h-4 w-4 text-gray-400" />
+                  <p className="text-sm text-white">{transaction.userId}</p>
                 </div>
               </div>
 
@@ -311,8 +311,8 @@ export function TransactionEditDialog({ transaction, isOpen, onOpenChange, mode 
                 <div className="space-y-2">
                   <Label>Associated Project</Label>
                   <div className="flex items-center gap-2">
-                    <FolderOpen className="h-4 w-4 text-gray-500" />
-                    <p className="text-sm text-gray-900">{transaction.projectId}</p>
+                    <FolderOpen className="h-4 w-4 text-gray-400" />
+                    <p className="text-sm text-white">{transaction.projectId}</p>
                   </div>
                 </div>
               )}
@@ -329,8 +329,8 @@ export function TransactionEditDialog({ transaction, isOpen, onOpenChange, mode 
               <div className="space-y-2">
                 <Label>User</Label>
                 <div className="flex items-center gap-2">
-                  <Users className="h-4 w-4 text-gray-500" />
-                  <p className="text-sm text-gray-900">{transaction.userId}</p>
+                  <Users className="h-4 w-4 text-gray-400" />
+                  <p className="text-sm text-white">{transaction.userId}</p>
                 </div>
               </div>
 
@@ -338,8 +338,8 @@ export function TransactionEditDialog({ transaction, isOpen, onOpenChange, mode 
                 <div className="space-y-2">
                   <Label>Project</Label>
                   <div className="flex items-center gap-2">
-                    <FolderOpen className="h-4 w-4 text-gray-500" />
-                    <p className="text-sm text-gray-900">{transaction.projectId}</p>
+                    <FolderOpen className="h-4 w-4 text-gray-400" />
+                    <p className="text-sm text-white">{transaction.projectId}</p>
                   </div>
                 </div>
               )}
@@ -347,8 +347,8 @@ export function TransactionEditDialog({ transaction, isOpen, onOpenChange, mode 
               <div className="space-y-2">
                 <Label>Created</Label>
                 <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-gray-500" />
-                  <p className="text-sm text-gray-900">
+                  <Calendar className="h-4 w-4 text-gray-400" />
+                  <p className="text-sm text-white">
                     {new Date(transaction._creationTime).toLocaleDateString()}
                   </p>
                 </div>
@@ -356,34 +356,34 @@ export function TransactionEditDialog({ transaction, isOpen, onOpenChange, mode 
 
               <div className="space-y-2">
                 <Label>Transaction ID</Label>
-                <p className="text-xs text-gray-500 font-mono bg-gray-50 px-2 py-1 rounded border">
+                <p className="text-xs text-gray-400 font-mono bg-darkGray2 px-2 py-1 rounded border">
                   {transaction._id}
                 </p>
               </div>
 
               <div className="space-y-2">
                 <Label>System Information</Label>
-                <div className="bg-gray-50 p-4 rounded-md border space-y-2">
+                <div className="bg-darkGray2 p-4 rounded-md border space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Created At:</span>
-                    <span className="text-gray-900">{new Date(transaction._creationTime).toLocaleString()}</span>
+                    <span className="text-gray-400">Created At:</span>
+                    <span className="text-white">{new Date(transaction._creationTime).toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Status:</span>
-                    <span className="text-gray-900">{transaction.status}</span>
+                    <span className="text-gray-400">Status:</span>
+                    <span className="text-white">{transaction.status}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Type:</span>
-                    <span className="text-gray-900">{transaction.type}</span>
+                    <span className="text-gray-400">Type:</span>
+                    <span className="text-white">{transaction.type}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Method:</span>
-                    <span className="text-gray-900">{transaction.method}</span>
+                    <span className="text-gray-400">Method:</span>
+                    <span className="text-white">{transaction.method}</span>
                   </div>
                   {transaction.reference && (
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Reference:</span>
-                      <span className="text-gray-900 font-mono">{transaction.reference}</span>
+                      <span className="text-gray-400">Reference:</span>
+                      <span className="text-white font-mono">{transaction.reference}</span>
                     </div>
                   )}
                 </div>
@@ -396,7 +396,7 @@ export function TransactionEditDialog({ transaction, isOpen, onOpenChange, mode 
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
-            className="text-gray-900"
+            className="text-white"
           >
             {mode === "view" ? "Close" : "Cancel"}
           </Button>

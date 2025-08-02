@@ -99,13 +99,13 @@ export function IssueEditDialog({
       },
       CLOSED: {
         variant: "outline" as const,
-        className: "bg-gray-50 text-gray-700 border-gray-300",
+        className: "bg-darkGray2 text-gray-300 border-grayBorders",
       },
     };
 
     const config = badgeConfig[status as keyof typeof badgeConfig] || {
       variant: "outline" as const,
-      className: "bg-gray-50 text-gray-700 border-gray-300",
+      className: "bg-darkGray2 text-gray-300 border-grayBorders",
     };
 
     return (
@@ -120,7 +120,7 @@ export function IssueEditDialog({
       return (
         <Badge
           variant="outline"
-          className="bg-gray-50 text-gray-700 border-gray-300"
+          className="bg-darkGray2 text-gray-300 border-grayBorders"
         >
           N/A
         </Badge>
@@ -147,7 +147,7 @@ export function IssueEditDialog({
 
     const config = badgeConfig[priority as keyof typeof badgeConfig] || {
       variant: "outline" as const,
-      className: "bg-gray-50 text-gray-700 border-gray-300",
+      className: "bg-darkGray2 text-gray-300 border-grayBorders",
     };
 
     return (
@@ -188,7 +188,7 @@ export function IssueEditDialog({
             <div className="space-y-2">
               <Label htmlFor="title">Title</Label>
               {mode === "view" ? (
-                <p className="text-sm text-gray-900 bg-gray-50 px-3 py-2 rounded-md border">
+                <p className="text-sm text-white bg-darkGray2 px-3 py-2 rounded-md border">
                   {issue.title}
                 </p>
               ) : (
@@ -198,7 +198,7 @@ export function IssueEditDialog({
                   onChange={(e) =>
                     setFormData({ ...formData, title: e.target.value })
                   }
-                  className="bg-white border-gray-300 text-gray-900"
+                  className="bg-darkGray border-grayBorders text-white"
                 />
               )}
             </div>
@@ -215,7 +215,7 @@ export function IssueEditDialog({
                       value: "IN_PROGRESS" | "RESOLVED" | "CLOSED" | "OPEN"
                     ) => setFormData({ ...formData, status: value })}
                   >
-                    <SelectTrigger className="bg-white border-gray-300 text-gray-900">
+                    <SelectTrigger className="bg-darkGray border-grayBorders text-white">
                       <SelectValue placeholder="Select status" />
                     </SelectTrigger>
                     <SelectContent>
@@ -239,7 +239,7 @@ export function IssueEditDialog({
                       setFormData({ ...formData, priority: value })
                     }
                   >
-                    <SelectTrigger className="bg-white border-gray-300 text-gray-900">
+                    <SelectTrigger className="bg-darkGray border-grayBorders text-white">
                       <SelectValue placeholder="Select priority" />
                     </SelectTrigger>
                     <SelectContent>
@@ -257,7 +257,7 @@ export function IssueEditDialog({
               <div className="space-y-2">
                 <Label htmlFor="type">Type</Label>
                 {mode === "view" ? (
-                  <p className="text-sm text-gray-900 bg-gray-50 px-3 py-2 rounded-md border">
+                  <p className="text-sm text-white bg-darkGray2 px-3 py-2 rounded-md border">
                     {issue.type || "N/A"}
                   </p>
                 ) : (
@@ -267,7 +267,7 @@ export function IssueEditDialog({
                     onChange={(e) =>
                       setFormData({ ...formData, type: e.target.value })
                     }
-                    className="bg-white border-gray-300 text-gray-900"
+                    className="bg-darkGray border-grayBorders text-white"
                     placeholder="Bug, Feature, Enhancement..."
                   />
                 )}
@@ -277,8 +277,8 @@ export function IssueEditDialog({
                 <Label htmlFor="budget">Budget ($)</Label>
                 {mode === "view" ? (
                   <div className="flex items-center gap-2">
-                    <DollarSign className="h-4 w-4 text-gray-500" />
-                    <p className="text-sm text-gray-900 font-medium">
+                    <DollarSign className="h-4 w-4 text-gray-400" />
+                    <p className="text-sm text-white font-medium">
                       {issue.budget ? `$${issue.budget}` : "Not set"}
                     </p>
                   </div>
@@ -294,7 +294,7 @@ export function IssueEditDialog({
                         budget: Number(e.target.value),
                       })
                     }
-                    className="bg-white border-gray-300 text-gray-900"
+                    className="bg-darkGray border-grayBorders text-white"
                   />
                 )}
               </div>
@@ -303,7 +303,7 @@ export function IssueEditDialog({
             <div className="space-y-2">
               <Label htmlFor="description">Description</Label>
               {mode === "view" ? (
-                <p className="text-sm text-gray-900 bg-gray-50 px-3 py-2 rounded-md border min-h-[60px]">
+                <p className="text-sm text-white bg-darkGray2 px-3 py-2 rounded-md border min-h-[60px]">
                   {issue.description || "No description provided"}
                 </p>
               ) : (
@@ -313,7 +313,7 @@ export function IssueEditDialog({
                   onChange={(e) =>
                     setFormData({ ...formData, description: e.target.value })
                   }
-                  className="bg-white border-gray-300 text-gray-900 min-h-[60px]"
+                  className="bg-darkGray border-grayBorders text-white min-h-[60px]"
                   placeholder="Brief description..."
                 />
               )}
@@ -324,7 +324,7 @@ export function IssueEditDialog({
             <div className="space-y-2">
               <Label htmlFor="longDescription">Detailed Description</Label>
               {mode === "view" ? (
-                <p className="text-sm text-gray-900 bg-gray-50 px-3 py-2 rounded-md border min-h-[100px]">
+                <p className="text-sm text-white bg-darkGray2 px-3 py-2 rounded-md border min-h-[100px]">
                   {issue.longDescription || "No detailed description provided"}
                 </p>
               ) : (
@@ -337,7 +337,7 @@ export function IssueEditDialog({
                       longDescription: e.target.value,
                     })
                   }
-                  className="bg-white border-gray-300 text-gray-900 min-h-[100px]"
+                  className="bg-darkGray border-grayBorders text-white min-h-[100px]"
                   placeholder="Detailed description, requirements, acceptance criteria..."
                 />
               )}
@@ -358,7 +358,7 @@ export function IssueEditDialog({
                       </Badge>
                     ))
                   ) : (
-                    <p className="text-sm text-gray-500">No labels</p>
+                    <p className="text-sm text-gray-400">No labels</p>
                   )}
                 </div>
               ) : (
@@ -367,7 +367,7 @@ export function IssueEditDialog({
                     id="labels"
                     value={formData.labels.join(", ")}
                     onChange={(e) => handleLabelsChange(e.target.value)}
-                    className="bg-white border-gray-300 text-gray-900"
+                    className="bg-darkGray border-grayBorders text-white"
                     placeholder="bug, frontend, urgent (comma separated)"
                   />
                   {formData.labels.length > 0 && (
@@ -390,7 +390,7 @@ export function IssueEditDialog({
             <div className="space-y-2">
               <Label htmlFor="onboardingVideo">Onboarding Video Link</Label>
               {mode === "view" ? (
-                <p className="text-sm text-gray-900 bg-gray-50 px-3 py-2 rounded-md border">
+                <p className="text-sm text-white bg-darkGray2 px-3 py-2 rounded-md border">
                   {issue.onboardingVideoLink || "No video link provided"}
                 </p>
               ) : (
@@ -403,7 +403,7 @@ export function IssueEditDialog({
                       onboardingVideoLink: e.target.value,
                     })
                   }
-                  className="bg-white border-gray-300 text-gray-900"
+                  className="bg-darkGray border-grayBorders text-white"
                   placeholder="https://..."
                 />
               )}
@@ -415,8 +415,8 @@ export function IssueEditDialog({
               <div className="space-y-2">
                 <Label>Project ID</Label>
                 <div className="flex items-center gap-2">
-                  <GitBranch className="h-4 w-4 text-gray-500" />
-                  <p className="text-sm text-gray-900 font-mono">
+                  <GitBranch className="h-4 w-4 text-gray-400" />
+                  <p className="text-sm text-white font-mono">
                     {issue.projectId}
                   </p>
                 </div>
@@ -425,8 +425,8 @@ export function IssueEditDialog({
               <div className="space-y-2">
                 <Label>Reporter ID</Label>
                 <div className="flex items-center gap-2">
-                  <User className="h-4 w-4 text-gray-500" />
-                  <p className="text-sm text-gray-900 font-mono">
+                  <User className="h-4 w-4 text-gray-400" />
+                  <p className="text-sm text-white font-mono">
                     {issue.reporterId}
                   </p>
                 </div>
@@ -436,8 +436,8 @@ export function IssueEditDialog({
                 <div className="space-y-2">
                   <Label>GitHub Issue</Label>
                   <div className="flex items-center gap-2">
-                    <Hash className="h-4 w-4 text-gray-500" />
-                    <p className="text-sm text-gray-900">
+                    <Hash className="h-4 w-4 text-gray-400" />
+                    <p className="text-sm text-white">
                       #{issue.githubIssueNumber}
                     </p>
                   </div>
@@ -447,8 +447,8 @@ export function IssueEditDialog({
               <div className="space-y-2">
                 <Label>Created</Label>
                 <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-gray-500" />
-                  <p className="text-sm text-gray-900">
+                  <Calendar className="h-4 w-4 text-gray-400" />
+                  <p className="text-sm text-white">
                     {new Date(issue._creationTime).toLocaleDateString()}
                   </p>
                 </div>
@@ -456,7 +456,7 @@ export function IssueEditDialog({
 
               <div className="space-y-2">
                 <Label>Issue ID</Label>
-                <p className="text-xs text-gray-500 font-mono bg-gray-50 px-2 py-1 rounded border">
+                <p className="text-xs text-gray-400 font-mono bg-darkGray2 px-2 py-1 rounded border">
                   {issue._id}
                 </p>
               </div>
@@ -468,7 +468,7 @@ export function IssueEditDialog({
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
-            className="text-gray-900"
+            className="text-white"
           >
             {mode === "view" ? "Close" : "Cancel"}
           </Button>

@@ -16,6 +16,14 @@ const nextConfig = {
         protocol: "https",
         hostname: "admin.collabute.com",
       },
+      {
+        protocol: "https",
+        hostname: "clear-rhinoceros-559.convex.site",
+      },
+      {
+        protocol: "https",
+        hostname: "clear-rhinoceros-559.convex.cloud",
+      },
     ],
   },
 };

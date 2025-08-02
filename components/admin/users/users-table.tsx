@@ -84,7 +84,7 @@ export function UsersTable() {
     return (
       <Badge
         variant="outline"
-        className="bg-gray-50 text-gray-700 border-gray-300"
+        className="bg-darkGray2 text-gray-300 border-grayBorders"
       >
         Unverified
       </Badge>
@@ -96,7 +96,7 @@ export function UsersTable() {
       return (
         <Badge
           variant="outline"
-          className="bg-gray-50 text-gray-700 border-gray-300"
+          className="bg-darkGray2 text-gray-300 border-grayBorders"
         >
           N/A
         </Badge>
@@ -127,7 +127,7 @@ export function UsersTable() {
 
     const config = badgeConfig[type as keyof typeof badgeConfig] || {
       variant: "outline" as const,
-      className: "bg-gray-50 text-gray-700 border-gray-300",
+      className: "bg-darkGray2 text-gray-300 border-grayBorders",
     };
 
     return (
@@ -192,7 +192,7 @@ export function UsersTable() {
             placeholder="Search users..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="bg-white border-gray-300 text-gray-900 placeholder-gray-500"
+            className="bg-darkGray border-grayBorders text-white placeholder-gray-400"
           />
         </div>
 
@@ -205,55 +205,55 @@ export function UsersTable() {
         </Button>
       </div>
 
-      <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
+      <div className="bg-darkGray border border-grayBorders rounded-lg shadow-sm">
         <Table>
           <TableHeader>
-            <TableRow className="bg-gray-50 border-b border-gray-200">
-              <TableHead className="text-gray-700 font-medium px-6 py-4">
+            <TableRow className="bg-darkGray2 border-b border-grayBorders">
+              <TableHead className="text-gray-300 font-medium px-6 py-4">
                 Name
               </TableHead>
-              <TableHead className="text-gray-700 font-medium px-4 py-4">
+              <TableHead className="text-gray-300 font-medium px-4 py-4">
                 Email
               </TableHead>
-              <TableHead className="text-gray-700 font-medium px-4 py-4">
+              <TableHead className="text-gray-300 font-medium px-4 py-4">
                 Type
               </TableHead>
-              <TableHead className="text-gray-700 font-medium px-4 py-4">
+              <TableHead className="text-gray-300 font-medium px-4 py-4">
                 Country
               </TableHead>
-              <TableHead className="text-gray-700 font-medium px-4 py-4">
+              <TableHead className="text-gray-300 font-medium px-4 py-4">
                 Status
               </TableHead>
-              <TableHead className="text-gray-700 font-medium px-4 py-4">
+              <TableHead className="text-gray-300 font-medium px-4 py-4">
                 Wallet
               </TableHead>
-              <TableHead className="text-right text-gray-700 font-medium px-6 py-4">
+              <TableHead className="text-right text-gray-300 font-medium px-6 py-4">
                 Actions
               </TableHead>
             </TableRow>
           </TableHeader>
-          <TableBody className="bg-white">
+          <TableBody className="bg-darkGray">
             {filteredUsers?.map((user) => (
               <TableRow
                 key={user._id}
-                className="border-b border-gray-100 hover:bg-blue-50 transition-colors duration-150"
+                className="border-b border-grayBorders hover:bg-darkGray2 transition-colors duration-150"
               >
-                <TableCell className="font-medium text-gray-900 px-6 py-4">
+                <TableCell className="font-medium text-white px-6 py-4">
                   {user.name || "N/A"}
                 </TableCell>
-                <TableCell className="text-gray-700 px-4 py-4">
+                <TableCell className="text-gray-300 px-4 py-4">
                   {user.email}
                 </TableCell>
                 <TableCell className="px-4 py-4">
                   {getUserTypeBadge(user.type)}
                 </TableCell>
-                <TableCell className="text-gray-700 px-4 py-4">
+                <TableCell className="text-gray-300 px-4 py-4">
                   {user.country || "N/A"}
                 </TableCell>
                 <TableCell className="px-4 py-4">
                   {getStatusBadge(user)}
                 </TableCell>
-                <TableCell className="text-gray-700 px-4 py-4">
+                <TableCell className="text-gray-300 px-4 py-4">
                   ${user.wallet || 0}
                 </TableCell>
                 <TableCell className="text-right px-6 py-4">
@@ -261,7 +261,7 @@ export function UsersTable() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="text-gray-600 hover:text-blue-700 hover:bg-blue-100 transition-colors duration-150"
+                      className="text-gray-400 hover:text-blue-400 hover:bg-darkGray2 transition-colors duration-150"
                       onClick={() => handleViewUser(user)}
                     >
                       <Eye className="h-4 w-4" />
@@ -269,7 +269,7 @@ export function UsersTable() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="text-gray-600 hover:text-amber-700 hover:bg-amber-100 transition-colors duration-150"
+                      className="text-gray-400 hover:text-amber-400 hover:bg-darkGray2 transition-colors duration-150"
                       onClick={() => handleEditUser(user)}
                     >
                       <Edit className="h-4 w-4" />
@@ -277,7 +277,7 @@ export function UsersTable() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="text-red-600 hover:text-red-700 hover:bg-red-100 transition-colors duration-150"
+                      className="text-red-400 hover:text-red-300 hover:bg-darkGray2 transition-colors duration-150"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -290,11 +290,11 @@ export function UsersTable() {
       </div>
 
       {filteredUsers?.length === 0 && (
-        <div className="text-center py-8 text-gray-500">No users found</div>
+        <div className="text-center py-8 text-gray-400">No users found</div>
       )}
 
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md bg-darkGray border-grayBorders">
           <DialogHeader>
             <DialogTitle>Create New User</DialogTitle>
           </DialogHeader>
@@ -310,7 +310,7 @@ export function UsersTable() {
                 onChange={(e) =>
                   setFormData({ ...formData, email: e.target.value })
                 }
-                className="bg-white border-gray-300 text-gray-900"
+                className="bg-darkGray border-grayBorders text-white"
               />
             </div>
 
@@ -323,7 +323,7 @@ export function UsersTable() {
                 onChange={(e) =>
                   setFormData({ ...formData, name: e.target.value })
                 }
-                className="bg-white border-gray-300 text-gray-900"
+                className="bg-darkGray border-grayBorders text-white"
               />
             </div>
 
@@ -335,7 +335,7 @@ export function UsersTable() {
                   setFormData({ ...formData, role: value })
                 }
               >
-                <SelectTrigger className="bg-white border-gray-300 text-gray-900">
+                <SelectTrigger className="bg-darkGray border-grayBorders text-white">
                   <SelectValue placeholder="Select role" />
                 </SelectTrigger>
                 <SelectContent>
@@ -359,7 +359,7 @@ export function UsersTable() {
                 onChange={(e) =>
                   setFormData({ ...formData, phoneNumber: e.target.value })
                 }
-                className="bg-white border-gray-300 text-gray-900"
+                className="bg-darkGray border-grayBorders text-white"
               />
             </div>
 
@@ -372,7 +372,7 @@ export function UsersTable() {
                 onChange={(e) =>
                   setFormData({ ...formData, country: e.target.value })
                 }
-                className="bg-white border-gray-300 text-gray-900"
+                className="bg-darkGray border-grayBorders text-white"
               />
             </div>
 
@@ -385,7 +385,7 @@ export function UsersTable() {
                 onChange={(e) =>
                   setFormData({ ...formData, industry: e.target.value })
                 }
-                className="bg-white border-gray-300 text-gray-900"
+                className="bg-darkGray border-grayBorders text-white"
               />
             </div>
 

@@ -52,9 +52,9 @@ function AuthForm() {
         console.error("Sign in error:", error);
         const errorMessage =
           error instanceof ConvexError
-            ? (error.data as { message: string }).message
+            ? (error.data as { message?: string })?.message || "Authentication failed"
             : error.message || "An unexpected error occurred";
-        console.error("Sign in failed:", errorMessage.error);
+        console.error("Sign in failed:", errorMessage);
         toast.error("Sign In Failed", {
           description: errorMessage,
         });

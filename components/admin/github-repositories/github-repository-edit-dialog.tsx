@@ -83,7 +83,7 @@ export function GithubRepositoryEditDialog({
     return (
       <Badge
         variant="outline"
-        className="bg-gray-50 text-gray-700 border-gray-300"
+        className="bg-darkGray2 text-gray-300 border-grayBorders"
       >
         Inactive
       </Badge>
@@ -110,7 +110,7 @@ export function GithubRepositoryEditDialog({
       return (
         <Badge
           variant="outline"
-          className="bg-gray-50 text-gray-700 border-gray-300"
+          className="bg-darkGray2 text-gray-300 border-grayBorders"
         >
           N/A
         </Badge>
@@ -150,7 +150,7 @@ export function GithubRepositoryEditDialog({
 
     const config = badgeConfig[language as keyof typeof badgeConfig] || {
       variant: "outline" as const,
-      className: "bg-gray-50 text-gray-700 border-gray-300",
+      className: "bg-darkGray2 text-gray-300 border-grayBorders",
     };
 
     return (
@@ -183,7 +183,7 @@ export function GithubRepositoryEditDialog({
             <div className="space-y-2">
               <Label htmlFor="name">Repository Name</Label>
               {mode === "view" ? (
-                <p className="text-sm text-gray-900 bg-gray-50 px-3 py-2 rounded-md border">
+                <p className="text-sm text-white bg-darkGray2 px-3 py-2 rounded-md border">
                   {repository.name}
                 </p>
               ) : (
@@ -193,14 +193,14 @@ export function GithubRepositoryEditDialog({
                   onChange={(e) =>
                     setFormData({ ...formData, name: e.target.value })
                   }
-                  className="bg-white border-gray-300 text-gray-900"
+                  className="bg-darkGray border-grayBorders text-white"
                 />
               )}
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="fullName">Full Name</Label>
-              <p className="text-sm text-gray-900 bg-gray-50 px-3 py-2 rounded-md border">
+              <p className="text-sm text-white bg-darkGray2 px-3 py-2 rounded-md border">
                 {repository.fullName}
               </p>
             </div>
@@ -208,7 +208,7 @@ export function GithubRepositoryEditDialog({
             <div className="space-y-2">
               <Label htmlFor="description">Description</Label>
               {mode === "view" ? (
-                <p className="text-sm text-gray-900 bg-gray-50 px-3 py-2 rounded-md border min-h-[60px]">
+                <p className="text-sm text-white bg-darkGray2 px-3 py-2 rounded-md border min-h-[60px]">
                   {repository.description || "No description provided"}
                 </p>
               ) : (
@@ -218,7 +218,7 @@ export function GithubRepositoryEditDialog({
                   onChange={(e) =>
                     setFormData({ ...formData, description: e.target.value })
                   }
-                  className="bg-white border-gray-300 text-gray-900 min-h-[60px]"
+                  className="bg-darkGray border-grayBorders text-white min-h-[60px]"
                   placeholder="Repository description..."
                 />
               )}
@@ -236,7 +236,7 @@ export function GithubRepositoryEditDialog({
                     onChange={(e) =>
                       setFormData({ ...formData, language: e.target.value })
                     }
-                    className="bg-white border-gray-300 text-gray-900"
+                    className="bg-darkGray border-grayBorders text-white"
                     placeholder="JavaScript, Python, TypeScript..."
                   />
                 )}
@@ -244,7 +244,7 @@ export function GithubRepositoryEditDialog({
 
               <div className="space-y-2">
                 <Label>Default Branch</Label>
-                <p className="text-sm text-gray-900 bg-gray-50 px-3 py-2 rounded-md border">
+                <p className="text-sm text-white bg-darkGray2 px-3 py-2 rounded-md border">
                   {repository.defaultBranch}
                 </p>
               </div>
@@ -304,7 +304,7 @@ export function GithubRepositoryEditDialog({
               <Label>Repository URLs</Label>
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
-                  <Globe className="h-4 w-4 text-gray-500" />
+                  <Globe className="h-4 w-4 text-gray-400" />
                   <a
                     href={repository.htmlUrl}
                     target="_blank"
@@ -316,8 +316,8 @@ export function GithubRepositoryEditDialog({
                   <ExternalLink className="h-3 w-3 text-gray-400" />
                 </div>
                 <div className="flex items-center gap-2">
-                  <Github className="h-4 w-4 text-gray-500" />
-                  <p className="text-sm text-gray-900 font-mono">
+                  <Github className="h-4 w-4 text-gray-400" />
+                  <p className="text-sm text-white font-mono">
                     {repository.cloneUrl}
                   </p>
                 </div>
@@ -332,7 +332,7 @@ export function GithubRepositoryEditDialog({
                   <Label>Stars</Label>
                   <div className="flex items-center gap-2">
                     <Star className="h-4 w-4 text-yellow-500" />
-                    <p className="text-lg font-semibold text-gray-900">
+                    <p className="text-lg font-semibold text-white">
                       {repository.stargazersCount.toLocaleString()}
                     </p>
                   </div>
@@ -341,8 +341,8 @@ export function GithubRepositoryEditDialog({
                 <div className="space-y-2">
                   <Label>Forks</Label>
                   <div className="flex items-center gap-2">
-                    <GitFork className="h-4 w-4 text-gray-500" />
-                    <p className="text-lg font-semibold text-gray-900">
+                    <GitFork className="h-4 w-4 text-gray-400" />
+                    <p className="text-lg font-semibold text-white">
                       {repository.forksCount.toLocaleString()}
                     </p>
                   </div>
@@ -351,37 +351,37 @@ export function GithubRepositoryEditDialog({
 
               <div className="space-y-2">
                 <Label>Repository Statistics</Label>
-                <div className="bg-gray-50 p-4 rounded-md border space-y-3">
+                <div className="bg-darkGray2 p-4 rounded-md border space-y-3">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">GitHub ID:</span>
-                    <span className="text-sm font-mono text-gray-900">
+                    <span className="text-sm text-gray-400">GitHub ID:</span>
+                    <span className="text-sm font-mono text-white">
                       #{repository.githubId}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">Stars:</span>
+                    <span className="text-sm text-gray-400">Stars:</span>
                     <div className="flex items-center gap-1">
                       <Star className="h-3 w-3 text-yellow-500" />
-                      <span className="text-sm text-gray-900">
+                      <span className="text-sm text-white">
                         {repository.stargazersCount}
                       </span>
                     </div>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">Forks:</span>
+                    <span className="text-sm text-gray-400">Forks:</span>
                     <div className="flex items-center gap-1">
-                      <GitFork className="h-3 w-3 text-gray-500" />
-                      <span className="text-sm text-gray-900">
+                      <GitFork className="h-3 w-3 text-gray-400" />
+                      <span className="text-sm text-white">
                         {repository.forksCount}
                       </span>
                     </div>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">Language:</span>
+                    <span className="text-sm text-gray-400">Language:</span>
                     <div>{getLanguageBadge(repository.language)}</div>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">Visibility:</span>
+                    <span className="text-sm text-gray-400">Visibility:</span>
                     <div>{getVisibilityBadge(repository.private)}</div>
                   </div>
                 </div>
@@ -390,8 +390,8 @@ export function GithubRepositoryEditDialog({
               <div className="space-y-2">
                 <Label>Last Sync</Label>
                 <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-gray-500" />
-                  <p className="text-sm text-gray-900">
+                  <Calendar className="h-4 w-4 text-gray-400" />
+                  <p className="text-sm text-white">
                     {new Date(repository.lastSyncAt).toLocaleString()}
                   </p>
                 </div>
@@ -404,8 +404,8 @@ export function GithubRepositoryEditDialog({
               <div className="space-y-2">
                 <Label>Owner</Label>
                 <div className="flex items-center gap-2">
-                  <User className="h-4 w-4 text-gray-500" />
-                  <p className="text-sm text-gray-900 font-mono">
+                  <User className="h-4 w-4 text-gray-400" />
+                  <p className="text-sm text-white font-mono">
                     {repository.ownerId}
                   </p>
                 </div>
@@ -415,8 +415,8 @@ export function GithubRepositoryEditDialog({
                 <div className="space-y-2">
                   <Label>Associated Project</Label>
                   <div className="flex items-center gap-2">
-                    <Hash className="h-4 w-4 text-gray-500" />
-                    <p className="text-sm text-gray-900 font-mono">
+                    <Hash className="h-4 w-4 text-gray-400" />
+                    <p className="text-sm text-white font-mono">
                       {repository.projectId}
                     </p>
                   </div>
@@ -425,28 +425,28 @@ export function GithubRepositoryEditDialog({
 
               <div className="space-y-2">
                 <Label>GitHub Information</Label>
-                <div className="bg-gray-50 p-4 rounded-md border space-y-2">
+                <div className="bg-darkGray2 p-4 rounded-md border space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">GitHub ID:</span>
-                    <span className="text-gray-900 font-mono">
+                    <span className="text-gray-400">GitHub ID:</span>
+                    <span className="text-white font-mono">
                       #{repository.githubId}
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Full Name:</span>
-                    <span className="text-gray-900 font-mono">
+                    <span className="text-gray-400">Full Name:</span>
+                    <span className="text-white font-mono">
                       {repository.fullName}
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Default Branch:</span>
-                    <span className="text-gray-900">
+                    <span className="text-gray-400">Default Branch:</span>
+                    <span className="text-white">
                       {repository.defaultBranch}
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Last Synced:</span>
-                    <span className="text-gray-900">
+                    <span className="text-gray-400">Last Synced:</span>
+                    <span className="text-white">
                       {new Date(repository.lastSyncAt).toLocaleString()}
                     </span>
                   </div>
@@ -456,8 +456,8 @@ export function GithubRepositoryEditDialog({
               <div className="space-y-2">
                 <Label>Created</Label>
                 <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-gray-500" />
-                  <p className="text-sm text-gray-900">
+                  <Calendar className="h-4 w-4 text-gray-400" />
+                  <p className="text-sm text-white">
                     {new Date(repository._creationTime).toLocaleDateString()}
                   </p>
                 </div>
@@ -465,7 +465,7 @@ export function GithubRepositoryEditDialog({
 
               <div className="space-y-2">
                 <Label>Repository ID</Label>
-                <p className="text-xs text-gray-500 font-mono bg-gray-50 px-2 py-1 rounded border">
+                <p className="text-xs text-gray-400 font-mono bg-darkGray2 px-2 py-1 rounded border">
                   {repository._id}
                 </p>
               </div>
@@ -477,7 +477,7 @@ export function GithubRepositoryEditDialog({
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
-            className="text-gray-900"
+            className="text-white"
           >
             {mode === "view" ? "Close" : "Cancel"}
           </Button>

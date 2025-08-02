@@ -24,10 +24,10 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   // Show loading spinner while checking auth
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-darkGray">
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-          <p className="text-gray-600">Checking permissions...</p>
+          <p className="text-gray-400">Checking permissions...</p>
         </div>
       </div>
     );
@@ -35,12 +35,14 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
   // Redirect to login if not admin
   if (!isAdmin) {
-    router.push("/admin/login");
+    if (pathname !== "/admin/login") {
+      router.push("/admin/login");
+    }
     return null;
   }
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-darkGray">
       <AdminSidebar />
       <div className="flex-1 flex flex-col overflow-hidden">
         <AdminHeader />

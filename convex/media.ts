@@ -63,6 +63,69 @@ export const get = query({
   },
 });
 
+export const getAllImages = query({
+  args: {},
+  handler: async (ctx) => {
+    const images = await ctx.db.query("media")
+      .filter((q) => q.eq(q.field("type"), "image"))
+      .order("desc")
+      .collect();
+    
+    return Promise.all(
+      images.map(async (image) => {
+        const url = await ctx.storage.getUrl(image.storageId!);
+        const user = await ctx.db.get(image.userId);
+        return {
+          ...image,
+          url,
+          uploaderName: user?.name || user?.email || "Unknown",
+        };
+      })
+    );
+  },
+});
+
+export const getUserImages = query({
+  args: { userId: v.id("users") },
+  handler: async (ctx, args) => {
+    const images = await ctx.db
+      .query("media")
+      .filter((q) => 
+        q.and(
+          q.eq(q.field("userId"), args.userId),
+          q.eq(q.field("type"), "image")
+        )
+      )
+      .order("desc")
+      .collect();
+    
+    return Promise.all(
+      images.map(async (image) => {
+        const url = await ctx.storage.getUrl(image.storageId!);
+        return {
+          ...image,
+          url,
+        };
+      })
+    );
+  },
+});
+
+export const deleteImage = mutation({
+  args: { imageId: v.id("media") },
+  handler: async (ctx, args) => {
+    const image = await ctx.db.get(args.imageId);
+    if (!image) {
+      throw new Error("Image not found");
+    }
+
+    await ctx.db.delete(args.imageId);
+    if (image.storageId) {
+      await ctx.storage.delete(image.storageId);
+    }
+  },
+});
+
 export const getAllMedia = query({
   args: {
     limit: v.optional(v.number()),
@@ -121,8 +184,35 @@ export const createMedia = mutation({
 });
 
 export const generateUploadUrl = mutation({
+  args: {},
   handler: async (ctx) => {
     return await ctx.storage.generateUploadUrl();
+  },
+});
+
+export const saveImage = mutation({
+  args: {
+    storageId: v.id("_storage"),
+    filename: v.string(),
+    description: v.optional(v.string()),
+    userId: v.id("users"),
+  },
+  handler: async (ctx, args) => {
+    const url = await ctx.storage.getUrl(args.storageId);
+    if (!url) {
+      throw new Error("Failed to get file URL from storage");
+    }
+
+    const mediaId = await ctx.db.insert("media", {
+      userId: args.userId,
+      url,
+      storageId: args.storageId,
+      type: "image",
+      description: args.description || args.filename,
+      createdAt: Date.now(),
+    });
+
+    return { mediaId, url };
   },
 });
 
@@ -144,6 +234,7 @@ export const createMediaFromUpload = mutation({
     const mediaId = await ctx.db.insert("media", {
       userId: args.userId,
       url,
+      storageId: args.storageId,
       type: args.fileType,
       description: args.description || args.fileName,
       createdAt: Date.now(),
@@ -380,7 +471,61 @@ export const getMediaUrl = query({
     if (!args.mediaId) return null;
     
     const media = await ctx.db.get(args.mediaId);
-    return media?.url || null;
+    if (!media) return null;
+    
+    let storageId = media.storageId;
+    
+    // If no storageId but we have a URL, try to extract storageId from the URL
+    if (!storageId && media.url && media.url.includes('/api/storage/')) {
+      const urlParts = media.url.split('/api/storage/');
+      if (urlParts.length > 1) {
+        storageId = urlParts[1] as any;
+      }
+    }
+    
+    // If we have a storageId, generate HTTP action URL
+    if (storageId) {
+      const baseUrl = process.env.CONVEX_SITE_URL;
+      if (baseUrl) {
+        return `${baseUrl}/images?storageId=${storageId}`;
+      }
+    }
+    
+    // Fallback to stored URL for backward compatibility
+    return media.url || null;
+  },
+});
+
+export const getMediaWithFreshUrl = query({
+  args: { 
+    mediaId: v.id("media") 
+  },
+  handler: async (ctx, args) => {
+    const media = await ctx.db.get(args.mediaId);
+    if (!media) return null;
+    
+    let freshUrl = null;
+    let storageId = media.storageId;
+    
+    // If no storageId but we have a URL, try to extract storageId from the URL
+    if (!storageId && media.url && media.url.includes('/api/storage/')) {
+      const urlParts = media.url.split('/api/storage/');
+      if (urlParts.length > 1) {
+        storageId = urlParts[1] as any;
+      }
+    }
+    
+    if (storageId) {
+      const baseUrl = process.env.CONVEX_SITE_URL;
+      if (baseUrl) {
+        freshUrl = `${baseUrl}/images?storageId=${storageId}`;
+      }
+    }
+    
+    return {
+      ...media,
+      url: freshUrl || media.url, // Use HTTP action URL if available, otherwise fallback
+    };
   },
 });
 
@@ -392,11 +537,36 @@ export const getMultipleMedia = query({
     const mediaPromises = args.mediaIds.map(id => ctx.db.get(id));
     const mediaResults = await Promise.all(mediaPromises);
     
+    // Generate HTTP action URLs for media with storageId
+    const mediaWithFreshUrls = mediaResults.map((media) => {
+      if (!media) return null;
+      
+      let storageId = media.storageId;
+      
+      // If no storageId but we have a URL, try to extract storageId from the URL
+      if (!storageId && media.url && media.url.includes('/api/storage/')) {
+        const urlParts = media.url.split('/api/storage/');
+        if (urlParts.length > 1) {
+          storageId = urlParts[1] as any;
+        }
+      }
+      
+      if (storageId) {
+        const baseUrl = process.env.CONVEX_SITE_URL;
+        if (baseUrl) {
+          const freshUrl = `${baseUrl}/images?storageId=${storageId}`;
+          return { ...media, url: freshUrl };
+        }
+      }
+      
+      return media;
+    });
+    
     // Return map of ID to media object for easy lookup
     const mediaMap: Record<string, any> = {};
     args.mediaIds.forEach((id, index) => {
-      if (mediaResults[index]) {
-        mediaMap[id] = mediaResults[index];
+      if (mediaWithFreshUrls[index]) {
+        mediaMap[id] = mediaWithFreshUrls[index];
       }
     });
     
@@ -434,6 +604,20 @@ export const getSafeMediaUrl = query({
       console.error("Error fetching media:", error);
       return args.fallbackUrl || null;
     }
+  },
+});
+
+export const getByStorageId = query({
+  args: { 
+    storageId: v.id("_storage")
+  },
+  handler: async (ctx, args) => {
+    const media = await ctx.db
+      .query("media")
+      .filter((q) => q.eq(q.field("storageId"), args.storageId))
+      .first();
+    
+    return media;
   },
 });
 

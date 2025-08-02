@@ -84,7 +84,7 @@ export function ProjectEditDialog({
       return (
         <Badge
           variant="outline"
-          className="bg-gray-50 text-gray-700 border-gray-300"
+          className="bg-darkGray2 text-gray-300 border-grayBorders"
         >
           N/A
         </Badge>
@@ -115,7 +115,7 @@ export function ProjectEditDialog({
 
     const config = badgeConfig[status as keyof typeof badgeConfig] || {
       variant: "outline" as const,
-      className: "bg-gray-50 text-gray-700 border-gray-300",
+      className: "bg-darkGray2 text-gray-300 border-grayBorders",
     };
 
     return (
@@ -157,7 +157,7 @@ export function ProjectEditDialog({
               <div className="space-y-2">
                 <Label htmlFor="name">Project Name</Label>
                 {mode === "view" ? (
-                  <p className="text-sm text-gray-900 bg-gray-50 px-3 py-2 rounded-md border">
+                  <p className="text-sm text-white bg-darkGray2 px-3 py-2 rounded-md border">
                     {project.title}
                   </p>
                 ) : (
@@ -167,7 +167,7 @@ export function ProjectEditDialog({
                     onChange={(e) =>
                       setFormData({ ...formData, title: e.target.value })
                     }
-                    className="bg-white border-gray-300 text-gray-900"
+                    className="bg-darkGray border-grayBorders text-white"
                   />
                 )}
               </div>
@@ -175,7 +175,7 @@ export function ProjectEditDialog({
               <div className="space-y-2">
                 <Label htmlFor="description">Description</Label>
                 {mode === "view" ? (
-                  <p className="text-sm text-gray-900 bg-gray-50 px-3 py-2 rounded-md border min-h-[80px]">
+                  <p className="text-sm text-white bg-darkGray2 px-3 py-2 rounded-md border min-h-[80px]">
                     {project.description || "N/A"}
                   </p>
                 ) : (
@@ -185,7 +185,7 @@ export function ProjectEditDialog({
                     onChange={(e) =>
                       setFormData({ ...formData, description: e.target.value })
                     }
-                    className="bg-white border-gray-300 text-gray-900 min-h-[80px]"
+                    className="bg-darkGray border-grayBorders text-white min-h-[80px]"
                   />
                 )}
               </div>
@@ -206,7 +206,7 @@ export function ProjectEditDialog({
                           | "ON_HOLD"
                       ) => setFormData({ ...formData, status: value })}
                     >
-                      <SelectTrigger className="bg-white border-gray-300 text-gray-900">
+                      <SelectTrigger className="bg-darkGray border-grayBorders text-white">
                         <SelectValue placeholder="Select status" />
                       </SelectTrigger>
                       <SelectContent>
@@ -224,8 +224,8 @@ export function ProjectEditDialog({
                   <Label htmlFor="budget">Budget</Label>
                   {mode === "view" ? (
                     <div className="flex items-center gap-2">
-                      <DollarSign className="h-4 w-4 text-gray-500" />
-                      <p className="text-sm text-gray-900 font-medium">
+                      <DollarSign className="h-4 w-4 text-gray-400" />
+                      <p className="text-sm text-white font-medium">
                         ${project.budget || 0}
                       </p>
                     </div>
@@ -240,7 +240,7 @@ export function ProjectEditDialog({
                           budget: Number(e.target.value),
                         })
                       }
-                      className="bg-white border-gray-300 text-gray-900"
+                      className="bg-darkGray border-grayBorders text-white"
                     />
                   )}
                 </div>
@@ -266,8 +266,8 @@ export function ProjectEditDialog({
                 <div className="space-y-2">
                   <Label>Visibility</Label>
                   <div className="flex items-center gap-2">
-                    <Globe className="h-4 w-4 text-gray-500" />
-                    <p className="text-sm text-gray-900">
+                    <Globe className="h-4 w-4 text-gray-400" />
+                    <p className="text-sm text-white">
                       {project.isPublic ? "Public" : "Private"}
                     </p>
                   </div>
@@ -293,7 +293,7 @@ export function ProjectEditDialog({
                         </Badge>
                       ))
                     ) : (
-                      <p className="text-sm text-gray-500">N/A</p>
+                      <p className="text-sm text-gray-400">N/A</p>
                     )}
                   </div>
                 ) : (
@@ -302,7 +302,7 @@ export function ProjectEditDialog({
                       id="stacks"
                       value={formData.stacks.join(", ")}
                       onChange={(e) => handleStacksChange(e.target.value)}
-                      className="bg-white border-gray-300 text-gray-900"
+                      className="bg-darkGray border-grayBorders text-white"
                       placeholder="React, TypeScript, Node.js (comma separated)"
                     />
                     {formData.stacks.length > 0 && (
@@ -326,13 +326,13 @@ export function ProjectEditDialog({
                 <Label>Repository</Label>
                 {project.repositoryId ? (
                   <div className="flex items-center gap-2">
-                    <GitBranch className="h-4 w-4 text-gray-500" />
-                    <p className="text-sm text-gray-900">
+                    <GitBranch className="h-4 w-4 text-gray-400" />
+                    <p className="text-sm text-white">
                       {project.repositoryId}
                     </p>
                   </div>
                 ) : (
-                  <p className="text-sm text-gray-500">No repository linked</p>
+                  <p className="text-sm text-gray-400">No repository linked</p>
                 )}
               </div>
             </div>
@@ -343,8 +343,8 @@ export function ProjectEditDialog({
               <div className="space-y-2">
                 <Label>Owner</Label>
                 <div className="flex items-center gap-2">
-                  <Users className="h-4 w-4 text-gray-500" />
-                  <p className="text-sm text-gray-900">{project.ownerId}</p>
+                  <Users className="h-4 w-4 text-gray-400" />
+                  <p className="text-sm text-white">{project.ownerId}</p>
                 </div>
               </div>
 
@@ -352,8 +352,8 @@ export function ProjectEditDialog({
                 <div className="space-y-2">
                   <Label>Team Lead</Label>
                   <div className="flex items-center gap-2">
-                    <Users className="h-4 w-4 text-gray-500" />
-                    <p className="text-sm text-gray-900">
+                    <Users className="h-4 w-4 text-gray-400" />
+                    <p className="text-sm text-white">
                       {project.teamLeadId}
                     </p>
                   </div>
@@ -363,8 +363,8 @@ export function ProjectEditDialog({
               <div className="space-y-2">
                 <Label>Created</Label>
                 <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-gray-500" />
-                  <p className="text-sm text-gray-900">
+                  <Calendar className="h-4 w-4 text-gray-400" />
+                  <p className="text-sm text-white">
                     {new Date(project._creationTime).toLocaleDateString()}
                   </p>
                 </div>
@@ -372,7 +372,7 @@ export function ProjectEditDialog({
 
               <div className="space-y-2">
                 <Label>Project ID</Label>
-                <p className="text-xs text-gray-500 font-mono bg-gray-50 px-2 py-1 rounded border">
+                <p className="text-xs text-gray-400 font-mono bg-darkGray2 px-2 py-1 rounded border">
                   {project._id}
                 </p>
               </div>
@@ -384,7 +384,7 @@ export function ProjectEditDialog({
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
-            className="text-gray-900"
+            className="text-white"
           >
             {mode === "view" ? "Close" : "Cancel"}
           </Button>

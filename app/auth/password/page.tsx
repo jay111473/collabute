@@ -14,7 +14,8 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
-import { Toaster } from "sonner";
+import { Toaster, toast } from "sonner";
+import { ConvexError } from "convex/values";
 import { useEmail } from "@/app/providers/EmailContext";
 import { Eye, EyeOff, ArrowLeft } from "lucide-react";
 import Image from "next/image";
@@ -45,6 +46,7 @@ function AuthenticatedRedirect() {
 
 function PasswordForm() {
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const { email, setEmail } = useEmail();
   const { signIn } = useAuthActions();
   const router = useRouter();
@@ -85,10 +87,27 @@ function PasswordForm() {
         </div>
         <Form {...form}>
           <form
-            onSubmit={(event) => {
+            onSubmit={async (event) => {
               event.preventDefault();
-              const formData = new FormData(event.currentTarget);
-              void signIn("password", formData);
+              setIsLoading(true);
+              
+              try {
+                const formData = new FormData(event.currentTarget);
+                await signIn("password", formData);
+                router.push("/dashboard");
+              } catch (error: any) {
+                console.error("Sign in error:", error);
+                const errorMessage =
+                  error instanceof ConvexError
+                    ? (error.data as { message?: string })?.message || "Authentication failed"
+                    : error.message || "An unexpected error occurred";
+                
+                toast.error("Sign In Failed", {
+                  description: errorMessage,
+                });
+              } finally {
+                setIsLoading(false);
+              }
             }}
             className="space-y-3 w-full text-white"
           >
@@ -141,12 +160,12 @@ function PasswordForm() {
               )}
             />
             <Button
-              disabled={form.formState.isSubmitting || !form.formState.isValid}
+              disabled={isLoading || !form.formState.isValid}
               variant="primary"
               type="submit"
               className="w-full"
             >
-              Log In
+              {isLoading ? "Signing in..." : "Log In"}
             </Button>
           </form>
         </Form>

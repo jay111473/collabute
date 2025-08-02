@@ -67,7 +67,7 @@ export function MediaTable() {
       return (
         <Badge
           variant="outline"
-          className="bg-gray-50 text-gray-500 border-gray-200"
+          className="bg-darkGray2 text-gray-400 border-grayBorders"
         >
           Unknown
         </Badge>
@@ -120,7 +120,7 @@ export function MediaTable() {
       },
       "text/plain": {
         variant: "outline" as const,
-        className: "bg-gray-100 text-gray-700 border-gray-300",
+        className: "bg-gray-100 text-gray-300 border-grayBorders",
       },
     };
 
@@ -149,7 +149,7 @@ export function MediaTable() {
     // Use specific config or default to file
     const config = badgeConfig[type as keyof typeof badgeConfig] || {
       variant: "outline" as const,
-      className: "bg-gray-100 text-gray-700 border-gray-300",
+      className: "bg-gray-100 text-gray-300 border-grayBorders",
     };
 
     return (
@@ -220,12 +220,12 @@ export function MediaTable() {
             placeholder="Search media..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="bg-white border-gray-300 text-gray-900 placeholder-gray-500"
+            className="bg-darkGray border-grayBorders text-white placeholder-gray-400"
           />
         </div>
 
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2 text-sm text-gray-600">
+          <div className="flex items-center gap-2 text-sm text-gray-400">
             <File className="h-4 w-4" />
             {filteredMedia?.length || 0} files
           </div>
@@ -240,38 +240,38 @@ export function MediaTable() {
         </div>
       </div>
 
-      <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
+      <div className="bg-darkGray border border-grayBorders rounded-lg shadow-sm">
         <Table>
           <TableHeader>
-            <TableRow className="bg-gray-50 border-b border-gray-200">
-              <TableHead className="text-gray-700 font-medium px-6 py-4">
+            <TableRow className="bg-darkGray2 border-b border-grayBorders">
+              <TableHead className="text-gray-300 font-medium px-6 py-4">
                 Preview
               </TableHead>
-              <TableHead className="text-gray-700 font-medium px-4 py-4">
+              <TableHead className="text-gray-300 font-medium px-4 py-4">
                 Description
               </TableHead>
-              <TableHead className="text-gray-700 font-medium px-4 py-4">
+              <TableHead className="text-gray-300 font-medium px-4 py-4">
                 Type
               </TableHead>
-              <TableHead className="text-gray-700 font-medium px-4 py-4">
+              <TableHead className="text-gray-300 font-medium px-4 py-4">
                 URL
               </TableHead>
-              <TableHead className="text-gray-700 font-medium px-4 py-4">
+              <TableHead className="text-gray-300 font-medium px-4 py-4">
                 User ID
               </TableHead>
-              <TableHead className="text-gray-700 font-medium px-4 py-4">
+              <TableHead className="text-gray-300 font-medium px-4 py-4">
                 Created
               </TableHead>
-              <TableHead className="text-right text-gray-700 font-medium px-6 py-4">
+              <TableHead className="text-right text-gray-300 font-medium px-6 py-4">
                 Actions
               </TableHead>
             </TableRow>
           </TableHeader>
-          <TableBody className="bg-white">
+          <TableBody className="bg-darkGray">
             {filteredMedia?.map((item) => (
               <TableRow
                 key={item._id}
-                className="border-b border-gray-100 hover:bg-blue-50 transition-colors duration-150"
+                className="border-b border-grayBorders hover:bg-darkGray2 transition-colors duration-150"
               >
                 <TableCell className="px-6 py-4">
                   <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center">
@@ -299,7 +299,7 @@ export function MediaTable() {
                 </TableCell>
                 <TableCell className="px-4 py-4">
                   <div className="max-w-xs">
-                    <div className="font-medium text-gray-900 truncate">
+                    <div className="font-medium text-white truncate">
                       {item.description || "No description"}
                     </div>
                   </div>
@@ -309,13 +309,13 @@ export function MediaTable() {
                 </TableCell>
                 <TableCell className="px-4 py-4">
                   <div className="flex items-center gap-2 max-w-xs">
-                    <span className="text-sm text-gray-700 font-mono truncate">
+                    <span className="text-sm text-gray-300 font-mono truncate">
                       {truncateUrl(item.url)}
                     </span>
                     <Button
                       variant="outline"
                       size="sm"
-                      className="h-6 w-6 p-0 text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors duration-150"
+                      className="h-6 w-6 p-0 text-gray-400 hover:text-blue-600 hover:bg-darkGray2 transition-colors duration-150"
                       onClick={() => window.open(item.url, "_blank")}
                     >
                       <ExternalLink className="h-3 w-3" />
@@ -323,13 +323,13 @@ export function MediaTable() {
                   </div>
                 </TableCell>
                 <TableCell className="px-4 py-4">
-                  <div className="flex items-center gap-1 text-sm text-gray-700">
+                  <div className="flex items-center gap-1 text-sm text-gray-300">
                     <User className="h-3 w-3" />
                     {item.userId}
                   </div>
                 </TableCell>
                 <TableCell className="px-4 py-4">
-                  <div className="flex items-center gap-1 text-sm text-gray-700">
+                  <div className="flex items-center gap-1 text-sm text-gray-300">
                     <Calendar className="h-3 w-3" />
                     {formatDate(item.createdAt || item._creationTime)}
                   </div>
@@ -339,7 +339,7 @@ export function MediaTable() {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="text-gray-600 hover:text-blue-700 hover:bg-blue-100 transition-colors duration-150"
+                      className="text-gray-400 hover:text-blue-400 hover:bg-darkGray2 transition-colors duration-150"
                       onClick={() => handleViewMedia(item)}
                     >
                       <Eye className="h-4 w-4" />
@@ -347,7 +347,7 @@ export function MediaTable() {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="text-gray-600 hover:text-amber-700 hover:bg-amber-100 transition-colors duration-150"
+                      className="text-gray-400 hover:text-amber-400 hover:bg-darkGray2 transition-colors duration-150"
                       onClick={() => handleEditMedia(item)}
                     >
                       <Edit className="h-4 w-4" />
@@ -355,7 +355,7 @@ export function MediaTable() {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="text-red-500 hover:text-red-700 hover:bg-red-100 transition-colors duration-150"
+                      className="text-red-500 hover:text-red-300 hover:bg-darkGray2 transition-colors duration-150"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -368,7 +368,7 @@ export function MediaTable() {
       </div>
 
       {filteredMedia?.length === 0 && (
-        <div className="text-center py-8 text-gray-500">
+        <div className="text-center py-8 text-gray-400">
           No media files found
         </div>
       )}
@@ -389,7 +389,7 @@ export function MediaTable() {
                 onChange={(e) =>
                   setFormData({ ...formData, url: e.target.value })
                 }
-                className="bg-white border-gray-300 text-gray-900"
+                className="bg-darkGray border-grayBorders text-white"
               />
             </div>
 
@@ -402,7 +402,7 @@ export function MediaTable() {
                 onChange={(e) =>
                   setFormData({ ...formData, type: e.target.value })
                 }
-                className="bg-white border-gray-300 text-gray-900"
+                className="bg-darkGray border-grayBorders text-white"
               />
             </div>
 
@@ -415,7 +415,7 @@ export function MediaTable() {
                 onChange={(e) =>
                   setFormData({ ...formData, userId: e.target.value })
                 }
-                className="bg-white border-gray-300 text-gray-900"
+                className="bg-darkGray border-grayBorders text-white"
               />
             </div>
 
@@ -428,7 +428,7 @@ export function MediaTable() {
                 onChange={(e) =>
                   setFormData({ ...formData, description: e.target.value })
                 }
-                className="bg-white border-gray-300 min-h-[80px]"
+                className="bg-darkGray border-grayBorders min-h-[80px]"
               />
             </div>
           </div>

@@ -67,10 +67,10 @@ export function TransactionsTable() {
       completed: { variant: "default" as const, className: "bg-green-600 text-white" },
       pending: { variant: "secondary" as const, className: "bg-yellow-100 text-yellow-800 border-yellow-200" },
       failed: { variant: "destructive" as const, className: "bg-red-600 text-white" },
-      cancelled: { variant: "outline" as const, className: "bg-gray-100 text-gray-700 border-gray-300" },
+      cancelled: { variant: "outline" as const, className: "bg-gray-100 text-gray-300 border-grayBorders" },
     };
     
-    const config = badgeConfig[status as keyof typeof badgeConfig] || { variant: "outline" as const, className: "bg-gray-50 text-gray-700 border-gray-300" };
+    const config = badgeConfig[status as keyof typeof badgeConfig] || { variant: "outline" as const, className: "bg-darkGray2 text-gray-300 border-grayBorders" };
     
     return (
       <Badge variant={config.variant} className={config.className}>
@@ -87,7 +87,7 @@ export function TransactionsTable() {
       deposit: { variant: "default" as const, className: "bg-green-600 text-white" },
     };
     
-    const config = badgeConfig[type as keyof typeof badgeConfig] || { variant: "outline" as const, className: "bg-gray-50 text-gray-700 border-gray-300" };
+    const config = badgeConfig[type as keyof typeof badgeConfig] || { variant: "outline" as const, className: "bg-darkGray2 text-gray-300 border-grayBorders" };
     
     return (
       <Badge variant={config.variant} className={config.className}>
@@ -162,12 +162,12 @@ export function TransactionsTable() {
             placeholder="Search transactions..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="bg-white border-gray-300 text-gray-900 placeholder-gray-500"
+            className="bg-darkGray border-grayBorders text-white placeholder-gray-400"
           />
         </div>
         
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2 text-sm text-gray-600">
+          <div className="flex items-center gap-2 text-sm text-gray-400">
             <DollarSign className="h-4 w-4" />
             {filteredTransactions?.length || 0} transactions
           </div>
@@ -182,32 +182,32 @@ export function TransactionsTable() {
         </div>
       </div>
 
-      <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
+      <div className="bg-darkGray border border-grayBorders rounded-lg shadow-sm">
         <Table>
           <TableHeader>
-            <TableRow className="bg-gray-50 border-b border-gray-200">
-              <TableHead className="text-gray-700 font-medium px-6 py-4">Amount</TableHead>
-              <TableHead className="text-gray-700 font-medium px-4 py-4">Type</TableHead>
-              <TableHead className="text-gray-700 font-medium px-4 py-4">Method</TableHead>
-              <TableHead className="text-gray-700 font-medium px-4 py-4">Status</TableHead>
-              <TableHead className="text-gray-700 font-medium px-4 py-4">Reference</TableHead>
-              <TableHead className="text-gray-700 font-medium px-4 py-4">User ID</TableHead>
-              <TableHead className="text-gray-700 font-medium px-4 py-4">Date</TableHead>
-              <TableHead className="text-right text-gray-700 font-medium px-6 py-4">Actions</TableHead>
+            <TableRow className="bg-darkGray2 border-b border-grayBorders">
+              <TableHead className="text-gray-300 font-medium px-6 py-4">Amount</TableHead>
+              <TableHead className="text-gray-300 font-medium px-4 py-4">Type</TableHead>
+              <TableHead className="text-gray-300 font-medium px-4 py-4">Method</TableHead>
+              <TableHead className="text-gray-300 font-medium px-4 py-4">Status</TableHead>
+              <TableHead className="text-gray-300 font-medium px-4 py-4">Reference</TableHead>
+              <TableHead className="text-gray-300 font-medium px-4 py-4">User ID</TableHead>
+              <TableHead className="text-gray-300 font-medium px-4 py-4">Date</TableHead>
+              <TableHead className="text-right text-gray-300 font-medium px-6 py-4">Actions</TableHead>
             </TableRow>
           </TableHeader>
-          <TableBody className="bg-white">
+          <TableBody className="bg-darkGray">
             {filteredTransactions?.map((transaction) => (
-              <TableRow key={transaction._id} className="border-b border-gray-100 hover:bg-blue-50 transition-colors duration-150">
+              <TableRow key={transaction._id} className="border-b border-grayBorders hover:bg-darkGray2 transition-colors duration-150">
                 <TableCell className="px-6 py-4">
                   <div className="flex items-center gap-2">
                     <DollarSign className="h-4 w-4 text-green-600" />
-                    <div className="font-medium text-gray-900">
+                    <div className="font-medium text-white">
                       {formatAmount(transaction.amount)}
                     </div>
                   </div>
                   {transaction.description && (
-                    <div className="text-sm text-gray-500 truncate max-w-xs mt-1">
+                    <div className="text-sm text-gray-400 truncate max-w-xs mt-1">
                       {transaction.description}
                     </div>
                   )}
@@ -216,22 +216,22 @@ export function TransactionsTable() {
                 <TableCell className="px-4 py-4">
                   <div className="flex items-center gap-2">
                     <CreditCard className="h-3 w-3 text-gray-400" />
-                    <span className="text-sm text-gray-700 capitalize">{transaction.method}</span>
+                    <span className="text-sm text-gray-300 capitalize">{transaction.method}</span>
                   </div>
                 </TableCell>
                 <TableCell className="px-4 py-4">{getStatusBadge(transaction.status)}</TableCell>
                 <TableCell className="px-4 py-4">
-                  <div className="text-sm text-gray-700 font-mono">
+                  <div className="text-sm text-gray-300 font-mono">
                     {transaction.reference || "N/A"}
                   </div>
                 </TableCell>
                 <TableCell className="px-4 py-4">
-                  <div className="text-sm text-gray-700">
+                  <div className="text-sm text-gray-300">
                     {transaction.userId}
                   </div>
                 </TableCell>
                 <TableCell className="px-4 py-4">
-                  <div className="flex items-center gap-1 text-sm text-gray-700">
+                  <div className="flex items-center gap-1 text-sm text-gray-300">
                     <Calendar className="h-3 w-3" />
                     {formatDate(transaction._creationTime)}
                   </div>
@@ -241,7 +241,7 @@ export function TransactionsTable() {
                     <Button 
                       variant="ghost" 
                       size="sm" 
-                      className="text-gray-600 hover:text-blue-700 hover:bg-blue-100 transition-colors duration-150"
+                      className="text-gray-400 hover:text-blue-400 hover:bg-darkGray2 transition-colors duration-150"
                       onClick={() => handleViewTransaction(transaction)}
                     >
                       <Eye className="h-4 w-4" />
@@ -249,12 +249,12 @@ export function TransactionsTable() {
                     <Button 
                       variant="ghost" 
                       size="sm" 
-                      className="text-gray-600 hover:text-amber-700 hover:bg-amber-100 transition-colors duration-150"
+                      className="text-gray-400 hover:text-amber-400 hover:bg-darkGray2 transition-colors duration-150"
                       onClick={() => handleEditTransaction(transaction)}
                     >
                       <Edit className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700 hover:bg-red-100 transition-colors duration-150">
+                    <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-300 hover:bg-darkGray2 transition-colors duration-150">
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
@@ -266,7 +266,7 @@ export function TransactionsTable() {
       </div>
 
       {filteredTransactions?.length === 0 && (
-        <div className="text-center py-8 text-gray-500">
+        <div className="text-center py-8 text-gray-400">
           No transactions found
         </div>
       )}
@@ -285,7 +285,7 @@ export function TransactionsTable() {
                 placeholder="Enter user ID"
                 value={formData.userId}
                 onChange={(e) => setFormData({ ...formData, userId: e.target.value })}
-                className="bg-white border-gray-300 text-gray-900"
+                className="bg-darkGray border-grayBorders text-white"
               />
             </div>
             
@@ -296,7 +296,7 @@ export function TransactionsTable() {
                 placeholder="Enter project ID"
                 value={formData.projectId}
                 onChange={(e) => setFormData({ ...formData, projectId: e.target.value })}
-                className="bg-white border-gray-300 text-gray-900"
+                className="bg-darkGray border-grayBorders text-white"
               />
             </div>
             
@@ -310,14 +310,14 @@ export function TransactionsTable() {
                 placeholder="0.00"
                 value={formData.amount}
                 onChange={(e) => setFormData({ ...formData, amount: parseFloat(e.target.value) || 0 })}
-                className="bg-white border-gray-300 text-gray-900"
+                className="bg-darkGray border-grayBorders text-white"
               />
             </div>
             
             <div className="space-y-2">
               <Label htmlFor="type">Type</Label>
               <Select value={formData.type} onValueChange={(value) => setFormData({ ...formData, type: value })}>
-                <SelectTrigger className="bg-white border-gray-300 text-gray-900">
+                <SelectTrigger className="bg-darkGray border-grayBorders text-white">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -332,7 +332,7 @@ export function TransactionsTable() {
             <div className="space-y-2">
               <Label htmlFor="method">Method</Label>
               <Select value={formData.method} onValueChange={(value) => setFormData({ ...formData, method: value })}>
-                <SelectTrigger className="bg-white border-gray-300 text-gray-900">
+                <SelectTrigger className="bg-darkGray border-grayBorders text-white">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -349,7 +349,7 @@ export function TransactionsTable() {
             <div className="space-y-2">
               <Label htmlFor="status">Status</Label>
               <Select value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value })}>
-                <SelectTrigger className="bg-white border-gray-300 text-gray-900">
+                <SelectTrigger className="bg-darkGray border-grayBorders text-white">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -368,7 +368,7 @@ export function TransactionsTable() {
                 placeholder="Transaction reference"
                 value={formData.reference}
                 onChange={(e) => setFormData({ ...formData, reference: e.target.value })}
-                className="bg-white border-gray-300 text-gray-900"
+                className="bg-darkGray border-grayBorders text-white"
               />
             </div>
             
@@ -379,7 +379,7 @@ export function TransactionsTable() {
                 placeholder="Transaction description..."
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                className="bg-white border-gray-300 min-h-[80px]"
+                className="bg-darkGray border-grayBorders min-h-[80px]"
               />
             </div>
           </div>

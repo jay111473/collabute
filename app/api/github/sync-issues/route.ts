@@ -50,7 +50,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Parse owner and repo name from full name
-    const [owner, repoName] = repository.repository.fullName.split("/");
+    const fullNameParts = repository.repository.fullName.split("/");
+    if (fullNameParts.length !== 2) {
+      return NextResponse.json(
+        { error: "Invalid repository full name format" },
+        { status: 400 }
+      );
+    }
+    const [owner, repoName] = fullNameParts;
 
     // Fetch issues from GitHub
     const githubIssues = await githubAPI.getRepositoryIssues(owner, repoName);

@@ -53,7 +53,7 @@ export function MediaEditDialog({ media, isOpen, onOpenChange, mode }: MediaEdit
   };
 
   const getTypeIcon = (type: string | undefined) => {
-    if (!type) return <File className="h-4 w-4 text-gray-500" />;
+    if (!type) return <File className="h-4 w-4 text-gray-400" />;
     
     const typeLower = type.toLowerCase();
     if (typeLower.includes('image') || typeLower.includes('png') || typeLower.includes('jpg') || typeLower.includes('jpeg') || typeLower.includes('gif')) {
@@ -68,11 +68,11 @@ export function MediaEditDialog({ media, isOpen, onOpenChange, mode }: MediaEdit
     if (typeLower.includes('text') || typeLower.includes('pdf') || typeLower.includes('doc')) {
       return <FileText className="h-4 w-4 text-orange-500" />;
     }
-    return <File className="h-4 w-4 text-gray-500" />;
+    return <File className="h-4 w-4 text-gray-400" />;
   };
 
   const getTypeBadge = (type: string | undefined) => {
-    if (!type) return <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-300">Unknown</Badge>;
+    if (!type) return <Badge variant="outline" className="bg-darkGray2 text-gray-300 border-grayBorders">Unknown</Badge>;
     
     const typeLower = type.toLowerCase();
     if (typeLower.includes('image') || typeLower.includes('png') || typeLower.includes('jpg') || typeLower.includes('jpeg') || typeLower.includes('gif')) {
@@ -87,7 +87,7 @@ export function MediaEditDialog({ media, isOpen, onOpenChange, mode }: MediaEdit
     if (typeLower.includes('text') || typeLower.includes('pdf') || typeLower.includes('doc')) {
       return <Badge variant="secondary" className="bg-orange-100 text-orange-800 border-orange-200">Document</Badge>;
     }
-    return <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-300">{type}</Badge>;
+    return <Badge variant="outline" className="bg-darkGray2 text-gray-300 border-grayBorders">{type}</Badge>;
   };
 
   const getFileExtension = (url: string) => {
@@ -137,7 +137,7 @@ export function MediaEditDialog({ media, isOpen, onOpenChange, mode }: MediaEdit
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label>File Name</Label>
-                <p className="text-sm text-gray-900 bg-gray-50 px-3 py-2 rounded-md border font-mono">
+                <p className="text-sm text-white bg-darkGray2 px-3 py-2 rounded-md border font-mono">
                   {getFileName(media.url)}
                 </p>
               </div>
@@ -153,7 +153,7 @@ export function MediaEditDialog({ media, isOpen, onOpenChange, mode }: MediaEdit
 
                 <div className="space-y-2">
                   <Label>File Extension</Label>
-                  <p className="text-sm text-gray-900 bg-gray-50 px-3 py-2 rounded-md border">
+                  <p className="text-sm text-white bg-darkGray2 px-3 py-2 rounded-md border">
                     {getFileExtension(media.url)}
                   </p>
                 </div>
@@ -162,7 +162,7 @@ export function MediaEditDialog({ media, isOpen, onOpenChange, mode }: MediaEdit
               <div className="space-y-2">
                 <Label htmlFor="description">Description</Label>
                 {mode === "view" ? (
-                  <p className="text-sm text-gray-900 bg-gray-50 px-3 py-2 rounded-md border min-h-[80px]">
+                  <p className="text-sm text-white bg-darkGray2 px-3 py-2 rounded-md border min-h-[80px]">
                     {media.description || "No description provided"}
                   </p>
                 ) : (
@@ -170,7 +170,7 @@ export function MediaEditDialog({ media, isOpen, onOpenChange, mode }: MediaEdit
                     id="description"
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    className="bg-white border-gray-300 text-gray-900 min-h-[80px]"
+                    className="bg-darkGray border-grayBorders text-white min-h-[80px]"
                     placeholder="Add a description for this media file..."
                   />
                 )}
@@ -179,7 +179,7 @@ export function MediaEditDialog({ media, isOpen, onOpenChange, mode }: MediaEdit
               <div className="space-y-2">
                 <Label>File URL</Label>
                 <div className="flex items-center gap-2">
-                  <ExternalLink className="h-4 w-4 text-gray-500" />
+                  <ExternalLink className="h-4 w-4 text-gray-400" />
                   <a 
                     href={media.url} 
                     target="_blank" 
@@ -199,7 +199,7 @@ export function MediaEditDialog({ media, isOpen, onOpenChange, mode }: MediaEdit
                 media.url.match(/\.(jpg|jpeg|png|gif|webp)$/i)) && (
                 <div className="space-y-2">
                   <Label>Preview</Label>
-                  <div className="border rounded-md p-4 bg-gray-50">
+                  <div className="border rounded-md p-4 bg-darkGray2">
                     <img 
                       src={media.url} 
                       alt={media.description || "Media preview"} 
@@ -216,7 +216,7 @@ export function MediaEditDialog({ media, isOpen, onOpenChange, mode }: MediaEdit
               <div className="space-y-2">
                 <Label htmlFor="type">Media Type</Label>
                 {mode === "view" ? (
-                  <p className="text-sm text-gray-900 bg-gray-50 px-3 py-2 rounded-md border">
+                  <p className="text-sm text-white bg-darkGray2 px-3 py-2 rounded-md border">
                     {media.type || "Not specified"}
                   </p>
                 ) : (
@@ -224,7 +224,7 @@ export function MediaEditDialog({ media, isOpen, onOpenChange, mode }: MediaEdit
                     id="type"
                     value={formData.type}
                     onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                    className="bg-white border-gray-300 text-gray-900"
+                    className="bg-darkGray border-grayBorders text-white"
                     placeholder="image/jpeg, video/mp4, application/pdf..."
                   />
                 )}
@@ -232,22 +232,22 @@ export function MediaEditDialog({ media, isOpen, onOpenChange, mode }: MediaEdit
 
               <div className="space-y-2">
                 <Label>File Information</Label>
-                <div className="bg-gray-50 p-4 rounded-md border space-y-3">
+                <div className="bg-darkGray2 p-4 rounded-md border space-y-3">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">Type:</span>
+                    <span className="text-sm text-gray-400">Type:</span>
                     <div>{getTypeBadge(media.type)}</div>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">Extension:</span>
-                    <span className="text-sm font-mono text-gray-900">{getFileExtension(media.url)}</span>
+                    <span className="text-sm text-gray-400">Extension:</span>
+                    <span className="text-sm font-mono text-white">{getFileExtension(media.url)}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">Size:</span>
-                    <span className="text-sm text-gray-900">{formatFileSize(media.url)}</span>
+                    <span className="text-sm text-gray-400">Size:</span>
+                    <span className="text-sm text-white">{formatFileSize(media.url)}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">Uploaded:</span>
-                    <span className="text-sm text-gray-900">{formatUploadDate(media.createdAt)}</span>
+                    <span className="text-sm text-gray-400">Uploaded:</span>
+                    <span className="text-sm text-white">{formatUploadDate(media.createdAt)}</span>
                   </div>
                 </div>
               </div>
@@ -265,7 +265,7 @@ export function MediaEditDialog({ media, isOpen, onOpenChange, mode }: MediaEdit
                       variant="outline"
                       size="sm"
                       onClick={() => window.open(media.url, '_blank')}
-                      className="text-blue-600 border-blue-300 hover:bg-blue-50"
+                      className="text-blue-600 border-blue-300 hover:bg-darkGray2"
                     >
                       Open File
                     </Button>
@@ -280,16 +280,16 @@ export function MediaEditDialog({ media, isOpen, onOpenChange, mode }: MediaEdit
               <div className="space-y-2">
                 <Label>Uploaded By</Label>
                 <div className="flex items-center gap-2">
-                  <Users className="h-4 w-4 text-gray-500" />
-                  <p className="text-sm text-gray-900">{media.userId}</p>
+                  <Users className="h-4 w-4 text-gray-400" />
+                  <p className="text-sm text-white">{media.userId}</p>
                 </div>
               </div>
 
               <div className="space-y-2">
                 <Label>Upload Date</Label>
                 <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-gray-500" />
-                  <p className="text-sm text-gray-900">
+                  <Calendar className="h-4 w-4 text-gray-400" />
+                  <p className="text-sm text-white">
                     {formatUploadDate(media.createdAt)}
                   </p>
                 </div>
@@ -297,47 +297,47 @@ export function MediaEditDialog({ media, isOpen, onOpenChange, mode }: MediaEdit
 
               <div className="space-y-2">
                 <Label>Media ID</Label>
-                <p className="text-xs text-gray-500 font-mono bg-gray-50 px-2 py-1 rounded border">
+                <p className="text-xs text-gray-400 font-mono bg-darkGray2 px-2 py-1 rounded border">
                   {media._id}
                 </p>
               </div>
 
               <div className="space-y-2">
                 <Label>System Information</Label>
-                <div className="bg-gray-50 p-4 rounded-md border space-y-2">
+                <div className="bg-darkGray2 p-4 rounded-md border space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Created At:</span>
-                    <span className="text-gray-900">{new Date(media._creationTime).toLocaleString()}</span>
+                    <span className="text-gray-400">Created At:</span>
+                    <span className="text-white">{new Date(media._creationTime).toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Uploaded At:</span>
-                    <span className="text-gray-900">{new Date(media.createdAt).toLocaleString()}</span>
+                    <span className="text-gray-400">Uploaded At:</span>
+                    <span className="text-white">{new Date(media.createdAt).toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Type:</span>
-                    <span className="text-gray-900">{media.type || "Not specified"}</span>
+                    <span className="text-gray-400">Type:</span>
+                    <span className="text-white">{media.type || "Not specified"}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">User ID:</span>
-                    <span className="text-gray-900 font-mono text-xs">{media.userId}</span>
+                    <span className="text-gray-400">User ID:</span>
+                    <span className="text-white font-mono text-xs">{media.userId}</span>
                   </div>
                 </div>
               </div>
 
               <div className="space-y-2">
                 <Label>File Details</Label>
-                <div className="bg-gray-50 p-4 rounded-md border space-y-2">
+                <div className="bg-darkGray2 p-4 rounded-md border space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Filename:</span>
-                    <span className="text-gray-900 font-mono text-xs">{getFileName(media.url)}</span>
+                    <span className="text-gray-400">Filename:</span>
+                    <span className="text-white font-mono text-xs">{getFileName(media.url)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Extension:</span>
-                    <span className="text-gray-900">{getFileExtension(media.url)}</span>
+                    <span className="text-gray-400">Extension:</span>
+                    <span className="text-white">{getFileExtension(media.url)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Has Description:</span>
-                    <span className="text-gray-900">{media.description ? "Yes" : "No"}</span>
+                    <span className="text-gray-400">Has Description:</span>
+                    <span className="text-white">{media.description ? "Yes" : "No"}</span>
                   </div>
                 </div>
               </div>
@@ -349,7 +349,7 @@ export function MediaEditDialog({ media, isOpen, onOpenChange, mode }: MediaEdit
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
-            className="text-gray-900"
+            className="text-white"
           >
             {mode === "view" ? "Close" : "Cancel"}
           </Button>

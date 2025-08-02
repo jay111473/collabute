@@ -64,11 +64,11 @@ export function ProjectsTable() {
     const badgeConfig = {
       PLANNED: { variant: "secondary" as const, className: "bg-blue-100 text-blue-800 border-blue-200" },
       IN_PROGRESS: { variant: "default" as const, className: "bg-green-600 text-white" },
-      COMPLETED: { variant: "outline" as const, className: "bg-gray-100 text-gray-800 border-gray-300" },
+      COMPLETED: { variant: "outline" as const, className: "bg-gray-100 text-gray-800 border-grayBorders" },
       ON_HOLD: { variant: "destructive" as const, className: "bg-red-600 text-white" },
     };
     
-    const config = badgeConfig[status as keyof typeof badgeConfig] || { variant: "outline" as const, className: "bg-gray-50 text-gray-700 border-gray-300" };
+    const config = badgeConfig[status as keyof typeof badgeConfig] || { variant: "outline" as const, className: "bg-darkGray2 text-gray-300 border-grayBorders" };
     
     return (
       <Badge variant={config.variant} className={config.className}>
@@ -137,7 +137,7 @@ export function ProjectsTable() {
             placeholder="Search projects..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="bg-white border-gray-300 text-gray-900 placeholder-gray-500"
+            className="bg-darkGray border-grayBorders text-white placeholder-gray-400"
           />
         </div>
         
@@ -150,44 +150,44 @@ export function ProjectsTable() {
         </Button>
       </div>
 
-      <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
+      <div className="bg-darkGray border border-grayBorders rounded-lg shadow-sm">
         <Table>
           <TableHeader>
-            <TableRow className="bg-gray-50 border-b border-gray-200">
-              <TableHead className="text-gray-700 font-medium px-6 py-4">Title</TableHead>
-              <TableHead className="text-gray-700 font-medium px-4 py-4">Status</TableHead>
-              <TableHead className="text-gray-700 font-medium px-4 py-4">Owner</TableHead>
-              <TableHead className="text-gray-700 font-medium px-4 py-4">Budget</TableHead>
-              <TableHead className="text-gray-700 font-medium px-4 py-4">Start Date</TableHead>
-              <TableHead className="text-gray-700 font-medium px-4 py-4">Stacks</TableHead>
-              <TableHead className="text-right text-gray-700 font-medium px-6 py-4">Actions</TableHead>
+            <TableRow className="bg-darkGray2 border-b border-grayBorders">
+              <TableHead className="text-gray-300 font-medium px-6 py-4">Title</TableHead>
+              <TableHead className="text-gray-300 font-medium px-4 py-4">Status</TableHead>
+              <TableHead className="text-gray-300 font-medium px-4 py-4">Owner</TableHead>
+              <TableHead className="text-gray-300 font-medium px-4 py-4">Budget</TableHead>
+              <TableHead className="text-gray-300 font-medium px-4 py-4">Start Date</TableHead>
+              <TableHead className="text-gray-300 font-medium px-4 py-4">Stacks</TableHead>
+              <TableHead className="text-right text-gray-300 font-medium px-6 py-4">Actions</TableHead>
             </TableRow>
           </TableHeader>
-          <TableBody className="bg-white">
+          <TableBody className="bg-darkGray">
             {filteredProjects?.map((project) => (
-              <TableRow key={project._id} className="border-b border-gray-100 hover:bg-blue-50 transition-colors duration-150">
+              <TableRow key={project._id} className="border-b border-grayBorders hover:bg-darkGray2 transition-colors duration-150">
                 <TableCell className="px-6 py-4">
                   <div>
-                    <div className="font-medium text-gray-900">{project.title}</div>
-                    <div className="text-sm text-gray-500 truncate max-w-xs">
+                    <div className="font-medium text-white">{project.title}</div>
+                    <div className="text-sm text-gray-400 truncate max-w-xs">
                       {project.description}
                     </div>
                   </div>
                 </TableCell>
                 <TableCell className="px-4 py-4">{getStatusBadge(project.status)}</TableCell>
                 <TableCell className="px-4 py-4">
-                  <div className="text-sm text-gray-700">
+                  <div className="text-sm text-gray-300">
                     Owner ID: {project.ownerId}
                   </div>
                 </TableCell>
                 <TableCell className="px-4 py-4">
-                  <div className="flex items-center gap-1 text-sm text-gray-700">
+                  <div className="flex items-center gap-1 text-sm text-gray-300">
                     <DollarSign className="h-3 w-3" />
                     {formatBudget(project.budget)}
                   </div>
                 </TableCell>
                 <TableCell className="px-4 py-4">
-                  <div className="flex items-center gap-1 text-sm text-gray-700">
+                  <div className="flex items-center gap-1 text-sm text-gray-300">
                     <Calendar className="h-3 w-3" />
                     {formatDate(project.startDate)}
                   </div>
@@ -208,13 +208,13 @@ export function ProjectsTable() {
                 </TableCell>
                 <TableCell className="text-right px-6 py-4">
                   <div className="flex items-center justify-end gap-2">
-                    <Button variant="ghost" size="sm" className="text-gray-600 hover:text-blue-700 hover:bg-blue-100 transition-colors duration-150" onClick={() => handleViewProject(project)}>
+                    <Button variant="ghost" size="sm" className="text-gray-400 hover:text-blue-400 hover:bg-darkGray2 transition-colors duration-150" onClick={() => handleViewProject(project)}>
                       <Eye className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="sm" className="text-gray-600 hover:text-amber-700 hover:bg-amber-100 transition-colors duration-150" onClick={() => handleEditProject(project)}>
+                    <Button variant="ghost" size="sm" className="text-gray-400 hover:text-amber-400 hover:bg-darkGray2 transition-colors duration-150" onClick={() => handleEditProject(project)}>
                       <Edit className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700 hover:bg-red-100 transition-colors duration-150">
+                    <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-300 hover:bg-darkGray2 transition-colors duration-150">
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
@@ -226,7 +226,7 @@ export function ProjectsTable() {
       </div>
 
       {filteredProjects?.length === 0 && (
-        <div className="text-center py-8 text-gray-500">
+        <div className="text-center py-8 text-gray-400">
           No projects found
         </div>
       )}
@@ -245,7 +245,7 @@ export function ProjectsTable() {
                 placeholder="Project title"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="bg-white border-gray-300 text-gray-900"
+                className="bg-darkGray border-grayBorders text-white"
               />
             </div>
             
@@ -256,14 +256,14 @@ export function ProjectsTable() {
                 placeholder="Project description..."
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                className="bg-white border-gray-300 min-h-[80px]"
+                className="bg-darkGray border-grayBorders min-h-[80px]"
               />
             </div>
             
             <div className="space-y-2">
               <Label htmlFor="ownerId">Owner *</Label>
               <Select value={formData.ownerId} onValueChange={(value) => setFormData({ ...formData, ownerId: value })}>
-                <SelectTrigger className="bg-white border-gray-300 text-gray-900">
+                <SelectTrigger className="bg-darkGray border-grayBorders text-white">
                   <SelectValue placeholder="Select owner" />
                 </SelectTrigger>
                 <SelectContent>
@@ -284,7 +284,7 @@ export function ProjectsTable() {
                 placeholder="10000"
                 value={formData.budget}
                 onChange={(e) => setFormData({ ...formData, budget: e.target.value })}
-                className="bg-white border-gray-300 text-gray-900"
+                className="bg-darkGray border-grayBorders text-white"
               />
             </div>
             
@@ -295,7 +295,7 @@ export function ProjectsTable() {
                 placeholder="https://github.com/user/repo"
                 value={formData.repositoryUrl}
                 onChange={(e) => setFormData({ ...formData, repositoryUrl: e.target.value })}
-                className="bg-white border-gray-300 text-gray-900"
+                className="bg-darkGray border-grayBorders text-white"
               />
             </div>
             

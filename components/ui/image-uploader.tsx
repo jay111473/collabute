@@ -41,6 +41,7 @@ export function ImageUploader({
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploaded, setIsUploaded] = useState(false);
+  const [isRemoved, setIsRemoved] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const generateUploadUrl = useMutation(api.media.generateUploadUrl);
@@ -126,14 +127,17 @@ export function ImageUploader({
     }
 
     setSelectedFile(file);
+    setIsRemoved(false);
     await uploadFile(file);
   };
 
   const handleRemoveImage = () => {
+    console.log("Remove image clicked");
     setSelectedFile(null);
     setDescription("");
     setIsUploaded(false);
     setUploadProgress(0);
+    setIsRemoved(true);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -141,10 +145,12 @@ export function ImageUploader({
   };
 
   const handleReplaceImage = () => {
+    console.log("Replace image clicked");
     setSelectedFile(null);
     setDescription("");
     setIsUploaded(false);
     setUploadProgress(0);
+    setIsRemoved(false);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
       fileInputRef.current.click();
@@ -155,10 +161,10 @@ export function ImageUploader({
     ? URL.createObjectURL(selectedFile) 
     : currentImageUrl;
 
-  if (displayImageUrl && !selectedFile) {
+  if (displayImageUrl && !selectedFile && !isRemoved) {
     return (
       <div className={cn("space-y-4", className)}>
-        <div className="relative group">
+        <div className="relative">
           <div className="relative w-full h-48 bg-gray-100 border border-gray-200 rounded-lg overflow-hidden">
             <Image
               src={displayImageUrl}
@@ -167,31 +173,41 @@ export function ImageUploader({
               className="object-cover"
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             />
-            {!disabled && (
-              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-2">
-                <Button
-                  type="button"
-                  variant="secondary"
-                  size="sm"
-                  onClick={handleReplaceImage}
-                  className="gap-2 bg-white/90 text-gray-900 hover:bg-white"
-                >
-                  <RefreshCw className="h-4 w-4" />
-                  Replace
-                </Button>
-                <Button
-                  type="button"
-                  variant="destructive"
-                  size="sm"
-                  onClick={handleRemoveImage}
-                  className="gap-2"
-                >
-                  <X className="h-4 w-4" />
-                  Remove
-                </Button>
-              </div>
-            )}
           </div>
+          {!disabled && (
+            <div className="mt-2 flex gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={(e) => {
+                  console.log("Replace button clicked (existing image)");
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleReplaceImage();
+                }}
+                className="gap-2"
+              >
+                <RefreshCw className="h-4 w-4" />
+                Replace
+              </Button>
+              <Button
+                type="button"
+                variant="destructive"
+                size="sm"
+                onClick={(e) => {
+                  console.log("Remove button clicked (existing image)");
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleRemoveImage();
+                }}
+                className="gap-2"
+              >
+                <X className="h-4 w-4" />
+                Remove
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     );
@@ -224,7 +240,7 @@ export function ImageUploader({
         
         {selectedFile && (
           <div className="space-y-2">
-            <div className="relative w-full h-48 bg-gray-100 border border-gray-200 rounded-lg overflow-hidden group">
+            <div className="relative w-full h-48 bg-gray-100 border border-gray-200 rounded-lg overflow-hidden">
               <Image
                 src={URL.createObjectURL(selectedFile)}
                 alt="Preview"
@@ -247,32 +263,6 @@ export function ImageUploader({
                   </div>
                 </div>
               )}
-              
-              {/* Success/Replace overlay */}
-              {isUploaded && !isUploading && (
-                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-2">
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    size="sm"
-                    onClick={handleReplaceImage}
-                    className="gap-2 bg-white/90 text-gray-900 hover:bg-white"
-                  >
-                    <RefreshCw className="h-4 w-4" />
-                    Replace
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    size="sm"
-                    onClick={handleRemoveImage}
-                    className="gap-2"
-                  >
-                    <X className="h-4 w-4" />
-                    Remove
-                  </Button>
-                </div>
-              )}
             </div>
             
             <div className="flex items-center justify-between text-sm text-gray-600">
@@ -288,6 +278,41 @@ export function ImageUploader({
                 <span className="text-green-600 font-medium">✓ Uploaded</span>
               )}
             </div>
+            
+            {isUploaded && !isUploading && !disabled && (
+              <div className="flex gap-2 mt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={(e) => {
+                    console.log("Replace button clicked (uploaded image)");
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleReplaceImage();
+                  }}
+                  className="gap-2"
+                >
+                  <RefreshCw className="h-4 w-4" />
+                  Replace
+                </Button>
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="sm"
+                  onClick={(e) => {
+                    console.log("Remove button clicked (uploaded image)");
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleRemoveImage();
+                  }}
+                  className="gap-2"
+                >
+                  <X className="h-4 w-4" />
+                  Remove
+                </Button>
+              </div>
+            )}
           </div>
         )}
         

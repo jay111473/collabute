@@ -250,7 +250,7 @@ export function BlogEditDialog({
               <ImageUploader
                 currentImageUrl={blog?.thumbnail?.url}
                 currentImageId={blog?.thumbnail?._id}
-                onUploadComplete={(mediaId: string) => {
+                onUploadComplete={(mediaId: string, url: string) => {
                   if (!isReadOnly) {
                     setFormData((prev) => ({ ...prev, thumbnailId: mediaId }));
                   }

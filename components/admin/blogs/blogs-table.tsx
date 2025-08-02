@@ -155,6 +155,9 @@ export function BlogsTable() {
               <TableHead className="text-gray-300 font-medium px-4 py-4">
                 Updated
               </TableHead>
+              <TableHead className="text-gray-300 font-medium px-4 py-4">
+                Content
+              </TableHead>
               <TableHead className="text-right text-gray-300 font-medium px-6 py-4">
                 Actions
               </TableHead>
@@ -190,6 +193,17 @@ export function BlogsTable() {
                 </TableCell>
                 <TableCell className="text-gray-300 px-4 py-4">
                   {formatDate(blog.updatedAt)}
+                </TableCell>
+                <TableCell className="text-gray-300 px-4 py-4">
+                  {blog.content ? (
+                    <Badge variant="default" className="bg-green-600 text-white">
+                      Has Content
+                    </Badge>
+                  ) : (
+                    <Badge variant="outline" className="bg-red-900/20 text-red-400 border-red-600/30">
+                      No Content
+                    </Badge>
+                  )}
                 </TableCell>
                 <TableCell className="text-right px-6 py-4">
                   <div className="flex items-center justify-end gap-2">

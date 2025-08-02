@@ -172,11 +172,26 @@ export function UserEditDialog({
           </DialogTitle>
         </DialogHeader>
 
-        <Tabs defaultValue="basic" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 bg-darkGray2">
-            <TabsTrigger value="basic" className="text-gray-300 data-[state=active]:bg-darkGray data-[state=active]:text-white">Basic Info</TabsTrigger>
-            <TabsTrigger value="profile" className="text-gray-300 data-[state=active]:bg-darkGray data-[state=active]:text-white">Profile</TabsTrigger>
-            <TabsTrigger value="system" className="text-gray-300 data-[state=active]:bg-darkGray data-[state=active]:text-white">System</TabsTrigger>
+        <Tabs defaultValue="basic" className="w-full space-y-6">
+          <TabsList className="grid w-full grid-cols-3 bg-darkGray2/50 border border-grayBorders/30 rounded-xl p-1 h-12">
+            <TabsTrigger 
+              value="basic" 
+              className="text-gray-400 text-sm font-medium data-[state=active]:bg-darkGray data-[state=active]:text-white data-[state=active]:shadow-sm rounded-lg transition-all duration-200 hover:text-gray-200 hover:bg-darkGray/30 px-3 py-2"
+            >
+              Basic Info
+            </TabsTrigger>
+            <TabsTrigger 
+              value="profile" 
+              className="text-gray-400 text-sm font-medium data-[state=active]:bg-darkGray data-[state=active]:text-white data-[state=active]:shadow-sm rounded-lg transition-all duration-200 hover:text-gray-200 hover:bg-darkGray/30 px-3 py-2"
+            >
+              Profile
+            </TabsTrigger>
+            <TabsTrigger 
+              value="system" 
+              className="text-gray-400 text-sm font-medium data-[state=active]:bg-darkGray data-[state=active]:text-white data-[state=active]:shadow-sm rounded-lg transition-all duration-200 hover:text-gray-200 hover:bg-darkGray/30 px-3 py-2"
+            >
+              System
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="basic" className="space-y-4">

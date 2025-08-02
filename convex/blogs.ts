@@ -337,7 +337,7 @@ export const createBlog = mutation({
       thumbnail: args.thumbnail,
       category: args.category,
       tags: args.tags,
-      richtext: args.richtext,
+      content: args.content,
       status: args.status || "draft",
       publishedAt: args.status === "published" ? now : undefined,
       updatedAt: now,

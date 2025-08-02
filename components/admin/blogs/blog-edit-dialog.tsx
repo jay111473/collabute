@@ -243,6 +243,34 @@ export function BlogEditDialog({
 
         <div className="space-y-4">
           <div className="space-y-2">
+            <Label htmlFor="thumbnail" className="text-gray-300">
+              Thumbnail Image
+            </Label>
+            {user && (
+              <ImageUploader
+                currentImageUrl={blog?.thumbnail?.url}
+                currentImageId={blog?.thumbnail?._id}
+                onUploadComplete={(mediaId: string) => {
+                  if (!isReadOnly) {
+                    setFormData((prev) => ({ ...prev, thumbnailId: mediaId }));
+                  }
+                }}
+                onUploadError={(error: string) => {
+                  console.error("Upload error:", error);
+                }}
+                onRemove={() => {
+                  if (!isReadOnly) {
+                    setFormData((prev) => ({ ...prev, thumbnailId: "" }));
+                  }
+                }}
+                userId={user.id}
+                className="max-w-md"
+                disabled={isReadOnly}
+              />
+            )}
+          </div>
+
+          <div className="space-y-2">
             <Label htmlFor="title">Title *</Label>
             <Input
               id="title"
@@ -296,34 +324,6 @@ export function BlogEditDialog({
               readOnly={isReadOnly}
               userId={user?.id}
             />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="thumbnail" className="text-gray-300">
-              Thumbnail Image
-            </Label>
-            {user && (
-              <ImageUploader
-                currentImageUrl={blog?.thumbnail?.url}
-                currentImageId={blog?.thumbnail?._id}
-                onUploadComplete={(mediaId: string) => {
-                  if (!isReadOnly) {
-                    setFormData((prev) => ({ ...prev, thumbnailId: mediaId }));
-                  }
-                }}
-                onUploadError={(error: string) => {
-                  console.error("Upload error:", error);
-                }}
-                onRemove={() => {
-                  if (!isReadOnly) {
-                    setFormData((prev) => ({ ...prev, thumbnailId: "" }));
-                  }
-                }}
-                userId={user.id}
-                className="max-w-md"
-                disabled={isReadOnly}
-              />
-            )}
           </div>
 
           <div className="grid grid-cols-2 gap-4">

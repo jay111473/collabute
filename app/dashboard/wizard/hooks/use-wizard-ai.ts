@@ -1,6 +1,4 @@
 import { useState } from "react";
-import { useAction } from "convex/react";
-import { api } from "@/convex/_generated/api";
 import {
   GeneratedProject,
   ProjectsResponse,
@@ -36,22 +34,24 @@ export function useWizardAi(): UseWizardAiReturn {
       }>
     >([]);
 
-  // Convex actions
-  const generateFeatureComparison = useAction(
-    api.wizard.generateFeatureComparison
-  );
-  const generateBusinessComparison = useAction(
-    api.wizard.generateBusinessComparison
-  );
-  const generateProjects = useAction(api.wizard.generateProjects);
-  const generateTracks = useAction(api.wizard.generateTracks);
+  // Direct API calls
 
   const fetchFeatureComparison = async (
     projectIdea: string
   ): Promise<FeatureComparisonData | null> => {
     setIsLoading(true);
     try {
-      const result = await generateFeatureComparison({ projectIdea });
+      const response = await fetch('/api/wizard-industry-competitors-ai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ projectIdea }),
+      });
+      
+      if (!response.ok) {
+        throw new Error(`API call failed: ${response.status}`);
+      }
+      
+      const result = await response.json();
       setSuggestedCompetitors(result.competitors);
       return result;
     } catch (error) {
@@ -67,7 +67,17 @@ export function useWizardAi(): UseWizardAiReturn {
   ): Promise<BusinessComparisonData | null> => {
     setIsLoading(true);
     try {
-      const result = await generateBusinessComparison({ projectIdea });
+      const response = await fetch('/api/wizard-business-comparison-ai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ projectIdea }),
+      });
+      
+      if (!response.ok) {
+        throw new Error(`API call failed: ${response.status}`);
+      }
+      
+      const result = await response.json();
       return result;
     } catch (error) {
       console.error("Error fetching business comparison:", error);
@@ -85,13 +95,17 @@ export function useWizardAi(): UseWizardAiReturn {
   }): Promise<ProjectsResponse | null> => {
     setIsLoading(true);
     try {
-      const result = await generateProjects({
-        name: projectInfo.name,
-        description: projectInfo.description,
-        industries: projectInfo.industries,
-        projectPlatforms: projectInfo.projectPlatforms,
+      const response = await fetch('/api/wizard-platform-generator', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(projectInfo),
       });
-
+      
+      if (!response.ok) {
+        throw new Error(`API call failed: ${response.status}`);
+      }
+      
+      const result = await response.json();
       setSuggestedProjects(result.projects);
       setTotalEstimatedDuration(result.totalEstimatedDuration);
       setCriticalPath(result.criticalPath);
@@ -113,18 +127,27 @@ export function useWizardAi(): UseWizardAiReturn {
   ): Promise<TracksResponse | null> => {
     setIsLoading(true);
     try {
-      const result = await generateTracks({
-        projectInfo,
-        competitors,
-        projects,
+      const response = await fetch('/api/wizard-tracks-generator', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          projectInfo,
+          competitors,
+          projects,
+        }),
       });
-
+      
+      if (!response.ok) {
+        throw new Error(`API call failed: ${response.status}`);
+      }
+      
+      const result = await response.json();
       setSuggestedTracks(result.tracks);
       setTotalEstimatedDuration(result.totalEstimatedDuration);
       setCriticalPath(result.criticalPath);
       // Convert trackIds to projectIds for compatibility
       const convertedOpportunities = result.parallelizationOpportunities.map(
-        (opp) => ({
+        (opp: any) => ({
           projectIds: opp.trackIds || [],
           description: opp.description,
         })

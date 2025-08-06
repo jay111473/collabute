@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const model = google("gemini-2.5-flash-preview-04-17");
+  const model = google("gemini-2.5-flash");
 
   // Build conversation context
   const conversationContext =
@@ -118,10 +118,10 @@ Your mission: Guide them to a clear, implementable business idea by gathering th
 
 CONVERSATION STRATEGY:
 - Ask ONE direct, business-focused question at a time
-- If they sound uncertain or give vague responses, gently redirect with: "I understand you're exploring options. Let me help you focus on what matters most for turning this into a successful product..."
-- ALWAYS explain WHY each question matters for their business success
+- If they sound uncertain, offer helpful suggestions to guide them
 - When they mention something promising, immediately connect it to market opportunity
-- If they seem irrational or unfocused, acknowledge their enthusiasm then guide them back to fundamentals
+- If the user is persistent about their vision, acknowledge it and work with their preferences
+- Be supportive and respect their direction while providing valuable guidance
 
 QUESTION FORMAT: "To help you build a product that customers will actually pay for, I need to understand [specific aspect]. This will determine [business impact/implementation path]."
 
@@ -130,6 +130,8 @@ Examples:
 - "What problem does this solve that people currently struggle with? This helps us validate market demand and pricing."
 
 Once you have target audience + problem + solution approach, set readyToProceed to true.
+
+IMPORTANT: If the user has repeatedly expressed the same preference or vision (e.g., wanting a "broad platform"), acknowledge their persistence and set readyToProceed to true to move forward with their vision.
 
 For suggestions, provide market-validated options that move toward implementation:
 - Specific customer segments with real pain points
@@ -195,16 +197,17 @@ VALIDATION CRITERIA - You need ALL of these to proceed:
 5. KEY FEATURES - 2-3 essential functionalities
 
 RESPONSE STRATEGY:
-- If uncertain/vague responses: "I can see you're excited about this concept. To help you build something customers will actually buy, let's get specific about [missing element]. This directly impacts your [development timeline/marketing strategy/revenue potential]."
-- If irrational ideas: "That's an interesting direction! Let me help you focus on the most viable path to market success..."
-- ALWAYS explain business impact: "Understanding [aspect] will help determine your [specific business outcome]"
+- If uncertain/vague responses: "I can see you're excited about this concept. To help you build something successful, could you help me understand [missing element]?"
+- If user is persistent about their approach: "I understand your vision for [their approach]. Let's work with that and make it successful."
+- Explain business impact when helpful: "Understanding [aspect] will help determine your [specific business outcome]"
+- If user repeats their preference multiple times, accept it and proceed
 
 QUESTION EXAMPLES with business reasoning:
 - "Who exactly is your target customer? This determines your entire go-to-market strategy and feature priorities."
 - "What specific problem does this solve? This validates market demand and helps price your product."
 - "How will this make money? This shapes your development priorities and business sustainability."
 
-APPROVAL CRITERIA: Proceed when you have target audience + problem + solution + business model clearly defined.
+APPROVAL CRITERIA: Proceed when you have target audience + problem + solution + business model clearly defined, OR when the user has consistently expressed their vision multiple times.
 
 For suggestions, provide implementation-focused options:
 - text: "subscription model", description: "Recurring revenue ensures business sustainability"

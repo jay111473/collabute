@@ -221,7 +221,7 @@ function AuthForm() {
           <div className="mt-6 text-center text-sm text-zinc-400">
             Don&apos;t have an account?{" "}
             <Link
-              href="/auth/onboarding"
+              href="/onboarding"
               className="text-blue-400 hover:text-blue-300 hover:underline"
             >
               Sign up here

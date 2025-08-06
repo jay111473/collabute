@@ -1,5 +1,5 @@
 import React from "react";
-import { ConvexClientProvider } from "../providers/ConvexClientProvider";
+import { ConvexClientProvider } from "../../providers/ConvexClientProvider";
 
 export default function AuthLayout({
   children,

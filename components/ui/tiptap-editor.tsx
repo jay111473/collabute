@@ -36,15 +36,12 @@ export function TiptapEditor({
           class: "text-primary underline",
         },
       }),
-      Placeholder.configure({
-        placeholder,
-      }),
+      Placeholder.configure({ placeholder }),
     ],
     content,
     editorProps: {
       attributes: {
-        class:
-          "prose prose-sm max-w-none min-h-[200px] focus:outline-none",
+        class: "prose prose-sm max-w-none min-h-[200px] focus:outline-none",
       },
     },
     onUpdate: ({ editor }) => {
@@ -119,4 +116,4 @@ export function TiptapEditor({
       </div>
     </div>
   );
-} 
+}

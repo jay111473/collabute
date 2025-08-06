@@ -15,6 +15,7 @@ interface GanttChartProps {
     projectIds: string[];
     description: string;
   }>;
+  trackTasks?: any[]; // Optional track tasks data
 }
 
 interface ProjectSchedule {
@@ -86,9 +87,37 @@ export function GanttChart({
   totalEstimatedDuration,
   criticalPath,
   parallelizationOpportunities,
+  trackTasks = [],
 }: GanttChartProps) {
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
   const [hoveredProject, setHoveredProject] = useState<string | null>(null);
+
+  // Calculate task data for each project
+  const projectTaskData = useMemo(() => {
+    const dataMap = new Map();
+    
+    // Map tracks to projects based on platform/category matching
+    projects.forEach(project => {
+      const relatedTracks = trackTasks.filter(track => {
+        const platformMatch = track.platform?.toLowerCase().includes(project.platform?.toLowerCase()) ||
+                            project.platform?.toLowerCase().includes(track.platform?.toLowerCase());
+        const categoryMatch = track.trackCategory?.toLowerCase().includes(project.platform?.toLowerCase()) ||
+                            project.platform?.toLowerCase().includes(track.trackCategory?.toLowerCase());
+        return platformMatch || categoryMatch;
+      });
+      
+      const totalTasks = relatedTracks.reduce((sum, track) => sum + (track.totalTasksCount || 0), 0);
+      const totalDays = relatedTracks.reduce((sum, track) => sum + (track.totalEstimatedDays || 0), 0);
+      
+      dataMap.set(project.id, {
+        taskCount: totalTasks || 15, // Default to 15 if no tasks found
+        totalDays: totalDays || project.durationInWeeks * 5, // Default to duration * 5 days/week
+        tracks: relatedTracks
+      });
+    });
+    
+    return dataMap;
+  }, [projects, trackTasks]);
 
   // Calculate project schedule based on dependencies
   const projectSchedule = useMemo(() => {
@@ -371,7 +400,13 @@ export function GanttChart({
                                 <div className="flex items-center gap-1">
                                   <Clock className="h-3 w-3 text-gray-500" />
                                   <span className="text-xs text-gray-400">
-                                    {item.project.durationInWeeks}w
+                                    {projectTaskData.get(item.project.id)?.totalDays || item.project.durationInWeeks * 5} days
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <Target className="h-3 w-3 text-purple-400" />
+                                  <span className="text-xs text-purple-400">
+                                    {projectTaskData.get(item.project.id)?.taskCount || 15} tasks
                                   </span>
                                 </div>
                                 {item.project.dependencies.length > 0 && (
@@ -383,7 +418,7 @@ export function GanttChart({
                                   </div>
                                 )}
                                 <div className="flex items-center gap-1">
-                                  <Target className="h-3 w-3 text-blue-400" />
+                                  <Zap className="h-3 w-3 text-blue-400" />
                                   <span className="text-xs text-blue-400 capitalize">
                                     {item.project.priority}
                                   </span>

@@ -23,10 +23,10 @@ const buttonVariants = cva(
         link: "text-slate-900 underline-offset-4 dark:text-slate-50",
       },
       size: {
-        default: "px-4 py-4",
-        sm: "rounded-md px-3 py-4",
-        lg: "rounded-md px-4 md:px-8 md:py-4 py-2",
-        icon: "h-10 w-10 py-4",
+        default: "px-4 py-3",
+        sm: "rounded-lg px-3 py-3",
+        lg: "rounded-lg px-4 md:px-8 md:py-3 py-2",
+        icon: "h-10 w-10 py-3",
       },
     },
     defaultVariants: {

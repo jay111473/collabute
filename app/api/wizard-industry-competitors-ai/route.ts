@@ -52,7 +52,7 @@ export async function POST(request: Request) {
     let projectName, description, projectIdea;
     try {
       const body = await request.json();
-      
+
       projectName = body.projectName;
       description = body.description;
       projectIdea = body.projectIdea;
@@ -67,12 +67,12 @@ export async function POST(request: Request) {
     let finalProjectName, finalDescription;
 
     if (projectIdea) {
-      // New structure: single project idea
-      finalProjectName = "Your Startup";
+      // New structure: single project idea - generate a proper name
+      finalProjectName = "My Project";
       finalDescription = projectIdea;
     } else if (projectName && description) {
       // Old structure: separate name and description
-      finalProjectName = projectName || "Your Startup";
+      finalProjectName = projectName || "My Project";
       finalDescription = description;
     } else {
       return NextResponse.json(
@@ -120,6 +120,7 @@ Create a feature comparison matrix with:
    - For each competitor, provide featureSupport array with featureName and hasFeature boolean
 
 3. USER PROJECT ANALYSIS
+   - Use EXACTLY this project name: "${finalProjectName}"
    - Analyze what features THIS SPECIFIC project would realistically have
    - Consider the exact project description and its unique characteristics
    - Be honest about limitations for a new startup in this specific domain
@@ -135,7 +136,7 @@ VALIDATION REQUIREMENTS:
 Remember: This analysis is for the specific project "${finalDescription}" - make it unique and relevant!`;
 
     const data = await generateObject({
-      model: google("gemini-2.5-flash-preview-04-17"),
+      model: google("gemini-2.5-flash"),
       prompt,
       schema: featureComparisonSchema,
       system: `You are a product analyst expert who creates detailed competitive feature matrices.
@@ -170,7 +171,8 @@ AVOID:
 ENSURE:
 - Every feature is relevant to the specific project described
 - Competitors are real companies in the same market
-- Analysis reflects the unique aspects of this project`,
+- Analysis reflects the unique aspects of this project
+- IMPORTANT: Use the exact Project Name provided in the prompt for the userProject.name field`,
       temperature: 0.9, // Increased for more randomness
       maxTokens: 8000,
     });
@@ -184,16 +186,19 @@ ENSURE:
     ) {
       throw new Error("Incomplete data received from AI model");
     }
-
+    console.log(data);
     // Transform the response to match the expected format
     const transformedData = {
       categories: data.object.categories,
       competitors: data.object.competitors.map((competitor) => ({
         ...competitor,
-        features: competitor.featureSupport.reduce((acc, feature) => {
-          acc[feature.featureName] = feature.hasFeature;
-          return acc;
-        }, {} as Record<string, boolean>),
+        features: competitor.featureSupport.reduce(
+          (acc, feature) => {
+            acc[feature.featureName] = feature.hasFeature;
+            return acc;
+          },
+          {} as Record<string, boolean>
+        ),
       })),
       userProject: {
         name: data.object.userProject.name,
@@ -209,7 +214,6 @@ ENSURE:
 
     return NextResponse.json(transformedData);
   } catch (error) {
-
     return NextResponse.json(
       {
         error: "Failed to analyze feature comparison",

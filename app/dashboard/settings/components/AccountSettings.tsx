@@ -25,7 +25,10 @@ export default function AccountSettings() {
     api.users.currentUser,
     isAuthenticated ? {} : "skip"
   );
-  const data = useQuery(api.users.getDeveloperProfile, userDefault?._id as any);
+  const data = useQuery(
+    api.users.getDeveloperProfile,
+    userDefault?._id && isAuthenticated ? { userId: userDefault._id } : "skip"
+  );
   const user = data?.user;
   const developerFields = data?.developerFields;
   const [skills, setSkills] = useState<Skill[]>();

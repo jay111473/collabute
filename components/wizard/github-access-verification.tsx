@@ -1,10 +1,11 @@
 "use client";
 
+import { useEffect } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, AlertCircle, CheckCircle, Github } from "lucide-react";
+import { Loader2, AlertCircle, CheckCircle, ArrowRight } from "lucide-react";
 import GithubIcon from "@/public/icons/github";
 import { useGitHubAccess } from "@/app/dashboard/wizard/hooks/use-github-access";
 
@@ -32,6 +33,13 @@ export function GitHubAccessVerification({
     isGitHubConnected,
   } = useGitHubAccess(userId);
 
+  // Call onAccessVerified when GitHub access is granted
+  useEffect(() => {
+    if (hasGitHubAccess) {
+      onAccessVerified();
+    }
+  }, [hasGitHubAccess, onAccessVerified]);
+
   // If loading, show loading state
   if (isLoading) {
     return (
@@ -44,24 +52,9 @@ export function GitHubAccessVerification({
     );
   }
 
-  // If user has GitHub access, show children and call onAccessVerified
+  // If GitHub is connected and has access, show children
   if (hasGitHubAccess) {
-    onAccessVerified();
-    return (
-      <div className="space-y-4">
-        {/* Show GitHub status indicator */}
-        <Alert className="bg-green-900/20 border-green-800">
-          <CheckCircle className="h-4 w-4 text-green-400" />
-          <AlertDescription className="text-green-400">
-            ✅ GitHub Connected as @{status?.githubUsername}
-            <p className="text-sm text-green-300 mt-1">
-              Repository will be created when your project is approved
-            </p>
-          </AlertDescription>
-        </Alert>
-        {children}
-      </div>
-    );
+    return <>{children}</>;
   }
 
   // Handle case where GitHub is connected but can't create repositories
@@ -73,26 +66,28 @@ export function GitHubAccessVerification({
           animate={{ opacity: 1, y: 0 }}
           className="w-full max-w-md mx-auto"
         >
-          <Alert className="mb-6 bg-yellow-900/20 border-yellow-800">
-            <AlertCircle className="h-4 w-4 text-yellow-400" />
-            <AlertDescription className="text-yellow-400">
-              GitHub is connected but insufficient permissions to create repositories.
+          <Alert className="mb-6 bg-blue-900/20 border-blue-800">
+            <ArrowRight className="h-4 w-4 text-blue-400" />
+            <AlertDescription className="text-blue-400">
+              GitHub is connected! We need a few more permissions to create
+              repositories for you.
             </AlertDescription>
           </Alert>
 
           <Card className="bg-gradient-to-br from-darkPrimary/20 to-darkPrimary/5 border-white/10 p-8 rounded-2xl">
             <div className="flex flex-col items-center justify-center space-y-6">
-              <div className="w-16 h-16 rounded-full bg-yellow-500/20 flex items-center justify-center">
-                <AlertCircle className="h-8 w-8 text-yellow-400" />
+              <div className="w-16 h-16 rounded-full bg-blue-500/20 flex items-center justify-center">
+                <GithubIcon className="h-8 w-8 text-blue-400" />
               </div>
 
               <div className="text-center space-y-2">
                 <h3 className="text-xl font-semibold text-white">
-                  Additional Permissions Required
+                  Complete GitHub Setup
                 </h3>
                 <p className="text-gray-400">
-                  Your GitHub account is connected, but we need additional permissions
-                  to create repositories for your projects.
+                  Great! Your GitHub account is connected. Let&apos;s complete
+                  the setup by granting repository creation permissions for your
+                  projects.
                 </p>
               </div>
 
@@ -109,7 +104,7 @@ export function GitHubAccessVerification({
                 ) : (
                   <>
                     <GithubIcon />
-                    Reconnect with Full Permissions
+                    Grant Repository Permissions
                   </>
                 )}
               </Button>
@@ -129,43 +124,45 @@ export function GitHubAccessVerification({
         className="w-full max-w-md mx-auto"
       >
         {error && (
-          <Alert className="mb-6 bg-red-900/20 border-red-800">
-            <AlertCircle className="h-4 w-4 text-red-400" />
-            <AlertDescription className="text-red-400">{error}</AlertDescription>
+          <Alert className="mb-6 bg-orange-900/20 border-orange-800">
+            <AlertCircle className="h-4 w-4 text-orange-400" />
+            <AlertDescription className="text-orange-400">
+              {error}
+            </AlertDescription>
           </Alert>
         )}
 
         <Card className="bg-gradient-to-br from-darkPrimary/20 to-darkPrimary/5 border-white/10 p-8 rounded-2xl">
           <div className="flex flex-col items-center justify-center space-y-6">
-            <div className="w-16 h-16 rounded-full bg-red-500/20 flex items-center justify-center">
-              <AlertCircle className="h-8 w-8 text-red-400" />
+            <div className="w-16 h-16 rounded-full bg-blue-500/20 flex items-center justify-center">
+              <GithubIcon className="h-8 w-8 text-blue-400" />
             </div>
 
             <div className="text-center space-y-2">
               <h3 className="text-xl font-semibold text-white">
-                GitHub Account Required
+                Connect Your GitHub Account
               </h3>
               <p className="text-gray-400">
-                Connect your GitHub account to create projects with repositories.
-                A repository will be automatically created when your project is
-                approved.
+                Let&apos;s connect your GitHub account to enable repository
+                creation for your projects. This helps us automatically set up
+                your project infrastructure when approved.
               </p>
             </div>
 
-            {/* Connection status details */}
+            {/* Setup progress */}
             <div className="w-full space-y-2 text-sm">
               <div className="flex items-center justify-between p-3 bg-darkGray rounded-lg">
-                <span className="text-gray-300">GitHub Connected</span>
-                <span className="text-red-400 flex items-center gap-1">
-                  <AlertCircle className="h-3 w-3" />
-                  No
+                <span className="text-gray-300">Step 1: GitHub Connection</span>
+                <span className="text-gray-400 flex items-center gap-1">
+                  <ArrowRight className="h-3 w-3" />
+                  Pending
                 </span>
               </div>
               <div className="flex items-center justify-between p-3 bg-darkGray rounded-lg">
-                <span className="text-gray-300">Repository Creation</span>
-                <span className="text-red-400 flex items-center gap-1">
-                  <AlertCircle className="h-3 w-3" />
-                  Blocked
+                <span className="text-gray-300">Step 2: Repository Access</span>
+                <span className="text-gray-400 flex items-center gap-1">
+                  <ArrowRight className="h-3 w-3" />
+                  Pending
                 </span>
               </div>
             </div>
@@ -190,8 +187,9 @@ export function GitHubAccessVerification({
 
             <div className="text-center text-xs text-gray-500">
               <p>
-                You&apos;ll be redirected to GitHub to authorize access. After
-                connecting, you can continue with the project wizard.
+                You&apos;ll be redirected to GitHub to complete the connection.
+                This only takes a few seconds and then we can continue setting
+                up your project.
               </p>
             </div>
           </div>
@@ -199,4 +197,4 @@ export function GitHubAccessVerification({
       </motion.div>
     </div>
   );
-} 
+}

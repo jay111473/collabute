@@ -30,7 +30,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Eye, Edit, Trash2, Plus, Search } from "lucide-react";
+import { Eye, EyeOff, Edit, Trash2, Plus, Search, RefreshCw } from "lucide-react";
 import { User } from "@/types/convex";
 import { UserEditDialog } from "./user-edit-dialog";
 
@@ -41,14 +41,17 @@ export function UsersTable() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [dialogMode, setDialogMode] = useState<"view" | "edit">("view");
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     name: "",
+    password: "",
     role: "" as string,
     isActive: true,
     phoneNumber: "",
     country: "",
     industry: "",
+    isAdmin: false,
   });
 
   const users = useQuery(api.users.list, {}) as User[] | undefined;
@@ -138,15 +141,22 @@ export function UsersTable() {
   };
 
   const handleCreateUser = async () => {
-    if (!formData.email.trim() || !formData.name.trim()) return;
+    if (
+      !formData.email.trim() ||
+      !formData.name.trim() ||
+      !formData.password.trim()
+    )
+      return;
 
     setIsLoading(true);
     try {
       await createUser({
         email: formData.email.trim(),
         name: formData.name.trim(),
+        password: formData.password.trim(),
         role: (formData.role as any) || undefined,
         isActive: formData.isActive,
+        isAdmin: formData.isAdmin,
         profileData: {
           phoneNumber: formData.phoneNumber.trim() || undefined,
           country: formData.country.trim() || undefined,
@@ -158,11 +168,13 @@ export function UsersTable() {
       setFormData({
         email: "",
         name: "",
+        password: "",
         role: "",
         isActive: true,
         phoneNumber: "",
         country: "",
         industry: "",
+        isAdmin: false,
       });
     } catch (error) {
       console.error("Failed to create user:", error);
@@ -328,6 +340,61 @@ export function UsersTable() {
             </div>
 
             <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password">Password *</Label>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    // Generate secure password
+                    const chars =
+                      "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
+                    let password = "";
+                    for (let i = 0; i < 12; i++) {
+                      password += chars.charAt(
+                        Math.floor(Math.random() * chars.length)
+                      );
+                    }
+                    setFormData({ ...formData, password });
+                  }}
+                  className="text-xs text-blue-400 hover:text-blue-300"
+                >
+                  <RefreshCw className="h-3 w-3 mr-1" />
+                  Generate
+                </Button>
+              </div>
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Enter password"
+                  value={formData.password}
+                  onChange={(e) =>
+                    setFormData({ ...formData, password: e.target.value })
+                  }
+                  className="bg-darkGray border-grayBorders text-white pr-10"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4 text-gray-400" />
+                  ) : (
+                    <Eye className="h-4 w-4 text-gray-400" />
+                  )}
+                </Button>
+              </div>
+              <p className="text-xs text-gray-400">
+                Password must be at least 8 characters
+              </p>
+            </div>
+
+            <div className="space-y-2">
               <Label htmlFor="role">Role</Label>
               <Select
                 value={formData.role}
@@ -389,15 +456,30 @@ export function UsersTable() {
               />
             </div>
 
-            <div className="flex items-center space-x-2">
-              <Switch
-                id="isActive"
-                checked={formData.isActive}
-                onCheckedChange={(checked) =>
-                  setFormData({ ...formData, isActive: checked })
-                }
-              />
-              <Label htmlFor="isActive">Active</Label>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="isActive"
+                  checked={formData.isActive}
+                  onCheckedChange={(checked) =>
+                    setFormData({ ...formData, isActive: checked })
+                  }
+                />
+                <Label htmlFor="isActive">Active</Label>
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="isAdmin"
+                  checked={formData.isAdmin}
+                  onCheckedChange={(checked) =>
+                    setFormData({ ...formData, isAdmin: checked })
+                  }
+                />
+                <Label htmlFor="isAdmin" className="text-orange-400">
+                  Admin Role
+                </Label>
+              </div>
             </div>
           </div>
 
@@ -412,7 +494,10 @@ export function UsersTable() {
             <Button
               onClick={handleCreateUser}
               disabled={
-                !formData.email.trim() || !formData.name.trim() || isLoading
+                !formData.email.trim() ||
+                !formData.name.trim() ||
+                !formData.password.trim() ||
+                isLoading
               }
               className="bg-blue-600 hover:bg-blue-700 text-white"
             >

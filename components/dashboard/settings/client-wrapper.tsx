@@ -13,9 +13,9 @@ export default function SettingsClientWrapper() {
   }
 
   return (
-    <div className="flex flex-col bg-black text-white flex-1">
-      <div className="p-6">
-        <div className="bg-darkGray rounded-lg p-4">
+    <div className="flex flex-col bg-black text-white h-full">
+      <div className="p-6 h-full">
+        <div className="bg-darkGray rounded-lg p-4 h-full">
           <Tabs defaultValue="account" className="w-full">
             <TabsList className="bg-transparent p-0 w-full justify-start ">
               <TabsTrigger

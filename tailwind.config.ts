@@ -66,12 +66,99 @@ const config = {
           "0%": { left: "-100%" },
           "100%": { left: "100%" },
         },
+        "shine-rotate": {
+          "0%": {
+            transform: "rotate(0deg)",
+          },
+          "100%": {
+            transform: "rotate(360deg)",
+          },
+        },
+        fadeIn: {
+          "0%": {
+            opacity: "0",
+          },
+          "100%": {
+            opacity: "1",
+          },
+        },
+        fadeInUp: {
+          "0%": {
+            opacity: "0",
+            transform: "translateY(20px)",
+          },
+          "100%": {
+            opacity: "1",
+            transform: "translateY(0)",
+          },
+        },
+        fadeInDown: {
+          "0%": {
+            opacity: "0",
+            transform: "translateY(-20px)",
+          },
+          "100%": {
+            opacity: "1",
+            transform: "translateY(0)",
+          },
+        },
+        fadeInLeft: {
+          "0%": {
+            opacity: "0",
+            transform: "translateX(-20px)",
+          },
+          "100%": {
+            opacity: "1",
+            transform: "translateX(0)",
+          },
+        },
+        fadeInRight: {
+          "0%": {
+            opacity: "0",
+            transform: "translateX(20px)",
+          },
+          "100%": {
+            opacity: "1",
+            transform: "translateX(0)",
+          },
+        },
+        scaleIn: {
+          "0%": {
+            opacity: "0",
+            transform: "scale(0.95)",
+          },
+          "100%": {
+            opacity: "1",
+            transform: "scale(1)",
+          },
+        },
+        slideInUp: {
+          "0%": {
+            opacity: "0",
+            transform: "translateY(40px)",
+          },
+          "100%": {
+            opacity: "1",
+            transform: "translateY(0)",
+          },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         meteor: "meteor 5s linear infinite",
         shine: "shine 8s cubic-bezier(0.4, 0, 0.2, 1) infinite",
+        "shine-rotate": "shine-rotate 3s linear infinite",
+        fadeIn: "fadeIn 0.6s ease-out",
+        fadeInUp: "fadeInUp 0.6s ease-out",
+        fadeInDown: "fadeInDown 0.6s ease-out",
+        fadeInLeft: "fadeInLeft 0.6s ease-out",
+        fadeInRight: "fadeInRight 0.6s ease-out",
+        scaleIn: "scaleIn 0.6s ease-out",
+        slideInUp: "slideInUp 0.6s ease-out",
+      },
+      backgroundImage: {
+        "gradient-conic": "conic-gradient(var(--tw-gradient-stops))",
       },
       fontFamily: {
         sans: ["var(--font-space-grotesk)"],

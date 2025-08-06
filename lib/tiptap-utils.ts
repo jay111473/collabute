@@ -1,30 +1,24 @@
-import { generateHTML } from '@tiptap/html';
-import { generateText } from '@tiptap/core';
-import StarterKit from '@tiptap/starter-kit';
-import Link from '@tiptap/extension-link';
-import Image from '@tiptap/extension-image';
-import TextStyle from '@tiptap/extension-text-style';
-import Color from '@tiptap/extension-color';
+import { generateHTML } from "@tiptap/html";
+import { generateText } from "@tiptap/core";
+import StarterKit from "@tiptap/starter-kit";
+import Link from "@tiptap/extension-link";
+import Image from "@tiptap/extension-image";
+import { TextStyle } from "@tiptap/extension-text-style";
+import Color from "@tiptap/extension-color";
 
-const extensions = [
-  StarterKit,
-  Link,
-  Image,
-  TextStyle,
-  Color,
-];
+const extensions = [StarterKit, Link, Image, TextStyle, Color];
 
 /**
  * Convert Tiptap JSON to HTML
  */
 export function jsonToHtml(json: any): string {
-  if (!json) return '';
-  
+  if (!json) return "";
+
   try {
     return generateHTML(json, extensions);
   } catch (error) {
-    console.error('Error converting JSON to HTML:', error);
-    return '';
+    console.error("Error converting JSON to HTML:", error);
+    return "";
   }
 }
 
@@ -32,13 +26,13 @@ export function jsonToHtml(json: any): string {
  * Convert Tiptap JSON to plain text (for search/SEO)
  */
 export function jsonToText(json: any): string {
-  if (!json) return '';
-  
+  if (!json) return "";
+
   try {
     return generateText(json, extensions);
   } catch (error) {
-    console.error('Error converting JSON to text:', error);
-    return '';
+    console.error("Error converting JSON to text:", error);
+    return "";
   }
 }
 
@@ -56,10 +50,10 @@ export function getReadingTime(text: string): number {
  */
 export function getFirstImageUrl(json: any): string | null {
   if (!json || !json.content) return null;
-  
+
   function findImage(content: any[]): string | null {
     for (const node of content) {
-      if (node.type === 'image' && node.attrs?.src) {
+      if (node.type === "image" && node.attrs?.src) {
         return node.attrs.src;
       }
       if (node.content) {
@@ -69,7 +63,7 @@ export function getFirstImageUrl(json: any): string | null {
     }
     return null;
   }
-  
+
   return findImage(json.content);
 }
 
@@ -78,13 +72,13 @@ export function getFirstImageUrl(json: any): string | null {
  */
 export function generateExcerpt(text: string, maxLength: number = 160): string {
   if (text.length <= maxLength) return text;
-  
+
   const truncated = text.slice(0, maxLength);
-  const lastSpaceIndex = truncated.lastIndexOf(' ');
-  
-  return lastSpaceIndex > 0 
-    ? truncated.slice(0, lastSpaceIndex) + '...'
-    : truncated + '...';
+  const lastSpaceIndex = truncated.lastIndexOf(" ");
+
+  return lastSpaceIndex > 0
+    ? truncated.slice(0, lastSpaceIndex) + "..."
+    : truncated + "...";
 }
 
 /**
@@ -93,7 +87,7 @@ export function generateExcerpt(text: string, maxLength: number = 160): string {
 export function processTiptapContent(json: any) {
   const html = jsonToHtml(json);
   const plainText = jsonToText(json);
-  
+
   return {
     json,
     html,

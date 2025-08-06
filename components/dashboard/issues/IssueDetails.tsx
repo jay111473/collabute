@@ -13,7 +13,6 @@ import { ChatButton } from "@/components/chat/chat-button";
 import { CollaborationRequestDrawer } from "./collaboration-request-drawer";
 import { useUserConvex } from "@/hooks/use-user-convex";
 import { User as ConvexUser } from "@/types/convex";
-import { User } from "@/types/convex";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 

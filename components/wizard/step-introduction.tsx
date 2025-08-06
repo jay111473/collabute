@@ -1,13 +1,12 @@
 import { motion } from "framer-motion";
-import { 
-  Lightbulb, 
-  BarChart3, 
-  Users, 
-  GitBranch, 
-  Rocket, 
-  UserCheck, 
-  Calendar, 
-  ArrowRight,
+import {
+  Lightbulb,
+  BarChart3,
+  Users,
+  GitBranch,
+  Rocket,
+  UserCheck,
+  Calendar,
   Target,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -22,103 +21,100 @@ const stepData = {
     icon: Lightbulb,
     title: "Share Your Vision",
     subtitle: "Transform your idea into a clear product concept",
-    description: "Tell us about your project idea. Our AI will help refine it and understand your vision, whether you have a detailed concept or just a spark of inspiration.",
+    description:
+      "Share your project idea and our AI will help refine your vision.",
     benefits: [
       "AI-powered idea refinement and clarification",
       "Industry and platform recommendations",
-      "Instant feedback on feasibility and market fit"
+      "Instant feedback on feasibility and market fit",
     ],
-    nextStep: "We'll analyze your idea against market leaders"
   },
   1: {
     icon: BarChart3,
     title: "Business Model Analysis",
     subtitle: "See how your idea compares to market leaders",
-    description: "Our AI analyzes your concept against successful companies in your space, identifying key business aspects and competitive advantages.",
+    description: "AI analyzes your concept against market leaders.",
     benefits: [
       "Compare with established market players",
       "Identify unique value propositions",
-      "Understand business model strengths"
+      "Understand business model strengths",
     ],
-    nextStep: "We'll dive into feature comparisons"
   },
   2: {
     icon: Target,
     title: "Feature Comparison",
     subtitle: "Understand your competitive landscape",
-    description: "Deep dive into how your features stack up against competitors. Identify gaps, opportunities, and areas where you can differentiate.",
+    description:
+      "Compare features with competitors and identify opportunities.",
     benefits: [
       "Feature-by-feature competitor analysis",
       "Identify market gaps and opportunities",
-      "Strategic positioning insights"
+      "Strategic positioning insights",
     ],
-    nextStep: "We'll create your development roadmap"
   },
   3: {
     icon: GitBranch,
     title: "Development Tracks",
     subtitle: "Plan your technical implementation",
-    description: "Break down your project into manageable development tracks. Each track represents a specialized area of work that can be tackled by expert developers.",
+    description: "Organize your project into manageable development tracks.",
     benefits: [
       "Organized development workflow",
       "Clear technical requirements",
-      "Parallel development opportunities"
+      "Parallel development opportunities",
     ],
-    nextStep: "We'll generate specific project components"
   },
   4: {
     icon: Rocket,
     title: "Project Generation",
     subtitle: "Create detailed project specifications",
-    description: "Transform your tracks into specific, actionable projects that developers can bid on. Each project includes clear requirements, timelines, and deliverables.",
+    description:
+      "Create actionable projects with clear requirements and timelines.",
     benefits: [
       "Developer-ready project specifications",
       "Accurate time and cost estimates",
-      "Clear deliverables and milestones"
+      "Clear deliverables and milestones",
     ],
-    nextStep: "We'll help you find the right team leader"
   },
   5: {
     icon: UserCheck,
     title: "Technical Leadership",
     subtitle: "Choose your Technical Product Manager",
-    description: "Select an experienced Technical Product Manager who will oversee your project, coordinate with developers, and ensure quality delivery.",
+    description:
+      "Choose a TPM to oversee your project and coordinate delivery.",
     benefits: [
       "Expert project oversight",
       "Quality assurance and code reviews",
-      "Direct communication and updates"
+      "Direct communication and updates",
     ],
-    nextStep: "We'll schedule your kickoff meeting"
   },
   6: {
     icon: Users,
     title: "Team Coordination",
     subtitle: "Meet your Technical Product Manager",
-    description: "Connect with your chosen TPM to discuss project details, timeline, and expectations. This is where your project officially begins.",
+    description:
+      "Connect with your TPM to discuss details and begin your project.",
     benefits: [
       "Personal project consultation",
       "Customized development strategy",
-      "Clear communication channels"
+      "Clear communication channels",
     ],
-    nextStep: "We'll finalize your project timeline"
   },
   7: {
     icon: Calendar,
     title: "Project Timeline",
     subtitle: "Finalize your development roadmap",
-    description: "Review and approve your complete project timeline. See how all components work together and when you can expect deliverables.",
+    description: "Review your complete timeline and expected deliverables.",
     benefits: [
       "Complete project visualization",
       "Milestone tracking and deadlines",
-      "Resource allocation overview"
+      "Resource allocation overview",
     ],
-    nextStep: "Your project goes live on our marketplace!"
-  }
+  },
 };
 
 export function StepIntroduction({ step, className }: StepIntroductionProps) {
   const data = stepData[step as keyof typeof stepData];
-  
+
   if (!data) return null;
 
   const Icon = data.icon;
@@ -134,7 +130,7 @@ export function StepIntroduction({ step, className }: StepIntroductionProps) {
       )}
     >
       {/* Full Width Horizontal Layout */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center justify-between gap-4">
         {/* Left: Icon and Step Info */}
         <div className="flex items-center gap-3 flex-shrink-0">
           <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary2/20 to-darkPrimary/20 flex items-center justify-center border border-primary2/30">
@@ -159,16 +155,7 @@ export function StepIntroduction({ step, className }: StepIntroductionProps) {
             {data.description}
           </p>
         </div>
-
-        {/* Right: Next Step Preview */}
-        <div className="flex items-center gap-3 flex-shrink-0 px-4 py-3 bg-zinc-800/50 rounded-lg border border-zinc-700/30">
-          <div className="text-right">
-            <div className="text-xs text-gray-400 mb-1">Next Step</div>
-            <div className="text-sm text-gray-300 font-medium">{data.nextStep}</div>
-          </div>
-          <ArrowRight className="w-4 h-4 text-primary2" />
-        </div>
       </div>
     </motion.div>
   );
-} 
+}

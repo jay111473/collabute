@@ -29,7 +29,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${spaceGrotesk.className}`}>
+      <body className={`${spaceGrotesk.className} h-full`}>
         <ConvexAuthNextjsServerProvider>
           <SpeedInsights />
           <CSPostHogProvider>

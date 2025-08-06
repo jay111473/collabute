@@ -15,10 +15,10 @@ export function LayoutWrapper({ children }: LayoutWrapperProps) {
   const isAdminOrDashboard = pathname?.startsWith('/admin') || pathname?.startsWith('/dashboard');
   
   return (
-    <>
+    <div className={isAdminOrDashboard ? 'h-full' : ''}>
       {!isAdminOrDashboard && <Header />}
       {children}
       {!isAdminOrDashboard && <Footer />}
-    </>
+    </div>
   );
 } 

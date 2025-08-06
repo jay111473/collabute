@@ -14,12 +14,12 @@ http.route({
     try {
       const url = new URL(request.url);
       const storageId = url.searchParams.get("storageId");
-      
+
       console.log("=== IMAGE REQUEST ===");
       console.log("URL:", request.url);
       console.log("StorageId:", storageId);
       console.log("StorageId type:", typeof storageId);
-      
+
       if (!storageId) {
         console.log("Missing storageId parameter");
         return new Response("Missing storageId parameter", { status: 400 });
@@ -27,7 +27,7 @@ http.route({
 
       console.log("Attempting to fetch blob...");
       const blob = await ctx.storage.get(storageId as any);
-      
+
       if (!blob) {
         console.log("Blob not found for storageId:", storageId);
         return new Response("File not found", { status: 404 });
@@ -39,7 +39,7 @@ http.route({
 
       // Determine content type from blob or use generic image type
       const contentType = blob.type || "image/jpeg";
-      
+
       console.log("Serving with content-type:", contentType);
 
       return new Response(blob, {
@@ -51,10 +51,12 @@ http.route({
       });
     } catch (error) {
       console.error("=== ERROR IN HTTP ACTION ===");
-      console.error("Error type:", error.constructor.name);
-      console.error("Error message:", error.message);
-      console.error("Error stack:", error.stack);
-      return new Response(`Internal server error: ${error.message}`, { status: 500 });
+      console.error("Error type:", (error as Error).constructor.name);
+      console.error("Error message:", (error as Error)?.message);
+      console.error("Error stack:", (error as Error)?.stack);
+      return new Response(`Internal server error: ${(error as Error)?.message}`, {
+        status: 500,
+      });
     }
   }),
 });

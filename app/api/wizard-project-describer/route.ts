@@ -10,7 +10,7 @@ const projectSchema = z.object({
 
 export async function POST(request: NextRequest) {
   const { readme, packageJson } = await request.json();
-  const model = google("gemini-2.5-flash-preview-04-17");
+  const model = google("gemini-2.5-flash");
   const response = await generateObject({
     model,
     schema: projectSchema,

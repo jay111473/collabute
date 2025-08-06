@@ -123,6 +123,7 @@ export function ProjectTimeline({ features: projects, onFeaturesChange }: Projec
           </div>
         </div>
       </div>
+
     </div>
   );
 } 

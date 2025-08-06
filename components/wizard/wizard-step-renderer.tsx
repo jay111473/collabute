@@ -13,7 +13,7 @@ import {
   Competitor,
   ProjectTrack,
   GeneratedProject,
-  ProjectType
+  ProjectType,
 } from "@/types/wizard";
 
 interface WizardStepRendererProps {
@@ -25,7 +25,6 @@ interface WizardStepRendererProps {
   suggestedCompetitors: Competitor[];
   suggestedTracks: ProjectTrack[];
   userid: string;
-  token: string;
   hasBookedMeeting: boolean;
   onNext: () => void;
   onProjectTypeChange: (type: ProjectType) => void;
@@ -33,6 +32,7 @@ interface WizardStepRendererProps {
 
   onProjectsChange: (projects: GeneratedProject[]) => void;
   onTracksChange: (tracks: ProjectTrack[]) => void;
+  onTrackTasksChange: (trackTasks: any[]) => void;
   onLeaderChange: (leader: any) => void;
   onGitHubImport: (repository: any) => void;
   onBookMeeting: () => void;
@@ -52,6 +52,7 @@ export function WizardStepRenderer({
   onProjectInfoChange,
   onProjectsChange,
   onTracksChange,
+  onTrackTasksChange,
   onLeaderChange,
   onBookMeeting,
   onRetryBusinessComparison,
@@ -116,10 +117,10 @@ export function WizardStepRenderer({
             tracks={wizardData.tracks}
             competitors={wizardData.competitors}
             businessComparison={wizardData.businessComparison}
+            existingTrackTasks={wizardData.trackTasks?.trackTasks}
             isLoading={isLoading}
             onTasksGenerated={(tasks) => {
-              // Handle the generated tasks - you can add this to wizard data if needed
-              console.log("Generated track tasks:", tasks);
+              onTrackTasksChange(tasks);
             }}
           />
         </div>

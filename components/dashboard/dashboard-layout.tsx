@@ -55,7 +55,7 @@ const DashboardLayout = ({
   // Render floating navigation layout
   if (isFloatingNavEnabled) {
     return (
-      <div className="h-full">
+      <div className="h-screen">
         <div className="flex flex-col h-full bg-black">
           <Header title={title} />
 
@@ -73,7 +73,7 @@ const DashboardLayout = ({
   }
   // Render traditional sidebar layout
   return (
-    <div className="flex h-full">
+    <div className="flex h-screen">
       {/* Desktop Sidebar - Visible on md+ screens */}
       <div className="hidden md:block border-r border-white/10 bg-black text-white w-1/5">
         <Sidebar user={user} />

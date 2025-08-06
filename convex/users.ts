@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { KycStatusValidator } from "./schema";
+import { Scrypt } from "lucia";
 
 export const getUserProfile = query({
   args: { authUserId: v.id("users") },
@@ -424,11 +425,12 @@ export const getGitHubAccessToken = query({
   },
 });
 
-// Admin create user mutation
+// Admin create user mutation with password
 export const create = mutation({
   args: {
     email: v.string(),
     name: v.optional(v.string()),
+    password: v.string(),
     role: v.optional(
       v.union(
         v.literal("DEVELOPER"),
@@ -439,6 +441,7 @@ export const create = mutation({
       )
     ),
     isActive: v.optional(v.boolean()),
+    isAdmin: v.optional(v.boolean()),
     profileData: v.optional(
       v.object({
         phoneNumber: v.optional(v.string()),
@@ -458,16 +461,94 @@ export const create = mutation({
       throw new Error("User with this email already exists");
     }
 
+    // Validate password length
+    if (args.password.length < 8) {
+      throw new Error("Password must be at least 8 characters long");
+    }
+
+    // Hash the password using Scrypt
+    const scrypt = new Scrypt();
+    const hashedPassword = await scrypt.hash(args.password);
+
+    // Get the appropriate role ID
+    let roleId = undefined;
+    if (args.isAdmin) {
+      // Get admin role
+      const adminRole = await ctx.db
+        .query("roles")
+        .withIndex("by_name", (q) => q.eq("name", "admin"))
+        .first();
+      
+      if (adminRole) {
+        roleId = adminRole._id;
+      } else {
+        // Create admin role if it doesn't exist
+        roleId = await ctx.db.insert("roles", {
+          name: "admin",
+          displayName: "Administrator",
+          description: "Full system administrator access",
+          isActive: true,
+          permissions: [
+            "admin",
+            "read",
+            "write",
+            "delete",
+            "manage_users",
+            "manage_roles",
+            "manage_projects",
+            "manage_issues",
+            "manage_messages",
+            "manage_transactions",
+            "manage_media",
+            "manage_github",
+            "manage_applications",
+            "view_analytics",
+            "system_config"
+          ],
+        });
+      }
+    } else {
+      // Get user role
+      const userRole = await ctx.db
+        .query("roles")
+        .withIndex("by_name", (q) => q.eq("name", "user"))
+        .first();
+      
+      if (userRole) {
+        roleId = userRole._id;
+      } else {
+        // Create user role if it doesn't exist
+        roleId = await ctx.db.insert("roles", {
+          name: "user",
+          displayName: "User",
+          description: "Standard user with basic access",
+          isActive: true,
+          permissions: ["read", "write"],
+        });
+      }
+    }
+
+    // Create the user
     const userId = await ctx.db.insert("users", {
       email: args.email,
+      emailVerificationTime: Date.now(),
       name: args.name,
       type: args.role as any,
+      roleId: roleId,
       phoneNumber: args.profileData?.phoneNumber,
       country: args.profileData?.country,
       industry: args.profileData?.industry,
       wallet: 0,
       isVerified: args.isActive ?? false,
       kycStatus: "PENDING" as any,
+    });
+
+    // Create auth account for password authentication
+    await ctx.db.insert("authAccounts", {
+      userId,
+      provider: "password",
+      providerAccountId: args.email,
+      secret: hashedPassword,
     });
 
     return userId;

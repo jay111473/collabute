@@ -39,7 +39,7 @@ const projectPlanSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    const { projectInfo, competitors, projects } = await request.json();
+    const { projectInfo, competitors } = await request.json();
 
     if (!projectInfo || !projectInfo.idea) {
       return Response.json(
@@ -54,8 +54,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Use OpenAI GPT-4 which handles complex structured outputs better
-    const model = google("gemini-2.0-flash-exp");
+    const model = google("gemini-2.5-pro");
     const competitorsList =
       competitors?.map((c: any) => c.name).join(", ") || "None";
     const industriesList = projectInfo.industries?.join(", ") || "general";

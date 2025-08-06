@@ -33,7 +33,7 @@ const platformSchema = z.object({
 
 export async function POST(request: NextRequest) {
   const { title, description } = await request.json();
-  const model = google("gemini-2.5-flash-preview-04-17");
+  const model = google("gemini-2.5-flash");
   const response = await generateObject({
     model,
     schema: platformSchema,

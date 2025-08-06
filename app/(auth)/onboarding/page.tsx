@@ -58,7 +58,7 @@ function OnboardingForm() {
       <div className="mt-6 text-center text-sm text-zinc-400">
         Already have an account?{" "}
         <Link
-          href="/auth"
+          href="/login"
           className="text-blue-400 hover:text-blue-300 hover:underline"
         >
           Sign in here

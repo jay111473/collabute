@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const model = google("gemini-2.5-flash-preview-04-17");
+  const model = google("gemini-2.5-flash");
 
   const platformsList = projectPlatforms.map((p: any) => p.value).join(", ");
   const industriesList = industries?.join(", ") || "general";

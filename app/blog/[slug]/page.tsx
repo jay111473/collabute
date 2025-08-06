@@ -30,7 +30,10 @@ export async function generateMetadata({
       };
     }
 
-    const imageUrl = blog.thumbnail?.url || blog.profilePicture?.url || "/icons/user-avatar.png";
+    const imageUrl =
+      blog.thumbnail?.url ||
+      blog.profilePicture?.url ||
+      "/icons/user-avatar.png";
     const description = blog.description || "";
 
     return {
@@ -80,7 +83,10 @@ const BlogDetailPage = async ({ params }: BlogDetailPageProps) => {
 
     const categoryName = blog.category?.name || "Uncategorized";
     const categoryColor = blog.category?.color || "#6B7280";
-    const imageUrl = blog.thumbnail?.url || blog.profilePicture?.url || "/icons/user-avatar.png";
+    const imageUrl =
+      blog.thumbnail?.url ||
+      blog.profilePicture?.url ||
+      "/icons/user-avatar.png";
     const publishedDate = new Date(blog.publishedAt).toLocaleDateString(
       "en-US",
       {
@@ -97,27 +103,31 @@ const BlogDetailPage = async ({ params }: BlogDetailPageProps) => {
     // Simple reading time calculation
     function calculateReadingTime(tiptapContent: any): number {
       if (!tiptapContent?.content) return 1;
-      
+
       const extractText = (nodes: any[]): string => {
-        return nodes.map(node => {
-          if (node.type === 'text') return node.text || '';
-          if (node.content) return extractText(node.content);
-          return '';
-        }).join(' ');
+        return nodes
+          .map((node) => {
+            if (node.type === "text") return node.text || "";
+            if (node.content) return extractText(node.content);
+            return "";
+          })
+          .join(" ");
       };
-      
+
       const text = extractText(tiptapContent.content);
-      const wordCount = text.split(/\s+/).filter(word => word.length > 0).length;
+      const wordCount = text
+        .split(/\s+/)
+        .filter((word) => word.length > 0).length;
       return Math.max(1, Math.ceil(wordCount / 200)); // 200 words per minute
     }
 
     return (
-      <div className="min-h-screen bg-black">
+      <div className="min-h-screen bg-black py-20">
         {/* Content */}
         <div className="relative">
           <div className="container mx-auto px-4 sm:px-6 py-8 sm:py-12 max-w-2xl">
             {/* Back button */}
-            <div className="mb-8 sm:mb-12">
+            <div className="mb-2 sm:mb-4">
               <Link
                 href="/blog"
                 className="inline-flex items-center gap-2 text-zinc-500 hover:text-zinc-300 transition-colors duration-200 text-sm"
@@ -128,18 +138,22 @@ const BlogDetailPage = async ({ params }: BlogDetailPageProps) => {
             </div>
 
             {/* Article header */}
-            <header className="mb-8 sm:mb-12">
-              {/* Author and meta info */}
-              <div className="flex flex-wrap items-center gap-2 sm:gap-4 mb-6 sm:mb-8 text-xs sm:text-sm">
-                <span className="text-zinc-300 font-medium">{authorName}</span>
-                <span className="text-zinc-500">•</span>
-                <time className="text-zinc-500">{publishedDate}</time>
-                <span className="text-zinc-500">•</span>
-                <CopyLinkButton className="text-zinc-500 hover:text-zinc-300 transition-colors" />
-              </div>
+            <header className="mb-4 sm:mb-12">
+              {/* Featured image */}
+              {(blog.thumbnail || blog.profilePicture) && (
+                <div className="relative w-full h-48 sm:h-64 md:h-96 rounded-lg overflow-hidden">
+                  <Image
+                    src={imageUrl}
+                    alt={blog.title}
+                    fill
+                    className="object-cover"
+                    priority
+                  />
+                </div>
+              )}
 
               {/* Title */}
-              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight mb-6 sm:mb-8">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-semibold text-white leading-tight mb-6 sm:mb-8">
                 {blog.title}
               </h1>
 
@@ -150,40 +164,40 @@ const BlogDetailPage = async ({ params }: BlogDetailPageProps) => {
                 </p>
               )}
 
-              {/* Category and reading time */}
-              <div className="flex flex-wrap items-center gap-3 sm:gap-4 mb-6 sm:mb-8">
-                <span
-                  className="inline-flex items-center px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs font-medium"
-                  style={{
-                    backgroundColor: `${categoryColor}20`,
-                    color: categoryColor,
-                  }}
-                >
-                  {categoryName}
-                </span>
-                <span className="text-zinc-500 text-xs sm:text-sm">
-                  {readingTime} min read
-                </span>
-              </div>
-
-              {/* Featured image */}
-              {(blog.thumbnail || blog.profilePicture) && (
-                <div className="relative w-full h-48 sm:h-64 md:h-96 rounded-lg overflow-hidden mb-8 sm:mb-12">
-                  <Image
-                    src={imageUrl}
-                    alt={blog.title}
-                    fill
-                    className="object-cover"
-                    priority
-                  />
+              {/* Author and meta info */}
+              <div className="flex justify-between items-center">
+                {/* Author and meta info */}
+                <div className="flex flex-wrap items-center gap-2 sm:gap-4 mb-6 sm:mb-8 text-xs sm:text-sm">
+                  <span className="text-zinc-300 font-medium">
+                    {authorName}
+                  </span>
+                  <span className="text-zinc-500">•</span>
+                  <time className="text-zinc-500">{publishedDate}</time>
+                  <span className="text-zinc-500">•</span>
+                  <CopyLinkButton className="text-zinc-500 hover:text-zinc-300 transition-colors" />
                 </div>
-              )}
+                {/* Category and reading time */}
+                <div className="flex flex-wrap items-center gap-3 sm:gap-4 mb-6 sm:mb-8">
+                  <span
+                    className="inline-flex items-center px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs font-medium"
+                    style={{
+                      backgroundColor: `${categoryColor}20`,
+                      color: categoryColor,
+                    }}
+                  >
+                    {categoryName}
+                  </span>
+                  <span className="text-zinc-500 text-xs sm:text-sm">
+                    {readingTime} min read
+                  </span>
+                </div>
+              </div>
             </header>
 
             {/* Article content */}
             <article className="prose prose-invert prose-sm sm:prose-lg max-w-none">
-              <TiptapRenderer 
-                content={content} 
+              <TiptapRenderer
+                content={content}
                 className="text-zinc-300 leading-relaxed space-y-4 sm:space-y-6"
               />
             </article>

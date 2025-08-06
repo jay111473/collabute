@@ -59,16 +59,18 @@ export function useWizardNavigation(wizardData: WizardData, hasBookedMeeting: bo
         return !!wizardData.businessComparison; // BusinessComparison step
       case 2:
         return !!(
-          wizardData.competitors.length > 0 &&
+          wizardData.competitors?.length > 0 &&
           wizardData.featureComparison
         ); // FeatureComparison step
       case 3:
-        return wizardData.tracks.length > 0; // ProjectTracks step
+        return wizardData.tracks?.length > 0; // ProjectTracks step
       case 4:
-        return wizardData.projects.length > 0; // ProjectGenerator step
+        return (wizardData.trackTasks?.trackTasks?.length ?? 0) > 0; // TrackTasksGenerator step
       case 5:
-        return !!wizardData.leader;
+        return wizardData.projects?.length > 0; // ProjectGenerator step
       case 6:
+        return !!wizardData.leader;
+      case 7:
         return !!wizardData.leader && hasBookedMeeting;
       default:
         return true;

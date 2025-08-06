@@ -4,7 +4,7 @@ import {
   nextjsMiddlewareRedirect,
 } from "@convex-dev/auth/nextjs/server";
 
-const isSignInPage = createRouteMatcher(["/auth"]);
+const isSignInPage = createRouteMatcher(["/login", "/onboarding"]);
 const isProtectedRoute = createRouteMatcher(["/dashboard(.*)"]);
 const isAdminRoute = createRouteMatcher(["/admin(.*)"]);
 const isAdminLogin = createRouteMatcher(["/admin/login", "/admin/setup"]);
@@ -14,9 +14,9 @@ export default convexAuthNextjsMiddleware(async (request, { convexAuth }) => {
     return nextjsMiddlewareRedirect(request, "/dashboard");
   }
   if (isProtectedRoute(request) && !(await convexAuth.isAuthenticated())) {
-    return nextjsMiddlewareRedirect(request, "/auth");
+    return nextjsMiddlewareRedirect(request, "/login");
   }
-  
+
   // Admin routes protection - allow login and setup pages without auth
   if (isAdminRoute(request) && !isAdminLogin(request)) {
     if (!(await convexAuth.isAuthenticated())) {

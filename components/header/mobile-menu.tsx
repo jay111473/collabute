@@ -124,13 +124,13 @@ export function MobileMenu({
                 className="w-full bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-purple-500/50 transition-all duration-300"
                 asChild
               >
-                <Link href="/auth">Login</Link>
+                <Link href="/login">Login</Link>
               </Button>
               <Button
                 className="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 transition-all duration-300 shadow-lg shadow-purple-500/25"
                 asChild
               >
-                <Link href="/auth/onboarding">Sign up</Link>
+                <Link href="/onboarding">Sign up</Link>
               </Button>
             </motion.div>
           </motion.div>

@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import axios from "axios";
 import { useEmail } from "@/app/providers/EmailContext";
 import type { CreateAccountFormData } from "@/types/auth.types";
-import { createAccountSchema } from "@/app/auth/schemas/createAccount.schema";
+import { createAccountSchema } from "@/app/(auth)/login/schemas/createAccount.schema";
 
 interface ApiErrorResponse {
   data?: {

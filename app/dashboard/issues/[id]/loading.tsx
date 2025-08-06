@@ -1,6 +1,6 @@
-import { Skeleton } from "@/components/ui/skeleton"
-import { Circle, CircleDot, Clock, ArrowLeft } from "lucide-react"
-import RectangleStack from "@/public/icons/rectangle-stack"
+import { Skeleton } from "@/components/ui/skeleton";
+import { Circle, CircleDot, Clock, ArrowLeft } from "lucide-react";
+import RectangleStack from "@/public/icons/rectangle-stack";
 
 // Sidebar skeleton
 const SidebarSkeleton = () => (
@@ -91,5 +91,5 @@ export default function IssueDetailsLoading() {
       <SidebarSkeleton />
       <IssueDetailsSkeleton />
     </div>
-  )
-} 
+  );
+}

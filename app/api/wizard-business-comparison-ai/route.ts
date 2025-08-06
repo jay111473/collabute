@@ -67,12 +67,11 @@ export async function POST(request: Request) {
     let finalProjectName, finalDescription;
 
     if (projectIdea) {
-      // New structure: single project idea
-      finalProjectName = "Your Startup";
+      finalProjectName = "My Project";
       finalDescription = projectIdea;
     } else if (projectName && description) {
       // Old structure: separate name and description
-      finalProjectName = projectName || "Your Startup";
+      finalProjectName = projectName || "My Project";
       finalDescription = description;
     } else {
       return NextResponse.json(
@@ -120,6 +119,7 @@ Create a business comparison matrix with:
    - For each competitor, provide businessSupport array with businessAspect and hasAspect boolean
 
 3. USER PROJECT BUSINESS ANALYSIS
+   - Use EXACTLY this project name: "${finalProjectName}"
    - Analyze what business capabilities THIS SPECIFIC project would realistically have
    - Consider the exact project description and its unique business characteristics
    - Be honest about business limitations for a new startup in this specific domain
@@ -135,7 +135,7 @@ VALIDATION REQUIREMENTS:
 Remember: This business analysis is for the specific project "${finalDescription}" - make it unique and relevant to this business model!`;
 
     const data = await generateObject({
-      model: google("gemini-2.5-flash-preview-04-17"),
+      model: google("gemini-2.5-flash"),
       // model: openai("gpt-4o"),
       prompt,
       schema: businessComparisonSchema,
@@ -172,11 +172,12 @@ ENSURE:
 - Every business aspect is relevant to the specific project described
 - Competitors are real companies in the same business market
 - Analysis reflects the unique business aspects of this project
-- Focus on business strategy differences, not technical implementation`,
+- Focus on business strategy differences, not technical implementation
+- IMPORTANT: Use the exact Project Name provided in the prompt for the userProject.name field`,
       temperature: 0.9,
       maxTokens: 8000,
     });
-
+    console.log(data);
     // Validate that we have complete data
     if (
       !data.object ||
@@ -192,10 +193,13 @@ ENSURE:
       categories: data.object.categories,
       competitors: data.object.competitors.map((competitor) => ({
         ...competitor,
-        features: competitor.businessSupport.reduce((acc, business) => {
-          acc[business.businessAspect] = business.hasAspect;
-          return acc;
-        }, {} as Record<string, boolean>),
+        features: competitor.businessSupport.reduce(
+          (acc, business) => {
+            acc[business.businessAspect] = business.hasAspect;
+            return acc;
+          },
+          {} as Record<string, boolean>
+        ),
       })),
       userProject: {
         name: data.object.userProject.name,

@@ -33,7 +33,7 @@ function UnauthenticatedRedirect() {
   const router = useRouter();
 
   useEffect(() => {
-    router.push("/auth");
+    router.push("/login");
   }, [router]);
 
   return (
@@ -50,7 +50,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // If not loading and no user found, redirect to auth
     if (!loading && !user) {
-      router.push("/auth");
+      router.push("/login");
     }
   }, [loading, user, router]);
 

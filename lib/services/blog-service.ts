@@ -1,276 +1,79 @@
-import { Blog, Category, Tag } from "@/types/blog";
-import qs from "qs";
+import { preloadQuery } from "convex/nextjs";
+import { api } from "@/convex/_generated/api";
+import type { BlogWithDetails, Category, Tag } from "@/types/convex";
 
-interface BlogApiResponse {
-  docs: Blog[];
+export interface PaginatedBlogsResult {
+  blogs: BlogWithDetails[];
+  total: number;
+  hasMore: boolean;
 }
-
-interface CategoryApiResponse {
-  docs: Category[];
-}
-
-interface TagApiResponse {
-  docs: Tag[];
-}
-
-const getApiBaseUrl = (): string => {
-  // For server-side, we might need to use internal URL or full URL
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || process.env.API_URL;
-
-  if (!apiUrl) {
-    throw new Error(
-      "API_URL or NEXT_PUBLIC_API_URL environment variable is not defined"
-    );
-  }
-
-  return apiUrl;
-};
-
 
 export const blogService = {
-  async getBlogs(): Promise<Blog[]> {
-    try {
-      const API_BASE_URL = getApiBaseUrl();
-      const response = await fetch(`${API_BASE_URL}/api/blogs`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        // Use revalidate for ISR instead of no-store for better performance
-        next: { revalidate: 300 }, // Revalidate every 5 minutes
-      });
-
-      if (!response.ok) {
-        throw new Error(
-          `Failed to fetch blogs: ${response.status} ${response.statusText}`
-        );
-      }
-      const data = await response.json();
-      return data.docs;
-    } catch (error) {
-      console.error("Error fetching blogs:", error);
-
-      throw error;
-    }
+  async getBlogs() {
+    const result = await preloadQuery(api.blogs.getBlogs);
+    return result as unknown as BlogWithDetails[];
   },
 
-  async getBlogBySlug(slug: string): Promise<Blog | null> {
-    const query = {
-      where: {
-        slug: {
-          equals: slug,
-        },
-      },
+  async getBlogsData() {
+    const [blogs, categories, tags] = await Promise.all([
+      preloadQuery(api.blogs.getBlogs),
+      preloadQuery(api.blogs.getCategories),
+      preloadQuery(api.blogs.getTags),
+    ]);
+
+    return {
+      blogs: blogs as unknown as BlogWithDetails[],
+      categories: categories as unknown as Category[],
+      tags: tags as unknown as Tag[],
     };
-    try {
-      const API_BASE_URL = getApiBaseUrl();
-      const response = await fetch(
-        `${API_BASE_URL}/api/blogs?${qs.stringify(query)}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          next: { revalidate: 300 },
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(
-          `Failed to fetch blog: ${response.status} ${response.statusText}`
-        );
-      }
-
-      const data: BlogApiResponse = await response.json();
-      return data.docs[0] || null;
-    } catch (error) {
-      console.error("Error fetching blog by slug:", error);
-
-      throw error;
-    }
   },
 
-  async getCategories(): Promise<Category[]> {
-    try {
-      const API_BASE_URL = getApiBaseUrl();
-      const response = await fetch(`${API_BASE_URL}/api/categories`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        next: { revalidate: 3600 }, // Categories change less frequently
-      });
-      console.log(response);
-      if (!response.ok) {
-        throw new Error(
-          `Failed to fetch categories: ${response.status} ${response.statusText}`
-        );
-      }
-
-      const data: CategoryApiResponse = await response.json();
-      return data.docs;
-    } catch (error) {
-      console.error("Error fetching categories:", error);
-
-      throw error;
-    }
+  async getBlogBySlug(slug: string) {
+    const result = await preloadQuery(api.blogs.getBlogBySlug, { slug });
+    return result as unknown as BlogWithDetails | null;
   },
 
-  async getTags(): Promise<Tag[]> {
-    try {
-      const API_BASE_URL = getApiBaseUrl();
-      const response = await fetch(`${API_BASE_URL}/api/tags`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        next: { revalidate: 3600 }, // Tags change less frequently
-      });
-
-      if (!response.ok) {
-        throw new Error(
-          `Failed to fetch tags: ${response.status} ${response.statusText}`
-        );
-      }
-
-      const data: TagApiResponse = await response.json();
-      return data.docs;
-    } catch (error) {
-      console.error("Error fetching tags:", error);
-
-      throw error;
-    }
+  async getBlogsByCategory(categoryId: string) {
+    const result = await preloadQuery(api.blogs.getBlogsByCategory, {
+      categoryId: categoryId as any,
+    });
+    return result as unknown as BlogWithDetails[];
   },
 
-  async getBlogsByCategory(categoryId: number): Promise<Blog[]> {
-    try {
-      const API_BASE_URL = getApiBaseUrl();
-      const response = await fetch(
-        `${API_BASE_URL}/api/blog?where[category][equals]=${categoryId}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          next: { revalidate: 300 },
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(
-          `Failed to fetch blogs by category: ${response.status} ${response.statusText}`
-        );
-      }
-
-      const data: BlogApiResponse = await response.json();
-      return data.docs;
-    } catch (error) {
-      console.error("Error fetching blogs by category:", error);
-      throw error;
-    }
+  async getBlogsByTag(tagId: string) {
+    const result = await preloadQuery(api.blogs.getBlogsByTag, {
+      tagId: tagId as any,
+    });
+    return result as unknown as BlogWithDetails[];
   },
 
-  async getBlogsByTag(tagId: number): Promise<Blog[]> {
-    try {
-      const API_BASE_URL = getApiBaseUrl();
-      const response = await fetch(
-        `${API_BASE_URL}/api/blog?where[tags][in]=${tagId}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          next: { revalidate: 300 },
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(
-          `Failed to fetch blogs by tag: ${response.status} ${response.statusText}`
-        );
-      }
-
-      const data: BlogApiResponse = await response.json();
-      return data.docs;
-    } catch (error) {
-      console.error("Error fetching blogs by tag:", error);
-      throw error;
-    }
+  async getBlogsWithPagination(params: {
+    limit?: number;
+    offset?: number;
+    categoryId?: string;
+    tagId?: string;
+  }) {
+    const result = await preloadQuery(api.blogs.getBlogsWithPagination, {
+      limit: params.limit,
+      offset: params.offset,
+      categoryId: params.categoryId as any,
+      tagId: params.tagId as any,
+    });
+    return result as unknown as PaginatedBlogsResult;
   },
 
-  // Client-side versions for interactive filtering
-  async getBlogsClient(): Promise<Blog[]> {
-    try {
-      const API_BASE_URL = getApiBaseUrl();
-      const response = await fetch(`${API_BASE_URL}/api/blog`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        cache: "no-store",
-      });
-
-      if (!response.ok) {
-        throw new Error(
-          `Failed to fetch blogs: ${response.status} ${response.statusText}`
-        );
-      }
-
-      const data: BlogApiResponse = await response.json();
-      return data.docs;
-    } catch (error) {
-      console.error("Error fetching blogs:", error);
-      throw error;
-    }
+  async getFeaturedBlogs(limit?: number) {
+    const result = await preloadQuery(api.blogs.getFeaturedBlogs, { limit });
+    return result as unknown as BlogWithDetails[];
   },
 
-  async getCategoriesClient(): Promise<Category[]> {
-    try {
-      const API_BASE_URL = getApiBaseUrl();
-      const response = await fetch(`${API_BASE_URL}/api/categories`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        cache: "no-store",
-      });
-
-      if (!response.ok) {
-        throw new Error(
-          `Failed to fetch categories: ${response.status} ${response.statusText}`
-        );
-      }
-
-      const data: CategoryApiResponse = await response.json();
-      return data.docs;
-    } catch (error) {
-      console.error("Error fetching categories:", error);
-      throw error;
-    }
+  async getCategories() {
+    const result = await preloadQuery(api.blogs.getCategories);
+    return result as unknown as Category[];
   },
 
-  async getTagsClient(): Promise<Tag[]> {
-    try {
-      const API_BASE_URL = getApiBaseUrl();
-      const response = await fetch(`${API_BASE_URL}/api/tags`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        cache: "no-store",
-      });
-
-      if (!response.ok) {
-        throw new Error(
-          `Failed to fetch tags: ${response.status} ${response.statusText}`
-        );
-      }
-
-      const data: TagApiResponse = await response.json();
-      return data.docs;
-    } catch (error) {
-      console.error("Error fetching tags:", error);
-      throw error;
-    }
+  async getTags() {
+    const result = await preloadQuery(api.blogs.getTags);
+    return result as unknown as Tag[];
   },
 };

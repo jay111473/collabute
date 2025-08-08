@@ -3,7 +3,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Project } from "@/types/dashboard";
+import { Project } from "@/types/convex";
 import {
   getCurrentMilestonePhase,
   getMilestoneStats,

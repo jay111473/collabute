@@ -5,8 +5,8 @@ import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { GitCommit } from "lucide-react";
 import { truncateToFourWords } from "@/lib/utils";
-import { useUserData } from "@/hooks/use-user-data";
-import { Issue } from "@/types/dashboard";
+import { useUserConvex } from "@/hooks/use-user-convex";
+import { Issue } from "@/types/convex";
 
 const IssuesTable = ({ issues }: { issues: Issue[] }) => (
   <Table>
@@ -22,7 +22,7 @@ const IssuesTable = ({ issues }: { issues: Issue[] }) => (
     <TableBody>
       {issues?.map((issue) => (
         <TableRow
-          key={issue.id}
+          key={issue._id}
           className="border-white/5 bg-darkGray hover:bg-white/5 rounded-lg mx-0 p-0 flex items-center m-0"
         >
           <TableCell className="flex justify-center items-center space-x-4 py-2">
@@ -31,7 +31,7 @@ const IssuesTable = ({ issues }: { issues: Issue[] }) => (
             </div>
             <div className="flex flex-col">
               <span className="font-medium text-white" title={issue.title}>
-                {truncateToFourWords(issue.title)}
+                {truncateToFourWords(issue.title || "Untitled Issue")}
               </span>
               <p className="text-xs text-white/60">
                 {issue.description
@@ -53,12 +53,12 @@ const IssuesTable = ({ issues }: { issues: Issue[] }) => (
                   : "bg-green-500/10 text-green-500 border-green-500/20"
               }`}
             >
-              {issue.priority.charAt(0).toUpperCase() + issue.priority.slice(1)}
+              {issue.priority ? issue.priority.charAt(0).toUpperCase() + issue.priority.slice(1) : "Low"}
             </Badge>
           </TableCell>
           <TableCell>
             <span className="text-sm text-white/70">
-              {new Date(issue.updatedAt).toLocaleDateString("en-US", {
+              {new Date(issue._creationTime).toLocaleDateString("en-US", {
                 weekday: "long",
                 year: "numeric",
                 month: "long",
@@ -73,12 +73,12 @@ const IssuesTable = ({ issues }: { issues: Issue[] }) => (
 );
 
 export default function DashboardIssues() {
-  const { user } = useUserData();
+  const { user } = useUserConvex();
 
   if (!user) return null;
 
-  const issues =
-    user.type === "developer" ? user.developerFields?.issues || [] : [];
+  // TODO: Fetch user's issues from Convex
+  const issues: Issue[] = [];
 
   return (
     <Card className="bg-darkGray border-none">
@@ -86,7 +86,7 @@ export default function DashboardIssues() {
         <CardTitle className="text-white">Recent Issues</CardTitle>
       </CardHeader>
       <CardContent className="p-0 px-2 pb-4">
-        <IssuesTable issues={issues as Issue[]} />
+        <IssuesTable issues={issues} />
       </CardContent>
     </Card>
   );

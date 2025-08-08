@@ -24,13 +24,14 @@ import {
   Rocket,
 } from "lucide-react";
 import { calculateDetailedProgress, formatDate } from "@/lib/utils";
-import { Issue, Project } from "@/types/dashboard";
+import { Issue, Project } from "@/types/convex";
 import ProjectIcon from "@/public/icons/project";
 import Link from "next/link";
 import {
   getMilestoneShadow,
   getCurrentMilestonePhase,
 } from "@/lib/utils/milestone-utils";
+import { useProjectDetails } from "@/hooks/use-project-details-convex";
 
 interface ProjectDetailsViewProps {
   project: Project;
@@ -42,12 +43,29 @@ interface MilestoneItem {
   milestone: string;
   status: "completed" | "in-progress" | "not-started";
   timeAgo?: string;
-  dueDate?: string;
+  dueDate?: Date;
   icon: React.ReactNode;
 }
 
 const ProjectDetailsView = ({ project }: ProjectDetailsViewProps) => {
-  const progressData = calculateDetailedProgress(project.issues as Issue[]);
+  const { isLoading, issues, issueCount, collaboratorCount } =
+    useProjectDetails(project._id);
+
+  const progressData = calculateDetailedProgress(issues);
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col w-full">
+        <div className="bg-black p-6 space-y-6">
+          <div className="animate-pulse space-y-4">
+            <div className="h-8 bg-gray-700 rounded w-1/3"></div>
+            <div className="h-4 bg-gray-700 rounded w-2/3"></div>
+            <div className="h-20 bg-gray-700 rounded"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Get milestone information using utility functions
   const milestonePhase = getCurrentMilestonePhase(project.milestones);
@@ -65,7 +83,7 @@ const ProjectDetailsView = ({ project }: ProjectDetailsViewProps) => {
 
   // Helper function to get collaborators count
   const getCollaboratorsCount = (): number => {
-    return project.collabuters?.length || 0;
+    return collaboratorCount;
   };
 
   // Helper function to format budget
@@ -82,18 +100,18 @@ const ProjectDetailsView = ({ project }: ProjectDetailsViewProps) => {
       milestone: "Milestone 1",
       status: "completed",
       timeAgo: "20 days ago",
-      dueDate: project.startDate ? formatDate(project.startDate) : undefined,
+      dueDate: project.startDate ? new Date(project._creationTime) : undefined,
       icon: <CheckCircle2 className="h-4 w-4 text-green-500" />,
     },
     {
       id: "2",
       title: "Development Phase",
       milestone: "Milestone 2",
-      status: project.status === "in-progress" ? "in-progress" : "completed",
-      timeAgo: project.status === "completed" ? "3 days ago" : undefined,
-      dueDate: project.endDate ? formatDate(project.endDate) : undefined,
+      status: project.status === "IN_PROGRESS" ? "in-progress" : "completed",
+      timeAgo: project.status === "COMPLETED" ? "3 days ago" : undefined,
+      dueDate: project.endDate ? new Date(project.endDate) : undefined,
       icon:
-        project.status === "in-progress" ? (
+        project.status === "IN_PROGRESS" ? (
           <Play className="h-4 w-4 text-yellow-500" />
         ) : (
           <CheckCircle2 className="h-4 w-4 text-green-500" />
@@ -103,10 +121,10 @@ const ProjectDetailsView = ({ project }: ProjectDetailsViewProps) => {
       id: "3",
       title: "Testing & QA",
       milestone: "Milestone 3",
-      status: project.status === "completed" ? "completed" : "not-started",
-      dueDate: project.endDate ? formatDate(project.endDate) : undefined,
+      status: project.status === "COMPLETED" ? "completed" : "not-started",
+      dueDate: project.endDate ? new Date(project.endDate) : undefined,
       icon:
-        project.status === "completed" ? (
+        project.status === "COMPLETED" ? (
           <CheckCircle2 className="h-4 w-4 text-green-500" />
         ) : (
           <Circle className="h-4 w-4 text-gray-400" />
@@ -116,10 +134,10 @@ const ProjectDetailsView = ({ project }: ProjectDetailsViewProps) => {
       id: "4",
       title: "Project Delivery",
       milestone: "Milestone 4",
-      status: project.status === "completed" ? "completed" : "not-started",
-      dueDate: project.endDate ? formatDate(project.endDate) : undefined,
+      status: project.status === "COMPLETED" ? "completed" : "not-started",
+      dueDate: project.endDate ? new Date(project.endDate) : undefined,
       icon:
-        project.status === "completed" ? (
+        project.status === "COMPLETED" ? (
           <Rocket className="h-4 w-4 text-green-500" />
         ) : (
           <Rocket className="h-4 w-4 text-gray-400" />
@@ -163,7 +181,9 @@ const ProjectDetailsView = ({ project }: ProjectDetailsViewProps) => {
       return <span className="text-gray-400 text-xs">Pending</span>;
     }
     return milestone.dueDate ? (
-      <span className="text-gray-400 text-xs">({milestone.dueDate})</span>
+      <span className="text-gray-400 text-xs">
+        ({formatDate(milestone.dueDate.toISOString())})
+      </span>
     ) : null;
   };
 
@@ -226,7 +246,7 @@ const ProjectDetailsView = ({ project }: ProjectDetailsViewProps) => {
                 icon={<Users className="h-3 w-3 text-darkPrimary" />}
                 variant="outline"
               >
-                Issues {project.issues?.length || 0}
+                Issues {issueCount}
               </Badge>
               <Badge
                 className="font-medium !text-xs"
@@ -254,7 +274,10 @@ const ProjectDetailsView = ({ project }: ProjectDetailsViewProps) => {
                 icon={<Calendar className="h-3 w-3 text-darkPrimary" />}
                 variant="outline"
               >
-                Due {project.endDate ? formatDate(project.endDate) : "Not set"}
+                Due{" "}
+                {project.endDate
+                  ? formatDate(project.endDate.toString())
+                  : "Not set"}
               </Badge>
             </div>
           </div>
@@ -274,7 +297,7 @@ const ProjectDetailsView = ({ project }: ProjectDetailsViewProps) => {
             <span className="text-gray-400 text-xs">Tech Stack:</span>
             {project.stacks.map((stack, index) => (
               <Badge key={index} variant="secondary" className="text-xs">
-                {typeof stack === "object" ? stack.name : "Unknown"}
+                {stack}
               </Badge>
             ))}
           </div>
@@ -293,7 +316,7 @@ const ProjectDetailsView = ({ project }: ProjectDetailsViewProps) => {
               value="tasks"
               className="data-[state=active]:bg-transparent text-sm"
             >
-              Tasks ({project.issues?.length || 0})
+              Tasks ({issueCount})
             </TabsTrigger>
             <TabsTrigger
               value="files"

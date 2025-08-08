@@ -1,18 +1,20 @@
 "use client";
 
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
 import MyProjectsComponent from "@/components/dashboard/my-projects";
-import { useProjectsData } from "@/hooks/use-projects-data";
-import { useUserData } from "@/hooks/use-user-data";
+import { useUserConvex } from "@/hooks/use-user-convex";
 
 export default function MyProjectsClientWrapper() {
-  const { user, loading: userLoading } = useUserData();
-  const { projects } = useProjectsData({
-    where: user?.id ? { owner: { equals: user.id.toString() } } : {},
-  });
+  const { user, loading: userLoading } = useUserConvex();
+  const projects = useQuery(
+    api.projects.getAllProjects,
+    user?._id ? { ownerId: user._id } : "skip"
+  );
 
   if (userLoading || !user) {
-    return null; // Loading will be handled by loading.tsx
+    return null;
   }
 
-  return <MyProjectsComponent projects={projects} />;
+  return <MyProjectsComponent projects={projects || []} />;
 }

@@ -6,17 +6,19 @@ import { ProjectProgress } from "@/components/ui/progress";
 import { DollarSign, Clock9, Users } from "lucide-react";
 import { Suspense } from "react";
 import { calculateDetailedProgress, formatDate } from "@/lib/utils";
-import { Issue, Project, Media } from "@/types/dashboard";
 import { Skeleton } from "@/components/ui/skeleton";
 import ProjectIcon from "@/public/icons/project";
 import Image from "next/image";
 import Link from "next/link";
+import { Project, Media, User, EnhancedProject } from "@/types/convex";
+import { api } from "@/convex/_generated/api";
+import { useQuery } from "convex/react";
 
 function ProjectHeader({
   project,
   progressData,
 }: {
-  project: Project;
+  project: EnhancedProject;
   progressData: {
     total: number;
     done: number;
@@ -33,15 +35,20 @@ function ProjectHeader({
         <div className="flex items-center gap-2">
           <ProjectIcon />
           <h3 className="font-medium text-white text-lg">{project?.title}</h3>
-          {project.projectState === "under-review" && (
-            <Badge variant="outline" className="ml-2 bg-gray-900 text-gray-300 border-gray-500">Under Review</Badge>
+          {project.state === "under-review" && (
+            <Badge
+              variant="outline"
+              className="ml-2 bg-gray-900 text-gray-300 border-gray-500"
+            >
+              Under Review
+            </Badge>
           )}
           <Badge
             className="font-medium !text-xs"
             icon={<Users className="h-4 w-4 text-darkPrimary" />}
             variant="outline"
           >
-            Collaboraters {project.collabuters?.length || 0}
+            Collaborators {project.collaboratorCount || 0}
           </Badge>
           <Badge
             className="font-medium !text-xs"
@@ -143,20 +150,20 @@ function ProjectHeader({
       {/* Project Lead Section */}
       <div className="flex items-center gap-2 px-4 py-2">
         <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-600 flex-shrink-0">
-          {project.lead && typeof project.lead === "object" ? (
-            project.lead.profilePicture &&
-            typeof project.lead.profilePicture === "object" ? (
+          {project.teamLead && typeof project.teamLead === "object" ? (
+            project.teamLead.profilePicture &&
+            typeof project.teamLead.profilePicture === "object" ? (
               <Image
                 src={
-                  (project.lead.profilePicture as Media).url ||
+                  (project.teamLead.profilePicture as Media).url ||
                   "/placeholder-avatar.png"
                 }
-                alt={project.lead.name}
+                alt={project.teamLead.name || "Team Lead"}
                 className="w-full h-full object-cover"
               />
             ) : (
               <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-sm font-medium">
-                {project.lead.name.charAt(0).toUpperCase()}
+                {project.teamLead.name?.charAt(0).toUpperCase()}
               </div>
             )
           ) : (
@@ -167,14 +174,17 @@ function ProjectHeader({
         </div>
         <div className="flex items-center gap-3 text-sm">
           <span className="text-white font-medium">
-            {project.lead && typeof project.lead === "object"
-              ? project.lead.name
+            {project.teamLead && typeof project.teamLead === "object"
+              ? project.teamLead.name
               : "No Lead"}
           </span>
           <span className="text-gray-400">Project lead</span>
           <span className="text-gray-500">|</span>
           <span className="text-gray-400 text-sm">
-            Last updated {formatDate(project.updatedAt)}
+            Last updated{" "}
+            {formatDate(
+              new Date(project.updatedAt || project._creationTime).toISOString()
+            )}
           </span>
         </div>
       </div>
@@ -182,13 +192,21 @@ function ProjectHeader({
   );
 }
 
-const MyProjectCard = ({ project }: { project: Project }) => {
-  const progressData = calculateDetailedProgress(project.issues as Issue[]);
+const MyProjectCard = ({ project }: { project: EnhancedProject }) => {
+  const issues = useQuery(api.issues.getIssuesByProject, {
+    projectId: project._id,
+  });
+  const progressData = calculateDetailedProgress(issues || []);
 
   return (
-    <Link href={`/dashboard/projects/${project.slug}`} className="flex flex-col w-full">
+    <Link
+      href={`/dashboard/projects/${project.slug}`}
+      className="flex flex-col w-full"
+    >
       <main className="flex flex-1 flex-col gap-4 lg:gap-6 w-full">
-        <Card className={`flex flex-col gap-2 py-5 px-2 bg-darkGray text-white w-full ${project.projectState === "under-review" ? "border-2 border-gray-500" : "border-none"}`}>
+        <Card
+          className={`flex flex-col gap-2 py-5 px-2 bg-darkGray text-white w-full ${project.state === "under-review" ? "border-2 border-gray-500" : "border-none"}`}
+        >
           <Suspense fallback={<Skeleton className="h-20 w-full" />}>
             <ProjectHeader project={project} progressData={progressData} />
           </Suspense>

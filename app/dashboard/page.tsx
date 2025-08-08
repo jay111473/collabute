@@ -3,7 +3,6 @@
 import { Suspense } from "react";
 
 import { VerificationAlerts } from "@/components/dashboard/verification-alerts";
-import { useUserData } from "@/hooks/use-user-data";
 import DashboardStats from "@/components/dashboard/dashboard-stats";
 import DashboardProjects from "@/components/dashboard/dashboard-projects";
 import DashboardIssues from "@/components/dashboard/dashboard-issues";
@@ -44,12 +43,10 @@ const IssuesSkeleton = () => (
 );
 
 export default function Dashboard() {
-  const { user } = useUserData();
-
   return (
     <div className="flex flex-col gap-4 lg:gap-6 h-full min-h-screen">
       {/* Verification alerts - loads immediately */}
-      {user && <VerificationAlerts user={user} />}
+      <VerificationAlerts />
 
       {/* Stats section - streams progressively */}
       <Suspense fallback={<StatsSkeleton />}>

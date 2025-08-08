@@ -7,8 +7,9 @@ import Sidebar from "@/components/dashboard/Sidebar";
 import FloatingBottomBar from "@/components/dashboard/floating-bottom-bar";
 import Header from "@/components/dashboard/Header";
 import Image from "next/image";
-import { User } from "@/types/dashboard";
+import { User } from "@/types/convex";
 import { useFloatingNav } from "@/lib/hooks/use-floating-nav";
+import { CommandPalette } from "@/components/ui/command-palette";
 
 interface DashboardLayoutProps {
   user: User;
@@ -54,7 +55,7 @@ const DashboardLayout = ({
   // Render floating navigation layout
   if (isFloatingNavEnabled) {
     return (
-      <div className="h-full">
+      <div className="h-screen">
         <div className="flex flex-col h-full bg-black">
           <Header title={title} />
 
@@ -64,12 +65,15 @@ const DashboardLayout = ({
 
         {/* Floating Bottom Bar */}
         <FloatingBottomBar user={user} />
+        
+        {/* Command Palette */}
+        <CommandPalette user={user} />
       </div>
     );
   }
   // Render traditional sidebar layout
   return (
-    <div className="flex h-full">
+    <div className="flex h-screen">
       {/* Desktop Sidebar - Visible on md+ screens */}
       <div className="hidden md:block border-r border-white/10 bg-black text-white w-1/5">
         <Sidebar user={user} />
@@ -125,6 +129,9 @@ const DashboardLayout = ({
         {/* Page content */}
         <main className="flex-1 overflow-y-auto p-4 lg:p-6">{children}</main>
       </div>
+      
+      {/* Command Palette */}
+      <CommandPalette user={user} />
     </div>
   );
 };

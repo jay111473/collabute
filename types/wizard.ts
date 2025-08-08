@@ -1,3 +1,6 @@
+import { Id } from "@/convex/_generated/dataModel";
+import { ProjectManagerProfile, DeveloperProfile, GithubProfile } from "@/types/convex";
+
 // Core wizard types
 export type ProjectType = 'existing' | 'new';
 export type ProjectScope = 'full' | 'partial' | 'unknown';
@@ -214,14 +217,16 @@ export interface Project {
 }
 
 export interface Lead {
-  id: number;
-  name: string;
-  experience: number;
-  stack: (number | Stack)[];
-  projects?: (number | Project)[] | null;
-  availability?: boolean | null;
-  updatedAt: string;
-  createdAt: string;
+  _id: Id<"users">;
+  _creationTime: number;
+  name?: string;
+  email?: string;
+  country?: string;
+  industry?: string;
+  projectManagerFields?: ProjectManagerProfile | null;
+  developerFields?: DeveloperProfile | null;
+  githubProfile?: GithubProfile | null;
+  projectsManaged?: number;
 }
 
 // GitHub integration types
@@ -240,14 +245,15 @@ export interface GitHubRepository {
 export interface Task {
   id: string;
   name: string;
-  description: string;
-  estimatedHours: number;
+  description?: string;
+  estimatedDays: number;
+  estimatedHours?: number; // Keep for backward compatibility
   priority: "high" | "medium" | "low";
   skillLevel: "junior" | "mid" | "senior";
-  dependencies: string[]; // Task IDs this depends on
-  deliverables: string[];
-  acceptanceCriteria: string[];
-  tags: string[]; // Technology tags, skill tags, etc.
+  dependencies?: string[]; // Task IDs this depends on
+  deliverables?: string[];
+  acceptanceCriteria?: string[];
+  tags?: string[]; // Technology tags, skill tags, etc.
 }
 
 export interface TrackTasks {
@@ -256,13 +262,21 @@ export interface TrackTasks {
   trackCategory: string;
   platform?: string;
   tasks: Task[];
-  totalEstimatedHours: number;
+  totalEstimatedDays: number; // Total days for complete platform
+  totalTasksCount: number; // Total tasks for complete platform
+  totalEstimatedHours?: number; // Keep for backward compatibility
   criticalTasks: string[]; // Task IDs on critical path
   parallelTaskGroups: Array<{
     taskIds: string[];
     description: string;
   }>;
   requiredSkills: string[];
+  // Track timeline info
+  startWeek?: number;
+  endWeek?: number;
+  durationInWeeks?: number;
+  dependencies?: string[];
+  canParallelize?: boolean;
 }
 
 export interface TrackTasksResponse {

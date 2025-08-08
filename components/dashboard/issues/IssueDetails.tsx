@@ -2,8 +2,7 @@
 
 import { Badge } from "@/components/ui/badge";
 import RectangleStack from "@/public/icons/rectangle-stack";
-import { Issue, Project, User } from "@/types/dashboard";
-import { Circle, CircleDot, Clock, ArrowLeft, MessageCircle, Users } from "lucide-react";
+import { Circle, CircleDot, Clock, ArrowLeft, Users } from "lucide-react";
 import { getBulbColor, getStatusInfo } from "@/lib/utils";
 import { format } from "date-fns";
 import { ApplyDrawer } from "@/components/dashboard/project/issue-card/apply-drawer";
@@ -12,22 +11,23 @@ import { YouTubeEmbed } from "@/components/ui/youtube-embed";
 import Link from "next/link";
 import { ChatButton } from "@/components/chat/chat-button";
 import { CollaborationRequestDrawer } from "./collaboration-request-drawer";
-import { useUserData } from "@/hooks/use-user-data";
+import { useUserConvex } from "@/hooks/use-user-convex";
+import { User as ConvexUser } from "@/types/convex";
+import { useQuery, useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
 
-// Type guard function to safely check if a value is a User object
-function isUser(value: unknown): value is User {
+// Type guard function to safely check if a value is a Convex User object
+function isConvexUser(value: unknown): value is ConvexUser {
   return (
     typeof value === "object" &&
     value !== null &&
-    "id" in value &&
+    "_id" in value &&
     "name" in value &&
     "email" in value &&
-    typeof (value as any).id === "number" &&
     typeof (value as any).name === "string" &&
     typeof (value as any).email === "string"
   );
 }
-
 interface DetailRowProps {
   icon: React.ReactNode;
   label: string;
@@ -45,54 +45,66 @@ const DetailRow = ({ icon, label, value }: DetailRowProps) => (
 );
 
 interface IssueDetailsProps {
-  issue: Issue;
+  issueId: string;
 }
 
-export default function IssueDetails({ issue }: IssueDetailsProps) {
-  const { user } = useUserData();
+export default function IssueDetails({ issueId }: IssueDetailsProps) {
+  const { user } = useUserConvex();
+  const issue = useQuery(api.issues.getIssueById, { issueId: issueId as any });
+  const createCollaborationRequest = useMutation(
+    api.issues.createCollaborationRequest
+  );
+
+  if (!issue) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <p className="text-white">Loading issue details...</p>
+      </div>
+    );
+  }
+
   const { label, color } = getStatusInfo(issue.status);
   const pendingRequestsCount =
-    issue.requests?.filter((request) => request.requestStatus === "pending")
-      .length || 0;
+    issue.requests?.filter(
+      (request: any) => request.requestStatus === "pending"
+    ).length || 0;
   const collaborationRequestsCount = issue.collaborationRequests?.length || 0;
 
-  const handleApply = (id: string) => {
-    // Add your client-side apply logic here
+  const handleApply = () => {
+    // Refresh the issue data after application submission
+    // The issue will be refetched automatically due to Convex reactivity
   };
 
-  const handleCollaborationRequest = async (data: { percentageShare: number; taskDefinition: string }) => {
+  const handleCollaborationRequest = async (data: {
+    percentageShare: number;
+    taskDefinition: string;
+  }) => {
     try {
-      const response = await fetch(`/api/issues/${issue.id}/collaboration-request`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
+      await createCollaborationRequest({
+        issueId: issue._id,
+        percentageShare: data.percentageShare,
+        taskDefinition: data.taskDefinition,
       });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || "Failed to submit collaboration request");
-      }
-
-      const result = await response.json();
-      console.log("Collaboration request submitted:", result);
     } catch (error) {
       console.error("Collaboration request error:", error);
       throw error;
     }
   };
 
-  const project = issue.project as Project;
-  const projectOwner = project.lead as unknown as User;
-  
+  const project = issue.project;
+  const projectOwner = project?.lead;
+
   // Check if current user is a collaborator on this project
-  const isCollaborator = user && project.collabuters?.some(
-    (collaborator) => {
+  const isCollaborator =
+    user &&
+    project?.collabuters?.some((collaborator: any) => {
       const collaboratorUser = collaborator.collabuter;
-      return isUser(collaboratorUser) && collaboratorUser.id === user.id && collaborator.status === "active";
-    }
-  );
+      return (
+        isConvexUser(collaboratorUser) &&
+        collaboratorUser._id === user._id &&
+        collaborator.status === "active"
+      );
+    });
 
   return (
     <div className="flex flex-col gap-4 py-4 bg-black text-white w-full">
@@ -122,9 +134,9 @@ export default function IssueDetails({ issue }: IssueDetailsProps) {
             <ChatButton
               targetUser={projectOwner}
               conversationType="project"
-              conversationName={`${project.title} - Issue Discussion`}
+              conversationName={`${project?.title} - Issue Discussion`}
               conversationDescription={`Discussion about: ${issue.title}`}
-              relatedProject={project.id}
+              relatedProject={0}
               variant="outline"
               size="sm"
               className="text-white border-white/20 hover:bg-white/10"
@@ -132,7 +144,7 @@ export default function IssueDetails({ issue }: IssueDetailsProps) {
               Chat with PM
             </ChatButton>
           )}
-          {user?.type === "developer" && isCollaborator && (
+          {user?.type === "DEVELOPER" && isCollaborator && (
             <CollaborationRequestDrawer
               issue={issue}
               onRequest={handleCollaborationRequest}
@@ -140,7 +152,7 @@ export default function IssueDetails({ issue }: IssueDetailsProps) {
           )}
           <ApplyDrawer
             issue={issue}
-            projectTitle={(issue.project as Project).title || ""}
+            projectTitle={project?.title || ""}
             onApply={handleApply}
           />
         </div>
@@ -152,7 +164,7 @@ export default function IssueDetails({ issue }: IssueDetailsProps) {
           className="font-medium text-xs"
           variant="outline"
         >
-          {format(new Date(issue.createdAt), "MMM dd, yyyy")}
+          {format(new Date(issue._creationTime), "MMM dd, yyyy")}
         </Badge>
         <Badge
           icon={<RectangleStack className="h-3 w-3" />}
@@ -179,7 +191,8 @@ export default function IssueDetails({ issue }: IssueDetailsProps) {
             className="font-medium text-xs"
             variant="outline"
           >
-            {collaborationRequestsCount} collaboration{collaborationRequestsCount === 1 ? "" : "s"}
+            {collaborationRequestsCount} collaboration
+            {collaborationRequestsCount === 1 ? "" : "s"}
           </Badge>
         )}
       </div>
@@ -218,51 +231,58 @@ export default function IssueDetails({ issue }: IssueDetailsProps) {
               icon={<CircleDot className="text-primary2" size={16} />}
               label="Assignee"
               value={issue.assignees
-                ?.map((assignee) => (assignee as User).name)
+                ?.map((assignee: any) => assignee?.name)
+                .filter(Boolean)
                 .join(", ")}
             />
           </>
         )}
 
-        {issue.collaborationRequests && issue.collaborationRequests.length > 0 && (
-          <>
-            <Divider className="my-2 opacity-10" />
-            <div className="mt-4">
-              <h2 className="text-base font-medium mb-3">Collaboration Requests</h2>
-              <div className="space-y-2">
-                {issue.collaborationRequests.map((request, index) => (
-                  <div key={request.id || index} className="bg-gray-900 p-3 rounded-lg">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium text-white">
-                          {(request.developer as any)?.name || "Developer"}
+        {issue.collaborationRequests &&
+          issue.collaborationRequests.length > 0 && (
+            <>
+              <Divider className="my-2 opacity-10" />
+              <div className="mt-4">
+                <h2 className="text-base font-medium mb-3">
+                  Collaboration Requests
+                </h2>
+                <div className="space-y-2">
+                  {issue.collaborationRequests.map((request, index) => (
+                    <div
+                      key={request._id || index}
+                      className="bg-gray-900 p-3 rounded-lg"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium text-white">
+                            {(request.developer as any)?.name || "Developer"}
+                          </span>
+                          <Badge
+                            variant="outline"
+                            className={`text-xs ${
+                              request.status === "pending"
+                                ? "border-yellow-500 text-yellow-400"
+                                : request.status === "accepted"
+                                  ? "border-green-500 text-green-400"
+                                  : "border-red-500 text-red-400"
+                            }`}
+                          >
+                            {request.status}
+                          </Badge>
+                        </div>
+                        <span className="text-primary-light font-semibold">
+                          {request.percentageShare}%
                         </span>
-                        <Badge
-                          variant="outline"
-                          className={`text-xs ${
-                            request.status === "pending"
-                              ? "border-yellow-500 text-yellow-400"
-                              : request.status === "accepted"
-                              ? "border-green-500 text-green-400"
-                              : "border-red-500 text-red-400"
-                          }`}
-                        >
-                          {request.status}
-                        </Badge>
                       </div>
-                      <span className="text-primary-light font-semibold">
-                        {request.percentageShare}%
-                      </span>
+                      <p className="text-xs text-gray-400 mt-1 line-clamp-2">
+                        {request.taskDefinition}
+                      </p>
                     </div>
-                    <p className="text-xs text-gray-400 mt-1 line-clamp-2">
-                      {request.taskDefinition}
-                    </p>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
-          </>
-        )}
+            </>
+          )}
 
         {issue.onboardingVideoLink && (
           <div className="mt-4">

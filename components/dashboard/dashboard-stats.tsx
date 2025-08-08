@@ -2,31 +2,31 @@
 
 import { DollarSign, ArrowLeftRight, GitPullRequest } from "lucide-react";
 import DashboardCard from "@/components/uikit/dashboard-card";
-import { useUserData } from "@/hooks/use-user-data";
+import { useUserConvex } from "@/hooks/use-user-convex";
 
 export default function DashboardStats() {
-  const { user } = useUserData();
-
+  const { user } = useUserConvex();
+  console.log("DashboardStats user:", user);
   if (!user) return null;
 
-  if (user.type === "developer") {
+  if (user?.type === "DEVELOPER" || user?.type === "PROJECT_MANAGER") {
     return (
       <div className="grid gap-4 md:grid-cols-2 md:gap-6 lg:grid-cols-3">
         <DashboardCard
           title="Issues"
-          value={user.developerFields?.issues?.length || 0}
+          value={0} // TODO: Fetch issues from Convex
           icon={GitPullRequest}
           subtext="+180.1% from last month"
         />
         <DashboardCard
           title="Balance"
-          value={`$${user.wallet}`}
+          value={`$${user?.wallet || 0}`}
           icon={DollarSign}
           subtext="+19% from last month"
         />
         <DashboardCard
           title="Total Payments"
-          value={`$${user.developerFields?.totalPayment || 0}`}
+          value={`$0`} // TODO: Fetch from developer profile
           icon={ArrowLeftRight}
           subtext="+20.1% from last month"
         />
@@ -34,18 +34,18 @@ export default function DashboardStats() {
     );
   }
 
-  if (user.type === "startup") {
+  if (user.type === "STARTUP" || user.type === "LEAD") {
     return (
       <div className="grid gap-4 md:grid-cols-2 md:gap-6 lg:grid-cols-2">
         <DashboardCard
           title="Total Projects"
-          value={user?.projects?.length || 0}
+          value={0} // TODO: Fetch user's projects from Convex
           icon={GitPullRequest}
           subtext="+180.1% from last month"
         />
         <DashboardCard
           title="Balance"
-          value={`$${user.wallet}`}
+          value={`$${user?.wallet || 0}`}
           icon={DollarSign}
           subtext="+19% from last month"
         />

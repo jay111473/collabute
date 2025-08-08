@@ -1,4 +1,4 @@
-import { Project } from "@/types/dashboard";
+import { Project } from "@/types/convex";
 
 // Milestone status type
 export type MilestoneStatus = "not-started" | "in-progress" | "completed";
@@ -46,7 +46,8 @@ export const MILESTONE_CONFIG = {
     shadowColor: "rgba(129,140,248,0.3)",
     borderColor: "border-indigo-400/25",
     badgeColor: "bg-indigo-500/20 text-indigo-400 border-indigo-500/30",
-    completedBadgeColor: "bg-indigo-500/10 text-indigo-300 border-indigo-500/20",
+    completedBadgeColor:
+      "bg-indigo-500/10 text-indigo-300 border-indigo-500/20",
     order: 4,
   },
   testing: {
@@ -55,7 +56,8 @@ export const MILESTONE_CONFIG = {
     shadowColor: "rgba(167,139,250,0.3)",
     borderColor: "border-purple-400/25",
     badgeColor: "bg-purple-500/20 text-purple-400 border-purple-500/30",
-    completedBadgeColor: "bg-purple-500/10 text-purple-300 border-purple-500/20",
+    completedBadgeColor:
+      "bg-purple-500/10 text-purple-300 border-purple-500/20",
     order: 5,
   },
   launch: {
@@ -82,7 +84,8 @@ export const MILESTONE_CONFIG = {
     shadowColor: "rgba(52,211,153,0.3)",
     borderColor: "border-emerald-400/25",
     badgeColor: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
-    completedBadgeColor: "bg-emerald-500/10 text-emerald-300 border-emerald-500/20",
+    completedBadgeColor:
+      "bg-emerald-500/10 text-emerald-300 border-emerald-500/20",
     order: 8,
   },
 } as const;
@@ -223,7 +226,8 @@ export function getMilestoneStats(milestones?: Project["milestones"]) {
     (status) => status === "in-progress"
   ).length;
   const notStarted = total - completed - inProgress;
-  const completionPercentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+  const completionPercentage =
+    total > 0 ? Math.round((completed / total) * 100) : 0;
 
   return {
     total,
@@ -287,4 +291,4 @@ export function getNextMilestone(
   }
 
   return null; // All milestones are completed or in progress
-} 
+}

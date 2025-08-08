@@ -34,19 +34,7 @@ export function ProgressIndicator({ currentStep, className }: ProgressIndicatorP
     <div className={cn("w-full", className)}>
       {/* Desktop Progress Bar */}
       <div className="hidden lg:block">
-        <div className="flex items-start justify-between relative px-4">
-          {/* Progress Line */}
-          <div className="absolute top-8 left-8 right-8 h-px bg-gray-800/60 z-0">
-            <motion.div
-              className="h-full bg-gradient-to-r from-purple-500 via-blue-500 to-purple-600 shadow-sm"
-              initial={{ width: "0%" }}
-              animate={{ 
-                width: currentStep === 0 ? "0%" : `${(currentStep / (steps.length - 1)) * 100}%` 
-              }}
-              transition={{ duration: 1, ease: "easeInOut" }}
-            />
-          </div>
-
+        <div className="flex items-center gap-1 bg-darkGray2 rounded-xl p-2">
           {steps.map((step, index) => {
             const Icon = step.icon;
             const isCompleted = index < currentStep;
@@ -54,62 +42,44 @@ export function ProgressIndicator({ currentStep, className }: ProgressIndicatorP
             const isUpcoming = index > currentStep;
 
             return (
-              <div key={index} className="flex flex-col items-center relative z-10 max-w-[120px]">
-                <motion.div
-                  initial={{ scale: 0.8, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ delay: index * 0.1, duration: 0.5 }}
-                  className={cn(
-                    "w-16 h-16 rounded-2xl flex items-center justify-center border transition-all duration-500 relative overflow-hidden",
-                    isCompleted && "bg-gradient-to-br from-purple-500 to-blue-600 border-purple-400/50 shadow-lg shadow-purple-500/25",
-                    isCurrent && "bg-gradient-to-br from-purple-500/10 to-blue-600/10 border-purple-400 shadow-lg shadow-purple-500/20 ring-2 ring-purple-500/30",
-                    isUpcoming && "bg-darkGray border-gray-700/50 hover:border-gray-600/50 transition-colors"
-                  )}
-                >
-                  {/* Background glow effect for current step */}
-                  {isCurrent && (
-                    <motion.div
-                      className="absolute inset-0 bg-gradient-to-br from-purple-500/20 to-blue-600/20 rounded-2xl"
-                      animate={{ opacity: [0.3, 0.6, 0.3] }}
-                      transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                    />
-                  )}
-                  
-                  {isCompleted ? (
-                    <Check className="w-7 h-7 text-white relative z-10" />
+              <motion.div
+                key={index}
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ delay: index * 0.05, duration: 0.3 }}
+                className={cn(
+                  "flex items-center gap-2 px-2 py-2 rounded-lg transition-all duration-300 cursor-pointer min-w-0 flex-1",
+                  isCompleted && "bg-darkPrimary/20 border border-darkPrimary/30",
+                  isCurrent && "bg-darkPrimary text-white shadow-lg",
+                  isUpcoming && "hover:bg-darkGray"
+                )}
+              >
+                <div className={cn(
+                  "flex-shrink-0 w-6 h-6 flex items-center justify-center transition-colors duration-300",
+                  isCompleted && !isCurrent && "text-darkPrimary",
+                  isCurrent && "text-white",
+                  isUpcoming && "text-gray-500"
+                )}>
+                  {isCompleted && !isCurrent ? (
+                    <Check className="w-5 h-5" />
                   ) : (
-                    <Icon className={cn(
-                      "w-7 h-7 relative z-10 transition-colors duration-300",
-                      isCurrent && "text-purple-400",
-                      isUpcoming && "text-gray-500"
-                    )} />
+                    <Icon className="w-5 h-5" />
                   )}
-                </motion.div>
+                </div>
                 
-                <motion.div
-                  initial={{ opacity: 0, y: 15 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 + 0.3, duration: 0.5 }}
-                  className="mt-4 text-center"
-                >
+                <div className="min-w-0 flex-1 overflow-hidden">
                   <div className={cn(
-                    "text-sm font-semibold transition-colors duration-300 leading-tight",
-                    isCurrent && "text-purple-400",
-                    isCompleted && "text-white",
-                    isUpcoming && "text-gray-500"
+                    "text-xs font-medium transition-colors duration-300 leading-3 text-center",
+                    isCompleted && !isCurrent && "text-darkPrimary",
+                    isCurrent && "text-white",
+                    isUpcoming && "text-gray-400"
                   )}>
-                    {step.label}
+                    {step.label.split(' ').map((word, i) => (
+                      <div key={i} className="max-w-full overflow-hidden text-ellipsis whitespace-nowrap text-xs">{word}</div>
+                    ))}
                   </div>
-                  <div className={cn(
-                    "text-xs mt-1.5 font-medium transition-colors duration-300",
-                    isCurrent && "text-purple-400/70",
-                    isCompleted && "text-gray-300",
-                    isUpcoming && "text-gray-600"
-                  )}>
-                    Step {index + 1}
-                  </div>
-                </motion.div>
-              </div>
+                </div>
+              </motion.div>
             );
           })}
         </div>
@@ -117,19 +87,7 @@ export function ProgressIndicator({ currentStep, className }: ProgressIndicatorP
 
       {/* Tablet Progress Bar */}
       <div className="hidden md:block lg:hidden">
-        <div className="flex items-start justify-between relative px-2">
-          {/* Progress Line */}
-          <div className="absolute top-6 left-6 right-6 h-px bg-gray-800/60 z-0">
-            <motion.div
-              className="h-full bg-gradient-to-r from-purple-500 to-blue-600"
-              initial={{ width: "0%" }}
-              animate={{ 
-                width: currentStep === 0 ? "0%" : `${(currentStep / (steps.length - 1)) * 100}%` 
-              }}
-              transition={{ duration: 1, ease: "easeInOut" }}
-            />
-          </div>
-
+        <div className="flex items-center gap-1 bg-darkGray2 rounded-xl p-2">
           {steps.map((step, index) => {
             const Icon = step.icon;
             const isCompleted = index < currentStep;
@@ -137,53 +95,42 @@ export function ProgressIndicator({ currentStep, className }: ProgressIndicatorP
             const isUpcoming = index > currentStep;
 
             return (
-              <div key={index} className="flex flex-col items-center relative z-10 max-w-[80px]">
-                <motion.div
-                  initial={{ scale: 0.8, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ delay: index * 0.1 }}
-                  className={cn(
-                    "w-12 h-12 rounded-xl flex items-center justify-center border transition-all duration-500",
-                    isCompleted && "bg-gradient-to-br from-purple-500 to-blue-600 border-purple-400/50 shadow-lg shadow-purple-500/25",
-                    isCurrent && "bg-gradient-to-br from-purple-500/10 to-blue-600/10 border-purple-400 shadow-lg shadow-purple-500/20",
-                    isUpcoming && "bg-darkGray border-gray-700/50"
-                  )}
-                >
-                  {isCompleted ? (
-                    <Check className="w-5 h-5 text-white" />
+              <motion.div
+                key={index}
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ delay: index * 0.05, duration: 0.3 }}
+                className={cn(
+                  "flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-300 cursor-pointer min-w-0 flex-1",
+                  isCompleted && "bg-darkPrimary/20 border border-darkPrimary/30",
+                  isCurrent && "bg-darkPrimary text-white shadow-lg",
+                  isUpcoming && "hover:bg-darkGray"
+                )}
+              >
+                <div className={cn(
+                  "flex-shrink-0 w-5 h-5 flex items-center justify-center transition-colors duration-300",
+                  isCompleted && !isCurrent && "text-darkPrimary",
+                  isCurrent && "text-white",
+                  isUpcoming && "text-gray-500"
+                )}>  
+                  {isCompleted && !isCurrent ? (
+                    <Check className="w-4 h-4" />
                   ) : (
-                    <Icon className={cn(
-                      "w-5 h-5 transition-colors duration-300",
-                      isCurrent && "text-purple-400",
-                      isUpcoming && "text-gray-500"
-                    )} />
+                    <Icon className="w-4 h-4" />
                   )}
-                </motion.div>
+                </div>
                 
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 + 0.2 }}
-                  className="mt-3 text-center"
-                >
+                <div className="min-w-0 flex-1">
                   <div className={cn(
-                    "text-xs font-semibold transition-colors duration-300",
-                    isCurrent && "text-purple-400",
-                    isCompleted && "text-white",
-                    isUpcoming && "text-gray-500"
+                    "text-xs font-medium transition-colors duration-300 truncate",
+                    isCompleted && !isCurrent && "text-darkPrimary",
+                    isCurrent && "text-white",
+                    isUpcoming && "text-gray-400"
                   )}>
                     {step.shortLabel}
                   </div>
-                  <div className={cn(
-                    "text-xs mt-1 font-medium transition-colors duration-300",
-                    isCurrent && "text-purple-400/70",
-                    isCompleted && "text-gray-300",
-                    isUpcoming && "text-gray-600"
-                  )}>
-                    {index + 1}
-                  </div>
-                </motion.div>
-              </div>
+                </div>
+              </motion.div>
             );
           })}
         </div>
@@ -206,7 +153,7 @@ export function ProgressIndicator({ currentStep, className }: ProgressIndicatorP
           <div className="relative">
             <div className="w-full h-3 bg-darkGray rounded-full overflow-hidden border border-gray-800/50">
               <motion.div
-                className="h-full bg-gradient-to-r from-purple-500 to-blue-600 shadow-sm"
+                className="h-full bg-darkPrimary shadow-sm"
                 initial={{ width: "0%" }}
                 animate={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
                 transition={{ duration: 1, ease: "easeInOut" }}
@@ -218,15 +165,15 @@ export function ProgressIndicator({ currentStep, className }: ProgressIndicatorP
           <div className="flex items-center gap-4 p-4 bg-darkGray rounded-xl border border-gray-800/50">
             <div className={cn(
               "w-12 h-12 rounded-xl flex items-center justify-center border-2 relative overflow-hidden",
-              "bg-gradient-to-br from-purple-500/10 to-blue-600/10 border-purple-400"
+              "bg-darkPrimary/10 border-darkPrimary"
             )}>
               <motion.div
-                className="absolute inset-0 bg-gradient-to-br from-purple-500/20 to-blue-600/20 rounded-xl"
+                className="absolute inset-0 bg-darkPrimary/20 rounded-xl"
                 animate={{ opacity: [0.3, 0.6, 0.3] }}
                 transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
               />
               {React.createElement(steps[currentStep].icon, {
-                className: "w-6 h-6 text-purple-400 relative z-10"
+                className: "w-6 h-6 text-darkPrimary relative z-10"
               })}
             </div>
             <div className="flex-1">

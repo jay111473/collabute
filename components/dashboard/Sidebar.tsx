@@ -9,20 +9,18 @@ import {
   CompassIcon,
   Plus,
   LogOut,
-  MessageCircle,
   Package,
   Users,
+  MessageSquareText,
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { User, NavItem } from "@/types/dashboard";
-import { toast } from "sonner";
-import { deleteCookie, getCookie } from "cookies-next";
-import axios from "axios";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
 import { useLinkStatus } from "next/link";
+import { User } from "@/types/convex";
+import { useAuthActions } from "@convex-dev/auth/react";
 
 // Loading indicator component for navigation with debouncing
 const NavigationLoadingIndicator = () => {
@@ -87,9 +85,8 @@ const SidebarLink = ({
 export default function Sidebar({ user }: { user: User }) {
   const pathname = usePathname();
   const router = useRouter();
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
-
-  const navItems: NavItem[] = [
+  const { signOut } = useAuthActions();
+  const navItems = [
     {
       name: "Dashboard",
       icon: LayoutPanelLeft,
@@ -97,16 +94,10 @@ export default function Sidebar({ user }: { user: User }) {
       type: "cross",
     },
     {
-      name: "Explore",
-      icon: Compass,
-      path: "/dashboard/explore",
-      type: "developer",
-    },
-    {
       name: "Products",
       icon: Package,
       path: "/dashboard/products",
-      type: "startup",
+      type: "STARTUP",
     },
     {
       name: "My Projects",
@@ -115,20 +106,26 @@ export default function Sidebar({ user }: { user: User }) {
       type: "cross",
     },
     {
+      name: "Explore",
+      icon: Compass,
+      path: "/dashboard/explore",
+      type: "DEVELOPER",
+    },
+    {
       name: "Project Managers",
       icon: CompassIcon,
       path: "/dashboard/leads",
-      type: "startup",
+      type: "STARTUP",
     },
     {
       name: "Developers",
       icon: Users,
       path: "/dashboard/developers",
-      type: "developer-lead",
+      type: "PROJECT_MANAGER",
     },
     {
       name: "Chat",
-      icon: MessageCircle,
+      icon: MessageSquareText,
       path: "/dashboard/chat",
       type: "cross",
     },
@@ -148,42 +145,12 @@ export default function Sidebar({ user }: { user: User }) {
 
   // Filter navigation items based on user type
   const filteredNavItems = navItems.filter(
-    (item) => item.type === "cross" || item.type === user.type || 
-    (item.type === "developer-lead" && (user.type === "developer" || user.type === "lead"))
+    (item) =>
+      item.type === "cross" ||
+      item.type === user.type ||
+      (item.type === "DEVELOPER" && user.type === "PROJECT_MANAGER") ||
+      (item.type === "STARTUP" && user.type === "PROJECT_MANAGER")
   );
-  const handleLogout = async () => {
-    if (isLoggingOut) return;
-
-    setIsLoggingOut(true);
-    try {
-      // Get token from cookies
-      const token = getCookie("token");
-
-      // Call the logout endpoint
-      await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/users/logout`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      // Remove cookies
-      deleteCookie("token");
-      deleteCookie("isLoggedIn");
-      // Redirect to auth page
-      toast.success("Successfully logged out");
-      router.push("/auth");
-    } catch (error) {
-      console.error("Logout error:", error);
-      toast.error("Failed to logout. Please try again.");
-    } finally {
-      setIsLoggingOut(false);
-    }
-  };
-
   return (
     <div className="flex flex-col h-full bg-black">
       <div className="md:flex md:items-center md:justify-start md:gap-x-2 md:px-6 md:pt-4 md:pb-12 md:border-b md:border-white/10 hidden">
@@ -221,12 +188,11 @@ export default function Sidebar({ user }: { user: User }) {
       </div>
       <div className="p-4 border-t border-white/10">
         <button
-          onClick={handleLogout}
-          disabled={isLoggingOut}
+          onClick={() => void signOut()}
           className="flex items-center gap-3 rounded-lg px-3 py-2 w-full text-sm text-white hover:text-red-400 transition-all disabled:opacity-50"
         >
           <LogOut className="h-4 w-4" />
-          {isLoggingOut ? "Logging out..." : "Logout"}
+          Logout
         </button>
       </div>
     </div>

@@ -13,18 +13,7 @@ import {
   CheckCircleIcon,
   VideoIcon,
 } from "lucide-react";
-import { Stack, Project } from "@/types/wizard";
-
-interface Lead {
-  id: number;
-  name: string;
-  experience: number;
-  stack: (number | Stack)[];
-  projects?: (number | Project)[] | null;
-  availability?: boolean | null;
-  updatedAt: string;
-  createdAt: string;
-}
+import { Lead } from "@/types/wizard";
 
 interface TpmDetailsProps {
   selectedLeader: Lead;
@@ -32,17 +21,47 @@ interface TpmDetailsProps {
   hasBookedMeeting?: boolean;
 }
 
-export function TpmDetails({ selectedLeader, onBookMeeting, hasBookedMeeting = false }: TpmDetailsProps) {
-  const formatJoinedDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      month: 'long', 
-      year: 'numeric' 
+export function TpmDetails({
+  selectedLeader,
+  onBookMeeting,
+  hasBookedMeeting = false,
+}: TpmDetailsProps) {
+  const formatJoinedDate = (timestamp: number) => {
+    const date = new Date(timestamp);
+    return date.toLocaleDateString("en-US", {
+      month: "long",
+      year: "numeric",
     });
   };
 
-  const getSkillsArray = (stack: (number | Stack)[]) => {
-    return stack.map(tech => typeof tech === "number" ? tech.toString() : tech.name);
+  const getSkillsArray = () => {
+    // Try to get skills from projectManagerFields stack first
+    if (selectedLeader.projectManagerFields?.stack) {
+      return selectedLeader.projectManagerFields.stack
+        .map((tech) => tech.name)
+        .slice(0, 8);
+    }
+    // Fallback to developerFields skills
+    if (selectedLeader.developerFields?.skills) {
+      return selectedLeader.developerFields.skills
+        .map((skill) => skill.skill)
+        .slice(0, 8);
+    }
+    return [
+      "JavaScript",
+      "TypeScript",
+      "React",
+      "Node.js",
+      "Project Management",
+    ];
+  };
+
+  const getExperience = () => {
+    return (
+      selectedLeader.projectManagerFields?.experience ||
+      selectedLeader.developerFields?.experience ||
+      3
+    );
   };
 
   return (
@@ -55,8 +74,9 @@ export function TpmDetails({ selectedLeader, onBookMeeting, hasBookedMeeting = f
           </h2>
         </div>
         <p className="text-gray-400 text-sm leading-relaxed max-w-2xl">
-          Great choice! Here&apos;s detailed information about your selected Technical Product Manager. 
-          You can book a meeting to discuss your project requirements and get started.
+          Great choice! Here&apos;s detailed information about your selected
+          Technical Product Manager. You can book a meeting to discuss your
+          project requirements and get started.
         </p>
       </div>
 
@@ -69,22 +89,25 @@ export function TpmDetails({ selectedLeader, onBookMeeting, hasBookedMeeting = f
               <div className="flex items-start gap-6">
                 <Avatar className="h-24 w-24 rounded-full border-4 border-white/10">
                   <AvatarImage
-                    src={`https://avatar.vercel.sh/${selectedLeader.name}.png`}
-                    alt={selectedLeader.name}
+                    src={`https://avatar.vercel.sh/${selectedLeader.name || selectedLeader.email}.png`}
+                    alt={selectedLeader.name || "Project Manager"}
                     className="rounded-full"
                   />
                 </Avatar>
                 <div className="flex-1 min-w-0">
                   <h3 className="text-3xl font-bold text-white mb-2">
-                    {selectedLeader.name}
+                    {selectedLeader.name || "Project Manager"}
                   </h3>
                   <div className="flex items-center gap-2 mb-4">
                     <div className="flex items-center gap-2 bg-zinc-800/50 px-4 py-2 rounded-full">
                       <CodeIcon className="h-5 w-5 text-white/60" />
-                      <span className="text-white/80 font-medium">Technical Product Manager</span>
+                      <span className="text-white/80 font-medium">
+                        Technical Product Manager
+                      </span>
                     </div>
                   </div>
-                  {selectedLeader.availability && (
+                  {selectedLeader.projectManagerFields?.availability ===
+                    "available" && (
                     <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20">
                       Available Now
                     </Badge>
@@ -98,39 +121,47 @@ export function TpmDetails({ selectedLeader, onBookMeeting, hasBookedMeeting = f
                   <MapPinIcon className="h-5 w-5" />
                   <div>
                     <div className="text-xs text-white/40">Location</div>
-                    <div className="text-white">United States</div>
+                    <div className="text-white">
+                      {selectedLeader.country || "United States"}
+                    </div>
                   </div>
                 </div>
                 <div className="flex items-center gap-3 text-white/60">
                   <CalendarIcon className="h-5 w-5" />
                   <div>
                     <div className="text-xs text-white/40">Joined</div>
-                    <div className="text-white">{formatJoinedDate(selectedLeader.createdAt)}</div>
+                    <div className="text-white">
+                      {formatJoinedDate(selectedLeader._creationTime)}
+                    </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-3 text-white/60">
-                  <GithubIcon className="h-5 w-5" />
-                  <div>
-                    <div className="text-xs text-white/40">GitHub</div>
-                    <div className="text-white">@{selectedLeader.name.toLowerCase().replace(' ', '_')}</div>
+                {selectedLeader.githubProfile?.githubUsername && (
+                  <div className="flex items-center gap-3 text-white/60">
+                    <GithubIcon className="h-5 w-5" />
+                    <div>
+                      <div className="text-xs text-white/40">GitHub</div>
+                      <div className="text-white">
+                        @{selectedLeader.githubProfile.githubUsername}
+                      </div>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
 
               {/* Stats Grid */}
               <div className="grid grid-cols-3 gap-8">
                 <div className="text-center">
                   <div className="text-4xl font-bold text-white mb-2">
-                    {selectedLeader.projects?.length || 0}
+                    {selectedLeader.projectsManaged || 0}
                   </div>
                   <div className="text-sm text-white/60 flex items-center justify-center gap-1">
                     <BriefcaseIcon className="h-4 w-4" />
-                    Current Projects
+                    Projects Managed
                   </div>
                 </div>
                 <div className="text-center">
                   <div className="text-4xl font-bold text-white mb-2">
-                    +{selectedLeader.experience}
+                    +{getExperience()}
                   </div>
                   <div className="text-sm text-white/60 flex items-center justify-center gap-1">
                     <ClockIcon className="h-4 w-4" />
@@ -140,7 +171,9 @@ export function TpmDetails({ selectedLeader, onBookMeeting, hasBookedMeeting = f
                 <div className="text-center">
                   <div className="flex items-center justify-center gap-2 mb-2">
                     <StarIcon className="h-8 w-8 text-purple-400 fill-current" />
-                    <span className="text-4xl font-bold text-purple-400">4.9</span>
+                    <span className="text-4xl font-bold text-purple-400">
+                      4.9
+                    </span>
                   </div>
                   <div className="text-sm text-white/60">Client Rating</div>
                 </div>
@@ -148,9 +181,11 @@ export function TpmDetails({ selectedLeader, onBookMeeting, hasBookedMeeting = f
 
               {/* Skills Section */}
               <div className="space-y-4">
-                <h4 className="text-lg font-semibold text-white">Technical Skills</h4>
+                <h4 className="text-lg font-semibold text-white">
+                  Technical Skills
+                </h4>
                 <div className="flex flex-wrap gap-2">
-                  {getSkillsArray(selectedLeader.stack).map((skill, index) => (
+                  {getSkillsArray().map((skill, index) => (
                     <Badge
                       key={index}
                       variant="outline"
@@ -164,17 +199,24 @@ export function TpmDetails({ selectedLeader, onBookMeeting, hasBookedMeeting = f
 
               {/* Industry Experience */}
               <div className="space-y-4">
-                <h4 className="text-lg font-semibold text-white">Industry Experience</h4>
+                <h4 className="text-lg font-semibold text-white">
+                  Industry Experience
+                </h4>
                 <div className="flex flex-wrap gap-2">
-                  {["Web3", "Crypto", "Finance", "SaaS", "E-commerce"].map((industry, index) => (
-                    <Badge
-                      key={index}
-                      variant="outline"
-                      className="bg-darkPrimary/10 text-darkPrimary border-darkPrimary/20 px-3 py-1"
-                    >
-                      {industry}
-                    </Badge>
-                  ))}
+                  {(selectedLeader.industry
+                    ? [selectedLeader.industry, "Technology", "SaaS"]
+                    : ["Technology", "SaaS", "E-commerce"]
+                  )
+                    .slice(0, 5)
+                    .map((industry, index) => (
+                      <Badge
+                        key={index}
+                        variant="outline"
+                        className="bg-darkPrimary/10 text-darkPrimary border-darkPrimary/20 px-3 py-1"
+                      >
+                        {industry}
+                      </Badge>
+                    ))}
                 </div>
               </div>
             </CardContent>
@@ -193,28 +235,28 @@ export function TpmDetails({ selectedLeader, onBookMeeting, hasBookedMeeting = f
                   <VideoIcon className="h-12 w-12 text-darkPrimary mx-auto" />
                 )}
                 <h4 className="text-xl font-semibold text-white">
-                  {hasBookedMeeting ? "Meeting Scheduled!" : "Ready to Get Started?"}
+                  {hasBookedMeeting
+                    ? "Meeting Scheduled!"
+                    : "Ready to Get Started?"}
                 </h4>
                 <p className="text-sm text-white/70">
-                  {hasBookedMeeting 
+                  {hasBookedMeeting
                     ? "Great! Your discovery call has been scheduled. You can now proceed to create your project draft."
-                    : "Book a 30-minute discovery call to discuss your project requirements and timeline."
-                  }
+                    : "Book a 30-minute discovery call to discuss your project requirements and timeline."}
                 </p>
               </div>
-              <Button 
+              <Button
                 onClick={onBookMeeting}
                 disabled={hasBookedMeeting}
                 className={`w-full font-semibold py-3 ${
-                  hasBookedMeeting 
-                    ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 cursor-not-allowed" 
+                  hasBookedMeeting
+                    ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 cursor-not-allowed"
                     : "bg-darkPrimary hover:bg-darkPrimary/90 text-black"
                 }`}
               >
-                {hasBookedMeeting 
-                  ? `✓ Meeting Booked with ${selectedLeader.name.split(' ')[0]}`
-                  : `Book a Meeting with ${selectedLeader.name.split(' ')[0]}`
-                }
+                {hasBookedMeeting
+                  ? `✓ Meeting Booked with ${(selectedLeader.name || "Manager").split(" ")[0]}`
+                  : `Book a Meeting with ${(selectedLeader.name || "Manager").split(" ")[0]}`}
               </Button>
             </CardContent>
           </Card>
@@ -222,34 +264,48 @@ export function TpmDetails({ selectedLeader, onBookMeeting, hasBookedMeeting = f
           {/* What to Expect */}
           <Card className="bg-[#1a1a1a] border-zinc-800 p-6">
             <CardContent className="p-0 space-y-4">
-              <h4 className="text-lg font-semibold text-white">What to Expect</h4>
+              <h4 className="text-lg font-semibold text-white">
+                What to Expect
+              </h4>
               <div className="space-y-3 text-sm">
                 <div className="flex items-start gap-3">
                   <CheckCircleIcon className="h-5 w-5 text-emerald-400 shrink-0 mt-0.5" />
                   <div>
-                    <div className="text-white font-medium">Project Discovery</div>
-                    <div className="text-white/60">Deep dive into your requirements and goals</div>
+                    <div className="text-white font-medium">
+                      Project Discovery
+                    </div>
+                    <div className="text-white/60">
+                      Deep dive into your requirements and goals
+                    </div>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
                   <CheckCircleIcon className="h-5 w-5 text-emerald-400 shrink-0 mt-0.5" />
                   <div>
-                    <div className="text-white font-medium">Timeline Planning</div>
-                    <div className="text-white/60">Create realistic milestones and deliverables</div>
+                    <div className="text-white font-medium">
+                      Timeline Planning
+                    </div>
+                    <div className="text-white/60">
+                      Create realistic milestones and deliverables
+                    </div>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
                   <CheckCircleIcon className="h-5 w-5 text-emerald-400 shrink-0 mt-0.5" />
                   <div>
                     <div className="text-white font-medium">Team Assembly</div>
-                    <div className="text-white/60">Match you with the perfect development team</div>
+                    <div className="text-white/60">
+                      Match you with the perfect development team
+                    </div>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
                   <CheckCircleIcon className="h-5 w-5 text-emerald-400 shrink-0 mt-0.5" />
                   <div>
                     <div className="text-white font-medium">Next Steps</div>
-                    <div className="text-white/60">Define immediate actions and project kickoff</div>
+                    <div className="text-white/60">
+                      Define immediate actions and project kickoff
+                    </div>
                   </div>
                 </div>
               </div>
@@ -284,4 +340,4 @@ export function TpmDetails({ selectedLeader, onBookMeeting, hasBookedMeeting = f
       </div>
     </div>
   );
-} 
+}

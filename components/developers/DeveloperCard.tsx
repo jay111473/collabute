@@ -5,10 +5,30 @@ import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, Calendar, Github, Bookmark, Code } from "lucide-react";
-import { User, Media, Stack } from "@/types/dashboard";
+import { User } from "@/types/convex";
+
+// Type for developer with profile data
+type DeveloperWithProfile = User & {
+  developerProfile: {
+    bio?: string;
+    skills?: string[];
+    experience?: number;
+    experienceLevel?: string;
+    availability?: string;
+    hourlyRate?: number;
+    portfolio?: string[];
+  } | null;
+  githubProfile: {
+    githubUsername: string;
+    publicRepos?: number;
+    followers?: number;
+  } | null;
+  repositoriesCount: number;
+  issuesWorkedOn: number;
+};
 
 interface DeveloperCardProps {
-  developer: User;
+  developer: DeveloperWithProfile;
   variant?: "featured" | "compact";
 }
 
@@ -25,53 +45,33 @@ const formatDate = (date: Date): string => {
 /**
  * Extracts the profile picture URL from a developer
  */
-const getProfilePictureUrl = (developer: User): string | undefined => {
-  return developer.profilePicture &&
-    typeof developer.profilePicture === "object"
-    ? (developer.profilePicture as Media).url || undefined
-    : undefined;
+const getProfilePictureUrl = (developer: DeveloperWithProfile): string | undefined => {
+  return developer.image || undefined;
 };
 
 /**
  * Gets skills from a developer
  */
-const getSkills = (developer: User): string => {
-  const skills = developer.developerFields?.skills
-    ?.map((skill) => skill.skill)
-    .join(", ");
-
+const getSkills = (developer: DeveloperWithProfile): string => {
+  const skills = developer.developerProfile?.skills?.join(", ");
   return skills || "Not specified";
 };
 
 /**
  * Gets the primary role for display
  */
-const getPrimaryRole = (developer: User): string => {
-  if (
-    developer.developerFields?.primaryRole &&
-    Array.isArray(developer.developerFields.primaryRole)
-  ) {
-    return developer.developerFields.primaryRole[0] || "Developer";
-  }
-
-  return "Developer";
+const getPrimaryRole = (developer: DeveloperWithProfile): string => {
+  return developer.developerProfile?.experienceLevel || "Developer";
 };
 
 /**
  * Gets industry information from explicit user data
  */
-const getIndustry = (developer: User): string | null => {
-  // First check if the developer has explicit industry data
-  const industries = developer.developerFields?.industries;
-  if (industries && industries.length > 0) {
-    // Return the first industry or join multiple industries
-    const industryNames = industries
-      .map((item) => item.industry)
-      .filter(Boolean);
-
-    if (industryNames.length > 0) {
-      return industryNames.join(", ");
-    }
+const getIndustry = (developer: DeveloperWithProfile): string | null => {
+  // Get industry from user data
+  const industry = developer.industry;
+  if (industry) {
+    return industry;
   }
 
   // If no explicit industry data exists, return null instead of guessing
@@ -87,17 +87,17 @@ const DeveloperCard: FC<DeveloperCardProps> = ({
 }) => {
   // Extract and prepare data
   const profilePictureUrl = getProfilePictureUrl(developer);
-  const joinDate = developer.createdAt
-    ? formatDate(new Date(developer.createdAt))
+  const joinDate = developer._creationTime
+    ? formatDate(new Date(developer._creationTime))
     : "Unknown";
-  const currentProjects = developer.developerFields?.issues?.length || 0;
+  const currentProjects = developer.issuesWorkedOn || 0;
   const developmentProjects = currentProjects;
-  const experience = developer.leadFields?.experience || 0;
+  const experience = developer.developerProfile?.experience || 0;
   const industry = getIndustry(developer);
   const skills = getSkills(developer);
   const primaryRole = getPrimaryRole(developer);
   const location = developer.country || "Remote";
-  const githubProfile = developer.developerFields?.githubProfile;
+  const githubProfile = developer.githubProfile;
 
   if (variant === "featured") {
     return (
@@ -112,13 +112,13 @@ const DeveloperCard: FC<DeveloperCardProps> = ({
           {profilePictureUrl ? (
             <img
               src={profilePictureUrl}
-              alt={developer.name}
+              alt={developer.name || "Developer"}
               className="w-full h-full object-cover grayscale"
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-gradient-to-b from-gray-700 to-gray-800">
               <div className="text-6xl font-bold text-white opacity-50">
-                {developer.name[0]}
+                {developer.name?.[0] || "D"}
               </div>
             </div>
           )}
@@ -129,7 +129,7 @@ const DeveloperCard: FC<DeveloperCardProps> = ({
           {/* Name with Verification */}
           <div className="flex items-center gap-2 mb-2">
             <h3 className="text-xl font-semibold text-white">
-              {developer.name}
+              {developer.name || "Developer"}
             </h3>
             <div className="w-5 h-5 bg-teal-500 rounded-full flex items-center justify-center">
               <svg
@@ -184,13 +184,13 @@ const DeveloperCard: FC<DeveloperCardProps> = ({
         <Avatar className="h-16 w-16">
           <AvatarImage src={profilePictureUrl} />
           <AvatarFallback className="bg-black text-white text-lg">
-            {developer.name[0]}
+            {developer.name?.[0] || "D"}
           </AvatarFallback>
         </Avatar>
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1">
             <h3 className="text-lg font-semibold text-white">
-              {developer.name}
+              {developer.name || "Developer"}
             </h3>
             <div className="w-4 h-4 bg-teal-500 rounded-full flex items-center justify-center">
               <svg
@@ -230,14 +230,14 @@ const DeveloperCard: FC<DeveloperCardProps> = ({
         </div>
         {githubProfile && (
           <a
-            href={githubProfile}
+            href={`https://github.com/${githubProfile.githubUsername}`}
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-1 text-blue-400 hover:underline"
           >
             <Github className="h-4 w-4" />
             <span>
-              {githubProfile.replace("https://github.com/", "Github.com/")}
+              Github.com/{githubProfile.githubUsername}
             </span>
           </a>
         )}

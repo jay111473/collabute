@@ -2,8 +2,7 @@
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { User } from "@/types/dashboard";
-import { Plus, Zap, X } from "lucide-react";
+import { Plus, Zap } from "lucide-react";
 import { useState } from "react";
 import {
   Dialog,
@@ -12,24 +11,36 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-
-interface AccountSettingsProps {
-  user: User;
-}
+import { useConvexAuth, useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
 
 type Skill = {
   skill?: string | null;
   id?: string | null;
 };
 
-export default function AccountSettings({ user }: AccountSettingsProps) {
-  const [skills, setSkills] = useState<Skill[]>(user.developerFields?.skills || []);
+export default function AccountSettings() {
+  const { isAuthenticated } = useConvexAuth();
+  const userDefault = useQuery(
+    api.users.currentUser,
+    isAuthenticated ? {} : "skip"
+  );
+  const data = useQuery(
+    api.users.getDeveloperProfile,
+    userDefault?._id && isAuthenticated ? { userId: userDefault._id } : "skip"
+  );
+  const user = data?.user;
+  const developerFields = data?.developerFields;
+  const [skills, setSkills] = useState<Skill[]>();
   const [newSkill, setNewSkill] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const handleAddSkill = () => {
-    if (newSkill && !skills?.some(s => s.skill === newSkill)) {
-      setSkills([...skills, { skill: newSkill, id: Date.now().toString() }]);
+    if (newSkill && !skills?.some((s) => s.skill === newSkill)) {
+      setSkills([
+        ...(skills || []),
+        { skill: newSkill, id: Date.now().toString() },
+      ]);
       setNewSkill("");
       setIsDialogOpen(false);
     }
@@ -42,7 +53,7 @@ export default function AccountSettings({ user }: AccountSettingsProps) {
   };
 
   const handleRemoveSkill = (skillId: string) => {
-    setSkills(skills.filter((skill) => skill.id !== skillId));
+    setSkills(skills?.filter((skill) => skill.id !== skillId) || []);
   };
 
   const handleSaveChanges = () => {
@@ -58,7 +69,7 @@ export default function AccountSettings({ user }: AccountSettingsProps) {
         <div className="flex flex-col gap-2">
           <label className="text-sm text-gray-400">First name</label>
           <Input
-            defaultValue={user.name}
+            defaultValue={user?.name}
             className="border border-grayBorders bg-transparent text-white h-12 px-4 rounded"
           />
         </div>
@@ -67,7 +78,7 @@ export default function AccountSettings({ user }: AccountSettingsProps) {
       <div className="flex flex-col gap-2">
         <label className="text-sm text-gray-400">Email</label>
         <Input
-          defaultValue={user.email}
+          defaultValue={user?.email}
           className="border border-grayBorders bg-transparent text-white h-12 px-4 rounded"
         />
       </div>
@@ -76,9 +87,7 @@ export default function AccountSettings({ user }: AccountSettingsProps) {
         <label className="text-sm text-gray-400">Account type</label>
         <div className="border border-grayBorders bg-transparent h-12 px-4 rounded flex items-center gap-2">
           <Zap className="h-4 w-4 text-primary2" />
-          <span className="text-white">
-            {user.type === "developer" ? "Developer" : "Startup"}
-          </span>
+          <span className="text-white">Developer</span>
         </div>
       </div>
 

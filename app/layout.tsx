@@ -7,8 +7,9 @@ import { ThemeProvider } from "./providers/ThemeProvider";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { CSPostHogProvider } from "./provider";
 import { UserProvider } from "./providers/UserContext";
-import { Header } from "@/components/header";
-import Footer from "@/components/footer";
+import { LayoutWrapper } from "@/components/layout-wrapper";
+import { ConvexClientProvider } from "./providers/ConvexClientProvider";
+import { ConvexAuthNextjsServerProvider } from "@convex-dev/auth/nextjs/server";
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
@@ -28,25 +29,29 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${spaceGrotesk.className}`}>
-        <SpeedInsights />
-        <CSPostHogProvider>
-          <EmailProvider>
-            <ThemeProvider
-              attribute="class"
-              defaultTheme="system"
-              enableSystem
-              disableTransitionOnChange
-            >
-              <UserProvider>
-                <Header />
-                {children}
-                <Footer />
-              </UserProvider>
-            </ThemeProvider>
-          </EmailProvider>
-        </CSPostHogProvider>
-        <Analytics />
+      <body className={`${spaceGrotesk.className} h-full`}>
+        <ConvexAuthNextjsServerProvider>
+          <SpeedInsights />
+          <CSPostHogProvider>
+            <EmailProvider>
+              <ThemeProvider
+                attribute="class"
+                defaultTheme="system"
+                enableSystem
+                disableTransitionOnChange
+              >
+                <ConvexClientProvider>
+                  <UserProvider>
+                    <LayoutWrapper>
+                      {children}
+                    </LayoutWrapper>
+                  </UserProvider>
+                </ConvexClientProvider>
+              </ThemeProvider>
+            </EmailProvider>
+          </CSPostHogProvider>
+          <Analytics />
+        </ConvexAuthNextjsServerProvider>
       </body>
     </html>
   );

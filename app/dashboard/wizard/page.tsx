@@ -7,13 +7,12 @@ import { SubscriptionPopup } from "@/components/wizard/subscription-popup";
 import { ProgressIndicator } from "@/components/wizard/progress-indicator";
 import { GitHubAccessVerification } from "@/components/wizard/github-access-verification";
 import { useWizardFlow } from "./hooks/use-wizard-flow";
-import { getCookie } from "cookies-next";
+import { useUserConvex } from "@/hooks/use-user-convex";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 
 export default function Wizard() {
-  const userid = getCookie("userid") as string;
-  const token = getCookie("token") as string;
+  const { user, loading } = useUserConvex();
   const [isGitHubAccessVerified, setIsGitHubAccessVerified] = useState(false);
 
   const {
@@ -33,9 +32,6 @@ export default function Wizard() {
     suggestedCompetitors,
     suggestedTracks,
 
-    // GitHub Access
-    gitHubAccess,
-
     // Handlers
     handleNext,
     handleBookMeeting,
@@ -47,14 +43,26 @@ export default function Wizard() {
     updateProjectInfo,
     updateProjects,
     updateTracks,
+    updateTrackTasks,
     updateLeader,
     updateGitHubRepository,
     retryBusinessComparison,
     retryFeatureComparison,
-  } = useWizardFlow(userid);
+  } = useWizardFlow(user?._id);
 
-  // If no userid, show error or redirect to auth
-  if (!userid) {
+  // Show loading while user data is being fetched
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center">
+        <div className="text-center text-white">
+          <p>Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // If no user after loading, this should be handled by the layout's auth guards
+  if (!user) {
     return (
       <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center">
         <div className="text-center text-white">
@@ -72,7 +80,7 @@ export default function Wizard() {
         <div className="p-2 w-full">
           <div className="mx-auto flex-1 flex flex-col p-9 rounded-xl w-full">
             <GitHubAccessVerification
-              userId={userid}
+              userId={user._id}
               onAccessVerified={() => setIsGitHubAccessVerified(true)}
             >
               {/* Progress Indicator - Hide on step 0 */}
@@ -96,14 +104,14 @@ export default function Wizard() {
                   suggestedIndustries={suggestedIndustries}
                   suggestedCompetitors={suggestedCompetitors}
                   suggestedTracks={suggestedTracks}
-                  userid={userid}
-                  token={token}
+                  userid={user._id}
                   hasBookedMeeting={hasBookedMeeting}
                   onNext={handleNext}
                   onProjectTypeChange={updateProjectType}
                   onProjectInfoChange={updateProjectInfo}
                   onProjectsChange={updateProjects}
                   onTracksChange={updateTracks}
+                  onTrackTasksChange={updateTrackTasks}
                   onLeaderChange={updateLeader}
                   onGitHubImport={updateGitHubRepository}
                   onBookMeeting={handleBookMeeting}

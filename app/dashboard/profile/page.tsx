@@ -1,10 +1,15 @@
+"use client";
+
 import React from "react";
-import { cookies } from "next/headers";
-import { getUser } from "@/lib/get-user";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Media, User } from "@/types/dashboard";
-import { redirect } from "next/navigation";
+import { User as ConvexUser } from "@/types/convex";
+
+// Extended user type that includes populated profile data from getCurrentUser
+type User = ConvexUser & {
+  roleProfile?: any;
+  githubProfile?: any;
+};
 import { Button } from "@/components/ui/button";
 import {
   MapPin,
@@ -16,34 +21,40 @@ import {
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { GitHubActivitySection } from "@/components/github";
+import { useUserConvex } from "@/hooks/use-user-convex";
 
 /**
  * Profile page for developers
  * Displays developer information from the User type
  */
-async function ProfilePage() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("token")?.value;
+function ProfilePage() {
+  const { user, loading } = useUserConvex();
 
-  if (!token) {
-    redirect("/auth");
-  }
-
-  try {
-    const user = await getUser(1);
-    if (user.type !== "developer") {
-      return <NonDeveloperMessage />;
-    }
-
+  if (loading) {
     return (
-      <div className="min-h-screen bg-black">
-        <DeveloperProfile user={user} token={token} />
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-white">Loading profile...</div>
       </div>
     );
-  } catch (error) {
-    console.error("Error fetching user profile:", error);
-    return <ErrorMessage />;
   }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-white">Please log in to view your profile</div>
+      </div>
+    );
+  }
+
+  if (user.type !== "DEVELOPER") {
+    return <NonDeveloperMessage />;
+  }
+
+  return (
+    <div className="min-h-screen bg-black">
+      <DeveloperProfile user={user} />
+    </div>
+  );
 }
 
 /**
@@ -75,7 +86,6 @@ function NonDeveloperMessage() {
 // Types
 type DeveloperProfileProps = {
   user: User;
-  token: string;
 };
 
 type ProfileHeaderProps = {
@@ -130,13 +140,13 @@ function formatDate(dateString: string | undefined | null): string {
  * Extract username from email or GitHub profile
  */
 function getUsername(user: User): string {
-  if (user.developerFields?.githubProfile) {
-    const githubUrl = user.developerFields.githubProfile;
+  if (user.roleProfile?.githubProfile) {
+    const githubUrl = user.roleProfile.githubProfile;
     const githubUsername = githubUrl.split("/").pop();
-    return githubUsername || user.email.split("@")[0];
+    return githubUsername || (user.email || "unknown").split("@")[0];
   }
 
-  return user.email.split("@")[0];
+  return (user.email || "unknown").split("@")[0];
 }
 
 /**
@@ -353,40 +363,37 @@ function Achievements({ experienceLevel, hourlyRate }: AchievementsProps) {
 /**
  * Main developer profile component
  */
-function DeveloperProfile({ user, token }: DeveloperProfileProps) {
-  const developerFields = user.developerFields || {};
+function DeveloperProfile({ user }: DeveloperProfileProps) {
+  // For Convex users, roleProfile contains the developer profile data
+  const developerFields = user.roleProfile || {};
   const username = getUsername(user);
 
-  // Use real data from user object
-  const joinedDate = formatJoinedDate(user.createdAt);
-  const profilePictureUrl = getProfilePictureUrl(
-    (user.profilePicture as Media)?.url
-  );
+  // Use real data from user object - Convex uses _creationTime in milliseconds
+  const joinedDate = formatJoinedDate(new Date(user._creationTime).toISOString());
+  const profilePictureUrl = user.image || "";
 
   // Count projects from projects array
   const projectsCount = user.projects?.length || 0;
 
-  // Count issues applied from issues array
-  const issuesApplied = developerFields.issues?.length || 0;
-
-  // Count issues done/resolved
-  const issuesDone = countResolvedIssues(developerFields.issues);
+  // For now, using mock data until we have proper issue tracking in Convex
+  const issuesApplied = 0;
+  const issuesDone = 0;
 
   return (
     <div className="container mx-auto py-8 px-4 max-w-6xl bg-black">
       <div className="flex flex-col space-y-8">
         <ProfileHeader
-          name={user.name}
+          name={user.name || "Unknown User"}
           username={username}
           profilePictureUrl={profilePictureUrl}
-          primaryRole={developerFields.primaryRole?.[0] || null}
+          primaryRole={developerFields.skills?.[0] || null}
         />
 
         <ProfileInfo
           country={user.country}
           joinedDate={joinedDate}
-          githubProfile={developerFields.githubProfile}
-          personalWebsite={developerFields.personalWebsite}
+          githubProfile={user.githubProfile?.githubUsername ? `https://github.com/${user.githubProfile.githubUsername}` : null}
+          personalWebsite={null}
         />
 
         <ProfileStats
@@ -395,7 +402,7 @@ function DeveloperProfile({ user, token }: DeveloperProfileProps) {
           issuesDone={issuesDone}
         />
 
-        <SkillSet skills={developerFields.skills} />
+        <SkillSet skills={developerFields.skills?.map((skill: string) => ({ skill, id: skill })) || []} />
 
         <Achievements
           experienceLevel={developerFields.experienceLevel}
@@ -403,7 +410,12 @@ function DeveloperProfile({ user, token }: DeveloperProfileProps) {
         />
 
         {/* GitHub Activity Section */}
-        <GitHubActivitySection token={token} userId={user.id?.toString()} />
+        {user.githubProfile?.githubAccessToken && (
+          <GitHubActivitySection 
+            userId={user._id} 
+            token={user.githubProfile.githubAccessToken}
+          />
+        )}
       </div>
     </div>
   );

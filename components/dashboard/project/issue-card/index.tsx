@@ -1,15 +1,14 @@
 import { Badge } from "@/components/ui/badge";
 import RectangleStack from "@/public/icons/rectangle-stack";
-import { Issue } from "@/types/dashboard";
+import { IssueWithRequests } from "@/types/convex";
 import { Circle, CircleDot, Clock } from "lucide-react";
 import { getBulbColor, getStatusInfo } from "@/lib/utils";
-import { motion } from "framer-motion";
 import { format } from "date-fns";
 import { ApplyDrawer } from "./apply-drawer";
 import Link from "next/link";
 
 interface IssueCardProps {
-  issue: Issue;
+  issue: IssueWithRequests;
   projectTitle?: string;
   isMyProject?: boolean;
 }
@@ -19,7 +18,7 @@ const IssueCardBadges = ({
   color,
   label,
 }: {
-  issue: Issue;
+  issue: IssueWithRequests;
   color: string;
   label: string;
 }) => (
@@ -29,16 +28,15 @@ const IssueCardBadges = ({
       className="font-medium text-xs"
       variant="outline"
     >
-      {format(new Date(issue.createdAt), "MMM dd, yyyy")}
+      {format(new Date(issue._creationTime), "MMM dd, yyyy")}
     </Badge>
     <Badge
       icon={<RectangleStack />}
       className="font-medium text-xs"
       variant="outline"
     >
-      {issue.requests?.filter((request) => request.requestStatus === "pending")
-        .length || 0}{" "}
-      pending request
+      {issue.requestCounts?.pending || 0}{" "}
+      pending request{issue.requestCounts?.pending !== 1 ? "s" : ""}
     </Badge>
     <Badge
       icon={
@@ -52,36 +50,11 @@ const IssueCardBadges = ({
   </div>
 );
 
-const IssueDetailRow = ({
-  icon,
-  label,
-  value,
-  delay,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string | number;
-  delay: number;
-}) => (
-  <motion.div
-    initial={{ opacity: 0, x: -20 }}
-    animate={{ opacity: 1, x: 0 }}
-    transition={{ delay }}
-    className="flex justify-between items-center gap-2"
-  >
-    <div className="flex items-center gap-2">
-      {icon}
-      <p className="text-sm text-gray-500">{label}</p>
-    </div>
-    <p className="text-sm font-semibold">{value}</p>
-  </motion.div>
-);
-
 const IssueCard = ({ issue, projectTitle, isMyProject }: IssueCardProps) => {
   const { label, color } = getStatusInfo(issue.status);
 
-  const handleApply = (issueId: string) => {
-    console.log("Applied to issue:", issueId);
+  const handleApply = () => {
+    console.log("Applied to issue:", issue._id);
   };
 
   // Truncate description to first 100 words
@@ -94,7 +67,7 @@ const IssueCard = ({ issue, projectTitle, isMyProject }: IssueCardProps) => {
     : "";
 
   return (
-    <Link href={`/dashboard/issues/${issue.id}`}>
+    <Link href={`/dashboard/issues/${issue._id}`}>
       <div
         className={`rounded-lg px-4 bg-lightGray shadow-none hover:bg-gray-800/50 transition-colors ${
           isMyProject ? "border-l-4 border-l-primary2" : ""

@@ -3,19 +3,19 @@
 import AccountSettings from "@/app/dashboard/settings/components/AccountSettings";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import PreferencesSettings from "@/app/dashboard/settings/components/PreferencesSettings";
-import { useUserData } from "@/hooks/use-user-data";
+import { useUserConvex } from "@/hooks/use-user-convex";
 
 export default function SettingsClientWrapper() {
-  const { user, loading } = useUserData();
+  const { user, loading } = useUserConvex();
 
   if (loading || !user) {
     return null; // Loading will be handled by the loading.tsx file
   }
 
   return (
-    <div className="flex flex-col bg-black text-white flex-1">
-      <div className="p-6">
-        <div className="bg-darkGray rounded-lg p-4">
+    <div className="flex flex-col bg-black text-white h-full">
+      <div className="p-6 h-full">
+        <div className="bg-darkGray rounded-lg p-4 h-full">
           <Tabs defaultValue="account" className="w-full">
             <TabsList className="bg-transparent p-0 w-full justify-start ">
               <TabsTrigger
@@ -44,7 +44,7 @@ export default function SettingsClientWrapper() {
               </TabsTrigger>
             </TabsList>
             <TabsContent value="account" className="p-6">
-              <AccountSettings user={user} />
+              <AccountSettings />
             </TabsContent>
             <TabsContent value="security" className="p-6">
               {/* TODO: Add security settings */}

@@ -16,16 +16,17 @@ const buttonVariants = cva(
         destructive:
           "bg-red-500 text-slate-50 dark:bg-red-900 dark:text-slate-50",
         outline:
-          "border border-slate-900 bg-transparent text-white hover:bg-slate-900 hover:text-white dark:border-slate-50 dark:text-slate-50 dark:hover:bg-slate-50 dark:hover:text-slate-900",
+          "border border-slate-900 bg-transparent text-slate-900 hover:bg-slate-900 hover:text-white dark:border-slate-50 dark:text-slate-50 dark:hover:bg-slate-50 dark:hover:text-slate-900",
         secondary:
           "bg-slate-900 text-white hover:bg-slate-700 dark:bg-slate-50 dark:text-slate-900 dark:hover:bg-slate-200",
+        ghost: "bg-transparent text-slate-900 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-50 dark:hover:bg-slate-800 dark:hover:text-slate-50",
         link: "text-slate-900 underline-offset-4 dark:text-slate-50",
       },
       size: {
-        default: "px-4 py-4",
-        sm: "rounded-md px-3 py-4",
-        lg: "rounded-md px-4 md:px-8 md:py-4 py-2",
-        icon: "h-10 w-10 py-4",
+        default: "px-4 py-3",
+        sm: "rounded-lg px-3 py-3",
+        lg: "rounded-lg px-4 md:px-8 md:py-3 py-2",
+        icon: "h-10 w-10 py-3",
       },
     },
     defaultVariants: {

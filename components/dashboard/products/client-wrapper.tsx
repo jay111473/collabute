@@ -1,25 +1,18 @@
 "use client";
 
-import { useMemo } from "react";
 import ProductsComponent from "@/components/dashboard/products";
-import { useProductsData } from "@/hooks/use-products-data";
-import { useUserData } from "@/hooks/use-user-data";
-import { User } from "@/types/dashboard";
+import { useProductsWithProjects } from "@/hooks/use-products-convex";
+import { useUserConvex } from "@/hooks/use-user-convex";
 
 export default function ProductsClientWrapper() {
-  const { user, loading: userLoading } = useUserData();
+  const { user, loading: userLoading } = useUserConvex();
 
-  // Memoize the where condition to prevent infinite loops
-  const whereCondition = useMemo(() => {
-    return user?.id ? { owner: { equals: user.id } } : {};
-  }, [user?.id]);
-
-  const { products } = useProductsData({
-    where: whereCondition,
-    user: user as User,
+  const { products, loading: productsLoading } = useProductsWithProjects({
+    userId: user?._id,
+    isActive: true,
   });
 
-  if (userLoading || !user) {
+  if (userLoading || productsLoading || !user) {
     return null; // Loading will be handled by loading.tsx
   }
 

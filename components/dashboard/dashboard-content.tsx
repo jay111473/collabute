@@ -9,7 +9,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { truncateToFourWords } from "@/lib/utils";
-import { Project, Issue, User } from "@/types/dashboard";
+import { User, EnhancedProject, Issue } from "@/types/convex";
 import DashboardCard from "@/components/uikit/dashboard-card";
 import { RecentProjectCard } from "@/components/dashboard/projects/recent-project-card";
 import FloatingBottomBar from "@/components/dashboard/floating-bottom-bar";
@@ -22,18 +22,18 @@ import { cn } from "@/lib/utils";
 import { Menu, X } from "lucide-react";
 import { VerificationAlerts } from "@/components/dashboard/verification-alerts";
 import { useFloatingNav } from "@/lib/hooks/use-floating-nav";
-import { useProjectsData } from "@/hooks/use-projects-data";
-import { useUserData } from "@/hooks/use-user-data";
-import { Button } from "@/components/ui/button";
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { useUserConvex } from "@/hooks/use-user-convex";
 
 interface DashboardContentProps {
-  user: User;
+  user?: User;
 }
 
-const RecentProjectsList = ({ projects }: { projects: Project[] }) => (
+const RecentProjectsList = ({ projects }: { projects: EnhancedProject[] }) => (
   <div className="space-y-3">
     {projects.slice(0, 3).map((project) => (
-      <RecentProjectCard key={project.id} project={project} />
+      <RecentProjectCard key={project._id} project={project} />
     ))}
   </div>
 );
@@ -52,7 +52,7 @@ const IssuesTable = ({ issues }: { issues: Issue[] }) => (
     <TableBody>
       {issues?.map((issue) => (
         <TableRow
-          key={issue.id}
+          key={issue._id}
           className="border-white/5 bg-darkGray hover:bg-white/5 rounded-lg mx-0 p-0 flex items-center m-0"
         >
           <TableCell className="flex justify-center items-center space-x-4 py-2">
@@ -61,7 +61,7 @@ const IssuesTable = ({ issues }: { issues: Issue[] }) => (
             </div>
             <div className="flex flex-col">
               <span className="font-medium text-white" title={issue.title}>
-                {truncateToFourWords(issue.title)}
+                {truncateToFourWords(issue.title || "Untitled Issue")}
               </span>
               <p className="text-xs text-white/60">
                 {issue.description
@@ -83,12 +83,15 @@ const IssuesTable = ({ issues }: { issues: Issue[] }) => (
                     : "bg-green-500/10 text-green-500 border-green-500/20"
               }`}
             >
-              {issue.priority.charAt(0).toUpperCase() + issue.priority.slice(1)}
+              {issue.priority
+                ? issue.priority.charAt(0).toUpperCase() +
+                  issue.priority.slice(1)
+                : "Low"}
             </Badge>
           </TableCell>
           <TableCell>
             <span className="text-sm text-white/70">
-              {new Date(issue.updatedAt).toLocaleDateString("en-US", {
+              {new Date(issue._creationTime).toLocaleDateString("en-US", {
                 weekday: "long",
                 year: "numeric",
                 month: "long",
@@ -102,18 +105,17 @@ const IssuesTable = ({ issues }: { issues: Issue[] }) => (
   </Table>
 );
 
-const DashboardContent = ({ user }: DashboardContentProps) => {
-  const {
-    projects,
-    loading: projectsLoading,
-    error: projectsError,
-    refetch: refetchProjects,
-  } = useProjectsData({ limit: 6 });
+const DashboardContent = ({ user: propUser }: DashboardContentProps) => {
+  const { user: convexUser, loading: userLoading } = useUserConvex();
+  const user = convexUser || propUser;
+
+  const projects = useQuery(api.projects.getAllProjects, { limit: 6 });
+  const projectsLoading = projects === undefined;
   const { isFloatingNavEnabled } = useFloatingNav();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
-  const isLoading = projectsLoading;
+  const isLoading = projectsLoading || userLoading;
 
   useEffect(() => {
     const checkMobile = () => {
@@ -153,19 +155,6 @@ const DashboardContent = ({ user }: DashboardContentProps) => {
     );
   }
 
-  if (projectsError) {
-    return (
-      <div className="p-6 text-center">
-        <p className="text-red-500 mb-4">
-          Error loading projects: {projectsError}
-        </p>
-        <Button onClick={refetchProjects} variant="outline">
-          Try Again
-        </Button>
-      </div>
-    );
-  }
-
   // Render floating navigation layout
   if (isFloatingNavEnabled) {
     return (
@@ -175,30 +164,30 @@ const DashboardContent = ({ user }: DashboardContentProps) => {
 
           <main className="flex-1 overflow-y-auto flex flex-col gap-4 p-4 lg:gap-6 lg:p-6 pb-24">
             {/* Verification Alerts */}
-            <VerificationAlerts user={user} />
-            {user.type === "developer" && (
+            <VerificationAlerts />
+            {(user.type === "DEVELOPER" || user.type === "PROJECT_MANAGER") && (
               <div className="grid gap-4 md:grid-cols-2 md:gap-6 lg:grid-cols-3">
                 <DashboardCard
                   title="Issues"
-                  value={user.developerFields?.issues?.length || 0}
+                  value={0} // TODO: Fetch issues from Convex
                   icon={GitPullRequest}
                   subtext="+180.1% from last month"
                 />
                 <DashboardCard
                   title="Balance"
-                  value={`$${user.wallet}`}
+                  value={`$${user.wallet || 0}`}
                   icon={DollarSign}
                   subtext="+19% from last month"
                 />
                 <DashboardCard
                   title="Total Payments"
-                  value={`$${user.developerFields?.totalPayment || 0}`}
+                  value={`$0`} // TODO: Fetch from developer profile
                   icon={ArrowLeftRight}
                   subtext="+20.1% from last month"
                 />
               </div>
             )}
-            {user.type === "startup" && (
+            {(user.type === "STARTUP" || user.type === "LEAD") && (
               <div className="grid gap-4 md:grid-cols-2 md:gap-6 lg:grid-cols-2">
                 <DashboardCard
                   title="Projects"
@@ -208,13 +197,13 @@ const DashboardContent = ({ user }: DashboardContentProps) => {
                 />
                 <DashboardCard
                   title="My Funds"
-                  value={`$${user.wallet}`}
+                  value={`$${user.wallet || 0}`}
                   icon={DollarSign}
                   subtext="+19% from last month"
                 />
               </div>
             )}
-            {user.type === "developer" && (
+            {(user.type === "DEVELOPER" || user.type === "PROJECT_MANAGER") && (
               <div className="grid gap-6 md:grid-cols-2">
                 <Card className="bg-darkGray rounded-lg border-none">
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -239,7 +228,7 @@ const DashboardContent = ({ user }: DashboardContentProps) => {
                     </button>
                   </CardHeader>
                   <CardContent className="p-4 pt-0">
-                    <RecentProjectsList projects={user.projects as Project[]} />
+                    <RecentProjectsList projects={projects} />
                   </CardContent>
                 </Card>
                 <Card className="bg-darkGray rounded-lg border-none">
@@ -248,13 +237,13 @@ const DashboardContent = ({ user }: DashboardContentProps) => {
                   </CardHeader>
                   <CardContent className="p-0 px-2 pb-4">
                     <IssuesTable
-                      issues={user.developerFields?.issues as Issue[]}
+                      issues={[]} // TODO: Fetch issues from Convex
                     />
                   </CardContent>
                 </Card>
               </div>
             )}
-            {user.type === "startup" && (
+            {(user.type === "STARTUP" || user.type === "LEAD") && (
               <div className="grid gap-6 md:grid-cols-2">
                 <Card className="bg-darkGray rounded-lg border-none">
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -279,7 +268,7 @@ const DashboardContent = ({ user }: DashboardContentProps) => {
                     </button>
                   </CardHeader>
                   <CardContent className="p-4 pt-0">
-                    <RecentProjectsList projects={user.projects as Project[]} />
+                    <RecentProjectsList projects={projects} />
                   </CardContent>
                 </Card>
                 <Card className="bg-darkGray rounded-lg border-none">
@@ -397,46 +386,46 @@ const DashboardContent = ({ user }: DashboardContentProps) => {
 
           <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
             {/* Verification Alerts */}
-            <VerificationAlerts user={user} />
-            {user.type === "developer" && (
+            <VerificationAlerts />
+            {(user.type === "DEVELOPER" || user.type === "PROJECT_MANAGER") && (
               <div className="grid gap-4 md:grid-cols-2 md:gap-6 lg:grid-cols-3">
                 <DashboardCard
                   title="Issues"
-                  value={user.developerFields?.issues?.length || 0}
+                  value={0} // TODO: Fetch issues from Convex
                   icon={GitPullRequest}
                   subtext="+180.1% from last month"
                 />
                 <DashboardCard
                   title="Balance"
-                  value={`$${user.wallet}`}
+                  value={`$${user.wallet || 0}`}
                   icon={DollarSign}
                   subtext="+19% from last month"
                 />
                 <DashboardCard
                   title="Total Payments"
-                  value={`$${user.developerFields?.totalPayment || 0}`}
+                  value={`$0`} // TODO: Fetch from developer profile
                   icon={ArrowLeftRight}
                   subtext="+20.1% from last month"
                 />
               </div>
             )}
-            {user.type === "startup" && (
+            {(user.type === "STARTUP" || user.type === "LEAD") && (
               <div className="grid gap-4 md:grid-cols-2 md:gap-6 lg:grid-cols-2">
                 <DashboardCard
                   title="Projects"
-                  value={user?.projects?.length || 0}
+                  value={projects.length || 0}
                   icon={GitPullRequest}
                   subtext="+180.1% from last month"
                 />
                 <DashboardCard
                   title="My Funds"
-                  value={`$${user.wallet}`}
+                  value={`$${user.wallet || 0}`}
                   icon={DollarSign}
                   subtext="+19% from last month"
                 />
               </div>
             )}
-            {user.type === "developer" && (
+            {(user.type === "DEVELOPER" || user.type === "PROJECT_MANAGER") && (
               <div className="grid gap-6 md:grid-cols-2">
                 <Card className="bg-darkGray rounded-lg border-none">
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -461,7 +450,7 @@ const DashboardContent = ({ user }: DashboardContentProps) => {
                     </button>
                   </CardHeader>
                   <CardContent className="p-4 pt-0">
-                    <RecentProjectsList projects={user.projects as Project[]} />
+                    <RecentProjectsList projects={projects} />
                   </CardContent>
                 </Card>
                 <Card className="bg-darkGray rounded-lg border-none">
@@ -470,13 +459,13 @@ const DashboardContent = ({ user }: DashboardContentProps) => {
                   </CardHeader>
                   <CardContent className="p-0 px-2 pb-4">
                     <IssuesTable
-                      issues={user.developerFields?.issues as Issue[]}
+                      issues={[]} // TODO: Fetch issues from Convex
                     />
                   </CardContent>
                 </Card>
               </div>
             )}
-            {user.type === "startup" && (
+            {(user.type === "STARTUP" || user.type === "LEAD") && (
               <div className="grid gap-6 md:grid-cols-2">
                 <Card className="bg-darkGray rounded-lg border-none">
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -501,7 +490,7 @@ const DashboardContent = ({ user }: DashboardContentProps) => {
                     </button>
                   </CardHeader>
                   <CardContent className="p-4 pt-0">
-                    <RecentProjectsList projects={user.projects as Project[]} />
+                    <RecentProjectsList projects={projects} />
                   </CardContent>
                 </Card>
                 <Card className="bg-darkGray rounded-lg border-none">

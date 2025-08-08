@@ -1,17 +1,17 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { ProjectProgress } from "@/components/ui/progress";
-import { Project, Issue, Media } from "@/types/dashboard";
-import { calculateDetailedProgress } from "@/lib/utils";
+import { EnhancedProject } from "@/types/convex";
 import Image from "next/image";
 import ProjectIcon from "@/public/icons/project";
 
 interface RecentProjectCardProps {
-  project: Project;
+  project: EnhancedProject;
   compact?: boolean;
 }
 
 export const RecentProjectCard = ({ project }: RecentProjectCardProps) => {
-  const progressData = calculateDetailedProgress(project.issues as Issue[]);
+  // TODO: Calculate progress from Convex issues
+  const progressData = { overallPercentage: 0, donePercentage: 0, inProgressPercentage: 0, done: 0, inProgress: 0, remaining: 0 };
 
   return (
     <Card className="bg-darkGray border-none rounded-lg hover:bg-darkGray/80 transition-colors">
@@ -19,11 +19,10 @@ export const RecentProjectCard = ({ project }: RecentProjectCardProps) => {
         {/* Project Header */}
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-neutral-800 p-1.5 flex items-center justify-center flex-shrink-0">
-            {typeof (project.logo as Media)?.url === "string" &&
-            (project.logo as Media).url ? (
+            {project.logoUrl ? (
               <Image
-                src={(project.logo as Media).url as string}
-                alt={project.title}
+                src={project.logoUrl}
+                alt={project.title || "Project"}
                 width={20}
                 height={20}
                 className="rounded"
@@ -34,7 +33,7 @@ export const RecentProjectCard = ({ project }: RecentProjectCardProps) => {
           </div>
           <div className="flex-1 min-w-0">
             <h3 className="font-medium text-white text-sm truncate">
-              {project.title}
+              {project.title || "Untitled Project"}
             </h3>
             <p className="text-xs text-white/60 truncate">
               {project.description || "No description"}

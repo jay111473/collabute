@@ -1,4 +1,4 @@
-import { User } from "./dashboard";
+import { User } from "./convex";
 
 export type DeveloperRole =
   | "Frontend Developer"
@@ -18,7 +18,7 @@ export type DeveloperRole =
 
 export type TeamSize = "1-10" | "10-50" | "50-100" | "100+";
 
-export type AccountType = "developer" | "startup";
+export type AccountType = "developer" | "startup" | "project_manager";
 
 export interface DeveloperFields {
   primaryRole?: DeveloperRole[] | null;
@@ -71,4 +71,4 @@ export interface CreateAccountResponse {
   success: boolean;
   message: string;
   userId?: number;
-} 
+}

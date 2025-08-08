@@ -258,7 +258,7 @@ export function ProjectInfo({
 
   return (
     <TooltipProvider>
-      <div className="min-h-[80vh] flex items-center justify-center px-4">
+      <div className="min-h-[40vh] flex items-center justify-center px-4">
         <style jsx>{`
           .custom-scrollbar {
             scrollbar-width: thin;

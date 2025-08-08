@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import axios from "axios";
 import { useEmail } from "@/app/providers/EmailContext";
 import type { CreateAccountFormData } from "@/types/auth.types";
-import { createAccountSchema } from "@/app/auth/schemas/createAccount.schema";
+import { createAccountSchema } from "@/app/(auth)/login/schemas/createAccount.schema";
 
 interface ApiErrorResponse {
   data?: {
@@ -30,17 +30,29 @@ const handleApiError = (error: unknown) => {
   toast.error(errorMessage);
 };
 
-export const useCreateAccount = () => {
+interface UseCreateAccountProps {
+  token?: string;
+  type?: string;
+  email?: string;
+}
+
+export const useCreateAccount = (invitationData?: UseCreateAccountProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
   const { email, setEmail } = useEmail();
 
+  // Determine default type based on invitation
+  const defaultType =
+    invitationData?.type === "PROJECT_MANAGER"
+      ? "project_manager"
+      : "developer";
+
   const form = useForm<CreateAccountFormData>({
     resolver: zodResolver(createAccountSchema),
     defaultValues: {
-      email: email || "",
-      type: "developer",
+      email: invitationData?.email || email || "",
+      type: defaultType,
       phoneNumber: "",
       countryCode: "",
       developerFields: {
@@ -54,9 +66,10 @@ export const useCreateAccount = () => {
     try {
       await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/users`, values);
       setEmail(values.email);
-      
+
       // Use the first selected role for navigation, or 'developer' as fallback
-      const primaryRole = values.developerFields?.primaryRole?.[0] || 'developer';
+      const primaryRole =
+        values.developerFields?.primaryRole?.[0] || "developer";
       router.push(
         `/auth/create-account/challenge?role=${encodeURIComponent(primaryRole)}`
       );

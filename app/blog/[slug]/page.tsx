@@ -4,17 +4,10 @@ import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
-import { blogService } from "@/lib/services/blog-service";
+import { api } from "@/convex/_generated/api";
+import { fetchQuery } from "convex/nextjs";
 import { CopyLinkButton } from "@/components/blog/copy-link-button";
-import {
-  getMediaUrl,
-  getCategoryName,
-  getCategoryColor,
-  formatBlogDate,
-  extractTextFromRichText,
-  getReadingTime,
-  getBlogTags,
-} from "@/lib/utils/blog-utils";
+import { TiptapRenderer } from "@/components/ui/tiptap-renderer";
 
 interface BlogDetailPageProps {
   params: Promise<{
@@ -28,7 +21,7 @@ export async function generateMetadata({
 }: BlogDetailPageProps): Promise<Metadata> {
   try {
     const { slug } = await params;
-    const blog = await blogService.getBlogBySlug(slug);
+    const blog = await fetchQuery(api.blogs.getBlogBySlug, { slug });
 
     if (!blog) {
       return {
@@ -37,20 +30,23 @@ export async function generateMetadata({
       };
     }
 
-    const imageUrl = getMediaUrl(blog.image);
-    const description =
-      blog.description || extractTextFromRichText(blog.richtext).slice(0, 160);
+    const imageUrl =
+      blog.thumbnail?.url ||
+      blog.profilePicture?.url ||
+      "/icons/user-avatar.png";
+    const description = blog.description || "";
 
     return {
       title: blog.meta?.title || blog.title,
       description: blog.meta?.description || description,
-      keywords: getBlogTags(blog).map((tag) => tag.name),
       openGraph: {
         title: blog.title,
         description: description,
         type: "article",
-        publishedTime: blog.publishedAt || undefined,
-        modifiedTime: blog.updatedAt,
+        publishedTime: blog.publishedAt
+          ? new Date(blog.publishedAt).toISOString()
+          : undefined,
+        modifiedTime: new Date(blog.updatedAt).toISOString(),
         images: [
           {
             url: imageUrl,
@@ -79,27 +75,59 @@ export async function generateMetadata({
 const BlogDetailPage = async ({ params }: BlogDetailPageProps) => {
   try {
     const { slug } = await params;
-    const blog = await blogService.getBlogBySlug(slug);
+    const blog = await fetchQuery(api.blogs.getBlogBySlug, { slug });
 
     if (!blog || !blog.publishedAt) {
       notFound();
     }
 
-    const categoryName = getCategoryName(blog.category);
-    const categoryColor = getCategoryColor(blog.category);
-    const imageUrl = getMediaUrl(blog.image);
-    const publishedDate = formatBlogDate(blog.publishedAt);
-    const tags = getBlogTags(blog);
-    const content = extractTextFromRichText(blog.richtext);
-    const readingTime = getReadingTime(content);
+    const categoryName = blog.category?.name || "Uncategorized";
+    const categoryColor = blog.category?.color || "#6B7280";
+    const imageUrl =
+      blog.thumbnail?.url ||
+      blog.profilePicture?.url ||
+      "/icons/user-avatar.png";
+    const publishedDate = new Date(blog.publishedAt).toLocaleDateString(
+      "en-US",
+      {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      }
+    );
+    const tags = blog.tags?.filter(Boolean) || [];
+    const content = blog.content; // Tiptap JSON content
+    const readingTime = calculateReadingTime(content);
+    const authorName = blog.author?.name || "Anonymous";
+
+    // Simple reading time calculation
+    function calculateReadingTime(tiptapContent: any): number {
+      if (!tiptapContent?.content) return 1;
+
+      const extractText = (nodes: any[]): string => {
+        return nodes
+          .map((node) => {
+            if (node.type === "text") return node.text || "";
+            if (node.content) return extractText(node.content);
+            return "";
+          })
+          .join(" ");
+      };
+
+      const text = extractText(tiptapContent.content);
+      const wordCount = text
+        .split(/\s+/)
+        .filter((word) => word.length > 0).length;
+      return Math.max(1, Math.ceil(wordCount / 200)); // 200 words per minute
+    }
 
     return (
-      <div className="min-h-screen bg-black">
+      <div className="min-h-screen bg-black py-20">
         {/* Content */}
         <div className="relative">
           <div className="container mx-auto px-4 sm:px-6 py-8 sm:py-12 max-w-2xl">
             {/* Back button */}
-            <div className="mb-8 sm:mb-12">
+            <div className="mb-2 sm:mb-4">
               <Link
                 href="/blog"
                 className="inline-flex items-center gap-2 text-zinc-500 hover:text-zinc-300 transition-colors duration-200 text-sm"
@@ -110,20 +138,22 @@ const BlogDetailPage = async ({ params }: BlogDetailPageProps) => {
             </div>
 
             {/* Article header */}
-            <header className="mb-8 sm:mb-12">
-              {/* Author and meta info */}
-              <div className="flex flex-wrap items-center gap-2 sm:gap-4 mb-6 sm:mb-8 text-xs sm:text-sm">
-                <span className="text-zinc-300 font-medium">
-                  Karri Saarinen
-                </span>
-                <span className="text-zinc-500">•</span>
-                <time className="text-zinc-500">{publishedDate}</time>
-                <span className="text-zinc-500">•</span>
-                <CopyLinkButton className="text-zinc-500 hover:text-zinc-300 transition-colors" />
-              </div>
+            <header className="mb-4 sm:mb-12">
+              {/* Featured image */}
+              {(blog.thumbnail || blog.profilePicture) && (
+                <div className="relative w-full h-48 sm:h-64 md:h-96 rounded-lg overflow-hidden">
+                  <Image
+                    src={imageUrl}
+                    alt={blog.title}
+                    fill
+                    className="object-cover"
+                    priority
+                  />
+                </div>
+              )}
 
               {/* Title */}
-              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight mb-6 sm:mb-8">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-semibold text-white leading-tight mb-6 sm:mb-8">
                 {blog.title}
               </h1>
 
@@ -134,49 +164,42 @@ const BlogDetailPage = async ({ params }: BlogDetailPageProps) => {
                 </p>
               )}
 
-              {/* Category and reading time */}
-              <div className="flex flex-wrap items-center gap-3 sm:gap-4 mb-6 sm:mb-8">
-                <span 
-                  className="inline-flex items-center px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs font-medium"
-                  style={{
-                    backgroundColor: `${categoryColor}20`,
-                    color: categoryColor,
-                  }}
-                >
-                  {categoryName}
-                </span>
-                <span className="text-zinc-500 text-xs sm:text-sm">
-                  {readingTime} min read
-                </span>
-              </div>
-
-              {/* Featured image */}
-              {blog.image && (
-                <div className="relative w-full h-48 sm:h-64 md:h-96 rounded-lg overflow-hidden mb-8 sm:mb-12">
-                  <Image
-                    src={imageUrl}
-                    alt={blog.title}
-                    fill
-                    className="object-cover"
-                    priority
-                  />
+              {/* Author and meta info */}
+              <div className="flex justify-between items-center">
+                {/* Author and meta info */}
+                <div className="flex flex-wrap items-center gap-2 sm:gap-4 mb-6 sm:mb-8 text-xs sm:text-sm">
+                  <span className="text-zinc-300 font-medium">
+                    {authorName}
+                  </span>
+                  <span className="text-zinc-500">•</span>
+                  <time className="text-zinc-500">{publishedDate}</time>
+                  <span className="text-zinc-500">•</span>
+                  <CopyLinkButton className="text-zinc-500 hover:text-zinc-300 transition-colors" />
                 </div>
-              )}
+                {/* Category and reading time */}
+                <div className="flex flex-wrap items-center gap-3 sm:gap-4 mb-6 sm:mb-8">
+                  <span
+                    className="inline-flex items-center px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs font-medium"
+                    style={{
+                      backgroundColor: `${categoryColor}20`,
+                      color: categoryColor,
+                    }}
+                  >
+                    {categoryName}
+                  </span>
+                  <span className="text-zinc-500 text-xs sm:text-sm">
+                    {readingTime} min read
+                  </span>
+                </div>
+              </div>
             </header>
 
             {/* Article content */}
             <article className="prose prose-invert prose-sm sm:prose-lg max-w-none">
-              <div className="text-zinc-300 leading-relaxed space-y-4 sm:space-y-6">
-                {blog.richtext ? (
-                  <div className="whitespace-pre-wrap leading-7 sm:leading-8 text-sm sm:text-base">
-                    {content}
-                  </div>
-                ) : (
-                  <div className="text-base sm:text-lg leading-7 sm:leading-8">
-                    <p>Content not available.</p>
-                  </div>
-                )}
-              </div>
+              <TiptapRenderer
+                content={content}
+                className="text-zinc-300 leading-relaxed space-y-4 sm:space-y-6"
+              />
             </article>
 
             {/* Tags */}
@@ -185,10 +208,10 @@ const BlogDetailPage = async ({ params }: BlogDetailPageProps) => {
                 <div className="flex flex-wrap gap-2">
                   {tags.map((tag) => (
                     <span
-                      key={tag.id}
+                      key={tag?._id}
                       className="inline-flex items-center px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-medium bg-zinc-900 text-zinc-400 hover:bg-zinc-800 transition-colors cursor-pointer"
                     >
-                      #{tag.name}
+                      #{tag?.name}
                     </span>
                   ))}
                 </div>

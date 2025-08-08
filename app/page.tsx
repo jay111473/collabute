@@ -10,14 +10,13 @@ export default async function Home() {
   return (
     <>
       <main className="flex min-h-screen min-w-screen flex-col items-center justify-center px-2 py-8 lg:px-24 lg:py-4 h-full font-sans gap-y-24 bg-background relative">
-   
         <Hero />
         <EarlyBirdPromo />
         <Feature />
         <About />
         <Developers />
         <HowItWorks />
-        <FAQ /> 
+        <FAQ />
       </main>
     </>
   );

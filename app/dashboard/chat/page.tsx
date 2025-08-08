@@ -2,15 +2,15 @@
 
 import { useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { useUserData } from '@/hooks/use-user-data'
-import { useConversations } from '@/hooks/use-conversations'
+import { useUserConvex } from '@/hooks/use-user-convex'
+import { useConversationsConvex } from '@/hooks/use-conversations-convex'
 import { ConversationList } from '@/components/chat/conversation-list'
 import { ChatInterface } from '@/components/chat/chat-interface'
 import { EmptyState } from '@/components/chat/empty-state'
 import { Skeleton } from '@/components/ui/skeleton'
 
 export default function ChatPage() {
-  const { user, loading: userLoading } = useUserData()
+  const { user, loading: userLoading } = useUserConvex()
   const searchParams = useSearchParams()
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null)
 
@@ -18,13 +18,13 @@ export default function ChatPage() {
     conversations,
     loading: conversationsLoading,
     error,
-  } = useConversations(user?.id?.toString() || '')
+  } = useConversationsConvex({ userId: user?._id! })
 
   // Handle conversation selection from URL params
   useEffect(() => {
     const conversationFromUrl = searchParams.get('conversation')
     if (conversationFromUrl && conversations.length > 0) {
-      const foundConversation = conversations.find(conv => conv.id === conversationFromUrl)
+      const foundConversation = conversations.find(conv => conv._id === conversationFromUrl)
       if (foundConversation) {
         setSelectedConversationId(conversationFromUrl)
       }
@@ -59,7 +59,7 @@ export default function ChatPage() {
     )
   }
 
-  const selectedConversation = conversations.find(conv => conv.id === selectedConversationId)
+  const selectedConversation = conversations.find(conv => conv._id === selectedConversationId)
 
   return (
     <div className="flex h-full bg-black">
@@ -75,7 +75,7 @@ export default function ChatPage() {
           onSelectConversation={setSelectedConversationId}
           loading={conversationsLoading}
           error={error}
-          currentUserId={user.id.toString()}
+          currentUserId={user._id}
         />
       </div>
 
@@ -83,8 +83,8 @@ export default function ChatPage() {
       <div className="flex-1 flex flex-col">
         {selectedConversation ? (
           <ChatInterface
-            conversation={selectedConversation}
-            currentUser={user}
+            conversation={selectedConversation as any}
+            currentUser={user as any}
           />
         ) : (
           <EmptyState

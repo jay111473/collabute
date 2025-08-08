@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { Category, Tag } from '@/types/blog'
+import { Category, Tag } from '@/types/convex'
 
 interface BlogFiltersProps {
   categories: Category[]

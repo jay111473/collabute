@@ -113,7 +113,7 @@ Remember:
 
     try {
       const data = await generateObject({
-        model: google("gemini-2.5-flash-preview-04-17"),
+        model: google("gemini-2.5-flash"),
         prompt,
         schema: featureSchema,
         system: `You are a product manager who translates business needs into clear feature descriptions. Your role is to generate MVP features that business stakeholders and end-users can easily understand.

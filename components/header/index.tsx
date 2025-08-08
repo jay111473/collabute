@@ -12,9 +12,9 @@ const navigationLinks = [
   { href: "/", label: "Home" },
   { href: "/solutions", label: "Our Solution" },
   { href: "/pricing", label: "Pricing" },
+  { href: "/blog", label: "Blog" },
   { href: "/early-bird", label: "Early Bird" },
   { href: "/about-us", label: "About" },
-  { href: "/contact", label: "Contact" },
 ];
 
 export function Header() {

@@ -26,6 +26,7 @@ interface TrackTasksGeneratorProps {
   tracks: ProjectTrack[];
   competitors: any[];
   businessComparison: any;
+  existingTrackTasks?: TrackTasks[];
   isLoading?: boolean;
   onTasksGenerated?: (tasks: TrackTasks[]) => void;
 }
@@ -117,7 +118,7 @@ function TaskListItem({ task, trackId }: { task: Task; trackId: string }) {
         {/* Time */}
         <div className="flex items-center gap-1 text-xs text-gray-400">
           <Clock className="w-3 h-3" />
-          <span>{task.estimatedHours}h</span>
+          <span>{task.estimatedDays}d</span>
         </div>
       </div>
     </motion.div>
@@ -171,11 +172,11 @@ function TrackSection({
             <>
               <div className="flex items-center gap-1">
                 <FileText className="w-3 h-3" />
-                <span>{trackTasks.tasks.length} tasks</span>
+                <span>{trackTasks.totalTasksCount || 0} total tasks</span>
               </div>
               <div className="flex items-center gap-1">
                 <Clock className="w-3 h-3" />
-                <span>{trackTasks.totalEstimatedHours}h</span>
+                <span>{trackTasks.totalEstimatedDays || 0} days</span>
               </div>
             </>
           )}
@@ -212,11 +213,35 @@ function TrackSection({
             )}
 
             {isCompleted && trackTasks && (
-              <div>
+              <div className="relative">
                 {/* Task List */}
-                {trackTasks.tasks.map((task) => (
-                  <TaskListItem key={task.id} task={task} trackId={track.id} />
-                ))}
+                {trackTasks.tasks && trackTasks.tasks.length > 0 ? (
+                  <>
+                    {trackTasks.tasks.map((task) => (
+                      <TaskListItem key={task.id} task={task} trackId={track.id} />
+                    ))}
+                    
+                    {/* Blurry overlay indicating more tasks */}
+                    <div className="relative">
+                      <div className="absolute inset-0 bg-gradient-to-t from-zinc-900 via-zinc-900/95 to-transparent pointer-events-none" />
+                      <div className="relative p-6 text-center backdrop-blur-sm">
+                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-zinc-800/70 border border-zinc-700/50">
+                          <FileText className="w-4 h-4 text-primary2" />
+                          <span className="text-sm text-gray-300">
+                            + {(trackTasks.totalTasksCount || 0) - 3} more tasks
+                          </span>
+                        </div>
+                        <p className="mt-3 text-xs text-gray-400">
+                          You will be able to see all the tasks list in your project details page
+                        </p>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="py-8 text-center text-gray-400 text-sm">
+                    No tasks generated for this track
+                  </div>
+                )}
               </div>
             )}
           </motion.div>
@@ -231,6 +256,7 @@ export function TrackTasksGenerator({
   tracks,
   competitors,
   businessComparison,
+  existingTrackTasks,
   isLoading = false,
   onTasksGenerated,
 }: TrackTasksGeneratorProps) {
@@ -239,10 +265,17 @@ export function TrackTasksGenerator({
   const [projectContext, setProjectContext] = useState<any>(null);
 
   useEffect(() => {
+    // If we have existing track tasks, use them instead of generating new ones
+    if (existingTrackTasks && existingTrackTasks.length > 0) {
+      setCompletedTracks(existingTrackTasks);
+      return;
+    }
+
+    // Only generate if we don't have existing tasks and haven't started generating
     if (tracks.length > 0 && completedTracks.length === 0 && !isGenerating) {
       generateAllTracks();
     }
-  }, [tracks, projectInfo]);
+  }, [tracks, projectInfo, existingTrackTasks]);
 
   const generateAllTracks = async (retryCount = 0) => {
     setIsGenerating(true);
@@ -312,59 +345,8 @@ export function TrackTasksGenerator({
     );
   }
 
-  const totalTasks = completedTracks.reduce(
-    (sum, track) => sum + track.tasks.length,
-    0
-  );
-  const totalHours = completedTracks.reduce(
-    (sum, track) => sum + track.totalEstimatedHours,
-    0
-  );
-
   return (
     <div className="space-y-8">
-      {(completedTracks.length > 0 || isGenerating) && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-zinc-900/50 rounded-lg p-4 border border-zinc-700/30">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
-                <FileText className="w-5 h-5 text-blue-400" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-400">Total Tasks</p>
-                <p className="text-xl font-bold text-white">{totalTasks}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-zinc-900/50 rounded-lg p-4 border border-zinc-700/30">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center">
-                <Clock className="w-5 h-5 text-green-400" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-400">Total Hours</p>
-                <p className="text-xl font-bold text-white">{totalHours}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-zinc-900/50 rounded-lg p-4 border border-zinc-700/30">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
-                <Target className="w-5 h-5 text-purple-400" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-400">Progress</p>
-                <p className="text-xl font-bold text-white">
-                  {completedTracks.length}/{tracks.length}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Track Sections List */}
       <div className="space-y-4">
         {tracks.map((track) => {

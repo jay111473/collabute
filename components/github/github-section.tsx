@@ -1,10 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useAction } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
 import { GitHubActivityList } from "./github-activity";
 import { GitHubCommitList } from "./github-commits";
 import { GitHubStatsCard } from "./github-stats";
-import { getGitHubData } from "@/lib/get-github-data";
 import { GitHubData } from "@/types/github";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
@@ -23,12 +25,65 @@ export function GitHubSection({ token, userId }: GitHubSectionProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const fetchGithubActivities = useAction(api.github.fetchGithubActivities);
+  const fetchGithubUserProfile = useAction(api.github.fetchGithubUserProfile);
+
   useEffect(() => {
     const fetchGitHubData = async () => {
+      if (!userId) {
+        setError("User ID is required");
+        setIsLoading(false);
+        return;
+      }
+
       try {
         setIsLoading(true);
         setError(null);
-        const data = await getGitHubData(token, userId);
+        
+        // Fetch activities and profile in parallel
+        const [activities, profile] = await Promise.all([
+          fetchGithubActivities({ userId: userId as Id<"users"> }),
+          fetchGithubUserProfile({ userId: userId as Id<"users"> }).catch(() => null),
+        ]);
+
+        // Extract commits from push events
+        const pushEvents = activities.filter((activity: any) => activity.type === "PushEvent");
+        const commits = pushEvents.map((event: any) => ({
+          sha: event.payload?.head || event.id,
+          commit: {
+            author: {
+              name: event.actor?.login || "Unknown",
+              email: "",
+              date: event.created_at,
+            },
+            message: event.payload?.commits?.[0]?.message || "No commit message",
+          },
+          html_url: event.repo?.url || "",
+          repository: {
+            name: event.repo?.name || "",
+            full_name: event.repo?.name || "",
+            html_url: event.repo?.url || "",
+          },
+        }));
+
+        // Calculate basic stats
+        const stats = {
+          totalCommits: pushEvents.length,
+          totalPullRequests: activities.filter((a: any) => a.type === "PullRequestEvent").length,
+          totalIssues: activities.filter((a: any) => a.type === "IssuesEvent").length,
+          contributionsByRepo: activities.reduce((acc: Record<string, number>, activity: any) => {
+            const repoName = activity.repo?.name || "Unknown";
+            acc[repoName] = (acc[repoName] || 0) + 1;
+            return acc;
+          }, {}),
+        };
+
+        const data: GitHubData = {
+          activities,
+          commits,
+          stats,
+        };
+
         setGithubData(data);
       } catch (err) {
         console.error("Error fetching GitHub data:", err);
@@ -43,7 +98,7 @@ export function GitHubSection({ token, userId }: GitHubSectionProps) {
     };
 
     fetchGitHubData();
-  }, [token, userId]);
+  }, [userId, fetchGithubActivities, fetchGithubUserProfile]);
 
   if (error) {
     return (

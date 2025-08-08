@@ -23,6 +23,7 @@ interface ProjectGeneratorProps {
     projectIds: string[];
     description: string;
   }>;
+  trackTasks?: any[]; // Optional track tasks data
 }
 
 const getLanguageIcon = (language: string) => {
@@ -116,6 +117,7 @@ export function ProjectGenerator({
   totalEstimatedDuration = 0,
   criticalPath = [],
   parallelizationOpportunities = [],
+  trackTasks = [],
 }: ProjectGeneratorProps) {
   const [projects, setProjects] =
     useState<GeneratedProject[]>(suggestedProjects);
@@ -240,6 +242,7 @@ export function ProjectGenerator({
             totalEstimatedDuration={totalEstimatedDuration}
             criticalPath={criticalPath}
             parallelizationOpportunities={parallelizationOpportunities}
+            trackTasks={trackTasks}
           />
         ) : (
           <motion.div

@@ -2,14 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Product, Project } from "@/types/dashboard";
+import { Product, Project } from "@/types/convex";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import {
   Package,
   ArrowLeft,
-  Building2,
   Calendar,
   Users,
   FolderOpen,
@@ -18,6 +16,10 @@ import {
 import { formatDistanceToNow } from "date-fns";
 import Link from "next/link";
 import { ProjectCard } from "@/components/dashboard/projects/project-card";
+import { api } from "@/convex/_generated/api";
+import { useQuery } from "convex/react";
+import { Id } from "@/convex/_generated/dataModel";
+import { StackedAvatars } from "@/components/ui/stacked-avatars";
 
 export default function ProductDetailsPage() {
   const params = useParams();
@@ -25,7 +27,12 @@ export default function ProductDetailsPage() {
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
+  const projects = useQuery(api.projects.getProjectsByProductId, {
+    productId: params.id as Id<"products">,
+  }) as Project[];
+  const teamLeads = useQuery(api.products.getProductsTeamLeads, {
+    productId: params.id as Id<"products">,
+  });
   useEffect(() => {
     const fetchProduct = async () => {
       if (!params.id || typeof params.id !== "string") return;
@@ -89,32 +96,6 @@ export default function ProductDetailsPage() {
     );
   }
 
-  const projects = Array.isArray(product.projects)
-    ? product.projects.filter(
-        (p): p is Project => typeof p === "object" && p !== null
-      )
-    : [];
-
-  const formatFunding = (funding?: {
-    fundingStage?: string | null;
-    totalFundingRaised?: number | null;
-  }) => {
-    if (!funding) return null;
-
-    const { fundingStage, totalFundingRaised } = funding;
-
-    if (fundingStage && totalFundingRaised) {
-      return `${fundingStage} - $${totalFundingRaised.toLocaleString()}`;
-    }
-
-    if (fundingStage) return fundingStage;
-    if (totalFundingRaised) return `$${totalFundingRaised.toLocaleString()}`;
-
-    return null;
-  };
-
-  const fundingInfo = formatFunding(product.fundingInformation);
-
   return (
     <div className="flex flex-col w-full bg-black min-h-screen">
       <main className="flex flex-1 flex-col gap-6 p-4 lg:p-6">
@@ -162,46 +143,19 @@ export default function ProductDetailsPage() {
                 </div>
               </div>
 
-              {/* Founding Date */}
-              {product.foundingDate && (
-                <div className="flex items-center gap-3">
-                  <Calendar className="h-5 w-5 text-gray-400" />
-                  <div>
-                    <p className="text-sm text-gray-400">Founded</p>
-                    <p className="text-lg font-semibold text-white">
-                      {formatDistanceToNow(new Date(product.foundingDate), {
-                        addSuffix: true,
-                      })}
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {/* CTO */}
-              {product.cto && typeof product.cto === "object" && (
+              {/* Team Leads */}
+              {teamLeads && teamLeads.length > 0 && (
                 <div className="flex items-center gap-3">
                   <Users className="h-5 w-5 text-gray-400" />
                   <div>
-                    <p className="text-sm text-gray-400">CTO</p>
-                    <p className="text-lg font-semibold text-white">
-                      {product.cto.name}
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {/* Funding */}
-              {fundingInfo && (
-                <div className="flex items-center gap-3">
-                  <Building2 className="h-5 w-5 text-gray-400" />
-                  <div>
-                    <p className="text-sm text-gray-400">Funding</p>
-                    <Badge
-                      variant="outline"
-                      className="bg-darkPrimary/10 text-darkPrimary border-darkPrimary/20"
-                    >
-                      {fundingInfo}
-                    </Badge>
+                    <p className="text-sm text-gray-400">Team Leads</p>
+                    <div className="mt-1">
+                      <StackedAvatars 
+                        users={teamLeads} 
+                        maxDisplay={3}
+                        size="sm"
+                      />
+                    </div>
                   </div>
                 </div>
               )}
@@ -250,7 +204,7 @@ export default function ProductDetailsPage() {
           ) : (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {projects.map((project) => (
-                <ProjectCard key={project.id} project={project} />
+                <ProjectCard key={project._id} project={project} />
               ))}
             </div>
           )}

@@ -7,7 +7,7 @@ import { z } from "zod";
 const taskSchema = z.object({
   id: z.string(),
   name: z.string(),
-  estimatedHours: z.number(),
+  estimatedDays: z.number(),
   priority: z.enum(["high", "medium", "low"]),
   skillLevel: z.enum(["junior", "mid", "senior"]),
 });
@@ -17,8 +17,9 @@ const trackTasksSchema = z.object({
   trackName: z.string(),
   trackCategory: z.string(),
   platform: z.string().optional(),
-  tasks: z.array(taskSchema).length(3), // Enforce exactly 3 tasks
-  totalEstimatedHours: z.number(),
+  tasks: z.array(taskSchema).length(3), // Enforce exactly 3 preview tasks
+  totalEstimatedDays: z.number(), // Total days for complete platform
+  totalTasksCount: z.number(), // Total tasks count for complete platform
   criticalTasks: z.array(z.string()),
   parallelTaskGroups: z.array(
     z.object({
@@ -62,7 +63,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Use faster model for better performance
-    const model = google("gemini-2.5-flash-preview-04-17");
+    const model = google("gemini-2.5-flash");
 
     // Build comprehensive context including timeline information
     const projectContextString = `Project: ${projectInfo.idea}
@@ -106,7 +107,7 @@ Tracks running in parallel: ${
       schema: allTracksTasksSchema,
       temperature: 0.3, // Lower temperature for more consistent results
       maxTokens: 8000, // Increased token limit to prevent truncation
-      prompt: `Generate EXACTLY 3 essential tasks for each track. Keep responses concise.
+      prompt: `Generate task preview and complete platform estimates for each track.
 
 ${projectContextString}
 
@@ -117,12 +118,23 @@ TRACK DETAILS:
 ${tracksTimeline}
 
 REQUIREMENTS:
-- Generate EXACTLY 3 tasks per track
-- Respect timeline and dependencies
-- Tasks: Setup (high), Core (high/medium), Integration (medium)
-- 8-24 hours per task, fit within track duration
-- Professional names (max 50 chars)
-- Only provide: id, name, estimatedHours, priority, skillLevel
+1. PREVIEW TASKS (exactly 3 per track):
+   - These are just preview/sample tasks to show the user
+   - Generate 3 representative tasks that showcase the work involved
+   - Each task should have estimatedDays (not hours)
+   - Tasks: Setup/Architecture, Core Implementation, Integration/Testing
+   - 1-5 days per preview task
+
+2. COMPLETE PLATFORM ESTIMATES:
+   - totalEstimatedDays: Total days needed to complete the ENTIRE platform/track (not just the 3 preview tasks)
+   - totalTasksCount: Total number of tasks for the COMPLETE platform (e.g., 15-50 tasks typically)
+   - Consider the full scope of work including all features, testing, documentation, deployment
+
+3. FORMAT:
+   - Professional task names (max 50 chars)
+   - Priority: high/medium/low
+   - Skill level: junior/mid/senior
+   - Estimates in DAYS not hours
 
 Tracks to process:
 ${tracks
@@ -131,49 +143,111 @@ ${tracks
 ${track.id}: ${track.name} (${track.category})
 - Platform: ${track.platform || "General"}
 - Timeline: Week ${track.startWeek}-${track.endWeek} (${track.durationInWeeks}w)
-- Max Hours: ${track.durationInWeeks * 40}h
+- Available Days: ${track.durationInWeeks * 5} working days
 - Dependencies: ${track.dependencies?.join(", ") || "None"}
 - Can Parallelize: ${track.canParallelize ? "Yes" : "No"}`
   )
   .join("\n")}
 
-Keep responses concise but professional. Focus on quality over quantity.`,
+Remember: The 3 tasks are just previews. totalEstimatedDays and totalTasksCount should reflect the COMPLETE platform development.`,
     });
 
-    // Ensure trackIds match and validate results
-    const result = allTrackTasks.object.trackTasks.map((trackTask) => {
-      const originalTrack = tracks.find((t) => t.id === trackTask.trackId);
+    // Create a map of generated tasks
+    const generatedTasksMap = new Map();
+    allTrackTasks.object.trackTasks.forEach((trackTask) => {
+      generatedTasksMap.set(trackTask.trackId, trackTask);
+    });
+
+    // Ensure all tracks have tasks, generate defaults if missing
+    const result = tracks.map((originalTrack) => {
+      const trackTask = generatedTasksMap.get(originalTrack.id);
+      
+      // If no tasks were generated for this track, create default tasks
+      if (!trackTask || !trackTask.tasks || trackTask.tasks.length === 0) {
+        console.warn(`⚠️ No tasks generated for ${originalTrack.name}, creating defaults`);
+        
+        const defaultTasks = [
+          {
+            id: `${originalTrack.id}-task-1`,
+            name: `${originalTrack.name} Architecture & Setup`,
+            estimatedDays: Math.min(3, originalTrack.durationInWeeks),
+            priority: "high" as const,
+            skillLevel: "senior" as const,
+          },
+          {
+            id: `${originalTrack.id}-task-2`,
+            name: `Core ${originalTrack.name} Implementation`,
+            estimatedDays: Math.min(5, originalTrack.durationInWeeks * 2),
+            priority: "high" as const,
+            skillLevel: "mid" as const,
+          },
+          {
+            id: `${originalTrack.id}-task-3`,
+            name: `${originalTrack.name} Testing & Integration`,
+            estimatedDays: Math.min(2, originalTrack.durationInWeeks),
+            priority: "medium" as const,
+            skillLevel: "mid" as const,
+          },
+        ];
+
+        const totalDays = originalTrack.durationInWeeks * 5; // 5 working days per week
+        const totalTasksCount = Math.max(15, originalTrack.durationInWeeks * 3); // Estimate 3 tasks per week minimum
+
+        return {
+          trackId: originalTrack.id,
+          trackName: originalTrack.name,
+          trackCategory: originalTrack.category,
+          platform: originalTrack.platform,
+          startWeek: originalTrack.startWeek,
+          endWeek: originalTrack.endWeek,
+          durationInWeeks: originalTrack.durationInWeeks,
+          dependencies: originalTrack.dependencies || [],
+          canParallelize: originalTrack.canParallelize || false,
+          tasks: defaultTasks,
+          totalEstimatedDays: totalDays,
+          totalTasksCount: totalTasksCount,
+          criticalTasks: [defaultTasks[0].id, defaultTasks[1].id],
+          parallelTaskGroups: [],
+          requiredSkills: [],
+        };
+      }
 
       // Ensure exactly 3 tasks
       const limitedTasks = trackTask.tasks.slice(0, 3);
-
-      // Validate timeline constraints
-      const maxHoursForTrack = (originalTrack?.durationInWeeks || 1) * 40;
-      const totalTaskHours = limitedTasks.reduce(
-        (sum, task) => sum + task.estimatedHours,
-        0
-      );
-
-      // Log warning if tasks exceed track duration
-      if (totalTaskHours > maxHoursForTrack) {
-        console.warn(
-          `⚠️ Track ${trackTask.trackName}: ${totalTaskHours}h exceeds ${maxHoursForTrack}h limit`
-        );
+      
+      // If less than 3 tasks, add default tasks
+      while (limitedTasks.length < 3) {
+        const taskNum = limitedTasks.length + 1;
+        limitedTasks.push({
+          id: `${originalTrack.id}-task-${taskNum}`,
+          name: `${originalTrack.name} Task ${taskNum}`,
+          estimatedDays: Math.min(2, originalTrack.durationInWeeks),
+          priority: taskNum === 1 ? "high" : "medium" as const,
+          skillLevel: "mid" as const,
+        });
       }
+
+      // Ensure we have complete platform estimates
+      const totalEstimatedDays = trackTask.totalEstimatedDays || originalTrack.durationInWeeks * 5;
+      const totalTasksCount = trackTask.totalTasksCount || Math.max(15, originalTrack.durationInWeeks * 3);
 
       return {
         ...trackTask,
-        trackId: originalTrack?.id || trackTask.trackId,
-        trackName: originalTrack?.name || trackTask.trackName,
-        trackCategory: originalTrack?.category || trackTask.trackCategory,
-        platform: originalTrack?.platform || trackTask.platform,
-        startWeek: originalTrack?.startWeek,
-        endWeek: originalTrack?.endWeek,
-        durationInWeeks: originalTrack?.durationInWeeks,
-        dependencies: originalTrack?.dependencies || [],
-        canParallelize: originalTrack?.canParallelize || false,
+        trackId: originalTrack.id,
+        trackName: originalTrack.name,
+        trackCategory: originalTrack.category,
+        platform: originalTrack.platform,
+        startWeek: originalTrack.startWeek,
+        endWeek: originalTrack.endWeek,
+        durationInWeeks: originalTrack.durationInWeeks,
+        dependencies: originalTrack.dependencies || [],
+        canParallelize: originalTrack.canParallelize || false,
         tasks: limitedTasks,
-        totalEstimatedHours: totalTaskHours,
+        totalEstimatedDays: totalEstimatedDays,
+        totalTasksCount: totalTasksCount,
+        criticalTasks: trackTask.criticalTasks || [],
+        parallelTaskGroups: trackTask.parallelTaskGroups || [],
+        requiredSkills: trackTask.requiredSkills || [],
       };
     });
 

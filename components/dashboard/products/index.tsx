@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Product } from "@/types/dashboard";
+import { ProductWithProjects } from "@/types/convex";
 import { ProductCard } from "./product-card";
 import { Input } from "@/components/ui/input";
 import { Search, Package, FolderOpen } from "lucide-react";
@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/select";
 
 interface ProductsComponentProps {
-  products: Product[];
+  products: ProductWithProjects[];
 }
 
 const ProductsComponent = ({ products }: ProductsComponentProps) => {
@@ -34,7 +34,9 @@ const ProductsComponent = ({ products }: ProductsComponentProps) => {
       products?.filter((product) => {
         const matchesSearch =
           product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          product.description?.toLowerCase().includes(searchQuery.toLowerCase());
+          product.description
+            ?.toLowerCase()
+            .includes(searchQuery.toLowerCase());
         return matchesSearch;
       }) || [];
 
@@ -42,11 +44,13 @@ const ProductsComponent = ({ products }: ProductsComponentProps) => {
       switch (sortBy) {
         case "newest":
           return (
-            new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+            new Date(b._creationTime).getTime() -
+            new Date(a._creationTime).getTime()
           );
         case "oldest":
           return (
-            new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime()
+            new Date(a._creationTime).getTime() -
+            new Date(b._creationTime).getTime()
           );
         case "name-asc":
           return a.name.localeCompare(b.name);
@@ -78,7 +82,9 @@ const ProductsComponent = ({ products }: ProductsComponentProps) => {
                 No Products Yet
               </h2>
               <p className="text-gray-400 text-sm leading-relaxed">
-                You haven&apos;t created any products yet. Products help you organize and manage multiple related projects under one umbrella.
+                You haven&apos;t created any products yet. Products help you
+                organize and manage multiple related projects under one
+                umbrella.
               </p>
             </div>
           </div>
@@ -139,14 +145,12 @@ const ProductsComponent = ({ products }: ProductsComponentProps) => {
           <div className="flex flex-col items-center justify-center py-10 text-gray-500">
             <FolderOpen className="w-12 h-12 mb-4" />
             <p className="text-lg font-medium">No matching products found</p>
-            <p className="text-sm">
-              Try adjusting your search criteria
-            </p>
+            <p className="text-sm">Try adjusting your search criteria</p>
           </div>
         ) : (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {filteredAndSortedProducts?.map((product) => (
-              <ProductCard key={product.id} product={product} />
+              <ProductCard key={product._id} product={product} />
             ))}
           </div>
         )}
@@ -155,4 +159,4 @@ const ProductsComponent = ({ products }: ProductsComponentProps) => {
   );
 };
 
-export default ProductsComponent; 
+export default ProductsComponent;

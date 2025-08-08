@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { getCookie } from 'cookies-next'
 import { chatSocket } from '@/lib/socket'
 import { Message, UseChatReturn } from '@/types/chat'
-import { User } from '@/types/dashboard'
+import { User } from '@/types/convex'
 
 interface UseChatProps {
   conversationId: string

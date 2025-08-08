@@ -31,7 +31,7 @@ export const getBulbColor = (color: string) => {
     default:
       return "text-gray-400";
   }
-};  
+};
 
 type Issue = {
   status: string;
@@ -69,21 +69,20 @@ export function calculateProgressPercentage(
 }
 
 export function calculateDetailedProgress(issues: Issue[]) {
-  const total = issues.length;
-  const done = issues.filter(issue => 
-    issue.status === "resolved"
+  const total = issues?.length;
+  const done = issues?.filter((issue) => issue.status === "resolved").length;
+  const inProgress = issues?.filter(
+    (issue) => issue.status === "in_progress"
   ).length;
-  const inProgress = issues.filter(issue => 
-    issue.status === "in_progress"
+  const remaining = issues?.filter(
+    (issue) => issue.status === "open" || issue.status === "closed"
   ).length;
-  const remaining = issues.filter(issue => 
-    issue.status === "open" || issue.status === "closed"
-  ).length;
-  
-  const donePercentage = total > 0 ? (done / total) * 100 : 0;
-  const inProgressPercentage = total > 0 ? (inProgress / total) * 100 : 0;
+
+  const donePercentage = total && total > 0 ? (done / total) * 100 : 0;
+  const inProgressPercentage =
+    total && total > 0 ? (inProgress / total) * 100 : 0;
   const overallPercentage = Math.round(donePercentage);
-  
+
   return {
     total,
     done,
@@ -91,15 +90,15 @@ export function calculateDetailedProgress(issues: Issue[]) {
     remaining,
     donePercentage,
     inProgressPercentage,
-    overallPercentage
+    overallPercentage,
   };
 }
 
 export function formatDate(dateString: string): string {
   const date = new Date(dateString);
-  return date.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric'
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
   });
 }

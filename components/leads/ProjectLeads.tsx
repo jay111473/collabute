@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { Lead, User } from "@/types/dashboard";
+import { User } from "@/types/convex";
 import ProjectManagersClient from "./ProjectLeadsClient";
 
 interface ProjectManagersProps {

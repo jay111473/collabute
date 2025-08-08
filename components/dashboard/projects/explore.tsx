@@ -1,7 +1,7 @@
 "use client";
 
 import SearchFilterBar from "@/components/dashboard/project/search-filter-bar";
-import { Project } from "@/types/dashboard";
+import { Project } from "@/types/convex";
 import { useState, useMemo } from "react";
 import { ProjectCard } from "./project-card";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -21,7 +21,9 @@ interface ExploreComponentProps {
 }
 
 const projectTypeFilters = [
-  { label: "Normal", value: "normal",
+  {
+    label: "Normal",
+    value: "normal",
     bgColor: "",
     borderColor: "border-grayBorders",
     icon: <TimerReset size={16} />,
@@ -73,9 +75,7 @@ export const ExploreComponent = ({
         const matchesSearch =
           project.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
           project.description.toLowerCase().includes(searchQuery.toLowerCase());
-        const matchesType = selectedType
-          ? project.projectType === selectedType
-          : true;
+        const matchesType = selectedType ? project.type === selectedType : true;
         return matchesSearch && matchesType;
       }) || [];
 
@@ -83,11 +83,13 @@ export const ExploreComponent = ({
       switch (sortBy) {
         case "newest":
           return (
-            new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+            new Date(b._creationTime).getTime() -
+            new Date(a._creationTime).getTime()
           );
         case "oldest":
           return (
-            new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime()
+            new Date(a._creationTime).getTime() -
+            new Date(b._creationTime).getTime()
           );
         case "related":
           return 0;
@@ -136,7 +138,7 @@ export const ExploreComponent = ({
         <>
           <div className="grid gap-4">
             {filteredAndSortedProjects.map((project) => (
-              <ProjectCard key={project.id} project={project} />
+              <ProjectCard key={project._id} project={project} />
             ))}
           </div>
 

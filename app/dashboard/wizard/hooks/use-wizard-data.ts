@@ -115,8 +115,8 @@ export function useWizardData() {
       trackTasks: {
         trackTasks,
         overallSummary: {
-          totalTasks: trackTasks.reduce((sum, track) => sum + track.tasks.length, 0),
-          totalEstimatedHours: trackTasks.reduce((sum, track) => sum + track.totalEstimatedHours, 0),
+          totalTasks: trackTasks.reduce((sum, track) => sum + (track.totalTasksCount || track.tasks.length), 0),
+          totalEstimatedHours: trackTasks.reduce((sum, track) => sum + ((track.totalEstimatedDays || 0) * 8 || track.totalEstimatedHours || 0), 0),
           averageTaskComplexity: "moderate" as const,
           crossTrackDependencies: [],
         },

@@ -1,20 +1,20 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { Blog, Category, Tag } from '@/types/blog';
+import { BlogWithDetails, Category, Tag } from '@/types/convex';
 
 interface UseBlogDataProps {
-  initialBlogs: Blog[];
+  initialBlogs: BlogWithDetails[];
   initialCategories: Category[];
   initialTags: Tag[];
 }
 
 interface UseBlogDataReturn {
-  blogs: Blog[];
+  blogs: BlogWithDetails[];
   categories: Category[];
   tags: Tag[];
-  featuredBlogs: Blog[];
-  filteredBlogs: Blog[];
+  featuredBlogs: BlogWithDetails[];
+  filteredBlogs: BlogWithDetails[];
   activeFilter: string;
   setActiveFilter: (filter: string) => void;
 }
@@ -29,25 +29,34 @@ export const useBlogData = ({
   // Get featured blogs (first 5 published blogs)
   const featuredBlogs = useMemo(() => {
     return initialBlogs
-      .filter(blog => blog.publishedAt)
-      .sort((a, b) => new Date(b.publishedAt!).getTime() - new Date(a.publishedAt!).getTime())
+      .filter(blog => blog.status === 'published' && blog.publishedAt)
+      .sort((a, b) => {
+        const timeA = a.publishedAt || a._creationTime;
+        const timeB = b.publishedAt || b._creationTime;
+        return timeB - timeA;
+      })
       .slice(0, 5);
   }, [initialBlogs]);
 
   // Filter blogs based on active filter
   const filteredBlogs = useMemo(() => {
     if (activeFilter === 'All posts') {
-      return initialBlogs.filter(blog => blog.publishedAt);
+      return initialBlogs.filter(blog => blog.status === 'published' && blog.publishedAt);
     }
 
     // If filter starts with #, it's a tag filter
     if (activeFilter.startsWith('#')) {
       const tagName = activeFilter.slice(1);
       return initialBlogs.filter(blog => {
-        if (!blog.tags || !blog.publishedAt) return false;
+        if (!blog.tags || blog.status !== 'published' || !blog.publishedAt) return false;
         
         return blog.tags.some(tag => {
-          const tagObj = typeof tag === 'object' ? tag : initialTags.find(t => t.id === tag);
+          // Handle both populated tags and tag IDs
+          if (tag && typeof tag === 'object' && 'name' in tag) {
+            return (tag as Tag).name.toLowerCase() === tagName.toLowerCase();
+          }
+          // If it's just an ID, find it in initialTags
+          const tagObj = initialTags.find(t => t._id === tag);
           return tagObj?.name.toLowerCase() === tagName.toLowerCase();
         });
       });
@@ -55,13 +64,14 @@ export const useBlogData = ({
 
     // Otherwise, it's a category filter
     return initialBlogs.filter(blog => {
-      if (!blog.publishedAt) return false;
+      if (blog.status !== 'published' || !blog.publishedAt) return false;
       
-      const categoryObj = typeof blog.category === 'object' 
-        ? blog.category 
-        : initialCategories.find(c => c.id === blog.category);
+      // Handle both populated category and category ID
+      const categoryName = blog.category && typeof blog.category === 'object' && 'name' in blog.category
+        ? (blog.category as Category).name
+        : initialCategories.find(c => c._id === blog.category)?.name;
       
-      return categoryObj?.name.toLowerCase() === activeFilter.toLowerCase();
+      return categoryName?.toLowerCase() === activeFilter.toLowerCase();
     });
   }, [initialBlogs, initialCategories, initialTags, activeFilter]);
 

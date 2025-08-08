@@ -23,7 +23,11 @@ export function useWizardFlow(userId?: string) {
   const [hasBookedMeeting, setHasBookedMeeting] = useState(false);
   const [showSubscriptionPopup, setShowSubscriptionPopup] = useState(false);
 
-  const navigation = useWizardNavigation(wizardData, hasBookedMeeting, gitHubAccess.hasGitHubAccess);
+  const navigation = useWizardNavigation(
+    wizardData,
+    hasBookedMeeting,
+    gitHubAccess.hasGitHubAccess
+  );
 
   // Refs to prevent multiple calls
   const businessComparisonCallInProgress = useRef(false);
@@ -198,13 +202,7 @@ export function useWizardFlow(userId?: string) {
       }
     }
 
-    // Handle step 3 -> show subscription popup (ProjectTracks -> Subscription)
-    if (navigation.currentStep === 3) {
-      setShowSubscriptionPopup(true);
-      return; // Don't proceed to next step yet, wait for user choice
-    }
-
-    // Proceed to next step for all other cases
+    // Proceed to next step for all cases (removed subscription popup)
     navigation.goToNextStep();
   };
 
@@ -333,6 +331,7 @@ export function useWizardFlow(userId?: string) {
 
     // Data update functions (includes wizardData)
     ...wizardDataHook,
+    updateTrackTasks: wizardDataHook.updateTrackTasks,
 
     // Retry functions
     retryBusinessComparison,

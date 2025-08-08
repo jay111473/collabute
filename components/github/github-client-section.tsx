@@ -1,13 +1,13 @@
 "use client";
 
-import { GitHubData } from "@/types/github";
+import { GitHubActivityData } from "@/types/github";
 import { ContributionActivity } from "./contribution-activity";
 import { MergedPullRequests } from "./merged-pull-requests";
 import { AlertCircle } from "lucide-react";
 import { Card } from "@/components/ui/card";
 
 interface GitHubClientSectionProps {
-  githubData: GitHubData | null;
+  githubData: GitHubActivityData | null;
   isLoading: boolean;
   error: string | null;
 }

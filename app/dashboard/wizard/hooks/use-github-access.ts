@@ -1,4 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { useAuthActions } from "@convex-dev/auth/react";
 
 interface GitHubAccessStatus {
   success: boolean;
@@ -9,104 +12,61 @@ interface GitHubAccessStatus {
   oauthUrl: string | null;
 }
 
-export function useGitHubAccess(userId: string | null) {
+export function useGitHubAccess(_userId?: string | null) {
   const [status, setStatus] = useState<GitHubAccessStatus | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { signIn } = useAuthActions();
+  
+  // Use Convex query to check GitHub connection status (automatically uses authenticated user)
+  const githubConnectionStatus = useQuery(api.githubAuth.checkGitHubConnection);
+
+  // Update status when GitHub connection status changes
+  useEffect(() => {
+    if (githubConnectionStatus) {
+      const data: GitHubAccessStatus = {
+        success: githubConnectionStatus.isConnected,
+        canCreateRepositories: githubConnectionStatus.hasGitHubAccess,
+        githubConnected: githubConnectionStatus.isConnected,
+        githubUsername: githubConnectionStatus.githubUsername,
+        error: githubConnectionStatus.error,
+        oauthUrl: null,
+      };
+      setStatus(data);
+      setError(githubConnectionStatus.error);
+    }
+  }, [githubConnectionStatus]);
 
   const checkGitHubAccess = useCallback(async () => {
-    if (!userId) {
-      setError("User ID is required to check GitHub access");
-      return;
-    }
+    // The query automatically handles authentication and security
+    // No manual checks needed here
+  }, []);
 
-    setIsLoading(true);
-    setError(null);
-
+  const connectGitHub = useCallback(async () => {
+    // Prevent multiple simultaneous connections
+    if (isLoading) return;
+    
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/github/repository-check?userId=${userId}`
-      );
-
-      if (!response.ok) {
-        throw new Error(`Failed to check GitHub access: ${response.statusText}`);
-      }
-
-      const data: GitHubAccessStatus = await response.json();
-      setStatus(data);
+      setIsLoading(true);
+      setError(null);
       
-      if (!data.success) {
-        setError(data.error || "Failed to verify GitHub access");
-      }
+      // Use Convex Auth to sign in with GitHub
+      // This will redirect to GitHub OAuth and back
+      await signIn("github", {
+        redirectTo: window.location.pathname + window.location.search,
+      });
     } catch (err) {
-      let errorMessage = "Failed to check GitHub access";
-      
-      if (err instanceof Error) {
-        errorMessage = err.message;
-        
-        // Handle specific error cases from the integration docs
-        if (errorMessage.includes("GitHub account not connected")) {
-          errorMessage = "Please connect your GitHub account to create projects with repositories.";
-        } else if (errorMessage.includes("Invalid GitHub access token")) {
-          errorMessage = "GitHub connection expired. Please reconnect your account.";
-        } else if (errorMessage.includes("rate limit")) {
-          errorMessage = "GitHub API limit reached. Please try again in a few minutes.";
-        }
-      }
-      
-      setError(errorMessage);
-      console.error("Error checking GitHub access:", err);
-    } finally {
+      setError("Failed to connect to GitHub. Please try again.");
       setIsLoading(false);
     }
-  }, [userId]);
+  }, [signIn, isLoading]);
 
-  const connectGitHub = useCallback(() => {
-    if (!userId) {
-      setError("User ID is required to connect GitHub");
-      return;
-    }
-
-    try {
-      const currentStep = new URLSearchParams(window.location.search).get("step") || "0";
-      const callbackUrl = encodeURIComponent(
-        `${window.location.origin}/dashboard/wizard?github_auth_success=true&step=${currentStep}`
-      );
-      
-      window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/api/oauth/github/login?callback_url=${callbackUrl}`;
-    } catch (err) {
-      console.error("Error initiating GitHub connection:", err);
-      setError("Failed to initiate GitHub connection. Please try again.");
-    }
-  }, [userId]);
-
-  // Check GitHub access on mount and when userId changes
-  useEffect(() => {
-    if (userId) {
-      checkGitHubAccess();
-    }
-  }, [userId, checkGitHubAccess]);
-
-  // Handle OAuth callback
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const authSuccess = urlParams.get("github_auth_success");
-    
-    if (authSuccess === "true" && userId) {
-      // Re-check access after OAuth success
-      checkGitHubAccess();
-      
-      // Clean up URL
-      const params = new URLSearchParams(window.location.search);
-      params.delete("github_auth_success");
-      const url = `${window.location.pathname}?${params.toString()}`;
-      window.history.replaceState({ path: url }, "", url);
-    }
-  }, [userId, checkGitHubAccess]);
+  // Loading state is based on query loading
+  const queryLoading = githubConnectionStatus === undefined;
 
   return {
     status,
-    isLoading,
+    isLoading: isLoading || queryLoading,
     error,
     checkGitHubAccess,
     connectGitHub,

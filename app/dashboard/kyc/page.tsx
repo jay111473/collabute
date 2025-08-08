@@ -2,7 +2,6 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Toaster } from "sonner";
-import DashboardLayout from "@/components/dashboard/dashboard-layout";
 import useKycForm from "@/components/dashboard/kyc/use-kyc-form";
 import PersonalInfoForm from "@/components/dashboard/kyc/personal-info-form";
 import BusinessInfoForm from "@/components/dashboard/kyc/business-info-form";
@@ -38,11 +37,11 @@ const KYCPage = () => {
       <Toaster />
       <h1 className="text-2xl font-bold mb-6">KYC Verification</h1>
 
-      <KycStatusAlert status={user.kycStatus} />
+      <KycStatusAlert status={user?.kycStatus || "PENDING"} />
 
-      {(user.kycStatus === "pending" ||
-        user.kycStatus === "rejected" ||
-        !user.kycStatus) && (
+      {(user?.kycStatus === "PENDING" ||
+        user?.kycStatus === "REJECTED" ||
+        !user?.kycStatus) && (
         <div className="rounded-[8px] border border-white/10 bg-darkGray">
           <div className="flex flex-col space-y-1.5 p-6">
             <h3 className="text-2xl font-semibold leading-none tracking-tight">
@@ -60,12 +59,12 @@ const KYCPage = () => {
                 <TabsTrigger value="personal">
                   Personal Verification
                 </TabsTrigger>
-                {user.type === "startup" && (
+                {user.type === "STARTUP" && (
                   <TabsTrigger value="business">
                     Business Verification
                   </TabsTrigger>
                 )}
-                {user.type === "developer" && (
+                {user.type === "DEVELOPER" && (
                   <TabsTrigger value="banking">Banking Information</TabsTrigger>
                 )}
               </TabsList>
@@ -74,15 +73,16 @@ const KYCPage = () => {
                 <PersonalInfoForm
                   defaultValues={{ fullName: user.name }}
                   onSubmit={handlePersonalSubmit}
-                  isStartup={user.type === "startup"}
+                  isStartup={user.type === "STARTUP"}
                 />
               </TabsContent>
 
-              {user.type === "startup" && (
+              {user.type === "STARTUP" && (
                 <TabsContent value="business">
                   <BusinessInfoForm
                     defaultValues={{
-                      companyName: user.startupFields?.companyName || "",
+                      companyName:
+                        (user as any).startupFields?.companyName || "",
                       registrationNumber: "",
                       taxId: "",
                     }}
@@ -91,7 +91,7 @@ const KYCPage = () => {
                 </TabsContent>
               )}
 
-              {user.type === "developer" && (
+              {user.type === "DEVELOPER" && (
                 <TabsContent value="banking">
                   <BankingInfoForm
                     bankFormat={bankFormat}

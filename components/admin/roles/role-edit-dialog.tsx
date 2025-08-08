@@ -104,7 +104,7 @@ export function RoleEditDialog({ role, isOpen, onOpenChange, mode }: RoleEditDia
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-darkGray border-grayBorders">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Shield className="h-5 w-5" />
@@ -112,11 +112,26 @@ export function RoleEditDialog({ role, isOpen, onOpenChange, mode }: RoleEditDia
           </DialogTitle>
         </DialogHeader>
 
-        <Tabs defaultValue="basic" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="basic">Basic Info</TabsTrigger>
-            <TabsTrigger value="details">Details</TabsTrigger>
-            <TabsTrigger value="meta">Metadata</TabsTrigger>
+        <Tabs defaultValue="basic" className="w-full space-y-6">
+          <TabsList className="grid w-full grid-cols-3 bg-darkGray2/50 border border-grayBorders/30 rounded-xl p-1 h-12">
+            <TabsTrigger 
+              value="basic" 
+              className="text-gray-400 text-sm font-medium data-[state=active]:bg-darkGray data-[state=active]:text-white data-[state=active]:shadow-sm rounded-lg transition-all duration-200 hover:text-gray-200 hover:bg-darkGray/30 px-3 py-2"
+            >
+              Basic Info
+            </TabsTrigger>
+            <TabsTrigger 
+              value="details" 
+              className="text-gray-400 text-sm font-medium data-[state=active]:bg-darkGray data-[state=active]:text-white data-[state=active]:shadow-sm rounded-lg transition-all duration-200 hover:text-gray-200 hover:bg-darkGray/30 px-3 py-2"
+            >
+              Details
+            </TabsTrigger>
+            <TabsTrigger 
+              value="meta" 
+              className="text-gray-400 text-sm font-medium data-[state=active]:bg-darkGray data-[state=active]:text-white data-[state=active]:shadow-sm rounded-lg transition-all duration-200 hover:text-gray-200 hover:bg-darkGray/30 px-3 py-2"
+            >
+              Metadata
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="basic" className="space-y-4">

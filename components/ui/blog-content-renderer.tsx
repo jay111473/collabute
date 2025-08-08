@@ -1,6 +1,6 @@
 "use client";
 
-import { useEditor, EditorContent } from "@tiptap/react";
+import { useEditor, EditorContent, JSONContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
 import Image from "@tiptap/extension-image";
@@ -9,7 +9,7 @@ import Color from "@tiptap/extension-color";
 import { useEffect, useState } from "react";
 
 interface BlogContentRendererProps {
-  content?: any; // Tiptap JSON content
+  content?: JSONContent;
   className?: string;
 }
 

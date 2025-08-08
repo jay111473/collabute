@@ -25,10 +25,19 @@ import { api } from "../../../convex/_generated/api";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { ConvexError } from "convex/values";
 
-const CreateAccount = () => {
-  const { form, showPassword, setShowPassword } = useCreateAccount();
+interface CreateAccountProps {
+  invitationData?: {
+    token?: string;
+    type?: string;
+    email?: string;
+  } | null;
+}
+
+const CreateAccount = ({ invitationData }: CreateAccountProps) => {
+  const { form, showPassword, setShowPassword } = useCreateAccount(
+    invitationData || undefined
+  );
   const accountType = form.watch("type");
-  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const completeProfile = useMutation(api.users.completeUserProfile);
   const { signIn } = useAuthActions();
@@ -112,7 +121,7 @@ const CreateAccount = () => {
         >
           {/* Fields */}
           <div className="space-y-4 md:space-y-6">
-            <AccountTypeSelector form={form} />
+            <AccountTypeSelector form={form} invitationData={invitationData} />
 
             {/* Row 1: Name, Country Code + Phone Number */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
@@ -226,9 +235,13 @@ const CreateAccount = () => {
             </div>
 
             {/* Role-specific fields */}
-            {accountType === "developer" && (
+            {(accountType === "developer" ||
+              accountType === "project_manager") && (
               <div className="grid grid-cols-1">
-                <DeveloperFields form={form} />
+                <DeveloperFields
+                  form={form}
+                  isProjectManager={accountType === "project_manager"}
+                />
               </div>
             )}
             {accountType === "startup" && (

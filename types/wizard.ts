@@ -1,3 +1,6 @@
+import { Id } from "@/convex/_generated/dataModel";
+import { ProjectManagerProfile, DeveloperProfile, GithubProfile } from "@/types/convex";
+
 // Core wizard types
 export type ProjectType = 'existing' | 'new';
 export type ProjectScope = 'full' | 'partial' | 'unknown';
@@ -214,14 +217,16 @@ export interface Project {
 }
 
 export interface Lead {
-  id: number;
-  name: string;
-  experience: number;
-  stack: (number | Stack)[];
-  projects?: (number | Project)[] | null;
-  availability?: boolean | null;
-  updatedAt: string;
-  createdAt: string;
+  _id: Id<"users">;
+  _creationTime: number;
+  name?: string;
+  email?: string;
+  country?: string;
+  industry?: string;
+  projectManagerFields?: ProjectManagerProfile | null;
+  developerFields?: DeveloperProfile | null;
+  githubProfile?: GithubProfile | null;
+  projectsManaged?: number;
 }
 
 // GitHub integration types

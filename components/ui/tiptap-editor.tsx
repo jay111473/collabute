@@ -1,20 +1,8 @@
 "use client";
 
 import { useEditor, EditorContent } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
-import Link from "@tiptap/extension-link";
-import Placeholder from "@tiptap/extension-placeholder";
 import { Button } from "./button";
-import {
-  Bold,
-  Italic,
-  List,
-  ListOrdered,
-  Quote,
-  Undo,
-  Redo,
-  Link as LinkIcon,
-} from "lucide-react";
+import { Bold, Italic, List, ListOrdered, Quote, Type } from "lucide-react";
 
 interface TiptapEditorProps {
   content: string;
@@ -28,20 +16,11 @@ export function TiptapEditor({
   placeholder = "Write something...",
 }: TiptapEditorProps) {
   const editor = useEditor({
-    extensions: [
-      StarterKit,
-      Link.configure({
-        openOnClick: false,
-        HTMLAttributes: {
-          class: "text-primary underline",
-        },
-      }),
-      Placeholder.configure({ placeholder }),
-    ],
     content,
     editorProps: {
       attributes: {
-        class: "prose prose-sm max-w-none min-h-[200px] focus:outline-none",
+        class: "prose prose-sm max-w-none min-h-[200px] focus:outline-none p-3",
+        placeholder: placeholder,
       },
     },
     onUpdate: ({ editor }) => {
@@ -89,26 +68,11 @@ export function TiptapEditor({
         <Button
           variant="outline"
           size="sm"
-          onClick={() => editor.chain().focus().toggleBlockquote().run()}
-          className={editor.isActive("blockquote") ? "bg-muted" : ""}
+          onClick={() => editor.commands.focus()}
+          className="flex items-center gap-1"
         >
-          <Quote className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => editor.chain().focus().undo().run()}
-          disabled={!editor.can().undo()}
-        >
-          <Undo className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => editor.chain().focus().redo().run()}
-          disabled={!editor.can().redo()}
-        >
-          <Redo className="h-4 w-4" />
+          <Type className="h-4 w-4" />
+          <span className="text-xs">Text</span>
         </Button>
       </div>
       <div className="p-2">

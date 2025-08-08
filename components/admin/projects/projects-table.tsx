@@ -83,7 +83,12 @@ export function ProjectsTable() {
 
   const formatBudget = (budget: number | undefined) => {
     if (!budget) return "N/A";
-    return `$${budget.toLocaleString()}`;
+    return budget.toLocaleString();
+  };
+
+  const getOwnerName = (ownerId: string) => {
+    const user = users?.find(u => u._id === ownerId);
+    return user?.name || user?.email || "Unknown User";
   };
 
   const handleCreateProject = async () => {
@@ -177,7 +182,7 @@ export function ProjectsTable() {
                 <TableCell className="px-4 py-4">{getStatusBadge(project.status)}</TableCell>
                 <TableCell className="px-4 py-4">
                   <div className="text-sm text-gray-300">
-                    Owner ID: {project.ownerId}
+                    {getOwnerName(project.ownerId)}
                   </div>
                 </TableCell>
                 <TableCell className="px-4 py-4">

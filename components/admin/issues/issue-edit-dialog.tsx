@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useMutation } from "convex/react";
+import { useState, useEffect } from "react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import {
   Dialog,
@@ -33,6 +33,19 @@ import {
   Clock,
   User,
   Hash,
+  Mail,
+  Lightbulb,
+  Wrench,
+  Zap,
+  Target,
+  CircleDot,
+  PlayCircle,
+  CheckCircle,
+  XCircle,
+  ChevronDown,
+  Flame,
+  TrendingUp,
+  Minus,
 } from "lucide-react";
 
 interface IssueEditDialogProps {
@@ -61,7 +74,30 @@ export function IssueEditDialog({
     onboardingVideoLink: issue?.onboardingVideoLink || "",
   });
 
+  // Fetch user data for reporter
+  const reporterUser = useQuery(
+    api.users.getUserProfile,
+    issue?.reporterId ? { authUserId: issue.reporterId } : "skip"
+  );
+
   const updateIssue = useMutation(api.issues.updateIssue);
+
+  // Update form data when issue changes
+  useEffect(() => {
+    if (issue) {
+      setFormData({
+        title: issue.title || "",
+        description: issue.description || "",
+        longDescription: issue.longDescription || "",
+        status: issue.status || "OPEN",
+        priority: issue.priority || "",
+        budget: issue.budget || 0,
+        type: issue.type || "",
+        labels: issue.labels || [],
+        onboardingVideoLink: issue.onboardingVideoLink || "",
+      });
+    }
+  }, [issue]);
 
   const handleSave = async () => {
     if (!issue || mode === "view") return;
@@ -81,6 +117,63 @@ export function IssueEditDialog({
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Helper functions for icons
+  const getIssueTypeIcon = (type: string) => {
+    const iconMap = {
+      bug: { icon: Bug, className: "text-red-500" },
+      feature: { icon: Lightbulb, className: "text-blue-500" },
+      enhancement: { icon: TrendingUp, className: "text-green-500" },
+      task: { icon: Target, className: "text-purple-500" },
+      improvement: { icon: Wrench, className: "text-orange-500" },
+      default: { icon: CircleDot, className: "text-gray-400" },
+    };
+
+    const normalizedType = type.toLowerCase();
+    const config =
+      iconMap[normalizedType as keyof typeof iconMap] || iconMap.default;
+    const IconComponent = config.icon;
+
+    return <IconComponent className={`h-4 w-4 ${config.className}`} />;
+  };
+
+  const getPriorityIcon = (priority: string | undefined) => {
+    if (!priority) return <Minus className="h-4 w-4 text-gray-400" />;
+
+    const iconMap = {
+      low: { icon: Minus, className: "text-green-500" },
+      medium: { icon: AlertTriangle, className: "text-yellow-500" },
+      high: { icon: TrendingUp, className: "text-orange-500" },
+      critical: { icon: Flame, className: "text-red-500" },
+    };
+
+    const normalizedPriority = priority.toLowerCase();
+    const config = iconMap[normalizedPriority as keyof typeof iconMap] || {
+      icon: Minus,
+      className: "text-gray-400",
+    };
+    const IconComponent = config.icon;
+
+    return <IconComponent className={`h-4 w-4 ${config.className}`} />;
+  };
+
+  const getStatusIcon = (status: string) => {
+    const iconMap = {
+      open: { icon: CircleDot, className: "text-blue-500" },
+      in_progress: { icon: PlayCircle, className: "text-yellow-500" },
+      resolved: { icon: CheckCircle, className: "text-green-500" },
+      closed: { icon: XCircle, className: "text-gray-500" },
+    };
+
+    const normalizedStatus = status.toLowerCase();
+    const config = iconMap[normalizedStatus as keyof typeof iconMap] || {
+      icon: CircleDot,
+      className: "text-gray-400",
+    };
+    const IconComponent = config.icon;
+
+    return <IconComponent className={`h-4 w-4 ${config.className}`} />;
   };
 
   const getStatusBadge = (status: string) => {
@@ -109,7 +202,11 @@ export function IssueEditDialog({
     };
 
     return (
-      <Badge variant={config.variant} className={config.className}>
+      <Badge
+        variant={config.variant}
+        className={`${config.className} flex items-center gap-1`}
+      >
+        {getStatusIcon(status)}
         {status}
       </Badge>
     );
@@ -151,7 +248,11 @@ export function IssueEditDialog({
     };
 
     return (
-      <Badge variant={config.variant} className={config.className}>
+      <Badge
+        variant={config.variant}
+        className={`${config.className} flex items-center gap-1`}
+      >
+        {getPriorityIcon(priority)}
         {priority}
       </Badge>
     );
@@ -169,7 +270,7 @@ export function IssueEditDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-darkGray border-grayBorders">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Bug className="h-5 w-5" />
@@ -177,18 +278,35 @@ export function IssueEditDialog({
           </DialogTitle>
         </DialogHeader>
 
-        <Tabs defaultValue="basic" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="basic">Basic Info</TabsTrigger>
-            <TabsTrigger value="details">Details</TabsTrigger>
-            <TabsTrigger value="system">System</TabsTrigger>
+        <Tabs defaultValue="basic" className="w-full space-y-6">
+          <TabsList className="grid w-full grid-cols-3 bg-darkGray2/50 border border-grayBorders/30 rounded-xl p-1 h-12">
+            <TabsTrigger
+              value="basic"
+              className="text-gray-400 text-sm font-medium data-[state=active]:bg-darkGray data-[state=active]:text-white data-[state=active]:shadow-sm rounded-lg transition-all duration-200 hover:text-gray-200 hover:bg-darkGray/30 px-3 py-2"
+            >
+              Basic Info
+            </TabsTrigger>
+            <TabsTrigger
+              value="details"
+              className="text-gray-400 text-sm font-medium data-[state=active]:bg-darkGray data-[state=active]:text-white data-[state=active]:shadow-sm rounded-lg transition-all duration-200 hover:text-gray-200 hover:bg-darkGray/30 px-3 py-2"
+            >
+              Details
+            </TabsTrigger>
+            <TabsTrigger
+              value="system"
+              className="text-gray-400 text-sm font-medium data-[state=active]:bg-darkGray data-[state=active]:text-white data-[state=active]:shadow-sm rounded-lg transition-all duration-200 hover:text-gray-200 hover:bg-darkGray/30 px-3 py-2"
+            >
+              System
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="basic" className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="title">Title</Label>
+              <Label htmlFor="title" className="text-gray-300">
+                Title
+              </Label>
               {mode === "view" ? (
-                <p className="text-sm text-white bg-darkGray2 px-3 py-2 rounded-md border">
+                <p className="text-sm text-white bg-darkGray2 px-3 py-2 rounded-md border border-grayBorders">
                   {issue.title}
                 </p>
               ) : (
@@ -205,7 +323,9 @@ export function IssueEditDialog({
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="status">Status</Label>
+                <Label htmlFor="status" className="text-gray-300">
+                  Status
+                </Label>
                 {mode === "view" ? (
                   <div>{getStatusBadge(issue.status)}</div>
                 ) : (
@@ -216,20 +336,45 @@ export function IssueEditDialog({
                     ) => setFormData({ ...formData, status: value })}
                   >
                     <SelectTrigger className="bg-darkGray border-grayBorders text-white">
-                      <SelectValue placeholder="Select status" />
+                      <div className="flex items-center gap-2">
+                        {getStatusIcon(formData.status)}
+                        <SelectValue placeholder="Select status" />
+                      </div>
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="OPEN">Open</SelectItem>
-                      <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
-                      <SelectItem value="RESOLVED">Resolved</SelectItem>
-                      <SelectItem value="CLOSED">Closed</SelectItem>
+                    <SelectContent className="bg-darkGray border-grayBorders">
+                      <SelectItem
+                        value="OPEN"
+                        className="text-white hover:bg-darkGray2"
+                      >
+                        Open
+                      </SelectItem>
+                      <SelectItem
+                        value="IN_PROGRESS"
+                        className="text-white hover:bg-darkGray2"
+                      >
+                        In Progress
+                      </SelectItem>
+                      <SelectItem
+                        value="RESOLVED"
+                        className="text-white hover:bg-darkGray2"
+                      >
+                        Resolved
+                      </SelectItem>
+                      <SelectItem
+                        value="CLOSED"
+                        className="text-white hover:bg-darkGray2"
+                      >
+                        Closed
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 )}
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="priority">Priority</Label>
+                <Label htmlFor="priority" className="text-gray-300">
+                  Priority
+                </Label>
                 {mode === "view" ? (
                   <div>{getPriorityBadge(issue.priority)}</div>
                 ) : (
@@ -240,13 +385,36 @@ export function IssueEditDialog({
                     }
                   >
                     <SelectTrigger className="bg-darkGray border-grayBorders text-white">
-                      <SelectValue placeholder="Select priority" />
+                      <div className="flex items-center gap-2">
+                        {getPriorityIcon(formData.priority)}
+                        <SelectValue placeholder="Select priority" />
+                      </div>
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="LOW">Low</SelectItem>
-                      <SelectItem value="MEDIUM">Medium</SelectItem>
-                      <SelectItem value="HIGH">High</SelectItem>
-                      <SelectItem value="CRITICAL">Critical</SelectItem>
+                    <SelectContent className="bg-darkGray border-grayBorders">
+                      <SelectItem
+                        value="LOW"
+                        className="text-white hover:bg-darkGray2"
+                      >
+                        Low
+                      </SelectItem>
+                      <SelectItem
+                        value="MEDIUM"
+                        className="text-white hover:bg-darkGray2"
+                      >
+                        Medium
+                      </SelectItem>
+                      <SelectItem
+                        value="HIGH"
+                        className="text-white hover:bg-darkGray2"
+                      >
+                        High
+                      </SelectItem>
+                      <SelectItem
+                        value="CRITICAL"
+                        className="text-white hover:bg-darkGray2"
+                      >
+                        Critical
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 )}
@@ -255,21 +423,33 @@ export function IssueEditDialog({
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="type">Type</Label>
+                <Label htmlFor="type" className="text-gray-300">
+                  Type
+                </Label>
                 {mode === "view" ? (
-                  <p className="text-sm text-white bg-darkGray2 px-3 py-2 rounded-md border">
-                    {issue.type || "N/A"}
-                  </p>
+                  <div className="flex items-center gap-2 text-sm text-white bg-darkGray2 px-3 py-2 rounded-md border border-grayBorders">
+                    {issue.type && getIssueTypeIcon(issue.type)}
+                    <span>{issue.type || "N/A"}</span>
+                  </div>
                 ) : (
-                  <Input
-                    id="type"
-                    value={formData.type}
-                    onChange={(e) =>
-                      setFormData({ ...formData, type: e.target.value })
-                    }
-                    className="bg-darkGray border-grayBorders text-white"
-                    placeholder="Bug, Feature, Enhancement..."
-                  />
+                  <div className="relative">
+                    <div className="absolute left-3 top-1/2 transform -translate-y-1/2 z-10">
+                      {formData.type ? (
+                        getIssueTypeIcon(formData.type)
+                      ) : (
+                        <CircleDot className="h-4 w-4 text-gray-400" />
+                      )}
+                    </div>
+                    <Input
+                      id="type"
+                      value={formData.type}
+                      onChange={(e) =>
+                        setFormData({ ...formData, type: e.target.value })
+                      }
+                      className="bg-darkGray border-grayBorders text-white pl-10"
+                      placeholder="Bug, Feature, Enhancement..."
+                    />
+                  </div>
                 )}
               </div>
 
@@ -279,7 +459,7 @@ export function IssueEditDialog({
                   <div className="flex items-center gap-2">
                     <DollarSign className="h-4 w-4 text-gray-400" />
                     <p className="text-sm text-white font-medium">
-                      {issue.budget ? `$${issue.budget}` : "Not set"}
+                      {issue.budget ? issue.budget.toLocaleString() : "Not set"}
                     </p>
                   </div>
                 ) : (
@@ -423,12 +603,22 @@ export function IssueEditDialog({
               </div>
 
               <div className="space-y-2">
-                <Label>Reporter ID</Label>
-                <div className="flex items-center gap-2">
-                  <User className="h-4 w-4 text-gray-400" />
-                  <p className="text-sm text-white font-mono">
-                    {issue.reporterId}
-                  </p>
+                <Label className="text-gray-300">Reporter</Label>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <User className="h-4 w-4 text-gray-400" />
+                    <p className="text-sm text-white font-medium">
+                      {reporterUser?.name || "Unknown User"}
+                    </p>
+                  </div>
+                  {reporterUser?.email && (
+                    <div className="flex items-center gap-2 ml-6">
+                      <Mail className="h-3 w-3 text-gray-500" />
+                      <p className="text-xs text-gray-400">
+                        {reporterUser.email}
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -468,7 +658,7 @@ export function IssueEditDialog({
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
-            className="text-white"
+            className="text-white bg-darkGray border-grayBorders hover:bg-darkGray2"
           >
             {mode === "view" ? "Close" : "Cancel"}
           </Button>

@@ -25,6 +25,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { toast, Toaster } from "sonner";
 import { DownloadIcon } from "lucide-react";
 import { toPng } from "html-to-image";
+import { useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
 
 const formSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -48,6 +50,8 @@ const EarlyBird = () => {
   const [userData, setUserData] = useState<UserData | null>(null);
   const badgeRef = useRef<HTMLDivElement>(null);
 
+  const registerEarlyBird = useMutation(api.users.registerEarlyBird);
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -63,56 +67,38 @@ const EarlyBird = () => {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch(`/api/users/early-bird`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: values.name,
-          email: values.email,
-          type: values.type,
-          ...(values.phoneNumber && { phoneNumber: values.phoneNumber }),
-          ...(values.countryCode && { countryCode: values.countryCode }),
-        }),
+      const result = await registerEarlyBird({
+        name: values.name,
+        email: values.email,
+        type: values.type,
+        ...(values.phoneNumber && { phoneNumber: values.phoneNumber }),
+        ...(values.countryCode && { countryCode: values.countryCode }),
       });
 
-      const result = await response.json();
-
-      if (response.ok) {
-        // Success - show confirmation message
-        setUserData({
-          ...values,
-          id: result.userId,
-        });
-        setSubmissionSuccess(true);
-        form.reset();
-        toast.success("Successfully submitted! Your badge is ready.");
-      } else {
-        // Handle specific errors
-        let errorMessage = "Failed to submit. Please try again.";
-
-        switch (response.status) {
-          case 400:
-            errorMessage =
-              result.message || "Please check your form data and try again.";
-            break;
-          case 409:
-            errorMessage =
-              "This email is already registered. Please use a different email.";
-            break;
-          case 401:
-            errorMessage = "Authentication failed. Please try again.";
-            break;
-          default:
-            errorMessage = result.message || "An unexpected error occurred.";
-        }
-
-        toast.error(errorMessage);
-      }
+      // Success - show confirmation message
+      setUserData({
+        ...values,
+        id: result.userId,
+      });
+      setSubmissionSuccess(true);
+      form.reset();
+      toast.success("Successfully submitted! Your badge is ready.");
     } catch (error) {
       console.error("Form submission error:", error);
-      toast.error("Network error. Please check your connection and try again.");
+
+      // Handle specific Convex errors
+      let errorMessage = "Failed to submit. Please try again.";
+
+      if (error instanceof Error) {
+        if (error.message.includes("already exists")) {
+          errorMessage =
+            "This email is already registered. Please use a different email.";
+        } else {
+          errorMessage = error.message;
+        }
+      }
+
+      toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }

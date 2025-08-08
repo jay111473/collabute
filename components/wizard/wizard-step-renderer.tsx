@@ -14,6 +14,7 @@ import {
   ProjectTrack,
   GeneratedProject,
   ProjectType,
+  Lead,
 } from "@/types/wizard";
 
 interface WizardStepRendererProps {

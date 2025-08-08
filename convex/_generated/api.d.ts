@@ -9,6 +9,7 @@
  */
 
 import type * as admin from "../admin.js";
+import type * as auditLog from "../auditLog.js";
 import type * as auth from "../auth.js";
 import type * as blogs from "../blogs.js";
 import type * as chat from "../chat.js";
@@ -17,6 +18,7 @@ import type * as github from "../github.js";
 import type * as githubAuth from "../githubAuth.js";
 import type * as github_repositories from "../github_repositories.js";
 import type * as http from "../http.js";
+import type * as invitations from "../invitations.js";
 import type * as issues from "../issues.js";
 import type * as media from "../media.js";
 import type * as messages from "../messages.js";
@@ -24,6 +26,7 @@ import type * as products from "../products.js";
 import type * as projects from "../projects.js";
 import type * as roles from "../roles.js";
 import type * as seed from "../seed.js";
+import type * as tech_stacks from "../tech_stacks.js";
 import type * as transactions from "../transactions.js";
 import type * as userProfiles from "../userProfiles.js";
 import type * as users from "../users.js";
@@ -44,6 +47,7 @@ import type {
  */
 declare const fullApi: ApiFromModules<{
   admin: typeof admin;
+  auditLog: typeof auditLog;
   auth: typeof auth;
   blogs: typeof blogs;
   chat: typeof chat;
@@ -52,6 +56,7 @@ declare const fullApi: ApiFromModules<{
   githubAuth: typeof githubAuth;
   github_repositories: typeof github_repositories;
   http: typeof http;
+  invitations: typeof invitations;
   issues: typeof issues;
   media: typeof media;
   messages: typeof messages;
@@ -59,6 +64,7 @@ declare const fullApi: ApiFromModules<{
   projects: typeof projects;
   roles: typeof roles;
   seed: typeof seed;
+  tech_stacks: typeof tech_stacks;
   transactions: typeof transactions;
   userProfiles: typeof userProfiles;
   users: typeof users;

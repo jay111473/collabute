@@ -39,6 +39,15 @@ import {
   Search,
   DollarSign,
   Hash,
+  Bug,
+  Lightbulb,
+  TrendingUp,
+  Target,
+  Wrench,
+  CircleDot,
+  AlertTriangle,
+  Flame,
+  Minus,
 } from "lucide-react";
 import { Issue } from "@/types/convex";
 import { IssueEditDialog } from "./issue-edit-dialog";
@@ -138,9 +147,50 @@ export function IssuesTable() {
     );
   };
 
+  // Helper functions for icons
+  const getIssueTypeIcon = (type: string) => {
+    const iconMap = {
+      bug: { icon: Bug, className: "text-red-500" },
+      feature: { icon: Lightbulb, className: "text-blue-500" },
+      enhancement: { icon: TrendingUp, className: "text-green-500" },
+      task: { icon: Target, className: "text-purple-500" },
+      improvement: { icon: Wrench, className: "text-orange-500" },
+      default: { icon: CircleDot, className: "text-gray-400" }
+    };
+    
+    const normalizedType = type.toLowerCase();
+    const config = iconMap[normalizedType as keyof typeof iconMap] || iconMap.default;
+    const IconComponent = config.icon;
+    
+    return <IconComponent className={`h-4 w-4 ${config.className}`} />;
+  };
+
+  const getPriorityIcon = (priority: string | undefined) => {
+    if (!priority) return <Minus className="h-4 w-4 text-gray-400" />;
+    
+    const iconMap = {
+      low: { icon: Minus, className: "text-green-500" },
+      medium: { icon: AlertTriangle, className: "text-yellow-500" },
+      high: { icon: TrendingUp, className: "text-orange-500" },
+      urgent: { icon: Flame, className: "text-red-500" },
+      critical: { icon: Flame, className: "text-red-500" }
+    };
+    
+    const normalizedPriority = priority.toLowerCase();
+    const config = iconMap[normalizedPriority as keyof typeof iconMap] || { icon: Minus, className: "text-gray-400" };
+    const IconComponent = config.icon;
+    
+    return <IconComponent className={`h-4 w-4 ${config.className}`} />;
+  };
+
   const formatBudget = (budget: number | undefined) => {
     if (!budget) return "N/A";
-    return `$${budget.toLocaleString()}`;
+    return budget.toLocaleString();
+  };
+
+  const getProjectName = (projectId: string) => {
+    const project = projects?.find(p => p._id === projectId);
+    return project?.title || project?.name || "Unknown Project";
   };
 
   const handleCreateIssue = async () => {
@@ -270,7 +320,7 @@ export function IssuesTable() {
                 </TableCell>
                 <TableCell className="px-4 py-4">
                   <div className="text-sm text-gray-300">
-                    Project ID: {issue.projectId}
+                    {getProjectName(issue.projectId)}
                   </div>
                 </TableCell>
                 <TableCell className="px-4 py-4">
@@ -338,9 +388,12 @@ export function IssuesTable() {
       )}
 
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md bg-darkGray border-grayBorders">
           <DialogHeader>
-            <DialogTitle>Create New Issue</DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              <Plus className="h-5 w-5" />
+              Create New Issue
+            </DialogTitle>
           </DialogHeader>
 
           <div className="space-y-4">
@@ -400,13 +453,24 @@ export function IssuesTable() {
                 }
               >
                 <SelectTrigger className="bg-darkGray border-grayBorders text-white">
-                  <SelectValue placeholder="Select type" />
+                  <div className="flex items-center gap-2">
+                    {getIssueTypeIcon(formData.type)}
+                    <SelectValue placeholder="Select type" />
+                  </div>
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="BUG">Bug</SelectItem>
-                  <SelectItem value="FEATURE">Feature</SelectItem>
-                  <SelectItem value="ENHANCEMENT">Enhancement</SelectItem>
-                  <SelectItem value="TASK">Task</SelectItem>
+                <SelectContent className="bg-darkGray border-grayBorders">
+                  <SelectItem value="BUG" className="text-white hover:bg-darkGray2">
+                    Bug
+                  </SelectItem>
+                  <SelectItem value="FEATURE" className="text-white hover:bg-darkGray2">
+                    Feature
+                  </SelectItem>
+                  <SelectItem value="ENHANCEMENT" className="text-white hover:bg-darkGray2">
+                    Enhancement
+                  </SelectItem>
+                  <SelectItem value="TASK" className="text-white hover:bg-darkGray2">
+                    Task
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -420,13 +484,24 @@ export function IssuesTable() {
                 }
               >
                 <SelectTrigger className="bg-darkGray border-grayBorders text-white">
-                  <SelectValue placeholder="Select priority" />
+                  <div className="flex items-center gap-2">
+                    {getPriorityIcon(formData.priority)}
+                    <SelectValue placeholder="Select priority" />
+                  </div>
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="LOW">Low</SelectItem>
-                  <SelectItem value="MEDIUM">Medium</SelectItem>
-                  <SelectItem value="HIGH">High</SelectItem>
-                  <SelectItem value="URGENT">Urgent</SelectItem>
+                <SelectContent className="bg-darkGray border-grayBorders">
+                  <SelectItem value="LOW" className="text-white hover:bg-darkGray2">
+                    Low
+                  </SelectItem>
+                  <SelectItem value="MEDIUM" className="text-white hover:bg-darkGray2">
+                    Medium
+                  </SelectItem>
+                  <SelectItem value="HIGH" className="text-white hover:bg-darkGray2">
+                    High
+                  </SelectItem>
+                  <SelectItem value="URGENT" className="text-white hover:bg-darkGray2">
+                    Urgent
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>

@@ -67,7 +67,7 @@ export function useWizardNavigation(wizardData: WizardData, hasBookedMeeting: bo
       case 4:
         return (wizardData.trackTasks?.trackTasks?.length ?? 0) > 0; // TrackTasksGenerator step
       case 5:
-        return wizardData.projects?.length > 0; // ProjectGenerator step
+        return !!wizardData.leader; // ProjectLeader step
       case 6:
         return !!wizardData.leader;
       case 7:

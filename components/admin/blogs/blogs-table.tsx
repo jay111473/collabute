@@ -137,11 +137,8 @@ export function BlogsTable() {
         <Table>
           <TableHeader>
             <TableRow className="bg-darkGray2 border-b border-grayBorders">
-              <TableHead className="text-gray-300 font-medium px-6 py-4">
+              <TableHead className="text-gray-300 font-medium px-6 py-4 w-1/4">
                 Title
-              </TableHead>
-              <TableHead className="text-gray-300 font-medium px-4 py-4">
-                Author
               </TableHead>
               <TableHead className="text-gray-300 font-medium px-4 py-4">
                 Category
@@ -151,12 +148,6 @@ export function BlogsTable() {
               </TableHead>
               <TableHead className="text-gray-300 font-medium px-4 py-4">
                 Published
-              </TableHead>
-              <TableHead className="text-gray-300 font-medium px-4 py-4">
-                Updated
-              </TableHead>
-              <TableHead className="text-gray-300 font-medium px-4 py-4">
-                Content
               </TableHead>
               <TableHead className="text-right text-gray-300 font-medium px-6 py-4">
                 Actions
@@ -169,18 +160,17 @@ export function BlogsTable() {
                 key={blog._id}
                 className="border-b border-grayBorders hover:bg-darkGray2 transition-colors duration-150"
               >
-                <TableCell className="font-medium text-white px-6 py-4">
-                  <div>
-                    <div className="font-medium">{blog.title}</div>
+                <TableCell className="font-medium text-white px-6 py-4 w-1/4">
+                  <div className="max-w-full">
+                    <div className="font-medium truncate" title={blog.title}>
+                      {blog.title}
+                    </div>
                     {blog.description && (
-                      <div className="text-sm text-gray-400 mt-1 truncate max-w-xs">
+                      <div className="text-sm text-gray-400 mt-1 truncate" title={blog.description}>
                         {blog.description}
                       </div>
                     )}
                   </div>
-                </TableCell>
-                <TableCell className="text-gray-300 px-4 py-4">
-                  {blog.author?.name || blog.author?.email || "N/A"}
                 </TableCell>
                 <TableCell className="text-gray-300 px-4 py-4">
                   {blog.category?.name || "N/A"}
@@ -190,20 +180,6 @@ export function BlogsTable() {
                 </TableCell>
                 <TableCell className="text-gray-300 px-4 py-4">
                   {formatDate(blog.publishedAt)}
-                </TableCell>
-                <TableCell className="text-gray-300 px-4 py-4">
-                  {formatDate(blog.updatedAt)}
-                </TableCell>
-                <TableCell className="text-gray-300 px-4 py-4">
-                  {blog.content ? (
-                    <Badge variant="default" className="bg-green-600 text-white">
-                      Has Content
-                    </Badge>
-                  ) : (
-                    <Badge variant="outline" className="bg-red-900/20 text-red-400 border-red-600/30">
-                      No Content
-                    </Badge>
-                  )}
                 </TableCell>
                 <TableCell className="text-right px-6 py-4">
                   <div className="flex items-center justify-end gap-2">

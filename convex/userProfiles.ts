@@ -58,11 +58,33 @@ export const getCurrentUser = query({
 export const getCompleteUserProfile = query({
   args: { userId: v.id("users") },
   handler: async (ctx, args) => {
+    // Require authentication to view user profiles
+    const currentUserId = await getAuthUserId(ctx);
+    if (!currentUserId) {
+      throw new Error("Authentication required");
+    }
+
+    // Users can only view their own profile unless they're admin
+    if (currentUserId !== args.userId) {
+      // Check if current user is admin
+      const currentUser = await ctx.db.get(currentUserId);
+      if (!currentUser?.roleId) {
+        throw new Error("Access denied");
+      }
+
+      const currentRole = await ctx.db.get(currentUser.roleId);
+      const isAdmin = currentRole && (
+        (currentRole.permissions?.includes("admin")) ||
+        currentRole.name === "admin"
+      );
+
+      if (!isAdmin) {
+        throw new Error("Access denied - can only view your own profile");
+      }
+    }
+
     const user = await ctx.db.get(args.userId);
     if (!user) return null;
-
-    // Since we have unified user table, no need to fetch separate auth data
-    // All user data is already in the user object
 
     let roleProfile = null;
 

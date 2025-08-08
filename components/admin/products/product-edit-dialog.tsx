@@ -25,7 +25,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Product } from "@/types/convex";
-import { Package, DollarSign, Tag, Calendar } from "lucide-react";
+import { Package, DollarSign, Tag, Calendar, Monitor, HardDrive, Settings, CreditCard, Power, PowerOff } from "lucide-react";
 
 interface ProductEditDialogProps {
   product: Product | null;
@@ -74,10 +74,37 @@ export function ProductEditDialog({
     }
   };
 
+  // Helper functions for icons
+  const getCategoryIcon = (category: string | undefined) => {
+    if (!category) return <Tag className="h-4 w-4 text-gray-400" />;
+    
+    const iconMap = {
+      software: { icon: Monitor, className: "text-blue-500" },
+      hardware: { icon: HardDrive, className: "text-purple-500" },
+      services: { icon: Settings, className: "text-green-500" },
+      subscription: { icon: CreditCard, className: "text-orange-500" }
+    };
+    
+    const normalizedCategory = category.toLowerCase();
+    const config = iconMap[normalizedCategory as keyof typeof iconMap] || { icon: Tag, className: "text-gray-400" };
+    const IconComponent = config.icon;
+    
+    return <IconComponent className={`h-4 w-4 ${config.className}`} />;
+  };
+
+  const getStatusIcon = (isActive: boolean) => {
+    return isActive ? (
+      <Power className="h-4 w-4 text-green-500" />
+    ) : (
+      <PowerOff className="h-4 w-4 text-gray-500" />
+    );
+  };
+
   const getStatusBadge = (product: Product) => {
     if (product.isActive) {
       return (
-        <Badge variant="default" className="bg-green-600 text-white">
+        <Badge variant="default" className="bg-green-600 text-white flex items-center gap-1">
+          {getStatusIcon(product.isActive)}
           Active
         </Badge>
       );
@@ -85,8 +112,9 @@ export function ProductEditDialog({
     return (
       <Badge
         variant="outline"
-        className="bg-darkGray2 text-gray-300 border-grayBorders"
+        className="bg-darkGray2 text-gray-300 border-grayBorders flex items-center gap-1"
       >
+        {getStatusIcon(product.isActive)}
         Inactive
       </Badge>
     );
@@ -128,7 +156,8 @@ export function ProductEditDialog({
     };
 
     return (
-      <Badge variant={config.variant} className={config.className}>
+      <Badge variant={config.variant} className={`${config.className} flex items-center gap-1`}>
+        {getCategoryIcon(category)}
         {category}
       </Badge>
     );
@@ -138,7 +167,7 @@ export function ProductEditDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-darkGray border-grayBorders">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Package className="h-5 w-5" />
@@ -146,18 +175,28 @@ export function ProductEditDialog({
           </DialogTitle>
         </DialogHeader>
 
-        <Tabs defaultValue="basic" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="basic">Basic Info</TabsTrigger>
-            <TabsTrigger value="system">System</TabsTrigger>
+        <Tabs defaultValue="basic" className="w-full space-y-6">
+          <TabsList className="grid w-full grid-cols-2 bg-darkGray2/50 border border-grayBorders/30 rounded-xl p-1 h-12">
+            <TabsTrigger 
+              value="basic" 
+              className="text-gray-400 text-sm font-medium data-[state=active]:bg-darkGray data-[state=active]:text-white data-[state=active]:shadow-sm rounded-lg transition-all duration-200 hover:text-gray-200 hover:bg-darkGray/30 px-3 py-2"
+            >
+              Basic Info
+            </TabsTrigger>
+            <TabsTrigger 
+              value="system" 
+              className="text-gray-400 text-sm font-medium data-[state=active]:bg-darkGray data-[state=active]:text-white data-[state=active]:shadow-sm rounded-lg transition-all duration-200 hover:text-gray-200 hover:bg-darkGray/30 px-3 py-2"
+            >
+              System
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="basic" className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Product Name</Label>
+                <Label htmlFor="name" className="text-gray-300">Product Name</Label>
                 {mode === "view" ? (
-                  <p className="text-sm text-white bg-darkGray2 px-3 py-2 rounded-md border">
+                  <p className="text-sm text-white bg-darkGray2 px-3 py-2 rounded-md border border-grayBorders">
                     {product.name}
                   </p>
                 ) : (
@@ -173,7 +212,7 @@ export function ProductEditDialog({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="category">Category</Label>
+                <Label htmlFor="category" className="text-gray-300">Category</Label>
                 {mode === "view" ? (
                   <div>{getCategoryBadge(product.category)}</div>
                 ) : (
@@ -184,13 +223,24 @@ export function ProductEditDialog({
                     }
                   >
                     <SelectTrigger className="bg-darkGray border-grayBorders text-white">
-                      <SelectValue placeholder="Select category" />
+                      <div className="flex items-center gap-2">
+                        {getCategoryIcon(formData.category)}
+                        <SelectValue placeholder="Select category" />
+                      </div>
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="SOFTWARE">Software</SelectItem>
-                      <SelectItem value="HARDWARE">Hardware</SelectItem>
-                      <SelectItem value="SERVICES">Services</SelectItem>
-                      <SelectItem value="SUBSCRIPTION">Subscription</SelectItem>
+                    <SelectContent className="bg-darkGray border-grayBorders">
+                      <SelectItem value="SOFTWARE" className="text-white hover:bg-darkGray2">
+                        Software
+                      </SelectItem>
+                      <SelectItem value="HARDWARE" className="text-white hover:bg-darkGray2">
+                        Hardware
+                      </SelectItem>
+                      <SelectItem value="SERVICES" className="text-white hover:bg-darkGray2">
+                        Services
+                      </SelectItem>
+                      <SelectItem value="SUBSCRIPTION" className="text-white hover:bg-darkGray2">
+                        Subscription
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 )}
@@ -198,9 +248,9 @@ export function ProductEditDialog({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description" className="text-gray-300">Description</Label>
               {mode === "view" ? (
-                <p className="text-sm text-white bg-darkGray2 px-3 py-2 rounded-md border min-h-[80px]">
+                <p className="text-sm text-white bg-darkGray2 px-3 py-2 rounded-md border border-grayBorders min-h-[80px]">
                   {product.description || "No description provided"}
                 </p>
               ) : (
@@ -217,7 +267,7 @@ export function ProductEditDialog({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="price">Price ($)</Label>
+              <Label htmlFor="price" className="text-gray-300">Price ($)</Label>
               {mode === "view" ? (
                 <div className="flex items-center gap-2">
                   <DollarSign className="h-4 w-4 text-gray-400" />
@@ -244,7 +294,7 @@ export function ProductEditDialog({
           <TabsContent value="system" className="space-y-4">
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label>Status</Label>
+                <Label className="text-gray-300">Status</Label>
                 <div>{getStatusBadge(product)}</div>
               </div>
 
@@ -257,12 +307,12 @@ export function ProductEditDialog({
                       setFormData({ ...formData, isActive: checked })
                     }
                   />
-                  <Label htmlFor="isActive">Active Product</Label>
+                  <Label htmlFor="isActive" className="text-gray-300">Active Product</Label>
                 </div>
               )}
 
               <div className="space-y-2">
-                <Label>Created</Label>
+                <Label className="text-gray-300">Created</Label>
                 <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-gray-400" />
                   <p className="text-sm text-white">
@@ -272,8 +322,8 @@ export function ProductEditDialog({
               </div>
 
               <div className="space-y-2">
-                <Label>Product ID</Label>
-                <p className="text-xs text-gray-400 font-mono bg-darkGray2 px-2 py-1 rounded border">
+                <Label className="text-gray-300">Product ID</Label>
+                <p className="text-xs text-gray-400 font-mono bg-darkGray2 px-2 py-1 rounded border border-grayBorders">
                   {product._id}
                 </p>
               </div>
@@ -285,7 +335,7 @@ export function ProductEditDialog({
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
-            className="text-white"
+            className="text-white bg-darkGray border-grayBorders hover:bg-darkGray2"
           >
             {mode === "view" ? "Close" : "Cancel"}
           </Button>

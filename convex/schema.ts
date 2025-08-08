@@ -496,4 +496,51 @@ export default defineSchema({
   })
     .index("by_slug", ["slug"])
     .index("by_name", ["name"]),
+
+  invitations: defineTable({
+    email: v.string(),
+    token: v.string(),
+    type: v.string(), // e.g., "PROJECT_MANAGER"
+    projectName: v.optional(v.string()),
+    inviterName: v.optional(v.string()),
+    status: v.string(), // "PENDING", "ACCEPTED", "EXPIRED"
+    expiresAt: v.number(),
+    usedAt: v.optional(v.number()),
+  })
+    .index("by_token", ["token"])
+    .index("by_email", ["email"])
+    .index("by_status", ["status"]),
+
+  // ==============================
+  // TECH STACK COLLECTION
+  // ==============================
+
+  tech_stacks: defineTable({
+    name: v.string(),
+    slug: v.string(),
+    description: v.optional(v.string()),
+    category: v.optional(v.string()), // e.g., "frontend", "backend", "database", "mobile", "devops"
+    color: v.optional(v.string()),
+    icon: v.optional(v.string()),
+    isActive: v.boolean(),
+  })
+    .index("by_slug", ["slug"])
+    .index("by_name", ["name"])
+    .index("by_category", ["category"])
+    .index("by_active", ["isActive"]),
+
+  // Security audit logs
+  audit_logs: defineTable({
+    userId: v.optional(v.id("users")), // Who performed the action (null for system)
+    action: v.string(), // What action was performed
+    targetUserId: v.optional(v.id("users")), // Who was affected (if applicable)
+    details: v.optional(v.string()), // Additional details about the action
+    ipAddress: v.optional(v.string()), // IP address of the user
+    userAgent: v.optional(v.string()), // User agent string
+    timestamp: v.number(), // When the action occurred
+  })
+    .index("by_user", ["userId"])
+    .index("by_action", ["action"])
+    .index("by_timestamp", ["timestamp"])
+    .index("by_target_user", ["targetUserId"]),
 });

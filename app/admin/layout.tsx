@@ -32,13 +32,18 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       </div>
     );
   }
-
-  // Redirect to login if not admin
+  
+  // Redirect to login if not admin (but avoid redirect loops)
   if (!isAdmin) {
-    if (pathname !== "/admin/login") {
-      router.push("/admin/login");
-    }
-    return null;
+    router.replace("/admin/login");
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-darkGray">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+          <p className="text-gray-400">Redirecting to login...</p>
+        </div>
+      </div>
+    );
   }
 
   return (

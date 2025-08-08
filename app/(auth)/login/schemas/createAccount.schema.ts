@@ -2,7 +2,7 @@ import * as z from "zod";
 
 export const createAccountSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
-  type: z.enum(["developer", "startup"]),
+  type: z.enum(["developer", "startup", "project_manager"]),
   email: z.string().email("Please enter a valid email address"),
   password: z
     .string()
@@ -54,11 +54,13 @@ export const createAccountSchema = z.object({
     .optional()
     .nullable(),
 }).superRefine((data, ctx) => {
-  if (data.type === "developer") {
+  if (data.type === "developer" || data.type === "project_manager") {
     if (!data.developerFields?.primaryRole || data.developerFields.primaryRole.length === 0) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "At least one primary role must be selected for developer accounts",
+        message: data.type === "project_manager" 
+          ? "At least one primary skill must be selected for project manager accounts"
+          : "At least one primary role must be selected for developer accounts",
         path: ["developerFields", "primaryRole"],
       });
     }

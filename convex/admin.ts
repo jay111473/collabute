@@ -1,6 +1,37 @@
 import { v } from "convex/values";
-import { query, mutation } from "./_generated/server";
+import { query, mutation, QueryCtx, MutationCtx } from "./_generated/server";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { internal } from "./_generated/api";
+
+// Security helper: Require admin privileges
+async function requireAdmin(ctx: QueryCtx | MutationCtx) {
+  const userId = await getAuthUserId(ctx);
+  if (!userId) {
+    throw new Error("Authentication required");
+  }
+
+  const user = await ctx.db.get(userId);
+  if (!user || !user.roleId) {
+    throw new Error("No role assigned");
+  }
+
+  const role = await ctx.db.get(user.roleId);
+  if (!role) {
+    throw new Error("Role not found");
+  }
+
+  const hasAdminPermission =
+    (role.permissions &&
+      Array.isArray(role.permissions) &&
+      role.permissions.includes("admin")) ||
+    role.name === "admin";
+
+  if (!hasAdminPermission) {
+    throw new Error("Admin privileges required");
+  }
+
+  return { userId, user, role };
+}
 
 // Check if user has admin role
 export const isUserAdmin = query({
@@ -123,51 +154,66 @@ export const assignAdminRole = mutation({
     userId: v.id("users"),
   },
   handler: async (ctx, args) => {
-    // Only existing admins can assign admin role
-    const currentUserId = await getAuthUserId(ctx);
-    if (!currentUserId) {
-      throw new Error("Not authenticated");
+    // Use the secure admin helper
+    await requireAdmin(ctx);
+
+    // Get or create admin role (don't duplicate)
+    let adminRole = await ctx.db
+      .query("roles")
+      .withIndex("by_name", (q) => q.eq("name", "admin"))
+      .first();
+
+    if (!adminRole) {
+      // Create admin role only if it doesn't exist
+      const adminRoleId = await ctx.db.insert("roles", {
+        name: "admin",
+        displayName: "Administrator",
+        description: "Full system access and administrative privileges",
+        isActive: true,
+        permissions: [
+          "admin",
+          "read",
+          "write",
+          "delete",
+          "manage_users",
+          "manage_projects",
+          "manage_issues",
+          "manage_messages",
+          "manage_roles",
+          "manage_transactions",
+          "manage_media",
+          "manage_github",
+          "manage_applications",
+          "view_analytics",
+          "system_config"
+        ],
+      });
+      adminRole = await ctx.db.get(adminRoleId);
     }
 
-    // Check if current user is admin
-    const currentUser = await ctx.db.get(currentUserId);
-    if (!currentUser || !currentUser.roleId) {
-      throw new Error("Not authorized - no role assigned");
+    if (!adminRole) {
+      throw new Error("Failed to create or retrieve admin role");
     }
 
-    const currentRole = await ctx.db.get(currentUser.roleId);
-    const hasAdminPermission =
-      currentRole &&
-      ((currentRole.permissions &&
-        Array.isArray(currentRole.permissions) &&
-        currentRole.permissions.includes("admin")) ||
-        currentRole.name === "admin");
-    if (!hasAdminPermission) {
-      throw new Error("Not authorized - admin privileges required");
+    // Verify target user exists
+    const targetUser = await ctx.db.get(args.userId);
+    if (!targetUser) {
+      throw new Error("Target user not found");
     }
-
-    // Ensure admin role exists
-    const adminRoleId = await ctx.db.insert("roles", {
-      name: "admin",
-      displayName: "Administrator",
-      description: "Full system access and administrative privileges",
-      isActive: true,
-      permissions: [
-        "admin",
-        "read",
-        "write",
-        "delete",
-        "manage_users",
-        "manage_projects",
-      ],
-    });
 
     // Assign admin role to target user
     await ctx.db.patch(args.userId, {
-      roleId: adminRoleId,
+      roleId: adminRole._id,
     });
 
-    return { success: true };
+    // Log security event
+    await ctx.scheduler.runAfter(0, internal.auditLog.logSecurityEvent, {
+      action: "ADMIN_ROLE_ASSIGNED",
+      targetUserId: args.userId,
+      details: `Admin role assigned to user ${targetUser.email}`,
+    });
+
+    return { success: true, roleId: adminRole._id };
   },
 });
 
@@ -179,7 +225,7 @@ export const createFirstAdmin = mutation({
   },
   handler: async (ctx, args) => {
     // Check if any admin already exists
-    const adminRole = await ctx.db
+    let adminRole = await ctx.db
       .query("roles")
       .withIndex("by_name", (q) => q.eq("name", "admin"))
       .first();
@@ -187,7 +233,7 @@ export const createFirstAdmin = mutation({
     if (adminRole) {
       const existingAdmins = await ctx.db
         .query("users")
-        .filter((q) => q.eq(q.field("roleId"), adminRole._id))
+        .filter((q) => q.eq(q.field("roleId"), adminRole!._id))
         .collect();
 
       if (existingAdmins.length > 0) {
@@ -198,32 +244,48 @@ export const createFirstAdmin = mutation({
     // Find user by email
     const user = await ctx.db
       .query("users")
-      .filter((q) => q.eq(q.field("email"), args.email))
+      .withIndex("email", (q) => q.eq("email", args.email))
       .first();
 
     if (!user) {
       throw new Error("User not found");
     }
 
-    // Ensure admin role exists
-    const adminRoleId = await ctx.db.insert("roles", {
-      name: "admin",
-      displayName: "Administrator",
-      description: "Full system access and administrative privileges",
-      isActive: true,
-      permissions: [
-        "admin",
-        "read",
-        "write",
-        "delete",
-        "manage_users",
-        "manage_projects",
-      ],
-    });
+    // Ensure admin role exists (don't duplicate)
+    if (!adminRole) {
+      const adminRoleId = await ctx.db.insert("roles", {
+        name: "admin",
+        displayName: "Administrator",
+        description: "Full system access and administrative privileges",
+        isActive: true,
+        permissions: [
+          "admin",
+          "read",
+          "write",
+          "delete",
+          "manage_users",
+          "manage_projects",
+          "manage_issues",
+          "manage_messages",
+          "manage_roles",
+          "manage_transactions",
+          "manage_media",
+          "manage_github",
+          "manage_applications",
+          "view_analytics",
+          "system_config"
+        ],
+      });
+      adminRole = await ctx.db.get(adminRoleId);
+    }
+
+    if (!adminRole) {
+      throw new Error("Failed to create admin role");
+    }
 
     // Assign admin role
     await ctx.db.patch(user._id, {
-      roleId: adminRoleId,
+      roleId: adminRole._id,
       name: args.name,
     });
 

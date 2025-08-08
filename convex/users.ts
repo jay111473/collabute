@@ -310,6 +310,33 @@ export const completeUserProfileWithId = mutation({
     ),
   },
   handler: async (ctx, args) => {
+    // Require admin privileges for this operation
+    const currentUserId = await getAuthUserId(ctx);
+    if (!currentUserId) {
+      throw new Error("Authentication required");
+    }
+
+    const currentUser = await ctx.db.get(currentUserId);
+    if (!currentUser?.roleId) {
+      throw new Error("Admin privileges required");
+    }
+
+    const currentRole = await ctx.db.get(currentUser.roleId);
+    const isAdmin = currentRole && (
+      (currentRole.permissions?.includes("admin")) ||
+      currentRole.name === "admin"
+    );
+
+    if (!isAdmin) {
+      throw new Error("Admin privileges required");
+    }
+
+    // Verify target user exists
+    const targetUser = await ctx.db.get(args.userId);
+    if (!targetUser) {
+      throw new Error("User not found");
+    }
+
     // Update core user profile
     await ctx.db.patch(args.userId, {
       phoneNumber: args.phoneNumber,
@@ -769,5 +796,91 @@ export const getProjectManagerProfile = query({
       projectManagerFields: projectManagerFields,
       developerFields: developerFields, // Keep for backwards compatibility
     };
+  },
+});
+
+// Early Bird Registration
+export const registerEarlyBird = mutation({
+  args: {
+    name: v.string(),
+    email: v.string(),
+    type: v.union(
+      v.literal("developer"),
+      v.literal("designer"), 
+      v.literal("startup"),
+      v.literal("lead"),
+      v.literal("projectManager")
+    ),
+    phoneNumber: v.optional(v.string()),
+    countryCode: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    // Input sanitization
+    const sanitizedName = args.name.trim().slice(0, 100);
+    const sanitizedEmail = args.email.trim().toLowerCase().slice(0, 254);
+    const sanitizedPhone = args.phoneNumber?.trim().slice(0, 20);
+    const sanitizedCountryCode = args.countryCode?.trim().slice(0, 10);
+
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(sanitizedEmail)) {
+      throw new Error("Invalid email format");
+    }
+
+    // Name validation
+    if (sanitizedName.length < 2) {
+      throw new Error("Name must be at least 2 characters");
+    }
+
+    // Rate limiting: Check for recent registrations from same IP/source
+    // Note: In production, you'd want to implement proper rate limiting
+    const recentUsers = await ctx.db
+      .query("users")
+      .withIndex("by_creation_time")
+      .order("desc")
+      .take(10);
+
+    const oneHourAgo = Date.now() - (60 * 60 * 1000);
+    const recentSameEmail = recentUsers.filter(user => 
+      user.email === sanitizedEmail && 
+      (user.createdAt || 0) > oneHourAgo
+    );
+
+    if (recentSameEmail.length > 0) {
+      throw new Error("Registration attempt too recent. Please try again later.");
+    }
+
+    // Check if user with this email already exists
+    const existingUser = await ctx.db
+      .query("users")
+      .withIndex("email", (q) => q.eq("email", sanitizedEmail))
+      .first();
+
+    if (existingUser) {
+      throw new Error("User with this email already exists");
+    }
+
+    // Map form types to database types
+    const typeMapping = {
+      developer: "DEVELOPER",
+      designer: "DESIGNER", 
+      startup: "STARTUP",
+      lead: "LEAD",
+      projectManager: "PROJECT_MANAGER"
+    } as const;
+
+    // Create new early bird user
+    const userId = await ctx.db.insert("users", {
+      name: sanitizedName,
+      email: sanitizedEmail,
+      type: typeMapping[args.type],
+      phoneNumber: sanitizedPhone,
+      countryCode: sanitizedCountryCode,
+      earlybird: true,
+      createdAt: Date.now(),
+      isVerified: false,
+    });
+
+    return { userId };
   },
 });

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, Shield } from "lucide-react";
+import { useAdminAuth } from "@/hooks/use-admin-auth";
 
 export default function AdminLoginPage() {
   const [email, setEmail] = useState("");
@@ -17,7 +18,24 @@ export default function AdminLoginPage() {
   const [error, setError] = useState("");
   
   const { signIn } = useAuthActions();
+  const { isAdmin, isLoading: adminLoading } = useAdminAuth();
   const router = useRouter();
+
+  // Redirect if already admin
+  useEffect(() => {
+    if (!adminLoading && isAdmin) {
+      setIsLoading(false); // Clear the loading state
+      router.replace("/admin");
+    }
+  }, [isAdmin, adminLoading, router]);
+
+  // Clear loading state if admin check completes but user is not admin
+  useEffect(() => {
+    if (!adminLoading && !isAdmin && isLoading) {
+      setIsLoading(false);
+      setError("Invalid credentials or insufficient permissions");
+    }
+  }, [adminLoading, isAdmin, isLoading]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,11 +49,10 @@ export default function AdminLoginPage() {
         flow: "signIn",
       });
       
-      // Redirect will be handled by the layout after auth check
-      router.push("/admin");
+      // Don't redirect immediately - let the useEffect handle it
+      // This prevents race conditions with auth state
     } catch (err) {
       setError("Invalid credentials or insufficient permissions");
-    } finally {
       setIsLoading(false);
     }
   };

@@ -113,6 +113,7 @@ export function MobileMenu({
             </nav>
 
             {/* Actions with enhanced styling */}
+            {/* Commented out login and register buttons
             <motion.div
               className="border-t border-white/10 p-6 space-y-4"
               initial={{ opacity: 0, y: 20 }}
@@ -133,6 +134,7 @@ export function MobileMenu({
                 <Link href="/onboarding">Sign up</Link>
               </Button>
             </motion.div>
+            */}
           </motion.div>
         </>
       )}

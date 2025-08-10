@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import {
@@ -25,6 +25,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Transaction } from "@/types/convex";
 import { Calendar, DollarSign, CreditCard, Users, Receipt, FolderOpen } from "lucide-react";
+import { toast } from "sonner";
 
 interface TransactionEditDialogProps {
   transaction: Transaction | null;
@@ -46,18 +47,46 @@ export function TransactionEditDialog({ transaction, isOpen, onOpenChange, mode 
 
   const updateTransaction = useMutation(api.transactions.update);
 
+  // Update form data when transaction changes
+  useEffect(() => {
+    if (transaction) {
+      setFormData({
+        amount: transaction.amount || 0,
+        type: transaction.type || "",
+        method: transaction.method || "",
+        status: transaction.status || "PENDING",
+        reference: transaction.reference || "",
+        description: transaction.description || "",
+      });
+    }
+  }, [transaction]);
+
   const handleSave = async () => {
     if (!transaction || mode === "view") return;
     
     setIsLoading(true);
     try {
+      console.log("Updating transaction with data:", {
+        id: transaction._id,
+        updates: formData,
+      });
+
       await updateTransaction({
         id: transaction._id,
         ...formData,
       });
+      
+      toast.success("Transaction updated successfully!");
       onOpenChange(false);
     } catch (error) {
       console.error("Failed to update transaction:", error);
+      
+      let errorMessage = "Failed to update transaction";
+      if (error instanceof Error) {
+        errorMessage += `: ${error.message}`;
+      }
+      
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import {
@@ -32,6 +32,7 @@ import {
   Edit3,
   Trash2,
 } from "lucide-react";
+import { toast } from "sonner";
 
 interface MessageEditDialogProps {
   message: Message | null;
@@ -56,11 +57,28 @@ export function MessageEditDialog({
 
   const updateMessage = useMutation(api.messages.updateMessage);
 
+  // Update form data when message changes
+  useEffect(() => {
+    if (message) {
+      setFormData({
+        content: message.content || "",
+        type: message.type || "TEXT",
+        isEdited: message.isEdited || false,
+        isDeleted: message.isDeleted || false,
+      });
+    }
+  }, [message]);
+
   const handleSave = async () => {
     if (!message || mode === "view") return;
 
     setIsLoading(true);
     try {
+      console.log("Updating message with data:", {
+        messageId: message._id,
+        updates: formData,
+      });
+
       await updateMessage({
         messageId: message._id,
         updates: {
@@ -68,9 +86,18 @@ export function MessageEditDialog({
           type: formData.type as any,
         },
       });
+      
+      toast.success("Message updated successfully!");
       onOpenChange(false);
     } catch (error) {
       console.error("Failed to update message:", error);
+      
+      let errorMessage = "Failed to update message";
+      if (error instanceof Error) {
+        errorMessage += `: ${error.message}`;
+      }
+      
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }

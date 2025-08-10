@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import {
@@ -18,6 +18,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Media } from "@/types/convex";
 import { Calendar, Users, FileText, Image, Video, Music, File, ExternalLink } from "lucide-react";
+import { toast } from "sonner";
 
 interface MediaEditDialogProps {
   media: Media | null;
@@ -35,18 +36,42 @@ export function MediaEditDialog({ media, isOpen, onOpenChange, mode }: MediaEdit
 
   const updateMedia = useMutation(api.media.update);
 
+  // Update form data when media changes
+  useEffect(() => {
+    if (media) {
+      setFormData({
+        description: media.description || "",
+        type: media.type || "",
+      });
+    }
+  }, [media]);
+
   const handleSave = async () => {
     if (!media || mode === "view") return;
     
     setIsLoading(true);
     try {
+      console.log("Updating media with data:", {
+        id: media._id,
+        updates: formData,
+      });
+
       await updateMedia({
         id: media._id,
         ...formData,
       });
+      
+      toast.success("Media updated successfully!");
       onOpenChange(false);
     } catch (error) {
       console.error("Failed to update media:", error);
+      
+      let errorMessage = "Failed to update media";
+      if (error instanceof Error) {
+        errorMessage += `: ${error.message}`;
+      }
+      
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }

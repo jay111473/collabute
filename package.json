@@ -12,8 +12,11 @@
     "start:staging": "env-cmd -f .env.staging next start",
     "start:production": "env-cmd -f .env.production next start",
     "seed:admin": "node scripts/seed-admin.js",
+    "seed:admin:prod": "node scripts/seed-admin-production.js",
+    "seed:admin:env": "node scripts/seed-admin-env.js",
     "seed:admin:help": "echo 'Usage: bun run seed:admin [admin@example.com]'",
-    "check:admin": "node scripts/check-admin.js"
+    "check:admin": "node scripts/check-admin.js",
+    "check:admin:prod": "node scripts/check-admin-production.js"
   },
   "dependencies": {
     "@ai-sdk/amazon-bedrock": "2.2.11",

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import {
@@ -26,6 +26,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Product } from "@/types/convex";
 import { Package, DollarSign, Tag, Calendar, Monitor, HardDrive, Settings, CreditCard, Power, PowerOff } from "lucide-react";
+import { toast } from "sonner";
 
 interface ProductEditDialogProps {
   product: Product | null;
@@ -51,11 +52,29 @@ export function ProductEditDialog({
 
   const updateProduct = useMutation(api.products.updateProduct);
 
+  // Update form data when product changes
+  useEffect(() => {
+    if (product) {
+      setFormData({
+        name: product.name || "",
+        description: product.description || "",
+        category: product.category || "",
+        price: product.price || 0,
+        isActive: product.isActive || false,
+      });
+    }
+  }, [product]);
+
   const handleSave = async () => {
     if (!product || mode === "view") return;
 
     setIsLoading(true);
     try {
+      console.log("Updating product with data:", {
+        productId: product._id,
+        updates: formData,
+      });
+
       await updateProduct({
         productId: product._id,
         updates: {
@@ -66,9 +85,18 @@ export function ProductEditDialog({
           isActive: formData.isActive,
         },
       });
+      
+      toast.success("Product updated successfully!");
       onOpenChange(false);
     } catch (error) {
       console.error("Failed to update product:", error);
+      
+      let errorMessage = "Failed to update product";
+      if (error instanceof Error) {
+        errorMessage += `: ${error.message}`;
+      }
+      
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }

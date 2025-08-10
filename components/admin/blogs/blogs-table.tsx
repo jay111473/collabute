@@ -166,7 +166,10 @@ export function BlogsTable() {
                       {blog.title}
                     </div>
                     {blog.description && (
-                      <div className="text-sm text-gray-400 mt-1 truncate" title={blog.description}>
+                      <div
+                        className="text-sm text-gray-400 mt-1 truncate"
+                        title={blog.description}
+                      >
                         {blog.description}
                       </div>
                     )}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import {
@@ -30,6 +30,7 @@ import {
   Globe,
   Hash,
 } from "lucide-react";
+import { toast } from "sonner";
 
 interface GithubRepositoryEditDialogProps {
   repository: GithubRepository | null;
@@ -55,18 +56,45 @@ export function GithubRepositoryEditDialog({
 
   const updateRepository = useMutation(api.github_repositories.update);
 
+  // Update form data when repository changes
+  useEffect(() => {
+    if (repository) {
+      setFormData({
+        name: repository.name || "",
+        description: repository.description || "",
+        isActive: repository.isActive ?? true,
+        private: repository.private ?? false,
+        language: repository.language || "",
+      });
+    }
+  }, [repository]);
+
   const handleSave = async () => {
     if (!repository || mode === "view") return;
 
     setIsLoading(true);
     try {
+      console.log("Updating repository with data:", {
+        id: repository._id,
+        updates: formData,
+      });
+
       await updateRepository({
         id: repository._id,
         ...formData,
       });
+      
+      toast.success("Repository updated successfully!");
       onOpenChange(false);
     } catch (error) {
       console.error("Failed to update repository:", error);
+      
+      let errorMessage = "Failed to update repository";
+      if (error instanceof Error) {
+        errorMessage += `: ${error.message}`;
+      }
+      
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }

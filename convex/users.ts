@@ -219,6 +219,33 @@ export const completeUserProfile = mutation({
         teamSize: v.optional(v.string()),
       })
     ),
+    teamLeadFields: v.optional(
+      v.object({
+        basicInfo: v.object({
+          fullName: v.string(),
+          email: v.string(),
+          country: v.string(),
+          phoneNumber: v.optional(v.string()),
+          countryCode: v.optional(v.string()),
+        }),
+        profiles: v.object({
+          personalWebsite: v.optional(v.string()),
+          github: v.string(),
+          xProfile: v.string(),
+        }),
+        experience: v.object({
+          professionalPMExperience: v.string(),
+          startupExperience: v.string(),
+          resume: v.optional(v.any()),
+          projectSpecialties: v.array(v.string()),
+        }),
+        availability: v.object({
+          availabilityHours: v.string(),
+          greatSoftwareDefinition: v.string(),
+          projectManagementDescription: v.string(),
+        }),
+      })
+    ),
   },
   handler: async (ctx, args) => {
     // Get current authenticated user ID
@@ -280,6 +307,30 @@ export const completeUserProfile = mutation({
       }
     }
 
+    // Handle Team Lead profile creation
+    if (args.type === "PROJECT_MANAGER" && args.teamLeadFields) {
+      const existingProfile = await ctx.db
+        .query("project_manager_profiles")
+        .withIndex("by_user", (q) => q.eq("userId", userId))
+        .first();
+
+      if (!existingProfile) {
+        await ctx.db.insert("project_manager_profiles", {
+          userId: userId,
+          bio: args.teamLeadFields.availability.greatSoftwareDefinition,
+          experience: parseInt(args.teamLeadFields.experience.professionalPMExperience.split("-")[0]),
+          experienceLevel: "SENIOR" as any, // Default to SENIOR for Team Leads
+          availability: args.teamLeadFields.availability.availabilityHours,
+          portfolio: args.teamLeadFields.profiles.personalWebsite ? [args.teamLeadFields.profiles.personalWebsite] : [],
+          resumeUrl: args.teamLeadFields.experience.resume ? "resume_uploaded" : undefined,
+          primaryRole: args.teamLeadFields.experience.projectSpecialties,
+          githubProfile: args.teamLeadFields.profiles.github,
+          managementExperience: parseInt(args.teamLeadFields.experience.professionalPMExperience.split("-")[0]),
+          projectTypes: args.teamLeadFields.experience.projectSpecialties,
+        });
+      }
+    }
+
     return { success: true };
   },
 });
@@ -306,6 +357,33 @@ export const completeUserProfileWithId = mutation({
       v.object({
         companyName: v.optional(v.string()),
         teamSize: v.optional(v.string()),
+      })
+    ),
+    teamLeadFields: v.optional(
+      v.object({
+        basicInfo: v.object({
+          fullName: v.string(),
+          email: v.string(),
+          country: v.string(),
+          phoneNumber: v.optional(v.string()),
+          countryCode: v.optional(v.string()),
+        }),
+        profiles: v.object({
+          personalWebsite: v.optional(v.string()),
+          github: v.string(),
+          xProfile: v.string(),
+        }),
+        experience: v.object({
+          professionalPMExperience: v.string(),
+          startupExperience: v.string(),
+          resume: v.optional(v.any()),
+          projectSpecialties: v.array(v.string()),
+        }),
+        availability: v.object({
+          availabilityHours: v.string(),
+          greatSoftwareDefinition: v.string(),
+          projectManagementDescription: v.string(),
+        }),
       })
     ),
   },
@@ -386,6 +464,30 @@ export const completeUserProfileWithId = mutation({
           teamSize: args.startupFields.teamSize
             ? parseInt(args.startupFields.teamSize.split("-")[0])
             : undefined,
+        });
+      }
+    }
+
+    // Handle Team Lead profile creation
+    if (args.type === "PROJECT_MANAGER" && args.teamLeadFields) {
+      const existingProfile = await ctx.db
+        .query("project_manager_profiles")
+        .withIndex("by_user", (q) => q.eq("userId", args.userId))
+        .first();
+
+      if (!existingProfile) {
+        await ctx.db.insert("project_manager_profiles", {
+          userId: args.userId,
+          bio: args.teamLeadFields.availability.greatSoftwareDefinition,
+          experience: parseInt(args.teamLeadFields.experience.professionalPMExperience.split("-")[0]),
+          experienceLevel: "SENIOR" as any, // Default to SENIOR for Team Leads
+          availability: args.teamLeadFields.availability.availabilityHours,
+          portfolio: args.teamLeadFields.profiles.personalWebsite ? [args.teamLeadFields.profiles.personalWebsite] : [],
+          resumeUrl: args.teamLeadFields.experience.resume ? "resume_uploaded" : undefined,
+          primaryRole: args.teamLeadFields.experience.projectSpecialties,
+          githubProfile: args.teamLeadFields.profiles.github,
+          managementExperience: parseInt(args.teamLeadFields.experience.professionalPMExperience.split("-")[0]),
+          projectTypes: args.teamLeadFields.experience.projectSpecialties,
         });
       }
     }

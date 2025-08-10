@@ -14,7 +14,10 @@ interface AccountTypeSelectorProps {
   } | null;
 }
 
-export const AccountTypeSelector = ({ form, invitationData }: AccountTypeSelectorProps) => {
+export const AccountTypeSelector = ({
+  form,
+  invitationData,
+}: AccountTypeSelectorProps) => {
   const handleAccountTypeChange = (value: string) => {
     form.setValue("type", value as "developer" | "startup" | "project_manager");
     // Ensure the appropriate fields structure is initialized
@@ -36,7 +39,7 @@ export const AccountTypeSelector = ({ form, invitationData }: AccountTypeSelecto
   };
 
   const isProjectManagerInvite = invitationData?.type === "PROJECT_MANAGER";
-  const gridCols = isProjectManagerInvite ? "grid-cols-1" : "grid-cols-2";
+  const gridCols = isProjectManagerInvite ? "grid-cols-1" : "grid-cols-3";
 
   return (
     <FormItem className="col-span-full">
@@ -98,10 +101,26 @@ export const AccountTypeSelector = ({ form, invitationData }: AccountTypeSelecto
                   <div className="text-center text-sm">Founder</div>
                 </Label>
               </FormItem>
+              <FormItem>
+                <FormControl>
+                  <RadioGroupItem
+                    value="project_manager"
+                    className="peer sr-only"
+                    id="project_manager"
+                  />
+                </FormControl>
+                <Label
+                  htmlFor="project_manager"
+                  className="flex items-center justify-center gap-2 rounded-md border-2 border-grayBorders bg-popover py-4 px-4 peer-data-[state=checked]:border-darkPrimary peer-data-[state=checked]:bg-purple/10 peer-data-[state=checked]:font-bold [&:has([data-state=checked])]:border-darkPrimary [&:has([data-state=checked])]:bg-purple/10 [&:has([data-state=checked])]:font-bold"
+                >
+                  <Building className="h-4 w-4" />
+                  <div className="text-center text-sm">Team Lead</div>
+                </Label>
+              </FormItem>
             </>
           )}
         </RadioGroup>
       </FormControl>
     </FormItem>
   );
-}; 
+};

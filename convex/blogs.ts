@@ -264,10 +264,7 @@ export const getBlogsWithPagination = query({
 export const listAllBlogs = query({
   args: {},
   handler: async (ctx) => {
-    const blogs = await ctx.db
-      .query("blogs")
-      .order("desc")
-      .collect();
+    const blogs = await ctx.db.query("blogs").order("desc").collect();
 
     const blogsWithRelatedData = await Promise.all(
       blogs.map(async (blog) => {
@@ -337,27 +334,27 @@ export const createBlog = mutation({
 
     try {
       const now = Date.now();
-      
+
       // Validate content structure if present
       if (args.content) {
         try {
           // Test if content can be serialized/deserialized
           const contentTest = JSON.stringify(args.content);
           const parsed = JSON.parse(contentTest);
-          
+
           // Basic TipTap structure validation
-          if (parsed && typeof parsed === 'object') {
+          if (parsed && typeof parsed === "object") {
             // Check for basic TipTap document structure
-            if (!parsed.type || (parsed.type !== 'doc' && !parsed.content)) {
+            if (!parsed.type || (parsed.type !== "doc" && !parsed.content)) {
               console.warn("Content may not be valid TipTap format:", parsed);
             }
           }
-          
+
           console.log("Content validation passed for blog:", args.title);
         } catch (contentError) {
           console.error("Content validation failed:", contentError);
           console.error("Failed content:", args.content);
-          throw new Error(`Invalid content structure: ${contentError.message}`);
+          throw new Error(`Invalid content structure: ${contentError}`);
         }
       }
 
@@ -386,13 +383,13 @@ export const createBlog = mutation({
       });
 
       const blogId = await ctx.db.insert("blogs", blogData);
-      
+
       console.log("Blog created successfully with ID:", blogId);
       return blogId;
     } catch (error) {
       console.error("Error creating blog:", error);
       console.error("Args that caused error:", args);
-      throw new Error(`Failed to create blog: ${error.message}`);
+      throw new Error(`Failed to create blog: ${error}`);
     }
   },
 });
@@ -432,13 +429,13 @@ export const updateBlog = mutation({
       id: args.id,
       hasContent: !!args.content,
       contentType: typeof args.content,
-      updateFields: Object.keys(args).filter(key => key !== 'id'),
+      updateFields: Object.keys(args).filter((key) => key !== "id"),
     });
 
     try {
       const { id, ...updates } = args;
       const now = Date.now();
-      
+
       const existingBlog = await ctx.db.get(id);
       if (!existingBlog) {
         throw new Error("Blog not found");
@@ -450,20 +447,20 @@ export const updateBlog = mutation({
           // Test if content can be serialized/deserialized
           const contentTest = JSON.stringify(updates.content);
           const parsed = JSON.parse(contentTest);
-          
+
           // Basic TipTap structure validation
-          if (parsed && typeof parsed === 'object') {
+          if (parsed && typeof parsed === "object") {
             // Check for basic TipTap document structure
-            if (!parsed.type || (parsed.type !== 'doc' && !parsed.content)) {
+            if (!parsed.type || (parsed.type !== "doc" && !parsed.content)) {
               console.warn("Content may not be valid TipTap format:", parsed);
             }
           }
-          
+
           console.log("Content validation passed for blog update:", id);
         } catch (contentError) {
           console.error("Content validation failed:", contentError);
           console.error("Failed content:", updates.content);
-          throw new Error(`Invalid content structure: ${contentError.message}`);
+          throw new Error(`Invalid content structure: ${contentError}`);
         }
       }
 
@@ -473,7 +470,10 @@ export const updateBlog = mutation({
       };
 
       // Set publishedAt when status changes to published
-      if (updates.status === "published" && existingBlog.status !== "published") {
+      if (
+        updates.status === "published" &&
+        existingBlog.status !== "published"
+      ) {
         updatedFields.publishedAt = now;
       }
 
@@ -484,13 +484,13 @@ export const updateBlog = mutation({
       });
 
       await ctx.db.patch(id, updatedFields);
-      
+
       console.log("Blog updated successfully:", id);
       return id;
     } catch (error) {
       console.error("Error updating blog:", error);
       console.error("Args that caused error:", args);
-      throw new Error(`Failed to update blog: ${error.message}`);
+      throw new Error(`Failed to update blog: ${error}`);
     }
   },
 });

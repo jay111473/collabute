@@ -28,6 +28,7 @@ import { useAdminAuth } from "@/hooks/use-admin-auth";
 import { X, Plus } from "lucide-react";
 import { BlogWithDetails } from "@/types/convex";
 import { toast } from "sonner";
+import { validateTiptapContent } from "@/lib/tiptap-utils";
 
 interface BlogEditDialogProps {
   blog: BlogWithDetails | null;
@@ -161,59 +162,73 @@ export function BlogEditDialog({
     }));
   };
 
+  const sanitizeContent = (content: any) => {
+    return validateTiptapContent(content);
+  };
+
   const handleSubmit = async () => {
-    if (!formData.title.trim() || !formData.slug.trim()) return;
+    if (!formData.title.trim() || !formData.slug.trim()) {
+      toast.error("Title and slug are required");
+      return;
+    }
 
     setIsLoading(true);
     try {
+      // Sanitize and validate content before submission
+      const sanitizedContent = sanitizeContent(formData.content);
+      
+      console.log("Submitting blog with content:", {
+        contentType: typeof formData.content,
+        contentValue: formData.content,
+        sanitizedContent,
+        hasContent: !!sanitizedContent
+      });
+
+      const blogData = {
+        title: formData.title.trim(),
+        slug: formData.slug.trim(),
+        description: formData.description.trim() || undefined,
+        content: sanitizedContent,
+        thumbnail: formData.thumbnailId
+          ? (formData.thumbnailId as any)
+          : undefined,
+        status: formData.status,
+        category:
+          formData.categoryId !== "none"
+            ? (formData.categoryId as any)
+            : undefined,
+        tags:
+          formData.tagIds.length > 0 ? (formData.tagIds as any[]) : undefined,
+        authorId:
+          formData.authorId !== "none"
+            ? (formData.authorId as any)
+            : undefined,
+      };
+
       if (mode === "create") {
-        await createBlog({
-          title: formData.title.trim(),
-          slug: formData.slug.trim(),
-          description: formData.description.trim() || undefined,
-          content: formData.content || undefined,
-          thumbnail: formData.thumbnailId
-            ? (formData.thumbnailId as any)
-            : undefined,
-          status: formData.status,
-          category:
-            formData.categoryId !== "none"
-              ? (formData.categoryId as any)
-              : undefined,
-          tags:
-            formData.tagIds.length > 0 ? (formData.tagIds as any[]) : undefined,
-          authorId:
-            formData.authorId !== "none"
-              ? (formData.authorId as any)
-              : undefined,
-        });
+        const result = await createBlog(blogData);
+        console.log("Blog created successfully:", result);
+        toast.success("Blog created successfully!");
       } else if (mode === "edit" && blog) {
-        await updateBlog({
+        const result = await updateBlog({
           id: blog._id as any,
-          title: formData.title.trim(),
-          slug: formData.slug.trim(),
-          description: formData.description.trim() || undefined,
-          content: formData.content || undefined,
-          thumbnail: formData.thumbnailId
-            ? (formData.thumbnailId as any)
-            : undefined,
-          status: formData.status,
-          category:
-            formData.categoryId !== "none"
-              ? (formData.categoryId as any)
-              : undefined,
-          tags:
-            formData.tagIds.length > 0 ? (formData.tagIds as any[]) : undefined,
-          authorId:
-            formData.authorId !== "none"
-              ? (formData.authorId as any)
-              : undefined,
+          ...blogData,
         });
+        console.log("Blog updated successfully:", result);
+        toast.success("Blog updated successfully!");
       }
 
       onOpenChange(false);
     } catch (error) {
       console.error(`Failed to ${mode} blog:`, error);
+      console.error("Form data at time of error:", formData);
+      
+      let errorMessage = `Failed to ${mode} blog`;
+      if (error instanceof Error) {
+        errorMessage += `: ${error.message}`;
+      }
+      
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }

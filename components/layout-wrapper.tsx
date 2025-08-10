@@ -11,14 +11,17 @@ interface LayoutWrapperProps {
 export function LayoutWrapper({ children }: LayoutWrapperProps) {
   const pathname = usePathname();
   
-  // Check if current path is admin or dashboard route
-  const isAdminOrDashboard = pathname?.startsWith('/admin') || pathname?.startsWith('/dashboard');
+  // Check if current path should hide header and footer
+  const shouldHideHeaderFooter = pathname?.startsWith('/admin') || 
+                                pathname?.startsWith('/dashboard') || 
+                                pathname?.startsWith('/onboarding') || 
+                                pathname?.startsWith('/login');
   
   return (
-    <div className={isAdminOrDashboard ? 'h-full' : ''}>
-      {!isAdminOrDashboard && <Header />}
+    <div className={shouldHideHeaderFooter ? 'h-full' : ''}>
+      {!shouldHideHeaderFooter && <Header />}
       {children}
-      {!isAdminOrDashboard && <Footer />}
+      {!shouldHideHeaderFooter && <Footer />}
     </div>
   );
 } 

@@ -82,6 +82,51 @@ export function generateExcerpt(text: string, maxLength: number = 160): string {
 }
 
 /**
+ * Validate and sanitize TipTap content for database storage
+ */
+export function validateTiptapContent(content: any): any | null {
+  // Handle null/undefined content
+  if (!content) return null;
+  
+  try {
+    // Ensure content can be serialized/deserialized
+    const serialized = JSON.stringify(content);
+    const parsed = JSON.parse(serialized);
+    
+    // Basic TipTap structure validation
+    if (parsed && typeof parsed === 'object') {
+      // Check if it has the basic TipTap document structure
+      if (parsed.type && (parsed.type === 'doc' || parsed.content)) {
+        // Test if it can be converted to HTML (validates extensions compatibility)
+        try {
+          generateHTML(parsed, extensions);
+          return parsed;
+        } catch (htmlError) {
+          console.warn("Content failed HTML generation test:", htmlError);
+          // Return the parsed content anyway, as some custom content might not render but should still be saved
+          return parsed;
+        }
+      }
+      
+      // If it's an object but not proper TipTap format, return null
+      console.warn("Content doesn't match TipTap structure:", parsed);
+      return null;
+    }
+    
+    // If content is just a string or other primitive, return null
+    if (typeof content === 'string' && content.trim() === '') {
+      return null;
+    }
+    
+    return parsed;
+  } catch (error) {
+    console.error("Content validation failed:", error);
+    console.error("Content that failed validation:", content);
+    return null;
+  }
+}
+
+/**
  * Process Tiptap content for storage
  */
 export function processTiptapContent(json: any) {

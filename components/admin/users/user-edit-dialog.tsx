@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import {
@@ -33,6 +33,7 @@ import {
   Mail,
   User as UserIcon,
 } from "lucide-react";
+import { toast } from "sonner";
 
 interface UserEditDialogProps {
   user: User | null;
@@ -62,11 +63,33 @@ export function UserEditDialog({
 
   const updateUser = useMutation(api.users.updateUserProfile);
 
+  // Update form data when user changes
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        email: user.email || "",
+        name: user.name || "",
+        type: user.type || "",
+        phoneNumber: user.phoneNumber || "",
+        country: user.country || "",
+        industry: user.industry || "",
+        wallet: user.wallet || 0,
+        isVerified: user.isVerified || false,
+        kycStatus: user.kycStatus || "UNVERIFIED",
+      });
+    }
+  }, [user]);
+
   const handleSave = async () => {
     if (!user || mode === "view") return;
 
     setIsLoading(true);
     try {
+      console.log("Updating user with data:", {
+        userId: user._id,
+        updates: formData,
+      });
+
       await updateUser({
         userId: user._id,
         updates: {
@@ -75,9 +98,18 @@ export function UserEditDialog({
           kycStatus: formData.kycStatus as any,
         },
       });
+      
+      toast.success("User updated successfully!");
       onOpenChange(false);
     } catch (error) {
       console.error("Failed to update user:", error);
+      
+      let errorMessage = "Failed to update user";
+      if (error instanceof Error) {
+        errorMessage += `: ${error.message}`;
+      }
+      
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }

@@ -320,7 +320,14 @@ export function RichTextEditor({
     ],
     content,
     onUpdate: ({ editor }) => {
-      onChange?.(editor.getJSON());
+      const jsonContent = editor.getJSON();
+      console.log("RichTextEditor content updated:", {
+        contentType: typeof jsonContent,
+        hasType: !!jsonContent?.type,
+        hasContent: !!jsonContent?.content,
+        structure: jsonContent,
+      });
+      onChange?.(jsonContent);
     },
     immediatelyRender: false,
     editable: !readOnly,

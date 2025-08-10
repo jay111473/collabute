@@ -327,26 +327,73 @@ export const createBlog = mutation({
     ),
   },
   handler: async (ctx, args) => {
-    const now = Date.now();
-    
-    const blogId = await ctx.db.insert("blogs", {
+    console.log("Creating blog with args:", {
       title: args.title,
       slug: args.slug,
-      description: args.description,
-      profilePicture: args.profilePicture,
-      thumbnail: args.thumbnail,
-      category: args.category,
-      tags: args.tags,
-      content: args.content,
-      status: args.status || "draft",
-      publishedAt: args.status === "published" ? now : undefined,
-      updatedAt: now,
-      authorId: args.authorId,
-      meta: args.meta,
-      faq: args.faq,
+      hasContent: !!args.content,
+      contentType: typeof args.content,
+      contentKeys: args.content ? Object.keys(args.content) : [],
     });
 
-    return blogId;
+    try {
+      const now = Date.now();
+      
+      // Validate content structure if present
+      if (args.content) {
+        try {
+          // Test if content can be serialized/deserialized
+          const contentTest = JSON.stringify(args.content);
+          const parsed = JSON.parse(contentTest);
+          
+          // Basic TipTap structure validation
+          if (parsed && typeof parsed === 'object') {
+            // Check for basic TipTap document structure
+            if (!parsed.type || (parsed.type !== 'doc' && !parsed.content)) {
+              console.warn("Content may not be valid TipTap format:", parsed);
+            }
+          }
+          
+          console.log("Content validation passed for blog:", args.title);
+        } catch (contentError) {
+          console.error("Content validation failed:", contentError);
+          console.error("Failed content:", args.content);
+          throw new Error(`Invalid content structure: ${contentError.message}`);
+        }
+      }
+
+      const blogData = {
+        title: args.title,
+        slug: args.slug,
+        description: args.description,
+        profilePicture: args.profilePicture,
+        thumbnail: args.thumbnail,
+        category: args.category,
+        tags: args.tags,
+        content: args.content,
+        status: args.status || "draft",
+        publishedAt: args.status === "published" ? now : undefined,
+        updatedAt: now,
+        authorId: args.authorId,
+        meta: args.meta,
+        faq: args.faq,
+      };
+
+      console.log("Inserting blog data:", {
+        title: blogData.title,
+        slug: blogData.slug,
+        hasContent: !!blogData.content,
+        status: blogData.status,
+      });
+
+      const blogId = await ctx.db.insert("blogs", blogData);
+      
+      console.log("Blog created successfully with ID:", blogId);
+      return blogId;
+    } catch (error) {
+      console.error("Error creating blog:", error);
+      console.error("Args that caused error:", args);
+      throw new Error(`Failed to create blog: ${error.message}`);
+    }
   },
 });
 
@@ -381,26 +428,70 @@ export const updateBlog = mutation({
     ),
   },
   handler: async (ctx, args) => {
-    const { id, ...updates } = args;
-    const now = Date.now();
-    
-    const existingBlog = await ctx.db.get(id);
-    if (!existingBlog) {
-      throw new Error("Blog not found");
+    console.log("Updating blog with args:", {
+      id: args.id,
+      hasContent: !!args.content,
+      contentType: typeof args.content,
+      updateFields: Object.keys(args).filter(key => key !== 'id'),
+    });
+
+    try {
+      const { id, ...updates } = args;
+      const now = Date.now();
+      
+      const existingBlog = await ctx.db.get(id);
+      if (!existingBlog) {
+        throw new Error("Blog not found");
+      }
+
+      // Validate content structure if present
+      if (updates.content) {
+        try {
+          // Test if content can be serialized/deserialized
+          const contentTest = JSON.stringify(updates.content);
+          const parsed = JSON.parse(contentTest);
+          
+          // Basic TipTap structure validation
+          if (parsed && typeof parsed === 'object') {
+            // Check for basic TipTap document structure
+            if (!parsed.type || (parsed.type !== 'doc' && !parsed.content)) {
+              console.warn("Content may not be valid TipTap format:", parsed);
+            }
+          }
+          
+          console.log("Content validation passed for blog update:", id);
+        } catch (contentError) {
+          console.error("Content validation failed:", contentError);
+          console.error("Failed content:", updates.content);
+          throw new Error(`Invalid content structure: ${contentError.message}`);
+        }
+      }
+
+      const updatedFields: any = {
+        ...updates,
+        updatedAt: now,
+      };
+
+      // Set publishedAt when status changes to published
+      if (updates.status === "published" && existingBlog.status !== "published") {
+        updatedFields.publishedAt = now;
+      }
+
+      console.log("Patching blog with fields:", {
+        id,
+        hasContent: !!updatedFields.content,
+        status: updatedFields.status,
+      });
+
+      await ctx.db.patch(id, updatedFields);
+      
+      console.log("Blog updated successfully:", id);
+      return id;
+    } catch (error) {
+      console.error("Error updating blog:", error);
+      console.error("Args that caused error:", args);
+      throw new Error(`Failed to update blog: ${error.message}`);
     }
-
-    const updatedFields: any = {
-      ...updates,
-      updatedAt: now,
-    };
-
-    // Set publishedAt when status changes to published
-    if (updates.status === "published" && existingBlog.status !== "published") {
-      updatedFields.publishedAt = now;
-    }
-
-    await ctx.db.patch(id, updatedFields);
-    return id;
   },
 });
 

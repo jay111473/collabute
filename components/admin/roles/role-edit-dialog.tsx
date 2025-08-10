@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import {
@@ -19,6 +19,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Role } from "@/types/convex";
 import { Calendar, Shield, Activity, Tag, Users } from "lucide-react";
+import { toast } from "sonner";
 
 interface RoleEditDialogProps {
   role: Role | null;
@@ -39,18 +40,45 @@ export function RoleEditDialog({ role, isOpen, onOpenChange, mode }: RoleEditDia
 
   const updateRole = useMutation(api.roles.update);
 
+  // Update form data when role changes
+  useEffect(() => {
+    if (role) {
+      setFormData({
+        name: role.name || "",
+        displayName: role.displayName || "",
+        description: role.description || "",
+        isActive: role.isActive ?? true,
+        permissions: role.permissions || [],
+      });
+    }
+  }, [role]);
+
   const handleSave = async () => {
     if (!role || mode === "view") return;
     
     setIsLoading(true);
     try {
+      console.log("Updating role with data:", {
+        id: role._id,
+        updates: formData,
+      });
+
       await updateRole({
         id: role._id,
         ...formData,
       });
+      
+      toast.success("Role updated successfully!");
       onOpenChange(false);
     } catch (error) {
       console.error("Failed to update role:", error);
+      
+      let errorMessage = "Failed to update role";
+      if (error instanceof Error) {
+        errorMessage += `: ${error.message}`;
+      }
+      
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }

@@ -5,8 +5,12 @@ import AIBadge from "@/components/uikit/ai-badge";
 import { CosmicButton } from "@/components/uikit/cosmic-button";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { useGitHubStars } from "@/hooks/use-github-stars";
+import GithubIcon from "@/public/icons/github";
 
 const Hero = () => {
+  const { stars, formatStars, loading } = useGitHubStars("muperdev/collabute");
+
   return (
     <div className="w-full flex flex-col justify-center items-center min-h-[70vh] relative bg-background">
       {/* Network pattern background at top */}
@@ -57,6 +61,44 @@ const Hero = () => {
           </Link>
         </div>
 
+        {/* Open Source Section */}
+        <div className="mt-8">
+          <Link
+            href="https://github.com/muperdev/collabute"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <Button
+              className="border border-transparent hover:border-neutral-600 text-white hover:text-white px-4 py-2 text-xs transition-all duration-300 flex items-center gap-2 group hover:bg-darkGray"
+            >
+              <div className="flex items-center gap-1">
+                <GithubIcon
+                  width={16}
+                  height={16}
+                  className="text-white group-hover:text-white transition-colors duration-300"
+                />
+                <span>Give us a star</span>
+
+                {!loading && formatStars && (
+                  <div className="flex items-center gap-1 rounded-full px-2 py-1">
+                    <span className="text-xs font-medium">{formatStars}</span>
+
+                    <svg
+                      width="12"
+                      height="12"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                      className="text-yellow-400"
+                    >
+                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                    </svg>
+                  </div>
+                )}
+              </div>
+            </Button>
+          </Link>
+        </div>
+
         {/* Company logos section */}
         <div className="mt-12 md:mt-28 w-full">
           <p className="text-gray-500 text-sm mb-8">
@@ -88,20 +130,6 @@ const Hero = () => {
             <Image
               src="/trt-logo 1.png"
               alt="TRT World"
-              width={66}
-              height={31}
-              className="w-auto"
-            />
-            <Image
-              src="/Bottles4you.png"
-              alt="Bottles4you"
-              width={66}
-              height={31}
-              className="w-auto"
-            />
-            <Image
-              src="/DomainDragon.png"
-              alt="Domain Dragon"
               width={66}
               height={31}
               className="w-auto"

@@ -80,9 +80,59 @@ body {
       rgba(17, 23, 61, 0) 100%
     ),
     rgba(46, 28, 69, 0.28);
-  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.2);
+  box-shadow: 
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.2),
+    0 0 0 0 rgba(179, 119, 252, 0);
   border: 1px solid transparent;
   background-clip: padding-box;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+
+.cosmic-button:hover {
+  transform: translateY(-1px) scale(1.02);
+  background:
+    radial-gradient(
+      0% 100% at 48.06% 100%,
+      rgba(206, 172, 247, 0.8) 0%,
+      rgba(17, 23, 61, 0) 100%
+    ),
+    radial-gradient(
+      58.31% 100% at 48.06% 100%,
+      rgba(179, 119, 252, 0.8) 0%,
+      rgba(17, 23, 61, 0) 100%
+    ),
+    rgba(46, 28, 69, 0.5);
+  box-shadow: 
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.3),
+    0 8px 32px 0 rgba(179, 119, 252, 0.4),
+    0 0 0 1px rgba(179, 119, 252, 0.2);
+}
+
+.cosmic-button:active {
+  transform: translateY(0) scale(1);
+  transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.cosmic-button::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transition: left 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+}
+
+.cosmic-button:hover::after {
+  left: 100%;
 }
 
 .cosmic-button::before {

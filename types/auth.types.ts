@@ -106,8 +106,6 @@ export interface DesignerProfiles {
 export interface DesignerExperience {
   professionalDesignExperience: ExperienceDuration;
   startupExperience: ExperienceDuration;
-  resume?: File | null;
-  resumeId?: Id<"media">;
   designWorkTypes: DesignWorkType[];
 }
 

@@ -6,9 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { CountrySelect } from "@/components/ui/country-select";
-import { Globe, Upload, Eye, EyeOff, Loader2 } from "lucide-react";
+import { Globe, Eye, EyeOff, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { FileUploadWithProgress } from "../ui/file-upload-with-progress";
 import { Id } from "../../convex/_generated/dataModel";
 import { WebsitePreview } from "@/components/ui/url-preview";
 import {
@@ -75,7 +74,6 @@ const DesignerWizard = ({
     experience: {
       professionalDesignExperience: "2-3 years",
       startupExperience: "0-1 years",
-      resume: null,
       designWorkTypes: [],
     },
     availability: {
@@ -160,10 +158,6 @@ const DesignerWizard = ({
         "Please select at least one design work type";
     }
 
-    if (!designerData.experience.resumeId) {
-      errors["experience.resumeId"] = "Resume is required";
-    }
-
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -213,7 +207,8 @@ const DesignerWizard = ({
             await onSubmit();
             // Success - show toast and redirect will happen in the parent component
             toast.success("Application submitted successfully!", {
-              description: "Your application is under review. We'll contact you soon!",
+              description:
+                "Your application is under review. We'll contact you soon!",
             });
           } catch (error: any) {
             console.error("Submission error:", error);
@@ -571,33 +566,8 @@ const DesignerWizard = ({
             </div>
 
             <div className="space-y-2">
-              <Label className="text-white">Resume/CV</Label>
-              <FileUploadWithProgress
-                onFileUploaded={(mediaId: Id<"media">, fileName: string) => {
-                  updateNestedField("experience", "resumeId", mediaId);
-                }}
-                onFileRemoved={() => {
-                  updateNestedField("experience", "resumeId", undefined);
-                }}
-                accept=".pdf,.doc,.docx"
-                maxSize={5}
-                currentFile={
-                  designerData.experience.resumeId
-                    ? {
-                        mediaId: designerData.experience
-                          .resumeId as Id<"media">,
-                        fileName: "Resume",
-                      }
-                    : null
-                }
-                label="Upload CV/Resume"
-              />
-              {renderFieldError("experience.resumeId")}
-            </div>
-
-            <div className="space-y-2">
               <Label className="text-white">
-                What type of design work energizes you most? *{" "}
+                What type of design work energizes you most?
                 <span className="text-gray-400">(Select all that apply)</span>
               </Label>
 

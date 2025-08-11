@@ -5,7 +5,13 @@ import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, Calendar, Github, Star, Bookmark, Code } from "lucide-react";
-import { User, Media, DeveloperProfile, ProjectManagerProfile, LeadProfile } from "@/types/convex";
+import {
+  User,
+  Media,
+  DeveloperProfile,
+  ProjectManagerProfile,
+  LeadProfile,
+} from "@/types/convex";
 
 interface Stack {
   name: string;
@@ -36,7 +42,9 @@ const formatDate = (date: Date): string => {
 /**
  * Extracts the profile picture URL from a project manager
  */
-const getProfilePictureUrl = (projectManager: EnhancedUser): string | undefined => {
+const getProfilePictureUrl = (
+  projectManager: EnhancedUser
+): string | undefined => {
   return projectManager.profilePicture &&
     typeof projectManager.profilePicture === "object"
     ? (projectManager.profilePicture as Media).url || undefined
@@ -49,7 +57,7 @@ const getProfilePictureUrl = (projectManager: EnhancedUser): string | undefined 
 const getSpecialties = (projectManager: EnhancedUser): string => {
   const specialties = projectManager?.projectManagerFields?.projectSpecialties;
   const leadStack = projectManager.leadFields?.specializations;
-  
+
   return specialties?.join(", ") || leadStack?.join(", ") || "Not specified";
 };
 
@@ -69,7 +77,7 @@ const getPrimaryRole = (projectManager: EnhancedUser): string => {
   if (projectManager.leadFields?.title) {
     return projectManager.leadFields.title;
   }
-  
+
   // For project managers, return a static role
   return "Project Manager";
 };
@@ -78,12 +86,16 @@ const getPrimaryRole = (projectManager: EnhancedUser): string => {
  * Gets industry information from specialties
  */
 const getIndustry = (projectManager: EnhancedUser): string => {
-  const specialties = projectManager?.projectManagerFields?.projectSpecialties || [];
+  const specialties =
+    projectManager?.projectManagerFields?.projectSpecialties || [];
   const specialtiesText = specialties.join(" ").toLowerCase();
   if (specialtiesText.includes("saas")) {
     return "SaaS, Web Applications";
   }
-  if (specialtiesText.includes("e-commerce") || specialtiesText.includes("marketplace")) {
+  if (
+    specialtiesText.includes("e-commerce") ||
+    specialtiesText.includes("marketplace")
+  ) {
     return "E-commerce, Marketplace";
   }
   if (specialtiesText.includes("mobile")) {
@@ -92,7 +104,10 @@ const getIndustry = (projectManager: EnhancedUser): string => {
   if (specialtiesText.includes("enterprise")) {
     return "Enterprise Software";
   }
-  if (specialtiesText.includes("dashboard") || specialtiesText.includes("analytics")) {
+  if (
+    specialtiesText.includes("dashboard") ||
+    specialtiesText.includes("analytics")
+  ) {
     return "Data, Analytics";
   }
 
@@ -118,9 +133,10 @@ const getIndustry = (projectManager: EnhancedUser): string => {
  * Gets experience years from the experience string
  */
 const getExperienceYears = (projectManager: EnhancedUser): number => {
-  const pmExperience = projectManager.projectManagerFields?.professionalPMExperience;
+  const pmExperience =
+    projectManager.projectManagerFields?.professionalPMExperience;
   if (!pmExperience) return 0;
-  
+
   // Extract number from strings like "2-3 years", "8-10 years", "+10 years"
   if (pmExperience.includes("+10")) return 10;
   const match = pmExperience.match(/(\d+)/);
@@ -131,22 +147,14 @@ const getExperienceYears = (projectManager: EnhancedUser): number => {
  * Calculates a mock rating based on experience and projects
  */
 const calculateRating = (projectManager: EnhancedUser): number => {
-  const experience = projectManager.projectManagerFields?.experience || 
-                    projectManager.leadFields?.managementExperience || 
-                    projectManager.developerFields?.experience || 0;
+  const experience =
+    projectManager.projectManagerFields?.professionalPMExperience ||
+    projectManager.leadFields?.managementExperience ||
+    projectManager.developerFields?.experience ||
+    0;
   const projectCount = projectManager.projects?.length || 0;
 
-  // Base rating on experience and projects
-  let rating = 3.5; // Base rating
-
-  if (experience >= 8) rating += 1.0;
-  else if (experience >= 5) rating += 0.7;
-  else if (experience >= 3) rating += 0.4;
-
-  if (projectCount >= 10) rating += 0.4;
-  else if (projectCount >= 5) rating += 0.2;
-
-  return Math.min(5.0, Math.round(rating * 10) / 10);
+  return projectCount;
 };
 
 /**
@@ -163,9 +171,11 @@ const ProjectManagerCard: FC<ProjectManagerCardProps> = ({
     : "Unknown";
   const currentProjects = projectManager.projects?.length || 0;
   const developmentProjects = currentProjects;
-  const experience = projectManager.projectManagerFields?.experience || 
-                    projectManager.leadFields?.managementExperience || 
-                    projectManager.developerFields?.experience || 0;
+  const experience =
+    projectManager.projectManagerFields?.professionalPMExperience ||
+    projectManager.leadFields?.managementExperience ||
+    projectManager.developerFields?.experience ||
+    0;
   const rating = calculateRating(projectManager);
   const industry = getIndustry(projectManager);
   const skills = getSkills(projectManager);
@@ -174,8 +184,9 @@ const ProjectManagerCard: FC<ProjectManagerCardProps> = ({
     projectManager.leadFields?.location ||
     projectManager.country ||
     "Location not specified";
-  const githubProfile = projectManager.projectManagerFields?.githubProfile ||
-                       projectManager.developerFields?.githubProfile;
+  const githubProfile =
+    projectManager.projectManagerFields?.githubProfile ||
+    projectManager.developerFields?.githubProfile;
 
   if (variant === "featured") {
     return (

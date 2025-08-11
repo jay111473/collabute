@@ -297,9 +297,6 @@ export const completeUserProfile = mutation({
           v.object({
             professionalDesignExperience: v.string(),
             startupExperience: v.string(),
-            resume: v.optional(v.any()),
-            resumeUrl: v.optional(v.string()),
-            resumeId: v.optional(v.string()),
             designWorkTypes: v.array(v.string()),
           })
         ),
@@ -418,11 +415,6 @@ export const completeUserProfile = mutation({
           professionalDesignExperience:
             args.designerFields?.experience?.professionalDesignExperience,
           startupExperience: args.designerFields?.experience?.startupExperience,
-          resumeUrl:
-            args.designerFields?.experience?.resumeUrl ||
-            (args.designerFields?.experience?.resume
-              ? "resume_uploaded"
-              : undefined),
           designWorkTypes: args.designerFields?.experience?.designWorkTypes,
           availabilityHours:
             args.designerFields?.availability?.availabilityHours,
@@ -510,9 +502,6 @@ export const completeUserProfileWithId = mutation({
         experience: v.object({
           professionalDesignExperience: v.string(),
           startupExperience: v.string(),
-          resume: v.optional(v.any()),
-          resumeUrl: v.optional(v.string()),
-          resumeId: v.optional(v.string()),
           designWorkTypes: v.array(v.string()),
         }),
         availability: v.object({
@@ -649,11 +638,6 @@ export const completeUserProfileWithId = mutation({
           professionalDesignExperience:
             args.designerFields.experience.professionalDesignExperience,
           startupExperience: args.designerFields.experience.startupExperience,
-          resumeUrl:
-            args.designerFields.experience.resumeUrl ||
-            (args.designerFields.experience.resume
-              ? "resume_uploaded"
-              : undefined),
           designWorkTypes: args.designerFields.experience.designWorkTypes,
           availabilityHours: args.designerFields.availability.availabilityHours,
           qualityOverDelivery:
@@ -835,8 +819,6 @@ export const storeWizardData = mutation({
         experience: v.object({
           professionalDesignExperience: v.string(),
           startupExperience: v.string(),
-          resume: v.optional(v.any()),
-          resumeUrl: v.optional(v.string()),
           designWorkTypes: v.array(v.string()),
         }),
         availability: v.object({
@@ -900,7 +882,6 @@ export const completeWizardUserProfile = mutation({
           professionalDesignExperience: v.string(),
           startupExperience: v.string(),
           designWorkTypes: v.array(v.string()),
-          resumeId: v.optional(v.id("media")),
         }),
         availability: v.object({
           availabilityHours: v.string(),
@@ -948,7 +929,6 @@ export const completeWizardUserProfile = mutation({
         professionalDesignExperience:
           args.designerFields.experience.professionalDesignExperience,
         startupExperience: args.designerFields.experience.startupExperience,
-        resumeId: args.designerFields.experience.resumeId,
         designWorkTypes: args.designerFields.experience.designWorkTypes,
         availabilityHours: args.designerFields.availability.availabilityHours,
         qualityOverDelivery:

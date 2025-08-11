@@ -126,7 +126,6 @@ export const useCreateAccount = (invitationData?: UseCreateAccountProps): {
               experience: {
                 professionalDesignExperience: "2-3 years" as const,
                 startupExperience: "0-1 years" as const,
-                resume: null,
                 designWorkTypes: [],
               },
               availability: {

@@ -50,101 +50,73 @@ const getProfilePictureUrl = (
 };
 
 /**
- * Extracts stack names from a project manager
+ * Gets specialties from a project manager
  */
-const getStackNames = (projectManager: EnhancedUser): string => {
-  return (
-    projectManager?.projectManagerFields?.stack
-      ?.map((stack: any) =>
-        typeof stack === "object" ? (stack as Stack).name : ""
-      )
-      .filter(Boolean)
-      .join(", ") || ""
-  );
+const getSpecialties = (projectManager: EnhancedUser): string => {
+  const specialties = projectManager?.projectManagerFields?.projectSpecialties;
+  return specialties?.join(", ") || "Not specified";
 };
 
 /**
- * Gets skills from a project manager (stack names or skills)
+ * Gets skills from a project manager
  */
 const getSkills = (projectManager: EnhancedUser): string => {
-  const stackNames = getStackNames(projectManager);
-  const skills = projectManager.developerFields?.skills
-    ?.map((skill: any) => (typeof skill === "object" ? skill.skill : skill))
-    .join(", ");
-
-  return stackNames || skills || "Not specified";
+  const specialties = getSpecialties(projectManager);
+  return specialties;
 };
 
 /**
  * Gets the primary role for display
  */
 const getPrimaryRole = (projectManager: EnhancedUser): string => {
-  // Check project manager fields first
-  if (projectManager.projectManagerFields?.primaryRole?.[0]) {
-    return projectManager.projectManagerFields.primaryRole[0];
-  }
-
-  // Fallback to developer fields
-  if (projectManager.developerFields?.primaryRole?.[0]) {
-    return projectManager.developerFields.primaryRole[0];
-  }
-
+  // For project managers, we use a static role since specialties are in projectSpecialties
   return "Project Manager";
 };
 
 /**
- * Gets industry information from available fields
+ * Gets industry information from specialties
  */
 const getIndustry = (projectManager: EnhancedUser): string => {
-  // Try to derive industry from stack or skills
-  const stackNames = getStackNames(projectManager);
-  if (
-    stackNames.toLowerCase().includes("web3") ||
-    stackNames.toLowerCase().includes("crypto")
-  ) {
-    return "Web3, Crypto, Finance";
+  const specialties = projectManager?.projectManagerFields?.projectSpecialties || [];
+  const specialtiesText = specialties.join(" ").toLowerCase();
+  
+  if (specialtiesText.includes("saas")) {
+    return "SaaS, Web Applications";
   }
-  if (
-    stackNames.toLowerCase().includes("mobile") ||
-    stackNames.toLowerCase().includes("ios") ||
-    stackNames.toLowerCase().includes("android")
-  ) {
-    return "SaaS, Mobile Apps, AI";
+  if (specialtiesText.includes("e-commerce") || specialtiesText.includes("marketplace")) {
+    return "E-commerce, Marketplace";
   }
-  if (
-    stackNames.toLowerCase().includes("design") ||
-    stackNames.toLowerCase().includes("ui") ||
-    stackNames.toLowerCase().includes("ux")
-  ) {
-    return "Design, Tech, E-commerce";
+  if (specialtiesText.includes("mobile")) {
+    return "Mobile Apps, Software";
   }
-
-  // Default based on role
-  const role = getPrimaryRole(projectManager);
-  if (
-    role.toLowerCase().includes("frontend") ||
-    role.toLowerCase().includes("full stack")
-  ) {
-    return "SaaS, Mobile Apps, AI";
+  if (specialtiesText.includes("enterprise")) {
+    return "Enterprise Software";
   }
-  if (
-    role.toLowerCase().includes("backend") ||
-    role.toLowerCase().includes("devops")
-  ) {
-    return "Web3, Crypto, Finance";
+  if (specialtiesText.includes("dashboard") || specialtiesText.includes("analytics")) {
+    return "Data, Analytics";
   }
 
   return "Tech, Software Development";
 };
 
 /**
+ * Gets experience years from the experience string
+ */
+const getExperienceYears = (projectManager: EnhancedUser): number => {
+  const pmExperience = projectManager.projectManagerFields?.professionalPMExperience;
+  if (!pmExperience) return 0;
+  
+  // Extract number from strings like "2-3 years", "8-10 years", "+10 years"
+  if (pmExperience.includes("+10")) return 10;
+  const match = pmExperience.match(/(\d+)/);
+  return match ? parseInt(match[1]) : 0;
+};
+
+/**
  * Calculates a mock rating based on experience and projects
  */
 const calculateRating = (projectManager: EnhancedUser): number => {
-  const experience =
-    projectManager.projectManagerFields?.experience ||
-    projectManager.developerFields?.experience ||
-    0;
+  const experience = getExperienceYears(projectManager);
   const projectCount = projectManager.projects?.length || 0;
 
   // Base rating on experience and projects
@@ -175,8 +147,7 @@ const ProjectManagerCard: FC<ProjectManagerCardProps> = ({
   const currentProjects = projectManager.projects?.length || 0;
   const developmentProjects =
     (projectManager.projects?.length || 0) + currentProjects;
-  const experience = projectManager.projectManagerFields?.experience || 
-                    projectManager.developerFields?.experience || 0;
+  const experience = getExperienceYears(projectManager);
   const rating = calculateRating(projectManager);
   const industry = getIndustry(projectManager);
   const skills = getSkills(projectManager);

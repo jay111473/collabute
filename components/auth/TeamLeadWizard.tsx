@@ -6,13 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { CountrySelect } from "@/components/ui/country-select";
-import {
-  Globe,
-  Github,
-  Twitter,
-  Eye,
-  EyeOff,
-} from "lucide-react";
+import { Globe, Github, Twitter, Eye, EyeOff } from "lucide-react";
 import { UseFormReturn } from "react-hook-form";
 import type {
   CreateAccountFormData,
@@ -34,6 +28,7 @@ interface TeamLeadWizardProps {
   startFromStep?: number;
   setCurrentStep: (step: number) => void;
   currentStep: number;
+  setShowTeamLeadWizard: (val: boolean) => void;
 }
 
 const TeamLeadWizard: React.FC<TeamLeadWizardProps> = ({
@@ -44,6 +39,7 @@ const TeamLeadWizard: React.FC<TeamLeadWizardProps> = ({
   startFromStep = 1,
   setCurrentStep,
   currentStep,
+  setShowTeamLeadWizard,
 }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [validationErrors, setValidationErrors] = useState<
@@ -214,6 +210,16 @@ const TeamLeadWizard: React.FC<TeamLeadWizardProps> = ({
 
     if (isValid && currentStep < maxStep) {
       setCurrentStep(currentStep + 1);
+    }
+  };
+
+  const handleBack = () => {
+    setValidationErrors({});
+    if (currentStep > 1) {
+      if (currentStep - 1 == 1) {
+        setShowTeamLeadWizard(false);
+      }
+      setCurrentStep(currentStep - 1);
     }
   };
 
@@ -425,7 +431,7 @@ const TeamLeadWizard: React.FC<TeamLeadWizardProps> = ({
                       )
                     }
                   >
-                    <SelectTrigger className="bg-transparent border-gray-600 text-white w-full h-12">
+                    <SelectTrigger className="bg-transparent border-gray-600 text-white w-full focus:outline-none focus:ring-0">
                       <SelectValue placeholder="Select your experience" />
                     </SelectTrigger>
                     <SelectContent
@@ -457,7 +463,7 @@ const TeamLeadWizard: React.FC<TeamLeadWizardProps> = ({
                       )
                     }
                   >
-                    <SelectTrigger className="bg-transparent border-gray-600 text-white w-full h-12">
+                    <SelectTrigger className="bg-transparent border-gray-600 text-white w-full focus:outline-none focus:ring-0">
                       <SelectValue placeholder="Select your experience" />
                     </SelectTrigger>
                     <SelectContent
@@ -743,7 +749,7 @@ const TeamLeadWizard: React.FC<TeamLeadWizardProps> = ({
               </div>
             </div>
 
-            <h2 className="text-3xl font-bold text-white mb-8">
+            <h2 className="text-2xl font-bold text-white mb-8">
               Application successfully submitted for review!
             </h2>
 
@@ -808,13 +814,26 @@ const TeamLeadWizard: React.FC<TeamLeadWizardProps> = ({
         <div className="w-full">{renderStepContent()}</div>
 
         {currentStep < 5 && (
-          <div className="flex justify-center mt-6">
+          <div className="flex justify-end items-center mt-12 max-w-4xl mx-auto gap-x-4">
+            {currentStep > 1 ? (
+              <Button
+                variant="outline"
+                size="lg"
+                type="button"
+                onClick={handleBack}
+                className="text-white border-gray-800"
+              >
+                Back
+              </Button>
+            ) : (
+              <div></div>
+            )}
+
             <Button
               variant="primary"
               size="lg"
               type="button"
               onClick={handleNext}
-              className="px-8"
             >
               {currentStep === 4 ? "Submit" : "Next"}
             </Button>

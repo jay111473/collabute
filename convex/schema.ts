@@ -240,6 +240,49 @@ export default defineSchema({
     .index("by_experience_level", ["experienceLevel"])
     .index("by_availability", ["availability"]),
 
+  designer_profiles: defineTable({
+    userId: v.id("users"),
+    // Basic Info
+    fullName: v.optional(v.string()),
+    email: v.optional(v.string()),
+    country: v.optional(v.string()),
+    phoneNumber: v.optional(v.string()),
+    
+    // Portfolio & Social Profiles
+    portfolioType: v.optional(v.string()), // "Personal Website (Preferred)", "PDF Portfolio", "Figma/Adobe XD Link"
+    portfolioUrl: v.optional(v.string()),
+    dribbbleProfile: v.optional(v.string()),
+    behanceProfile: v.optional(v.string()),
+    layersProfile: v.optional(v.string()),
+    
+    // Experience
+    professionalDesignExperience: v.optional(v.string()),
+    startupExperience: v.optional(v.string()),
+    resumeUrl: v.optional(v.string()),
+    designWorkTypes: v.optional(v.array(v.string())),
+    
+    // Availability & Working Style
+    availabilityHours: v.optional(v.string()),
+    qualityOverDelivery: v.optional(v.string()),
+    favoriteProducts: v.optional(v.string()),
+    
+    // Additional profile fields
+    bio: v.optional(v.string()),
+    hourlyRate: v.optional(v.number()),
+    isAvailable: v.optional(v.boolean()),
+    lastActive: v.optional(v.number()),
+    completedProjects: v.optional(v.number()),
+    rating: v.optional(v.number()),
+    reviews: v.optional(v.array(v.any())),
+    certifications: v.optional(v.array(v.string())),
+    languages: v.optional(v.array(v.string())),
+    timezone: v.optional(v.string()),
+    workingHours: v.optional(v.string()),
+  })
+    .index("by_user", ["userId"])
+    .index("by_availability", ["availabilityHours"])
+    .index("by_design_experience", ["professionalDesignExperience"]),
+
   startup_profiles: defineTable({
     userId: v.id("users"),
     companyName: v.string(),

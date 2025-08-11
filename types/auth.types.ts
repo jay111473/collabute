@@ -18,7 +18,7 @@ export type DeveloperRole =
 
 export type TeamSize = "1-10" | "10-50" | "50-100" | "100+";
 
-export type AccountType = "developer" | "startup" | "project_manager";
+export type AccountType = "developer" | "startup" | "project_manager" | "designer";
 
 export type ExperienceDuration = "0-1 years" | "1-2 years" | "2-3 years" | "4-5 years" | "6-7 years" | "8-10 years" | "+10 years";
 export type AvailabilityHours = "1-2 hours" | "3-4 hours" | "5-6 hours" | "7-8 hours" | "Full-time availability (8+ hours)";
@@ -30,6 +30,17 @@ export type ProjectSpecialty =
   | "Brand Identity Design"
   | "Dashboard/Data Visualization"
   | "Marketplace Design";
+
+export type DesignWorkType = 
+  | "SaaS Platform Design"
+  | "E-commerce Design"
+  | "Mobile App Design"
+  | "Landing Page Design"
+  | "Brand Identity Design"
+  | "Dashboard/Data Visualization"
+  | "Marketplace Design";
+
+export type PortfolioType = "Personal Website (Preferred)" | "PDF Portfolio" | "Figma/Adobe XD Link";
 
 export interface DeveloperFields {
   primaryRole?: DeveloperRole[] | null;
@@ -77,6 +88,41 @@ export interface TeamLeadFormData {
   availability: TeamLeadAvailability;
 }
 
+export interface DesignerBasicInfo {
+  fullName: string;
+  email: string;
+  country: string;
+  phoneNumber?: string;
+}
+
+export interface DesignerProfiles {
+  portfolioType: PortfolioType;
+  portfolioUrl: string;
+  dribbbleProfile?: string;
+  behanceProfile?: string;
+  layersProfile?: string;
+}
+
+export interface DesignerExperience {
+  professionalDesignExperience: ExperienceDuration;
+  startupExperience: ExperienceDuration;
+  resume?: File | null;
+  designWorkTypes: DesignWorkType[];
+}
+
+export interface DesignerAvailability {
+  availabilityHours: AvailabilityHours;
+  qualityOverDelivery: string;
+  favoriteProducts: string;
+}
+
+export interface DesignerFormData {
+  basicInfo: DesignerBasicInfo;
+  profiles: DesignerProfiles;
+  experience: DesignerExperience;
+  availability: DesignerAvailability;
+}
+
 export interface CreateAccountFormData {
   name: string;
   type: AccountType;
@@ -87,6 +133,7 @@ export interface CreateAccountFormData {
   developerFields?: DeveloperFields;
   startupFields?: StartupFields;
   teamLeadFields?: TeamLeadFormData;
+  designerFields?: DesignerFormData;
 }
 
 export interface CreateAccountAPIPayload {

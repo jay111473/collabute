@@ -8,6 +8,7 @@ import { useEmail } from "@/app/providers/EmailContext";
 import type {
   CreateAccountFormData,
   TeamLeadFormData,
+  DesignerFormData,
 } from "@/types/auth.types";
 import { createAccountSchema } from "@/app/(auth)/login/schemas/createAccount.schema";
 
@@ -49,6 +50,8 @@ export const useCreateAccount = (invitationData?: UseCreateAccountProps) => {
   const defaultType =
     invitationData?.type === "PROJECT_MANAGER"
       ? "project_manager"
+      : invitationData?.type === "DESIGNER"
+      ? "designer"
       : "developer";
 
   const form = useForm<CreateAccountFormData>({
@@ -61,7 +64,7 @@ export const useCreateAccount = (invitationData?: UseCreateAccountProps) => {
       password: "",
       phoneNumber: "",
       developerFields:
-        defaultType === "project_manager"
+        defaultType === "project_manager" || defaultType === "designer"
           ? undefined
           : {
               primaryRole: [],
@@ -94,11 +97,97 @@ export const useCreateAccount = (invitationData?: UseCreateAccountProps) => {
               },
             }
           : undefined,
+      designerFields:
+        defaultType === "designer"
+          ? {
+              basicInfo: {
+                fullName: "",
+                email: invitationData?.email || email || "",
+                country: "",
+                phoneNumber: "",
+              },
+              profiles: {
+                portfolioType: "Personal Website (Preferred)" as const,
+                portfolioUrl: "",
+                dribbbleProfile: "",
+                behanceProfile: "",
+                layersProfile: "",
+              },
+              experience: {
+                professionalDesignExperience: "2-3 years" as const,
+                startupExperience: "0-1 years" as const,
+                resume: null,
+                designWorkTypes: [],
+              },
+              availability: {
+                availabilityHours: "1-2 hours" as const,
+                qualityOverDelivery: "",
+                favoriteProducts: "",
+              },
+            }
+          : undefined,
     },
   });
 
   // Watch for form changes to update validation
   const accountType = form.watch("type");
+
+  const validateDesignerStep = (
+    step: number,
+    data: DesignerFormData
+  ): string[] => {
+    const errors: string[] = [];
+
+    switch (step) {
+      case 1:
+        if (!data.basicInfo.fullName.trim()) {
+          errors.push("Full name is required");
+        }
+        if (!data.basicInfo.email.trim()) {
+          errors.push("Email is required");
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.basicInfo.email)) {
+          errors.push("Please enter a valid email address");
+        }
+        if (!data.basicInfo.country.trim()) {
+          errors.push("Country is required");
+        }
+        break;
+
+      case 2:
+        if (!data.profiles.portfolioUrl.trim() &&
+        !/^https?:\/\/.+/.test(data.profiles.portfolioUrl)) {
+          errors.push("Portfolio URL is required");
+        }
+        break;
+
+      case 3:
+        if (data.experience.designWorkTypes.length === 0) {
+          errors.push("At least one design work type must be selected");
+        }
+        break;
+
+      case 4:
+        if (!data.availability.qualityOverDelivery.trim()) {
+          errors.push("Quality over delivery description is required");
+        } else if (
+          data.availability.qualityOverDelivery.trim().length < 10
+        ) {
+          errors.push("Quality over delivery description must be at least 10 characters");
+        }
+        if (!data.availability.favoriteProducts.trim()) {
+          errors.push("Favorite products description is required");
+        } else if (
+          data.availability.favoriteProducts.trim().length < 10
+        ) {
+          errors.push(
+            "Favorite products description must be at least 10 characters"
+          );
+        }
+        break;
+    }
+
+    return errors;
+  };
 
   const validateTeamLeadStep = (
     step: number,
@@ -191,6 +280,28 @@ export const useCreateAccount = (invitationData?: UseCreateAccountProps) => {
         }
       }
 
+      if (values.type === "designer" && values.designerFields) {
+        const step1Errors = validateDesignerStep(1, values.designerFields);
+        const step2Errors = validateDesignerStep(2, values.designerFields);
+        const step3Errors = validateDesignerStep(3, values.designerFields);
+        const step4Errors = validateDesignerStep(4, values.designerFields);
+
+        const allErrors = [
+          ...step1Errors,
+          ...step2Errors,
+          ...step3Errors,
+          ...step4Errors,
+        ];
+
+        if (allErrors.length > 0) {
+          toast.error("Please complete all required fields", {
+            description: allErrors[0],
+          });
+          setIsLoading(false);
+          return;
+        }
+      }
+
       await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/users`, values);
       setEmail(values.email);
 
@@ -198,6 +309,8 @@ export const useCreateAccount = (invitationData?: UseCreateAccountProps) => {
 
       if (values.type === "project_manager") {
         router.push("/auth/create-account/success?type=project_manager");
+      } else if (values.type === "designer") {
+        router.push("/auth/create-account/success?type=designer");
       } else {
         const primaryRole =
           values.developerFields?.primaryRole?.[0] || "developer";
@@ -230,6 +343,15 @@ export const useCreateAccount = (invitationData?: UseCreateAccountProps) => {
     return error?.message;
   };
 
+  const resetFormErrors = () => {
+    form.clearErrors();
+  };
+
+  
+  const resetFieldError = (fieldName: string) => {
+    form.clearErrors(fieldName as keyof CreateAccountFormData);
+  };
+
   return {
     form,
     isLoading,
@@ -237,9 +359,12 @@ export const useCreateAccount = (invitationData?: UseCreateAccountProps) => {
     setShowPassword,
     onSubmit,
     validateTeamLeadStep,
+    validateDesignerStep,
     isFormValid,
     hasFieldError,
     getFieldError,
+    resetFormErrors,
+    resetFieldError,
     accountType,
   };
 };

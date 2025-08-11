@@ -246,6 +246,34 @@ export const completeUserProfile = mutation({
         }),
       })
     ),
+    designerFields: v.optional(
+      v.object({
+        basicInfo: v.object({
+          fullName: v.string(),
+          email: v.string(),
+          country: v.string(),
+          phoneNumber: v.optional(v.string()),
+        }),
+        profiles: v.object({
+          portfolioType: v.string(),
+          portfolioUrl: v.string(),
+          dribbbleProfile: v.optional(v.string()),
+          behanceProfile: v.optional(v.string()),
+          layersProfile: v.optional(v.string()),
+        }),
+        experience: v.object({
+          professionalDesignExperience: v.string(),
+          startupExperience: v.string(),
+          resumeUrl: v.optional(v.string()),
+          designWorkTypes: v.array(v.string()),
+        }),
+        availability: v.object({
+          availabilityHours: v.string(),
+          qualityOverDelivery: v.string(),
+          favoriteProducts: v.string(),
+        }),
+      })
+    ),
   },
   handler: async (ctx, args) => {
     // Get current authenticated user ID
@@ -318,15 +346,61 @@ export const completeUserProfile = mutation({
         await ctx.db.insert("project_manager_profiles", {
           userId: userId,
           bio: args.teamLeadFields.availability.greatSoftwareDefinition,
-          experience: parseInt(args.teamLeadFields.experience.professionalPMExperience.split("-")[0]),
+          experience: parseInt(
+            args.teamLeadFields.experience.professionalPMExperience.split(
+              "-"
+            )[0]
+          ),
           experienceLevel: "SENIOR" as any, // Default to SENIOR for Team Leads
           availability: args.teamLeadFields.availability.availabilityHours,
-          portfolio: args.teamLeadFields.profiles.personalWebsite ? [args.teamLeadFields.profiles.personalWebsite] : [],
-          resumeUrl: args.teamLeadFields.experience.resume ? "resume_uploaded" : undefined,
+          portfolio: args.teamLeadFields.profiles.personalWebsite
+            ? [args.teamLeadFields.profiles.personalWebsite]
+            : [],
+          resumeUrl: args.teamLeadFields.experience.resume
+            ? "resume_uploaded"
+            : undefined,
           primaryRole: args.teamLeadFields.experience.projectSpecialties,
           githubProfile: args.teamLeadFields.profiles.github,
-          managementExperience: parseInt(args.teamLeadFields.experience.professionalPMExperience.split("-")[0]),
+          managementExperience: parseInt(
+            args.teamLeadFields.experience.professionalPMExperience.split(
+              "-"
+            )[0]
+          ),
           projectTypes: args.teamLeadFields.experience.projectSpecialties,
+        });
+      }
+    }
+
+    // Handle Designer profile creation
+    if (args.type === "DESIGNER" && args.designerFields) {
+      const existingProfile = await ctx.db
+        .query("designer_profiles")
+        .withIndex("by_user", (q) => q.eq("userId", userId))
+        .first();
+
+      if (!existingProfile) {
+        await ctx.db.insert("designer_profiles", {
+          userId: userId,
+          fullName: args.designerFields.basicInfo.fullName,
+          email: args.designerFields.basicInfo.email,
+          country: args.designerFields.basicInfo.country,
+          phoneNumber: args.designerFields.basicInfo.phoneNumber,
+          portfolioType: args.designerFields.profiles.portfolioType,
+          portfolioUrl: args.designerFields.profiles.portfolioUrl,
+          dribbbleProfile: args.designerFields.profiles.dribbbleProfile,
+          behanceProfile: args.designerFields.profiles.behanceProfile,
+          layersProfile: args.designerFields.profiles.layersProfile,
+          professionalDesignExperience:
+            args.designerFields.experience.professionalDesignExperience,
+          startupExperience: args.designerFields.experience.startupExperience,
+          resumeUrl: args.designerFields.experience.resumeUrl,
+          designWorkTypes: args.designerFields.experience.designWorkTypes,
+          availabilityHours: args.designerFields.availability.availabilityHours,
+          qualityOverDelivery:
+            args.designerFields.availability.qualityOverDelivery,
+          favoriteProducts: args.designerFields.availability.favoriteProducts,
+          isAvailable: true,
+          lastActive: Date.now(),
         });
       }
     }
@@ -386,6 +460,34 @@ export const completeUserProfileWithId = mutation({
         }),
       })
     ),
+    designerFields: v.optional(
+      v.object({
+        basicInfo: v.object({
+          fullName: v.string(),
+          email: v.string(),
+          country: v.string(),
+          phoneNumber: v.optional(v.string()),
+        }),
+        profiles: v.object({
+          portfolioType: v.string(),
+          portfolioUrl: v.string(),
+          dribbbleProfile: v.optional(v.string()),
+          behanceProfile: v.optional(v.string()),
+          layersProfile: v.optional(v.string()),
+        }),
+        experience: v.object({
+          professionalDesignExperience: v.string(),
+          startupExperience: v.string(),
+          resumeUrl: v.optional(v.string()),
+          designWorkTypes: v.array(v.string()),
+        }),
+        availability: v.object({
+          availabilityHours: v.string(),
+          qualityOverDelivery: v.string(),
+          favoriteProducts: v.string(),
+        }),
+      })
+    ),
   },
   handler: async (ctx, args) => {
     // Require admin privileges for this operation
@@ -400,10 +502,10 @@ export const completeUserProfileWithId = mutation({
     }
 
     const currentRole = await ctx.db.get(currentUser.roleId);
-    const isAdmin = currentRole && (
-      (currentRole.permissions?.includes("admin")) ||
-      currentRole.name === "admin"
-    );
+    const isAdmin =
+      currentRole &&
+      (currentRole.permissions?.includes("admin") ||
+        currentRole.name === "admin");
 
     if (!isAdmin) {
       throw new Error("Admin privileges required");
@@ -479,15 +581,62 @@ export const completeUserProfileWithId = mutation({
         await ctx.db.insert("project_manager_profiles", {
           userId: args.userId,
           bio: args.teamLeadFields.availability.greatSoftwareDefinition,
-          experience: parseInt(args.teamLeadFields.experience.professionalPMExperience.split("-")[0]),
+          experience: parseInt(
+            args.teamLeadFields.experience.professionalPMExperience.split(
+              "-"
+            )[0]
+          ),
           experienceLevel: "SENIOR" as any, // Default to SENIOR for Team Leads
           availability: args.teamLeadFields.availability.availabilityHours,
-          portfolio: args.teamLeadFields.profiles.personalWebsite ? [args.teamLeadFields.profiles.personalWebsite] : [],
-          resumeUrl: args.teamLeadFields.experience.resume ? "resume_uploaded" : undefined,
+          portfolio: args.teamLeadFields.profiles.personalWebsite
+            ? [args.teamLeadFields.profiles.personalWebsite]
+            : [],
+          resumeUrl: args.teamLeadFields.experience.resume
+            ? "resume_uploaded"
+            : undefined,
           primaryRole: args.teamLeadFields.experience.projectSpecialties,
           githubProfile: args.teamLeadFields.profiles.github,
-          managementExperience: parseInt(args.teamLeadFields.experience.professionalPMExperience.split("-")[0]),
+          managementExperience: parseInt(
+            args.teamLeadFields.experience.professionalPMExperience.split(
+              "-"
+            )[0]
+          ),
           projectTypes: args.teamLeadFields.experience.projectSpecialties,
+        });
+      }
+    }
+
+    //Handle Designer
+    // Handle Designer profile creation
+    if (args.type === "DESIGNER" && args.designerFields) {
+      const existingProfile = await ctx.db
+        .query("designer_profiles")
+        .withIndex("by_user", (q) => q.eq("userId", args.userId))
+        .first();
+
+      if (!existingProfile) {
+        await ctx.db.insert("designer_profiles", {
+          userId: args.userId,
+          fullName: args.designerFields.basicInfo.fullName,
+          email: args.designerFields.basicInfo.email,
+          country: args.designerFields.basicInfo.country,
+          phoneNumber: args.designerFields.basicInfo.phoneNumber,
+          portfolioType: args.designerFields.profiles.portfolioType,
+          portfolioUrl: args.designerFields.profiles.portfolioUrl,
+          dribbbleProfile: args.designerFields.profiles.dribbbleProfile,
+          behanceProfile: args.designerFields.profiles.behanceProfile,
+          layersProfile: args.designerFields.profiles.layersProfile,
+          professionalDesignExperience:
+            args.designerFields.experience.professionalDesignExperience,
+          startupExperience: args.designerFields.experience.startupExperience,
+          resumeUrl: args.designerFields.experience.resumeUrl,
+          designWorkTypes: args.designerFields.experience.designWorkTypes,
+          availabilityHours: args.designerFields.availability.availabilityHours,
+          qualityOverDelivery:
+            args.designerFields.availability.qualityOverDelivery,
+          favoriteProducts: args.designerFields.availability.favoriteProducts,
+          isAvailable: true,
+          lastActive: Date.now(),
         });
       }
     }
@@ -607,7 +756,7 @@ export const create = mutation({
         .query("roles")
         .withIndex("by_name", (q) => q.eq("name", "admin"))
         .first();
-      
+
       if (adminRole) {
         roleId = adminRole._id;
       } else {
@@ -632,7 +781,7 @@ export const create = mutation({
             "manage_github",
             "manage_applications",
             "view_analytics",
-            "system_config"
+            "system_config",
           ],
         });
       }
@@ -642,7 +791,7 @@ export const create = mutation({
         .query("roles")
         .withIndex("by_name", (q) => q.eq("name", "user"))
         .first();
-      
+
       if (userRole) {
         roleId = userRole._id;
       } else {
@@ -908,7 +1057,7 @@ export const registerEarlyBird = mutation({
     email: v.string(),
     type: v.union(
       v.literal("developer"),
-      v.literal("designer"), 
+      v.literal("designer"),
       v.literal("startup"),
       v.literal("lead"),
       v.literal("projectManager")
@@ -942,14 +1091,16 @@ export const registerEarlyBird = mutation({
       .order("desc")
       .take(10);
 
-    const oneHourAgo = Date.now() - (60 * 60 * 1000);
-    const recentSameEmail = recentUsers.filter(user => 
-      user.email === sanitizedEmail && 
-      (user.createdAt || 0) > oneHourAgo
+    const oneHourAgo = Date.now() - 60 * 60 * 1000;
+    const recentSameEmail = recentUsers.filter(
+      (user) =>
+        user.email === sanitizedEmail && (user.createdAt || 0) > oneHourAgo
     );
 
     if (recentSameEmail.length > 0) {
-      throw new Error("Registration attempt too recent. Please try again later.");
+      throw new Error(
+        "Registration attempt too recent. Please try again later."
+      );
     }
 
     // Check if user with this email already exists
@@ -965,10 +1116,10 @@ export const registerEarlyBird = mutation({
     // Map form types to database types
     const typeMapping = {
       developer: "DEVELOPER",
-      designer: "DESIGNER", 
+      designer: "DESIGNER",
       startup: "STARTUP",
       lead: "LEAD",
-      projectManager: "PROJECT_MANAGER"
+      projectManager: "PROJECT_MANAGER",
     } as const;
 
     // Create new early bird user

@@ -21,12 +21,14 @@ import { toast, Toaster } from "sonner";
 import type {
   CreateAccountFormData,
   TeamLeadFormData,
+  DesignerFormData,
 } from "@/types/auth.types";
 import { useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { ConvexError } from "convex/values";
 import TeamLeadWizard from "../TeamLeadWizard";
+import DesignerWizard from "../DesignerWizard";
 
 interface CreateAccountProps {
   invitationData?: {
@@ -37,26 +39,43 @@ interface CreateAccountProps {
 }
 
 const CreateAccount = ({ invitationData }: CreateAccountProps) => {
-  const { form, showPassword, setShowPassword } = useCreateAccount(
-    invitationData || undefined
-  );
+  const { form, showPassword, setShowPassword, resetFormErrors } =
+    useCreateAccount(invitationData || undefined);
   const accountType = form.watch("type");
   const [isLoading, setIsLoading] = useState(false);
   const [showTeamLeadWizard, setShowTeamLeadWizard] = useState(false);
+  const [showDesignerWizard, setShowDesignerWizard] = useState(false);
   const [teamLeadStep1Data, setTeamLeadStep1Data] = useState<any>(null);
+  const [designerStep1Data, setDesignerStep1Data] = useState<any>(null);
   const [currentStep, setCurrentStep] = useState(1);
   const completeProfile = useMutation(api.users.completeUserProfile);
   const { signIn } = useAuthActions();
 
   useEffect(() => {
-    if (accountType !== "project_manager") {
+    resetFormErrors(); // reset form error when type changes
+
+    if (accountType === "project_manager") {
       setShowTeamLeadWizard(false);
-      setTeamLeadStep1Data(null);
       setCurrentStep(1);
-      form.reset();
-      form.setValue("teamLeadFields", undefined);
+      form.setValue("teamLeadFields.basicInfo", {
+        fullName: "",
+        email: "",
+        country: "",
+        phoneNumber: "",
+      });
     }
-  }, [accountType, form]);
+
+    if (accountType === "designer") {
+      setShowDesignerWizard(false);
+      setCurrentStep(1);
+      form.setValue("designerFields.basicInfo", {
+        fullName: "",
+        email: "",
+        country: "",
+        phoneNumber: "",
+      });
+    }
+  }, [accountType, form]); // don't add resetFormErrors() as dependency. It will cause render cycle (max- depth reached error)
 
   const handleTeamLeadComplete = (teamLeadData: TeamLeadFormData) => {
     const completeTeamLeadData: TeamLeadFormData = {
@@ -74,6 +93,22 @@ const CreateAccount = ({ invitationData }: CreateAccountProps) => {
     form.setValue("countryCode", teamLeadStep1Data.country || "");
   };
 
+  const handleDesignerComplete = (designerData: DesignerFormData) => {
+    const completeDesignerData: DesignerFormData = {
+      basicInfo: designerStep1Data,
+      profiles: designerData.profiles,
+      experience: designerData.experience,
+      availability: designerData.availability,
+    };
+
+    form.setValue("designerFields", completeDesignerData);
+
+    form.setValue("name", designerStep1Data.fullName);
+    form.setValue("email", designerStep1Data.email);
+    form.setValue("phoneNumber", designerStep1Data.phoneNumber || "");
+    form.setValue("countryCode", designerStep1Data.country || "");
+  };
+
   const handleTeamLeadSubmit = async () => {
     try {
       const values = form.getValues();
@@ -82,6 +117,47 @@ const CreateAccount = ({ invitationData }: CreateAccountProps) => {
     } catch (error) {
       console.error("Team lead submission error:", error);
     }
+  };
+
+  const handleDesignerSubmit = async () => {
+    try {
+      const values = form.getValues();
+      await handleSubmit(values);
+      setCurrentStep(5);
+    } catch (error) {
+      console.error("Designer submission error:", error);
+    }
+  };
+
+  const handleDesignerStep1Next = () => {
+    const nameValid = form.trigger("designerFields.basicInfo.fullName");
+    const emailValid = form.trigger("designerFields.basicInfo.email");
+    const countryValid = form.trigger("designerFields.basicInfo.country");
+
+    Promise.all([nameValid, emailValid, countryValid]).then(
+      ([nameIsValid, emailIsValid, countryIsValid]) => {
+        if (nameIsValid && emailIsValid && countryIsValid) {
+          const name = form.getValues("designerFields.basicInfo.fullName");
+          const email = form.getValues("designerFields.basicInfo.email");
+          const phoneNumber = form.getValues(
+            "designerFields.basicInfo.phoneNumber"
+          );
+          const countryCode = form.getValues(
+            "designerFields.basicInfo.country"
+          );
+
+          setDesignerStep1Data({
+            fullName: name,
+            email: email,
+            phoneNumber: phoneNumber,
+            country: countryCode,
+          });
+
+          setShowDesignerWizard(true);
+          setCurrentStep(2);
+        }
+      }
+    );
   };
 
   const handleTeamLeadStep1Next = () => {
@@ -117,7 +193,6 @@ const CreateAccount = ({ invitationData }: CreateAccountProps) => {
 
   // Handle form submission with Convex Auth
   const handleSubmit = async (values: CreateAccountFormData) => {
-    console.log("values", values);
     setIsLoading(true);
 
     const formData = new FormData();
@@ -198,8 +273,8 @@ const CreateAccount = ({ invitationData }: CreateAccountProps) => {
           <div className="space-y-4 md:space-y-6">
             <AccountTypeSelector form={form} invitationData={invitationData} />
 
-            {accountType === "project_manager" ? (
-              showTeamLeadWizard ? (
+            {accountType === "project_manager" &&
+              (showTeamLeadWizard || currentStep === 5) && (
                 <TeamLeadWizard
                   form={form}
                   onComplete={handleTeamLeadComplete}
@@ -208,217 +283,344 @@ const CreateAccount = ({ invitationData }: CreateAccountProps) => {
                   startFromStep={2}
                   setCurrentStep={setCurrentStep}
                   currentStep={currentStep}
+                  setShowTeamLeadWizard={setShowTeamLeadWizard}
                 />
-              ) : (
+              )}
+
+            {accountType === "designer" &&
+              (showDesignerWizard || currentStep === 5) && (
+                <DesignerWizard
+                  form={form}
+                  onComplete={handleDesignerComplete}
+                  onSubmit={handleDesignerSubmit}
+                  initialData={designerStep1Data}
+                  startFromStep={2}
+                  setCurrentStep={setCurrentStep}
+                  currentStep={currentStep}
+                  setShowDesignerWizard={setShowDesignerWizard}
+                />
+              )}
+
+            {!(accountType === "project_manager" && showTeamLeadWizard) &&
+              !(accountType === "designer" && showDesignerWizard) && (
                 <>
-                  {/* Row 1: Full Name and Country */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                    <FormField
-                      control={form.control}
-                      name="teamLeadFields.basicInfo.fullName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Full Name</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="Enter your full name..."
-                              className="bg-transparent placeholder:bg-transparent border-grayBorders"
-                              value={field.value || ""}
-                              onChange={field.onChange}
-                              onBlur={field.onBlur}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                  {accountType === "project_manager" && currentStep === 1 && (
+                    <>
+                      {/* Row 1: Full Name and Country */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                        <FormField
+                          control={form.control}
+                          name="teamLeadFields.basicInfo.fullName"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Full Name</FormLabel>
+                              <FormControl>
+                                <Input
+                                  placeholder="Enter your full name..."
+                                  className="bg-transparent placeholder:bg-transparent border-grayBorders"
+                                  value={field.value || ""}
+                                  onChange={field.onChange}
+                                  onBlur={field.onBlur}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
 
-                    <FormField
-                      control={form.control}
-                      name="teamLeadFields.basicInfo.country"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Country</FormLabel>
-                          <FormControl>
-                            <CountrySelect
-                              value={field.value || ""}
-                              onValueChange={field.onChange}
-                              placeholder="Select your location here"
-                              className="w-full"
-                              isProjectManager={true}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
+                        <FormField
+                          control={form.control}
+                          name="teamLeadFields.basicInfo.country"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Country</FormLabel>
+                              <FormControl>
+                                <CountrySelect
+                                  value={field.value || ""}
+                                  onValueChange={field.onChange}
+                                  placeholder="Select your location here"
+                                  className="w-full"
+                                  isProjectManager={true}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
 
-                  {/* Row 2: Email Address and Phone Number */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                    <FormField
-                      control={form.control}
-                      name="teamLeadFields.basicInfo.email"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>
-                            <span className="flex items-center gap-2">
-                              Email Address
-                            </span>
-                          </FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="Enter your email address here..."
-                              className="bg-transparent placeholder:bg-transparent border-grayBorders"
-                              value={field.value || ""}
-                              onChange={field.onChange}
-                              onBlur={field.onBlur}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                      {/* Row 2: Email Address and Phone Number */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                        <FormField
+                          control={form.control}
+                          name="teamLeadFields.basicInfo.email"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>
+                                <span className="flex items-center gap-2">
+                                  Email Address
+                                </span>
+                              </FormLabel>
+                              <FormControl>
+                                <Input
+                                  placeholder="Enter your email address here..."
+                                  className="bg-transparent placeholder:bg-transparent border-grayBorders"
+                                  value={field.value || ""}
+                                  onChange={field.onChange}
+                                  onBlur={field.onBlur}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
 
-                    <FormField
-                      control={form.control}
-                      name="teamLeadFields.basicInfo.phoneNumber"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>
-                            Phone Number{" "}
-                            <span className="text-gray-400">(optional)</span>
-                          </FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="XXX XXX XX"
-                              className="bg-transparent placeholder:bg-transparent border-grayBorders"
-                              value={field.value || ""}
-                              onChange={field.onChange}
-                              onBlur={field.onBlur}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </>
-              )
-            ) : (
-              <>
-                {/* Row 1: Name, Country Code + Phone Number */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                  <FormField
-                    control={form.control}
-                    name="name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Name</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="Enter your full name"
-                            className="bg-transparent placeholder:bg-transparent border-grayBorders"
-                            {...field}
+                        <FormField
+                          control={form.control}
+                          name="teamLeadFields.basicInfo.phoneNumber"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>
+                                Phone Number{" "}
+                                <span className="text-gray-400">
+                                  (optional)
+                                </span>
+                              </FormLabel>
+                              <FormControl>
+                                <Input
+                                  placeholder="XXX XXX XX"
+                                  className="bg-transparent placeholder:bg-transparent border-grayBorders"
+                                  value={field.value || ""}
+                                  onChange={field.onChange}
+                                  onBlur={field.onBlur}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  {accountType === "designer" && currentStep === 1 && (
+                    <>
+                      {/* Row 1: Full Name and Country */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                        <FormField
+                          control={form.control}
+                          name="designerFields.basicInfo.fullName"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Full Name</FormLabel>
+                              <FormControl>
+                                <Input
+                                  placeholder="Enter your full name..."
+                                  className="bg-transparent placeholder:bg-transparent border-grayBorders"
+                                  value={field.value || ""}
+                                  onChange={field.onChange}
+                                  onBlur={field.onBlur}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="designerFields.basicInfo.country"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Country</FormLabel>
+                              <FormControl>
+                                <CountrySelect
+                                  value={field.value || ""}
+                                  onValueChange={field.onChange}
+                                  placeholder="Select your location here"
+                                  className="w-full"
+                                  isProjectManager={true}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      {/* Row 2: Email Address and Phone Number */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                        <FormField
+                          control={form.control}
+                          name="designerFields.basicInfo.email"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>
+                                <span className="flex items-center gap-2">
+                                  Email Address
+                                </span>
+                              </FormLabel>
+                              <FormControl>
+                                <Input
+                                  placeholder="Enter your email address here..."
+                                  className="bg-transparent placeholder:bg-transparent border-grayBorders"
+                                  value={field.value || ""}
+                                  onChange={field.onChange}
+                                  onBlur={field.onBlur}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="designerFields.basicInfo.phoneNumber"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>
+                                Phone Number{" "}
+                                <span className="text-gray-400">
+                                  (optional)
+                                </span>
+                              </FormLabel>
+                              <FormControl>
+                                <Input
+                                  placeholder="XXX XXX XX"
+                                  className="bg-transparent placeholder:bg-transparent border-grayBorders"
+                                  value={field.value || ""}
+                                  onChange={field.onChange}
+                                  onBlur={field.onBlur}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  {!(accountType === "project_manager" && currentStep === 1) &&
+                    !(accountType === "designer" && currentStep === 1) && (
+                      <>
+                        {/* Row 1: Name, Country Code + Phone Number */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                          <FormField
+                            control={form.control}
+                            name="name"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Name</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    placeholder="Enter your full name"
+                                    className="bg-transparent placeholder:bg-transparent border-grayBorders"
+                                    {...field}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
                           />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
 
-                  <div>
-                    <FormLabel>Phone Number</FormLabel>
-                    <div className="flex gap-2 mt-2">
-                      <FormField
-                        control={form.control}
-                        name="countryCode"
-                        render={({ field }) => (
-                          <FormItem className="w-1/3">
-                            <FormControl>
-                              <CountrySelect
-                                value={field.value}
-                                onValueChange={field.onChange}
-                                placeholder="Country"
-                                className="w-full"
+                          <div>
+                            <FormLabel>Phone Number</FormLabel>
+                            <div className="flex gap-2 mt-2">
+                              <FormField
+                                control={form.control}
+                                name="countryCode"
+                                render={({ field }) => (
+                                  <FormItem className="w-1/3">
+                                    <FormControl>
+                                      <CountrySelect
+                                        value={field.value}
+                                        onValueChange={field.onChange}
+                                        placeholder="Country"
+                                        className="w-full"
+                                      />
+                                    </FormControl>
+                                  </FormItem>
+                                )}
                               />
-                            </FormControl>
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="phoneNumber"
-                        render={({ field }) => (
-                          <FormItem className="flex-1">
-                            <FormControl>
-                              <Input
-                                placeholder="Enter your phone number"
-                                className="bg-transparent placeholder:bg-transparent border-grayBorders"
-                                {...field}
+                              <FormField
+                                control={form.control}
+                                name="phoneNumber"
+                                render={({ field }) => (
+                                  <FormItem className="flex-1">
+                                    <FormControl>
+                                      <Input
+                                        placeholder="Enter your phone number"
+                                        className="bg-transparent placeholder:bg-transparent border-grayBorders"
+                                        {...field}
+                                      />
+                                    </FormControl>
+                                  </FormItem>
+                                )}
                               />
-                            </FormControl>
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Row 2: Email and Password */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                  <FormField
-                    control={form.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Email</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="Enter your email"
-                            className="bg-transparent placeholder:bg-transparent border-grayBorders"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="password"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Password</FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <Input
-                              type={showPassword ? "text" : "password"}
-                              placeholder="Enter your password"
-                              className="bg-transparent placeholder:bg-transparent border-grayBorders"
-                              {...field}
-                            />
-                            <button
-                              type="button"
-                              onClick={() => setShowPassword(!showPassword)}
-                              className="absolute inset-y-0 right-0 pr-3 flex items-center bg-transparent"
-                            >
-                              {showPassword ? (
-                                <EyeOff className="h-4 w-4 text-gray-400" />
-                              ) : (
-                                <Eye className="h-4 w-4 text-gray-400" />
-                              )}
-                            </button>
+                            </div>
                           </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
+                        </div>
+
+                        {/* Row 2: Email and Password */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                          <FormField
+                            control={form.control}
+                            name="email"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Email</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    placeholder="Enter your email"
+                                    className="bg-transparent placeholder:bg-transparent border-grayBorders"
+                                    {...field}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="password"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Password</FormLabel>
+                                <FormControl>
+                                  <div className="relative">
+                                    <Input
+                                      type={showPassword ? "text" : "password"}
+                                      placeholder="Enter your password"
+                                      className="bg-transparent placeholder:bg-transparent border-grayBorders"
+                                      {...field}
+                                    />
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        setShowPassword(!showPassword)
+                                      }
+                                      className="absolute inset-y-0 right-0 pr-3 flex items-center bg-transparent"
+                                    >
+                                      {showPassword ? (
+                                        <EyeOff className="h-4 w-4 text-gray-400" />
+                                      ) : (
+                                        <Eye className="h-4 w-4 text-gray-400" />
+                                      )}
+                                    </button>
+                                  </div>
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                      </>
                     )}
-                  />
-                </div>
-              </>
-            )}
+                </>
+              )}
 
             {accountType === "developer" && (
               <div className="grid grid-cols-1">
@@ -435,54 +637,72 @@ const CreateAccount = ({ invitationData }: CreateAccountProps) => {
           {!(
             accountType === "project_manager" &&
             (showTeamLeadWizard || currentStep === 5)
-          ) && (
-            <div className="flex gap-4 mt-6 md:mt-8 w-full justify-center px-2 sm:px-0">
-              {accountType === "project_manager" && currentStep === 1 ? (
-                <Button
-                  variant="primary"
-                  size="lg"
-                  disabled={isLoading}
-                  type="button"
-                  onClick={handleTeamLeadStep1Next}
-                  className="w-full sm:w-2/3 md:w-1/2"
-                >
-                  Next
-                </Button>
-              ) : (
-                <Button
-                  variant="primary"
-                  size="lg"
-                  disabled={isLoading}
-                  type="submit"
-                  className="w-full sm:w-2/3 md:w-1/2"
-                >
-                  {isLoading ? (
-                    <span className="flex items-center gap-2">
-                      <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                          fill="none"
-                        />
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8v8z"
-                        />
-                      </svg>
-                      Loading...
-                    </span>
-                  ) : (
-                    "Sign Up"
-                  )}
-                </Button>
-              )}
-            </div>
-          )}
+          ) &&
+            !(
+              accountType === "designer" &&
+              (showDesignerWizard || currentStep === 5)
+            ) && (
+              <div className="flex gap-4 mt-6 md:mt-8 w-full justify-center px-2 sm:px-0">
+                {accountType === "project_manager" && currentStep === 1 ? (
+                  <Button
+                    variant="primary"
+                    size="lg"
+                    disabled={isLoading}
+                    type="button"
+                    onClick={handleTeamLeadStep1Next}
+                    className="w-full sm:w-2/3 md:w-1/2"
+                  >
+                    Next
+                  </Button>
+                ) : accountType === "designer" && currentStep === 1 ? (
+                  <Button
+                    variant="primary"
+                    size="lg"
+                    disabled={isLoading}
+                    type="button"
+                    onClick={handleDesignerStep1Next}
+                    className="w-full sm:w-2/3 md:w-1/2"
+                  >
+                    Next
+                  </Button>
+                ) : (
+                  <Button
+                    variant="primary"
+                    size="lg"
+                    disabled={isLoading}
+                    type="submit"
+                    className="w-full sm:w-2/3 md:w-1/2"
+                  >
+                    {isLoading ? (
+                      <span className="flex items-center gap-2">
+                        <svg
+                          className="animate-spin h-4 w-4"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                            fill="none"
+                          />
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8v8z"
+                          />
+                        </svg>
+                        Loading...
+                      </span>
+                    ) : (
+                      "Sign Up"
+                    )}
+                  </Button>
+                )}
+              </div>
+            )}
         </form>
       </Form>
     </>

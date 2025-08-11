@@ -1,4 +1,4 @@
-import { Building, Code2, Crown, Shapes, Users } from "lucide-react";
+import { Building, Code2, Shapes, UserIcon, Users } from "lucide-react";
 import { FormControl, FormItem, FormLabel } from "@/components/ui/form";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
@@ -19,7 +19,10 @@ export const AccountTypeSelector = ({
   invitationData,
 }: AccountTypeSelectorProps) => {
   const handleAccountTypeChange = (value: string) => {
-    form.setValue("type", value as "developer" | "startup" | "project_manager" | "designer");
+    form.setValue(
+      "type",
+      value as "developer" | "startup" | "project_manager" | "designer"
+    );
     // Ensure the appropriate fields structure is initialized
     if (value === "startup") {
       // Initialize startup fields if they don't exist
@@ -39,7 +42,9 @@ export const AccountTypeSelector = ({
   };
 
   const isProjectManagerInvite = invitationData?.type === "PROJECT_MANAGER";
-  const gridCols = isProjectManagerInvite ? "grid-cols-1" : "md:grid-cols-4 grid-cols-2";
+  const gridCols = isProjectManagerInvite
+    ? "grid-cols-1"
+    : "md:grid-cols-4 grid-cols-2";
 
   return (
     <FormItem className="col-span-full">
@@ -113,8 +118,8 @@ export const AccountTypeSelector = ({
                   htmlFor="project_manager"
                   className="flex items-center justify-center gap-2 rounded-md border-2 border-grayBorders bg-popover py-4 px-4 peer-data-[state=checked]:border-darkPrimary peer-data-[state=checked]:bg-purple/10 peer-data-[state=checked]:font-bold [&:has([data-state=checked])]:border-darkPrimary [&:has([data-state=checked])]:bg-purple/10 [&:has([data-state=checked])]:font-bold"
                 >
-                  <Crown className="h-4 w-4" />
-                  <div className="text-center text-sm">Team Lead</div>
+                  <UserIcon className="h-4 w-4" />
+                  <div className="text-center text-sm">Eng Lead</div>
                 </Label>
               </FormItem>
               <FormItem>

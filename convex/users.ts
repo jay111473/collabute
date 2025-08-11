@@ -4,6 +4,24 @@ import { getAuthUserId } from "@convex-dev/auth/server";
 import { KycStatusValidator } from "./schema";
 import { Scrypt } from "lucia";
 
+// Get media file URL for download/display
+export const getMediaUrl = query({
+  args: { mediaId: v.id("media") },
+  handler: async (ctx, args) => {
+    const media = await ctx.db.get(args.mediaId);
+    if (!media) {
+      throw new Error("Media not found");
+    }
+
+    // Return the media URL (you'll need to implement the actual file serving)
+    return {
+      url: media.url || `/api/media/${args.mediaId}`,
+      fileName: media.originalFilename,
+      fileType: media.mimeType,
+    };
+  },
+});
+
 export const getUserProfile = query({
   args: { authUserId: v.id("users") },
   handler: async (ctx, args) => {
@@ -221,57 +239,77 @@ export const completeUserProfile = mutation({
     ),
     teamLeadFields: v.optional(
       v.object({
-        basicInfo: v.object({
-          fullName: v.string(),
-          email: v.string(),
-          country: v.string(),
-          phoneNumber: v.optional(v.string()),
-          countryCode: v.optional(v.string()),
-        }),
-        profiles: v.object({
-          personalWebsite: v.optional(v.string()),
-          github: v.string(),
-          xProfile: v.string(),
-        }),
-        experience: v.object({
-          professionalPMExperience: v.string(),
-          startupExperience: v.string(),
-          resume: v.optional(v.any()),
-          projectSpecialties: v.array(v.string()),
-        }),
-        availability: v.object({
-          availabilityHours: v.string(),
-          greatSoftwareDefinition: v.string(),
-          projectManagementDescription: v.string(),
-        }),
+        basicInfo: v.optional(
+          v.object({
+            fullName: v.string(),
+            email: v.string(),
+            country: v.string(),
+            phoneNumber: v.optional(v.string()),
+            countryCode: v.optional(v.string()),
+          })
+        ),
+        profiles: v.optional(
+          v.object({
+            personalWebsite: v.optional(v.string()),
+            github: v.string(),
+            xProfile: v.string(),
+          })
+        ),
+        experience: v.optional(
+          v.object({
+            professionalPMExperience: v.string(),
+            startupExperience: v.string(),
+            resume: v.optional(v.any()),
+            resumeUrl: v.optional(v.string()),
+            resumeId: v.optional(v.string()),
+            projectSpecialties: v.array(v.string()),
+          })
+        ),
+        availability: v.optional(
+          v.object({
+            availabilityHours: v.string(),
+            greatSoftwareDefinition: v.string(),
+            projectManagementDescription: v.string(),
+          })
+        ),
       })
     ),
     designerFields: v.optional(
       v.object({
-        basicInfo: v.object({
-          fullName: v.string(),
-          email: v.string(),
-          country: v.string(),
-          phoneNumber: v.optional(v.string()),
-        }),
-        profiles: v.object({
-          portfolioType: v.string(),
-          portfolioUrl: v.string(),
-          dribbbleProfile: v.optional(v.string()),
-          behanceProfile: v.optional(v.string()),
-          layersProfile: v.optional(v.string()),
-        }),
-        experience: v.object({
-          professionalDesignExperience: v.string(),
-          startupExperience: v.string(),
-          resumeUrl: v.optional(v.string()),
-          designWorkTypes: v.array(v.string()),
-        }),
-        availability: v.object({
-          availabilityHours: v.string(),
-          qualityOverDelivery: v.string(),
-          favoriteProducts: v.string(),
-        }),
+        basicInfo: v.optional(
+          v.object({
+            fullName: v.string(),
+            email: v.string(),
+            country: v.string(),
+            phoneNumber: v.optional(v.string()),
+          })
+        ),
+        profiles: v.optional(
+          v.object({
+            portfolioType: v.string(),
+            portfolioUrl: v.string(),
+            dribbbleProfile: v.optional(v.string()),
+            behanceProfile: v.optional(v.string()),
+            layersProfile: v.optional(v.string()),
+          })
+        ),
+        experience: v.optional(
+          v.object({
+            professionalDesignExperience: v.string(),
+            startupExperience: v.string(),
+            resume: v.optional(v.any()),
+            resumeUrl: v.optional(v.string()),
+            resumeId: v.optional(v.string()),
+            designWorkTypes: v.array(v.string()),
+          })
+        ),
+        availability: v.optional(
+          v.object({
+            availabilityHours: v.string(),
+            qualityOverDelivery: v.string(),
+            favoriteProducts: v.string(),
+          })
+        ),
       })
     ),
   },
@@ -313,7 +351,6 @@ export const completeUserProfile = mutation({
       if (!existingProfile) {
         await ctx.db.insert("project_manager_profiles", {
           userId: userId,
-          primaryRole: args.developerFields.primaryRole,
         });
       }
     }
@@ -345,28 +382,19 @@ export const completeUserProfile = mutation({
       if (!existingProfile) {
         await ctx.db.insert("project_manager_profiles", {
           userId: userId,
-          bio: args.teamLeadFields.availability.greatSoftwareDefinition,
-          experience: parseInt(
-            args.teamLeadFields.experience.professionalPMExperience.split(
-              "-"
-            )[0]
-          ),
-          experienceLevel: "SENIOR" as any, // Default to SENIOR for Team Leads
-          availability: args.teamLeadFields.availability.availabilityHours,
-          portfolio: args.teamLeadFields.profiles.personalWebsite
-            ? [args.teamLeadFields.profiles.personalWebsite]
-            : [],
-          resumeUrl: args.teamLeadFields.experience.resume
-            ? "resume_uploaded"
-            : undefined,
-          primaryRole: args.teamLeadFields.experience.projectSpecialties,
-          githubProfile: args.teamLeadFields.profiles.github,
-          managementExperience: parseInt(
-            args.teamLeadFields.experience.professionalPMExperience.split(
-              "-"
-            )[0]
-          ),
-          projectTypes: args.teamLeadFields.experience.projectSpecialties,
+          professionalPMExperience:
+            args.teamLeadFields?.experience?.professionalPMExperience,
+          startupExperience: args.teamLeadFields?.experience?.startupExperience,
+          projectSpecialties: args.teamLeadFields?.experience?.projectSpecialties,
+          personalWebsite: args.teamLeadFields?.profiles?.personalWebsite,
+          githubProfile: args.teamLeadFields?.profiles?.github,
+          xProfile: args.teamLeadFields?.profiles?.xProfile,
+          availabilityHours:
+            args.teamLeadFields?.availability?.availabilityHours,
+          greatSoftwareDefinition:
+            args.teamLeadFields?.availability?.greatSoftwareDefinition,
+          projectManagementDescription:
+            args.teamLeadFields?.availability?.projectManagementDescription,
         });
       }
     }
@@ -381,24 +409,26 @@ export const completeUserProfile = mutation({
       if (!existingProfile) {
         await ctx.db.insert("designer_profiles", {
           userId: userId,
-          fullName: args.designerFields.basicInfo.fullName,
-          email: args.designerFields.basicInfo.email,
-          country: args.designerFields.basicInfo.country,
-          phoneNumber: args.designerFields.basicInfo.phoneNumber,
-          portfolioType: args.designerFields.profiles.portfolioType,
-          portfolioUrl: args.designerFields.profiles.portfolioUrl,
-          dribbbleProfile: args.designerFields.profiles.dribbbleProfile,
-          behanceProfile: args.designerFields.profiles.behanceProfile,
-          layersProfile: args.designerFields.profiles.layersProfile,
+          // REMOVED: fullName, email, country, phoneNumber (now in users table)
+          portfolioType: args.designerFields?.profiles?.portfolioType,
+          portfolioUrl: args.designerFields?.profiles?.portfolioUrl,
+          dribbbleProfile: args.designerFields?.profiles?.dribbbleProfile,
+          behanceProfile: args.designerFields?.profiles?.behanceProfile,
+          layersProfile: args.designerFields?.profiles?.layersProfile,
           professionalDesignExperience:
-            args.designerFields.experience.professionalDesignExperience,
-          startupExperience: args.designerFields.experience.startupExperience,
-          resumeUrl: args.designerFields.experience.resumeUrl,
-          designWorkTypes: args.designerFields.experience.designWorkTypes,
-          availabilityHours: args.designerFields.availability.availabilityHours,
+            args.designerFields?.experience?.professionalDesignExperience,
+          startupExperience: args.designerFields?.experience?.startupExperience,
+          resumeUrl:
+            args.designerFields?.experience?.resumeUrl ||
+            (args.designerFields?.experience?.resume
+              ? "resume_uploaded"
+              : undefined),
+          designWorkTypes: args.designerFields?.experience?.designWorkTypes,
+          availabilityHours:
+            args.designerFields?.availability?.availabilityHours,
           qualityOverDelivery:
-            args.designerFields.availability.qualityOverDelivery,
-          favoriteProducts: args.designerFields.availability.favoriteProducts,
+            args.designerFields?.availability?.qualityOverDelivery,
+          favoriteProducts: args.designerFields?.availability?.favoriteProducts,
           isAvailable: true,
           lastActive: Date.now(),
         });
@@ -451,6 +481,8 @@ export const completeUserProfileWithId = mutation({
           professionalPMExperience: v.string(),
           startupExperience: v.string(),
           resume: v.optional(v.any()),
+          resumeUrl: v.optional(v.string()),
+          resumeId: v.optional(v.string()),
           projectSpecialties: v.array(v.string()),
         }),
         availability: v.object({
@@ -478,7 +510,9 @@ export const completeUserProfileWithId = mutation({
         experience: v.object({
           professionalDesignExperience: v.string(),
           startupExperience: v.string(),
+          resume: v.optional(v.any()),
           resumeUrl: v.optional(v.string()),
+          resumeId: v.optional(v.string()),
           designWorkTypes: v.array(v.string()),
         }),
         availability: v.object({
@@ -548,7 +582,6 @@ export const completeUserProfileWithId = mutation({
       if (!existingProfile) {
         await ctx.db.insert("project_manager_profiles", {
           userId: args.userId,
-          primaryRole: args.developerFields.primaryRole,
         });
       }
     }
@@ -580,28 +613,18 @@ export const completeUserProfileWithId = mutation({
       if (!existingProfile) {
         await ctx.db.insert("project_manager_profiles", {
           userId: args.userId,
-          bio: args.teamLeadFields.availability.greatSoftwareDefinition,
-          experience: parseInt(
-            args.teamLeadFields.experience.professionalPMExperience.split(
-              "-"
-            )[0]
-          ),
-          experienceLevel: "SENIOR" as any, // Default to SENIOR for Team Leads
-          availability: args.teamLeadFields.availability.availabilityHours,
-          portfolio: args.teamLeadFields.profiles.personalWebsite
-            ? [args.teamLeadFields.profiles.personalWebsite]
-            : [],
-          resumeUrl: args.teamLeadFields.experience.resume
-            ? "resume_uploaded"
-            : undefined,
-          primaryRole: args.teamLeadFields.experience.projectSpecialties,
+          professionalPMExperience:
+            args.teamLeadFields.experience.professionalPMExperience,
+          startupExperience: args.teamLeadFields.experience.startupExperience,
+          projectSpecialties: args.teamLeadFields.experience.projectSpecialties,
+          personalWebsite: args.teamLeadFields.profiles.personalWebsite,
           githubProfile: args.teamLeadFields.profiles.github,
-          managementExperience: parseInt(
-            args.teamLeadFields.experience.professionalPMExperience.split(
-              "-"
-            )[0]
-          ),
-          projectTypes: args.teamLeadFields.experience.projectSpecialties,
+          xProfile: args.teamLeadFields.profiles.xProfile,
+          availabilityHours: args.teamLeadFields.availability.availabilityHours,
+          greatSoftwareDefinition:
+            args.teamLeadFields.availability.greatSoftwareDefinition,
+          projectManagementDescription:
+            args.teamLeadFields.availability.projectManagementDescription,
         });
       }
     }
@@ -617,10 +640,7 @@ export const completeUserProfileWithId = mutation({
       if (!existingProfile) {
         await ctx.db.insert("designer_profiles", {
           userId: args.userId,
-          fullName: args.designerFields.basicInfo.fullName,
-          email: args.designerFields.basicInfo.email,
-          country: args.designerFields.basicInfo.country,
-          phoneNumber: args.designerFields.basicInfo.phoneNumber,
+          // REMOVED: fullName, email, country, phoneNumber (now in users table)
           portfolioType: args.designerFields.profiles.portfolioType,
           portfolioUrl: args.designerFields.profiles.portfolioUrl,
           dribbbleProfile: args.designerFields.profiles.dribbbleProfile,
@@ -629,7 +649,11 @@ export const completeUserProfileWithId = mutation({
           professionalDesignExperience:
             args.designerFields.experience.professionalDesignExperience,
           startupExperience: args.designerFields.experience.startupExperience,
-          resumeUrl: args.designerFields.experience.resumeUrl,
+          resumeUrl:
+            args.designerFields.experience.resumeUrl ||
+            (args.designerFields.experience.resume
+              ? "resume_uploaded"
+              : undefined),
           designWorkTypes: args.designerFields.experience.designWorkTypes,
           availabilityHours: args.designerFields.availability.availabilityHours,
           qualityOverDelivery:
@@ -700,6 +724,242 @@ export const getGitHubAccessToken = query({
       .first();
 
     return githubProfile?.githubAccessToken || null;
+  },
+});
+
+// Create user account with basic info (called after step 1)
+export const createUserAccount = mutation({
+  args: {
+    email: v.string(),
+    password: v.string(),
+    name: v.string(),
+    phoneNumber: v.optional(v.string()),
+    countryCode: v.optional(v.string()),
+    type: v.union(
+      v.literal("DEVELOPER"),
+      v.literal("STARTUP"),
+      v.literal("DESIGNER"),
+      v.literal("PROJECT_MANAGER")
+    ),
+  },
+  handler: async (ctx, args) => {
+    // Check if user with this email already exists
+    const existingUser = await ctx.db
+      .query("users")
+      .withIndex("email", (q) => q.eq("email", args.email))
+      .first();
+
+    if (existingUser) {
+      throw new Error("User with this email already exists");
+    }
+
+    // Validate password length
+    if (args.password.length < 8) {
+      throw new Error("Password must be at least 8 characters long");
+    }
+
+    // Create the user with pending status
+    const userId = await ctx.db.insert("users", {
+      email: args.email,
+      emailVerificationTime: Date.now(),
+      name: args.name,
+      type: args.type,
+      phoneNumber: args.phoneNumber,
+      countryCode: args.countryCode,
+      wallet: 0,
+      isVerified: false, // Not verified until admin approval
+      kycStatus: "PENDING" as any,
+      createdAt: Date.now(),
+    });
+
+    return { userId, success: true };
+  },
+});
+
+// Store wizard data temporarily for completion after auth
+export const storeWizardData = mutation({
+  args: {
+    email: v.string(),
+    name: v.string(),
+    phoneNumber: v.optional(v.string()),
+    countryCode: v.optional(v.string()),
+    type: v.union(
+      v.literal("DEVELOPER"),
+      v.literal("STARTUP"),
+      v.literal("DESIGNER"),
+      v.literal("PROJECT_MANAGER")
+    ),
+    teamLeadFields: v.optional(
+      v.object({
+        basicInfo: v.object({
+          fullName: v.string(),
+          email: v.string(),
+          country: v.string(),
+          phoneNumber: v.optional(v.string()),
+          countryCode: v.optional(v.string()),
+        }),
+        profiles: v.object({
+          personalWebsite: v.optional(v.string()),
+          github: v.string(),
+          xProfile: v.string(),
+        }),
+        experience: v.object({
+          professionalPMExperience: v.string(),
+          startupExperience: v.string(),
+          resume: v.optional(v.any()),
+          resumeUrl: v.optional(v.string()),
+          projectSpecialties: v.array(v.string()),
+        }),
+        availability: v.object({
+          availabilityHours: v.string(),
+          greatSoftwareDefinition: v.string(),
+          projectManagementDescription: v.string(),
+        }),
+      })
+    ),
+    designerFields: v.optional(
+      v.object({
+        basicInfo: v.object({
+          fullName: v.string(),
+          email: v.string(),
+          country: v.string(),
+          phoneNumber: v.optional(v.string()),
+        }),
+        profiles: v.object({
+          portfolioType: v.string(),
+          portfolioUrl: v.string(),
+          dribbbleProfile: v.optional(v.string()),
+          behanceProfile: v.optional(v.string()),
+          layersProfile: v.optional(v.string()),
+        }),
+        experience: v.object({
+          professionalDesignExperience: v.string(),
+          startupExperience: v.string(),
+          resume: v.optional(v.any()),
+          resumeUrl: v.optional(v.string()),
+          designWorkTypes: v.array(v.string()),
+        }),
+        availability: v.object({
+          availabilityHours: v.string(),
+          qualityOverDelivery: v.string(),
+          favoriteProducts: v.string(),
+        }),
+      })
+    ),
+  },
+  handler: async (ctx, args) => {
+    // Store data temporarily in a wizard_data table
+    return await ctx.db.insert("wizard_data", {
+      email: args.email,
+      name: args.name,
+      phoneNumber: args.phoneNumber,
+      countryCode: args.countryCode,
+      type: args.type,
+      teamLeadFields: args.teamLeadFields,
+      designerFields: args.designerFields,
+      createdAt: Date.now(),
+      expiresAt: Date.now() + 30 * 60 * 1000, // 30 minutes
+    });
+  },
+});
+
+// Complete user profile with wizard data (called at final submission)
+export const completeWizardUserProfile = mutation({
+  args: {
+    userId: v.id("users"),
+    // Match the exact structure expected by wizard completion
+    teamLeadFields: v.optional(
+      v.object({
+        profiles: v.object({
+          personalWebsite: v.optional(v.string()),
+          github: v.string(),
+          xProfile: v.string(),
+        }),
+        experience: v.object({
+          professionalPMExperience: v.string(),
+          startupExperience: v.string(),
+          projectSpecialties: v.array(v.string()),
+        }),
+        availability: v.object({
+          availabilityHours: v.string(),
+          greatSoftwareDefinition: v.string(),
+          projectManagementDescription: v.string(),
+        }),
+      })
+    ),
+    designerFields: v.optional(
+      v.object({
+        profiles: v.object({
+          portfolioType: v.string(),
+          portfolioUrl: v.string(),
+          dribbbleProfile: v.optional(v.string()),
+          behanceProfile: v.optional(v.string()),
+          layersProfile: v.optional(v.string()),
+        }),
+        experience: v.object({
+          professionalDesignExperience: v.string(),
+          startupExperience: v.string(),
+          designWorkTypes: v.array(v.string()),
+          resumeId: v.optional(v.id("media")),
+        }),
+        availability: v.object({
+          availabilityHours: v.string(),
+          qualityOverDelivery: v.string(),
+          favoriteProducts: v.string(),
+        }),
+      })
+    ),
+  },
+  handler: async (ctx, args) => {
+    // Get the user
+    const user = await ctx.db.get(args.userId);
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    // Handle Team Lead profile creation
+    if (user.type === "PROJECT_MANAGER" && args.teamLeadFields) {
+      await ctx.db.insert("project_manager_profiles", {
+        userId: args.userId,
+        professionalPMExperience:
+          args.teamLeadFields.experience.professionalPMExperience,
+        startupExperience: args.teamLeadFields.experience.startupExperience,
+        projectSpecialties: args.teamLeadFields.experience.projectSpecialties,
+        personalWebsite: args.teamLeadFields.profiles.personalWebsite,
+        githubProfile: args.teamLeadFields.profiles.github,
+        xProfile: args.teamLeadFields.profiles.xProfile,
+        availabilityHours: args.teamLeadFields.availability.availabilityHours,
+        greatSoftwareDefinition:
+          args.teamLeadFields.availability.greatSoftwareDefinition,
+        projectManagementDescription:
+          args.teamLeadFields.availability.projectManagementDescription,
+      });
+    }
+
+    // Handle Designer profile creation
+    if (user.type === "DESIGNER" && args.designerFields) {
+      await ctx.db.insert("designer_profiles", {
+        userId: args.userId,
+        portfolioType: args.designerFields.profiles.portfolioType,
+        portfolioUrl: args.designerFields.profiles.portfolioUrl,
+        dribbbleProfile: args.designerFields.profiles.dribbbleProfile,
+        behanceProfile: args.designerFields.profiles.behanceProfile,
+        layersProfile: args.designerFields.profiles.layersProfile,
+        professionalDesignExperience:
+          args.designerFields.experience.professionalDesignExperience,
+        startupExperience: args.designerFields.experience.startupExperience,
+        resumeId: args.designerFields.experience.resumeId,
+        designWorkTypes: args.designerFields.experience.designWorkTypes,
+        availabilityHours: args.designerFields.availability.availabilityHours,
+        qualityOverDelivery:
+          args.designerFields.availability.qualityOverDelivery,
+        favoriteProducts: args.designerFields.availability.favoriteProducts,
+        isAvailable: true,
+        lastActive: Date.now(),
+      });
+    }
+
+    return { success: true };
   },
 });
 
@@ -1007,8 +1267,8 @@ export const getProjectManagersWithProfiles = query({
       return projectManagersWithProfiles.filter(
         (pm) =>
           pm.name?.toLowerCase().includes(searchTerm) ||
-          pm.projectManagerFields?.stack?.some((stackItem) =>
-            stackItem.name.toLowerCase().includes(searchTerm)
+          pm.projectManagerFields?.projectSpecialties?.some((specialty) =>
+            specialty.toLowerCase().includes(searchTerm)
           ) ||
           pm.developerFields?.skills?.some((skill) =>
             (typeof skill === "object" ? skill.skill : skill)

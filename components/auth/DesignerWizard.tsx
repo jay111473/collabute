@@ -6,7 +6,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { CountrySelect } from "@/components/ui/country-select";
-import { Globe, Upload, Eye, EyeOff } from "lucide-react";
+import { Globe, Upload, Eye, EyeOff, Loader2 } from "lucide-react";
+import { toast } from "sonner";
+import { FileUploadWithProgress } from "../ui/file-upload-with-progress";
+import { Id } from "../../convex/_generated/dataModel";
+import { WebsitePreview } from "@/components/ui/url-preview";
+import {
+  DribbblePreview,
+  BehancePreview,
+  LayersPreview,
+} from "@/components/ui/design-platform-preview";
 import { UseFormReturn } from "react-hook-form";
 import type {
   CreateAccountFormData,
@@ -26,6 +35,9 @@ interface DesignerWizardProps {
   form: UseFormReturn<CreateAccountFormData>;
   onComplete: (data: DesignerFormData) => void;
   onSubmit: () => void;
+  onBasicInfoComplete?: (
+    values: CreateAccountFormData
+  ) => Promise<string | void>;
   initialData?: any;
   startFromStep?: number;
   setCurrentStep: (step: number) => void;
@@ -33,16 +45,16 @@ interface DesignerWizardProps {
   setShowDesignerWizard: (value: boolean) => void;
 }
 
-const DesignerWizard: React.FC<DesignerWizardProps> = ({
+const DesignerWizard = ({
   form,
   onComplete,
   onSubmit,
   initialData,
-  startFromStep = 1,
   setCurrentStep,
   currentStep,
   setShowDesignerWizard,
-}) => {
+}: DesignerWizardProps) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [validationErrors, setValidationErrors] = useState<
     Record<string, string>
   >({});
@@ -79,13 +91,18 @@ const DesignerWizard: React.FC<DesignerWizardProps> = ({
     field: string,
     value: any
   ) => {
-    setDesignerData((prev) => ({
-      ...prev,
+    const updatedData = {
+      ...designerData,
       [section]: {
-        ...prev[section],
+        ...designerData[section],
         [field]: value,
       },
-    }));
+    };
+
+    setDesignerData(updatedData);
+
+    // Also update the main form with the complete data
+    form.setValue("designerFields", updatedData);
 
     const errorKey = `${section}.${field}`;
     if (validationErrors[errorKey]) {
@@ -143,8 +160,8 @@ const DesignerWizard: React.FC<DesignerWizardProps> = ({
         "Please select at least one design work type";
     }
 
-    if (!designerData.experience.resume) {
-      errors["experience.resume"] = "Resume is required";
+    if (!designerData.experience.resumeId) {
+      errors["experience.resumeId"] = "Resume is required";
     }
 
     setValidationErrors(errors);
@@ -167,7 +184,7 @@ const DesignerWizard: React.FC<DesignerWizardProps> = ({
     return Object.keys(errors).length === 0;
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     let isValid = false;
 
     switch (currentStep) {
@@ -183,8 +200,31 @@ const DesignerWizard: React.FC<DesignerWizardProps> = ({
       case 4:
         isValid = validateStep4();
         if (isValid) {
-          onComplete(designerData);
-          onSubmit();
+          setIsSubmitting(true);
+          try {
+            // Ensure form has the correct type
+            form.setValue("type", "designer");
+
+            // For designers, basic info is already in the main form from step 1
+            // Just ensure we have all the updated designer-specific data
+
+            // Complete the designer data and save to form
+            onComplete(designerData);
+            await onSubmit();
+            // Success - show toast and redirect will happen in the parent component
+            toast.success("Application submitted successfully!", {
+              description: "Your application is under review. We'll contact you soon!",
+            });
+          } catch (error: any) {
+            console.error("Submission error:", error);
+            const errorMessage =
+              error.message ||
+              "Failed to submit application. Please try again.";
+            toast.error("Submission Failed", {
+              description: errorMessage,
+            });
+            setIsSubmitting(false);
+          }
         }
         break;
       default:
@@ -328,15 +368,15 @@ const DesignerWizard: React.FC<DesignerWizardProps> = ({
                       key={type}
                       className={`flex items-center space-x-3 cursor-pointer px-4 py-2 rounded-md border transition-all duration-200 ${
                         designerData.profiles.portfolioType === type
-                          ? "bg-[#2a2a4a] border-[#4a4a6a] text-white"
-                          : "bg-[#1a1a2e] border-[#2a2a4a] text-gray-300 hover:bg-[#2a2a4a] hover:border-[#4a4a6a]"
+                          ? "bg-darkGray2 border-grayBorders text-white"
+                          : "bg-darkGray border-grayBorders text-gray-300 hover:bg-darkGray2 hover:border-grayBorders"
                       }`}
                     >
                       <div
                         className={`w-3 h-3 rounded-full border-2 flex items-center justify-center transition-all duration-200 ${
                           designerData.profiles.portfolioType === type
                             ? "border-purple-400 bg-purple-400"
-                            : "border-gray-500 bg-transparent"
+                            : "border-grayBorders bg-transparent"
                         }`}
                       >
                         {designerData.profiles.portfolioType === type && (
@@ -365,7 +405,7 @@ const DesignerWizard: React.FC<DesignerWizardProps> = ({
                 <Input
                   type="url"
                   placeholder="Enter your portfolio website ..."
-                  className="bg-[#0f0f23] border-[#16213e] text-white placeholder:text-gray-500 focus:outline-none focus:ring-0"
+                  className="bg-darkGray border-grayBorders text-white placeholder:text-gray-500 focus:outline-none focus:ring-0"
                   value={designerData.profiles.portfolioUrl}
                   onChange={(e) =>
                     updateNestedField(
@@ -376,6 +416,7 @@ const DesignerWizard: React.FC<DesignerWizardProps> = ({
                   }
                 />
                 {renderFieldError("profiles.portfolioUrl")}
+                <WebsitePreview url={designerData.profiles.portfolioUrl} />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -389,7 +430,7 @@ const DesignerWizard: React.FC<DesignerWizardProps> = ({
                   <Input
                     type="url"
                     placeholder="Enter your profile address ..."
-                    className="bg-[#0f0f23] border-[#16213e] text-white placeholder:text-gray-500 focus:outline-none focus:ring-0"
+                    className="bg-darkGray border-grayBorders text-white placeholder:text-gray-500 focus:outline-none focus:ring-0"
                     value={designerData.profiles.dribbbleProfile}
                     onChange={(e) =>
                       updateNestedField(
@@ -398,6 +439,9 @@ const DesignerWizard: React.FC<DesignerWizardProps> = ({
                         e.target.value
                       )
                     }
+                  />
+                  <DribbblePreview
+                    url={designerData.profiles.dribbbleProfile || ""}
                   />
                 </div>
 
@@ -411,7 +455,7 @@ const DesignerWizard: React.FC<DesignerWizardProps> = ({
                   <Input
                     type="url"
                     placeholder="Enter your profile address ..."
-                    className="bg-[#0f0f23] border-[#16213e] text-white placeholder:text-gray-500 focus:outline-none focus:ring-0"
+                    className="bg-darkGray border-grayBorders text-white placeholder:text-gray-500 focus:outline-none focus:ring-0"
                     value={designerData.profiles.behanceProfile}
                     onChange={(e) =>
                       updateNestedField(
@@ -421,12 +465,15 @@ const DesignerWizard: React.FC<DesignerWizardProps> = ({
                       )
                     }
                   />
+                  <BehancePreview
+                    url={designerData.profiles.behanceProfile || ""}
+                  />
                 </div>
               </div>
 
               <div className="space-y-2">
                 <Label className="text-white font-medium flex items-center gap-2">
-                  <div className="w-5 h-5 bg-gray-800 rounded flex items-center justify-center">
+                  <div className="w-5 h-5 bg-darkGray rounded flex items-center justify-center">
                     <div className="w-3 h-3 bg-white rounded"></div>
                   </div>
                   Layers.io profile
@@ -434,7 +481,7 @@ const DesignerWizard: React.FC<DesignerWizardProps> = ({
                 <Input
                   type="url"
                   placeholder="Enter your profile address ..."
-                  className="bg-[#0f0f23] border-[#16213e] text-white placeholder:text-gray-500 focus:outline-none focus:ring-0"
+                  className="bg-darkGray border-grayBorders text-white placeholder:text-gray-500 focus:outline-none focus:ring-0"
                   value={designerData.profiles.layersProfile}
                   onChange={(e) =>
                     updateNestedField(
@@ -443,6 +490,9 @@ const DesignerWizard: React.FC<DesignerWizardProps> = ({
                       e.target.value
                     )
                   }
+                />
+                <LayersPreview
+                  url={designerData.profiles.layersProfile || ""}
                 />
               </div>
             </div>
@@ -471,11 +521,11 @@ const DesignerWizard: React.FC<DesignerWizardProps> = ({
                     )
                   }
                 >
-                  <SelectTrigger className="bg-[#0f0f23] border-[#16213e] text-white focus:outline-none focus:ring-0">
+                  <SelectTrigger className="bg-darkGray border-grayBorders text-white focus:outline-none focus:ring-0">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent
-                    className="bg-black border-gray-600 text-white max-h-[200px] overflow-y-auto"
+                    className="bg-darkGray border-grayBorders text-white max-h-[200px] overflow-y-auto"
                     position="popper"
                     sideOffset={5}
                   >
@@ -500,11 +550,11 @@ const DesignerWizard: React.FC<DesignerWizardProps> = ({
                     updateNestedField("experience", "startupExperience", value)
                   }
                 >
-                  <SelectTrigger className="bg-[#0f0f23] border-[#16213e] text-white focus:outline-none focus:ring-0">
+                  <SelectTrigger className="bg-darkGray border-grayBorders text-white focus:outline-none focus:ring-0">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent
-                    className="bg-black border-gray-600 text-white max-h-[200px] overflow-y-auto"
+                    className="bg-darkGray border-grayBorders text-white max-h-[200px] overflow-y-auto"
                     position="popper"
                     sideOffset={5}
                   >
@@ -522,59 +572,27 @@ const DesignerWizard: React.FC<DesignerWizardProps> = ({
 
             <div className="space-y-2">
               <Label className="text-white">Resume/CV</Label>
-              <div className="border-2 border-dashed border-[#16213e] rounded-lg bg-[#0f0f23] p-1">
-                <div
-                  className="flex items-center justify-start text-center gap-x-3 cursor-pointer"
-                  onClick={() => {
-                    document.getElementById("resume-upload")?.click();
-                  }}
-                >
-                  <div className="w-8 h-8 bg-transparent rounded-lg flex items-center justify-center ">
-                    <svg
-                      className="w-6 h-6 text-gray-400"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                      />
-                    </svg>
-                  </div>
-                  <div>
-                    <p className="text-gray-400 text-sm">
-                      {designerData.experience.resume ? (
-                        <span className="text-purple-600">
-                          {designerData.experience.resume.name}
-                        </span>
-                      ) : (
-                        <>
-                          Upload CV/Resume{" "}
-                          <span className="text-red-400">*</span> (PDF format,
-                          max 5MB)
-                        </>
-                      )}
-                    </p>
-                  </div>
-                  <input
-                    type="file"
-                    accept=".pdf"
-                    className="hidden"
-                    id="resume-upload"
-                    onChange={(e) =>
-                      updateNestedField(
-                        "experience",
-                        "resume",
-                        e.target.files?.[0] || null
-                      )
-                    }
-                  />
-                </div>
-              </div>
-              {renderFieldError("experience.resume")}
+              <FileUploadWithProgress
+                onFileUploaded={(mediaId: Id<"media">, fileName: string) => {
+                  updateNestedField("experience", "resumeId", mediaId);
+                }}
+                onFileRemoved={() => {
+                  updateNestedField("experience", "resumeId", undefined);
+                }}
+                accept=".pdf,.doc,.docx"
+                maxSize={5}
+                currentFile={
+                  designerData.experience.resumeId
+                    ? {
+                        mediaId: designerData.experience
+                          .resumeId as Id<"media">,
+                        fileName: "Resume",
+                      }
+                    : null
+                }
+                label="Upload CV/Resume"
+              />
+              {renderFieldError("experience.resumeId")}
             </div>
 
             <div className="space-y-2">
@@ -597,7 +615,7 @@ const DesignerWizard: React.FC<DesignerWizardProps> = ({
                 ).map((workType) => (
                   <label
                     key={workType}
-                    className="flex items-center space-x-3 p-1 rounded-lg border border-[#16213e] bg-[#0f0f23] hover:bg-[#1a1a2e] transition-colors cursor-pointer w-full"
+                    className="flex items-center space-x-3 p-1 rounded-lg border border-grayBorders bg-darkGray hover:bg-darkGray2 transition-colors cursor-pointer w-full"
                   >
                     <input
                       type="checkbox"
@@ -620,7 +638,7 @@ const DesignerWizard: React.FC<DesignerWizardProps> = ({
                           );
                         }
                       }}
-                      className="w-4 h-4 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500"
+                      className="w-4 h-4 text-purple-600 bg-darkGray border-grayBorders rounded focus:ring-purple-500"
                     />
                     <span className="text-white text-xs flex-1">
                       {workType}
@@ -658,8 +676,8 @@ const DesignerWizard: React.FC<DesignerWizardProps> = ({
                       key={hours}
                       className={`flex items-center space-x-2 px-4 py-2 rounded-lg border cursor-pointer transition-colors ${
                         designerData.availability.availabilityHours === hours
-                          ? "border-purple-600"
-                          : "border-[#16213e] bg-[#0f0f23] hover:bg-[#1a1a2e]"
+                          ? "border-purple-600 bg-darkGray"
+                          : "border-grayBorders bg-darkGray hover:bg-darkGray2"
                       }`}
                       onClick={() => {
                         updateNestedField(
@@ -673,7 +691,7 @@ const DesignerWizard: React.FC<DesignerWizardProps> = ({
                         className={`w-4 h-4 rounded border-2 flex items-center justify-center ${
                           designerData.availability.availabilityHours === hours
                             ? "bg-purple-400 border-purple-600 text-black"
-                            : "border-gray-500 bg-transparent"
+                            : "border-grayBorders bg-transparent"
                         }`}
                       >
                         {designerData.availability.availabilityHours ===
@@ -707,7 +725,7 @@ const DesignerWizard: React.FC<DesignerWizardProps> = ({
                 </Label>
                 <Textarea
                   placeholder="Write here..."
-                  className="bg-[#0f0f23] border-[#16213e] text-white placeholder:text-gray-500 min-h-[100px] resize-none focus:outline-none focus:ring-0"
+                  className="bg-darkGray border-grayBorders text-white placeholder:text-gray-500 min-h-[100px] resize-none focus:outline-none focus:ring-0"
                   value={designerData.availability.qualityOverDelivery}
                   onChange={(e) =>
                     updateNestedField(
@@ -729,7 +747,7 @@ const DesignerWizard: React.FC<DesignerWizardProps> = ({
                 </Label>
                 <Textarea
                   placeholder="Write here..."
-                  className="bg-[#0f0f23] border-[#16213e] text-white placeholder:text-gray-500 min-h-[100px] resize-none focus:outline-none focus:ring-0"
+                  className="bg-darkGray border-grayBorders text-white placeholder:text-gray-500 min-h-[100px] resize-none focus:outline-none focus:ring-0"
                   value={designerData.availability.favoriteProducts}
                   onChange={(e) =>
                     updateNestedField(
@@ -749,7 +767,7 @@ const DesignerWizard: React.FC<DesignerWizardProps> = ({
         return (
           <div className="text-center space-y-6 max-w-2xl mx-auto">
             <div className="relative mb-8">
-              <div className="inline-block bg-gray-800 text-white text-sm px-3 py-2 rounded-lg">
+              <div className="inline-block bg-darkGray text-white text-sm px-3 py-2 rounded-lg">
                 Thank you, {designerData.basicInfo.fullName || "User"}!
               </div>
             </div>
@@ -758,7 +776,7 @@ const DesignerWizard: React.FC<DesignerWizardProps> = ({
               Application successfully submitted for review!
             </h2>
 
-            <div className="bg-gradient-to-br from-purple-900/30 to-blue-900/30 border border-purple-500/20 rounded-2xl p-8 space-y-6 backdrop-blur-sm">
+            <div className="bg-darkGray border border-grayBorders rounded-2xl p-8 space-y-6">
               <div className="space-y-2">
                 <h3 className="text-white font-semibold text-lg">
                   Expected Review Timeline{" "}
@@ -799,10 +817,10 @@ const DesignerWizard: React.FC<DesignerWizardProps> = ({
                 size="lg"
                 type="button"
                 onClick={() => {
-                  window.location.href = "/dashboard";
+                  window.location.href = "/";
                 }}
               >
-                Ok, Thanks!
+                Return to Homepage
               </Button>
             </div>
           </div>
@@ -826,7 +844,8 @@ const DesignerWizard: React.FC<DesignerWizardProps> = ({
                 size="lg"
                 type="button"
                 onClick={handleBack}
-                className="text-white border-gray-800"
+                disabled={isSubmitting}
+                className="text-white border-grayBorders disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Back
               </Button>
@@ -839,8 +858,19 @@ const DesignerWizard: React.FC<DesignerWizardProps> = ({
               size="lg"
               type="button"
               onClick={handleNext}
+              disabled={isSubmitting}
+              className="disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {currentStep === 4 ? "Submit" : "Next"}
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Submitting...
+                </>
+              ) : currentStep === 4 ? (
+                "Submit"
+              ) : (
+                "Next"
+              )}
             </Button>
           </div>
         )}

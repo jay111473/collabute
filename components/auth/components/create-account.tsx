@@ -48,8 +48,43 @@ const CreateAccount = ({ invitationData }: CreateAccountProps) => {
   const [teamLeadStep1Data, setTeamLeadStep1Data] = useState<any>(null);
   const [designerStep1Data, setDesignerStep1Data] = useState<any>(null);
   const [currentStep, setCurrentStep] = useState(1);
-  const completeProfile = useMutation(api.users.completeUserProfile);
-  const { signIn } = useAuthActions();
+  const createUserAccount = useMutation(api.users.createUserAccount);
+  const completeWizardProfile = useMutation(
+    api.users.completeWizardUserProfile
+  );
+
+  // Store the created user ID for profile completion
+  const [createdUserId, setCreatedUserId] = useState<string | undefined>(
+    undefined
+  );
+
+  // Create user account after basic info is collected
+  const createAccountAfterBasicInfo = async (values: CreateAccountFormData) => {
+    try {
+      console.log("Creating user account with basic info:", values);
+
+      const result = await createUserAccount({
+        email: values.email,
+        password: values.password,
+        name: values.name,
+        phoneNumber: values.phoneNumber || undefined,
+        countryCode: values.countryCode || undefined,
+        type: values.type.toUpperCase() as any,
+      });
+
+      if (result.success) {
+        setCreatedUserId(result.userId);
+        console.log("User account created with ID:", result.userId);
+        return result.userId;
+      }
+    } catch (error: any) {
+      console.error("Error creating user account:", error);
+      toast.error("Failed to create account", {
+        description: error.message || "Please try again",
+      });
+      throw error;
+    }
+  };
 
   useEffect(() => {
     resetFormErrors(); // reset form error when type changes
@@ -112,7 +147,7 @@ const CreateAccount = ({ invitationData }: CreateAccountProps) => {
   const handleTeamLeadSubmit = async () => {
     try {
       const values = form.getValues();
-      await handleSubmit(values);
+      await handleSubmit(values, true); // Skip toast to prevent duplicate - wizard shows its own success message
       setCurrentStep(5);
     } catch (error) {
       console.error("Team lead submission error:", error);
@@ -122,131 +157,209 @@ const CreateAccount = ({ invitationData }: CreateAccountProps) => {
   const handleDesignerSubmit = async () => {
     try {
       const values = form.getValues();
-      await handleSubmit(values);
+      await handleSubmit(values, true); // Skip toast to prevent duplicate - wizard shows its own success message
       setCurrentStep(5);
     } catch (error) {
       console.error("Designer submission error:", error);
     }
   };
 
-  const handleDesignerStep1Next = () => {
+  const handleDesignerStep1Next = async () => {
     const nameValid = form.trigger("designerFields.basicInfo.fullName");
     const emailValid = form.trigger("designerFields.basicInfo.email");
     const countryValid = form.trigger("designerFields.basicInfo.country");
 
-    Promise.all([nameValid, emailValid, countryValid]).then(
-      ([nameIsValid, emailIsValid, countryIsValid]) => {
-        if (nameIsValid && emailIsValid && countryIsValid) {
-          const name = form.getValues("designerFields.basicInfo.fullName");
-          const email = form.getValues("designerFields.basicInfo.email");
-          const phoneNumber = form.getValues(
-            "designerFields.basicInfo.phoneNumber"
-          );
-          const countryCode = form.getValues(
-            "designerFields.basicInfo.country"
-          );
+    const [nameIsValid, emailIsValid, countryIsValid] = await Promise.all([
+      nameValid,
+      emailValid,
+      countryValid,
+    ]);
 
-          setDesignerStep1Data({
-            fullName: name,
-            email: email,
-            phoneNumber: phoneNumber,
-            country: countryCode,
-          });
+    if (nameIsValid && emailIsValid && countryIsValid) {
+      setIsLoading(true);
+      
+      try {
+        const name = form.getValues("designerFields.basicInfo.fullName");
+        const email = form.getValues("designerFields.basicInfo.email");
+        const phoneNumber = form.getValues(
+          "designerFields.basicInfo.phoneNumber"
+        );
+        const countryCode = form.getValues("designerFields.basicInfo.country");
+        const password = form.getValues("password");
 
+        // Store step 1 data
+        setDesignerStep1Data({
+          fullName: name,
+          email: email,
+          phoneNumber: phoneNumber,
+          country: countryCode,
+        });
+
+        // Create account with basic info
+        const accountData: CreateAccountFormData = {
+          name,
+          email,
+          password,
+          phoneNumber: phoneNumber || "",
+          countryCode: countryCode || "",
+          type: "designer",
+          designerFields: undefined,
+          teamLeadFields: undefined,
+          developerFields: undefined,
+          startupFields: undefined,
+        };
+
+        const userId = await createAccountAfterBasicInfo(accountData);
+
+        if (userId) {
+          // Account created successfully, proceed to step 2
           setShowDesignerWizard(true);
           setCurrentStep(2);
         }
+      } catch (error) {
+        console.error("Failed to create designer account:", error);
+        // Error is already handled in createAccountAfterBasicInfo
+      } finally {
+        setIsLoading(false);
       }
-    );
+    }
   };
 
-  const handleTeamLeadStep1Next = () => {
+  const handleTeamLeadStep1Next = async () => {
     const nameValid = form.trigger("teamLeadFields.basicInfo.fullName");
     const emailValid = form.trigger("teamLeadFields.basicInfo.email");
     const countryValid = form.trigger("teamLeadFields.basicInfo.country");
 
-    Promise.all([nameValid, emailValid, countryValid]).then(
-      ([nameIsValid, emailIsValid, countryIsValid]) => {
-        if (nameIsValid && emailIsValid && countryIsValid) {
-          const name = form.getValues("teamLeadFields.basicInfo.fullName");
-          const email = form.getValues("teamLeadFields.basicInfo.email");
-          const phoneNumber = form.getValues(
-            "teamLeadFields.basicInfo.phoneNumber"
-          );
-          const countryCode = form.getValues(
-            "teamLeadFields.basicInfo.country"
-          );
+    const [nameIsValid, emailIsValid, countryIsValid] = await Promise.all([
+      nameValid,
+      emailValid,
+      countryValid,
+    ]);
 
-          setTeamLeadStep1Data({
-            fullName: name,
-            email: email,
-            country: countryCode,
-            phoneNumber: phoneNumber,
-          });
+    if (nameIsValid && emailIsValid && countryIsValid) {
+      setIsLoading(true);
+      
+      try {
+        const name = form.getValues("teamLeadFields.basicInfo.fullName");
+        const email = form.getValues("teamLeadFields.basicInfo.email");
+        const phoneNumber = form.getValues(
+          "teamLeadFields.basicInfo.phoneNumber"
+        );
+        const countryCode = form.getValues("teamLeadFields.basicInfo.country");
+        const password = form.getValues("password");
 
+        // Store step 1 data
+        setTeamLeadStep1Data({
+          fullName: name,
+          email: email,
+          country: countryCode,
+          phoneNumber: phoneNumber,
+        });
+
+        // Create account with basic info
+        const accountData: CreateAccountFormData = {
+          name,
+          email,
+          password,
+          phoneNumber: phoneNumber || "",
+          countryCode: countryCode || "",
+          type: "project_manager",
+          designerFields: undefined,
+          teamLeadFields: undefined,
+          developerFields: undefined,
+          startupFields: undefined,
+        };
+
+        const userId = await createAccountAfterBasicInfo(accountData);
+
+        if (userId) {
+          // Account created successfully, proceed to step 2
           setShowTeamLeadWizard(true);
           setCurrentStep(2);
         }
+      } catch (error) {
+        console.error("Failed to create team lead account:", error);
+        // Error is already handled in createAccountAfterBasicInfo
+      } finally {
+        setIsLoading(false);
       }
-    );
+    }
   };
 
-  // Handle form submission with Convex Auth
-  const handleSubmit = async (values: CreateAccountFormData) => {
+  // Handle final form submission (complete profile)
+  const handleSubmit = async (
+    values: CreateAccountFormData,
+    skipToast = false
+  ) => {
     setIsLoading(true);
 
-    const formData = new FormData();
-    formData.append("email", values.email);
-    formData.append("password", values.password);
-    formData.append("name", values.name);
-    formData.append("flow", "signUp");
+    // Debug log the values
 
     try {
-      // Create account with Convex Auth
-      await signIn("password", formData);
+      // If we don't have a user ID yet, create the account first
+      let userId = createdUserId;
+      if (!userId) {
+        userId = await createAccountAfterBasicInfo(values);
+      }
 
-      // Wait a moment for the user to be properly created in Convex
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      if (!userId) {
+        throw new Error("Failed to get user ID");
+      }
 
-      // Complete the user profile with additional fields
-      try {
-        await completeProfile({
-          phoneNumber: values.phoneNumber || undefined,
-          countryCode: values.countryCode || undefined,
-          type: values.type.toUpperCase() as any,
-          developerFields: values.developerFields
-            ? {
-                primaryRole: values.developerFields.primaryRole || undefined,
-              }
-            : undefined,
-          startupFields: values.startupFields
-            ? {
-                companyName: values.startupFields.companyName || undefined,
-                teamSize: values.startupFields.teamSize || undefined,
-              }
-            : undefined,
-          teamLeadFields: values.teamLeadFields || undefined,
-        });
+      // Complete the user profile with wizard data
+      console.log("Completing user profile for userId:", userId);
 
-        if (values.type !== "project_manager") {
+      // Extract only the needed fields for profile completion (excluding basicInfo)
+      const teamLeadFieldsForCompletion = values.teamLeadFields ? {
+        profiles: values.teamLeadFields.profiles,
+        experience: values.teamLeadFields.experience,
+        availability: values.teamLeadFields.availability,
+      } : undefined;
+
+      const designerFieldsForCompletion = values.designerFields ? {
+        profiles: values.designerFields.profiles,
+        experience: values.designerFields.experience,
+        availability: values.designerFields.availability,
+      } : undefined;
+
+      await completeWizardProfile({
+        userId: userId as any,
+        teamLeadFields: teamLeadFieldsForCompletion,
+        designerFields: designerFieldsForCompletion,
+      });
+
+      // Different handling based on user type
+      if (!skipToast) {
+        if (values.type === "startup") {
+          toast.success("Welcome! Account created successfully!");
           window.location.href = "/dashboard";
-        }
-      } catch (profileError) {
-        toast.success("Account created successfully!", {
-          description: "Please complete your profile in settings.",
-        });
-
-        if (values.type !== "project_manager") {
-          window.location.href = "/dashboard";
+        } else {
+          toast.success("Profile submitted successfully!", {
+            description:
+              "Your application is under review. We'll contact you soon!",
+          });
         }
       }
     } catch (error: any) {
       console.error("Sign up error:", error);
+      console.error("Error details:", {
+        message: error.message,
+        stack: error.stack,
+        data: error.data,
+        type: typeof error,
+        constructor: error.constructor.name,
+      });
+
       const errorMessage =
         error instanceof ConvexError
           ? (error.data as { message: string }).message
           : error.message || "Failed to create account";
       console.log("errorMessage", errorMessage);
+
+      // Show error toast to user
+      toast.error("Account Creation Failed", {
+        description: errorMessage,
+      });
     } finally {
       setIsLoading(false);
     }
@@ -254,24 +367,22 @@ const CreateAccount = ({ invitationData }: CreateAccountProps) => {
 
   return (
     <>
-      <Toaster
-        theme="dark"
-        position="top-right"
-        toastOptions={{
-          style: {
-            background: "#18181B",
-            border: "1px solid #27272A",
-            color: "#ffffff",
-          },
-        }}
-      />
       <Form {...form}>
         <form
           className="w-full max-w-full sm:max-w-[600px] md:max-w-[700px]"
-          onSubmit={form.handleSubmit(handleSubmit as any)}
+          onSubmit={(e) => {
+            e.preventDefault();
+            // Form submission is handled by the wizards
+          }}
         >
           <div className="space-y-4 md:space-y-6">
-            <AccountTypeSelector form={form} invitationData={invitationData} />
+            {!(accountType === "project_manager" && showTeamLeadWizard) &&
+              !(accountType === "designer" && showDesignerWizard) && (
+                <AccountTypeSelector
+                  form={form}
+                  invitationData={invitationData}
+                />
+              )}
 
             {accountType === "project_manager" &&
               (showTeamLeadWizard || currentStep === 5) && (
@@ -279,6 +390,7 @@ const CreateAccount = ({ invitationData }: CreateAccountProps) => {
                   form={form}
                   onComplete={handleTeamLeadComplete}
                   onSubmit={handleTeamLeadSubmit}
+                  onBasicInfoComplete={createAccountAfterBasicInfo}
                   initialData={teamLeadStep1Data}
                   startFromStep={2}
                   setCurrentStep={setCurrentStep}
@@ -293,6 +405,7 @@ const CreateAccount = ({ invitationData }: CreateAccountProps) => {
                   form={form}
                   onComplete={handleDesignerComplete}
                   onSubmit={handleDesignerSubmit}
+                  onBasicInfoComplete={createAccountAfterBasicInfo}
                   initialData={designerStep1Data}
                   startFromStep={2}
                   setCurrentStep={setCurrentStep}
@@ -306,7 +419,7 @@ const CreateAccount = ({ invitationData }: CreateAccountProps) => {
                 <>
                   {accountType === "project_manager" && currentStep === 1 && (
                     <>
-                      {/* Row 1: Full Name and Country */}
+                      {/* Row 1: Full Name and Phone Number with Country */}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                         <FormField
                           control={form.control}
@@ -328,28 +441,47 @@ const CreateAccount = ({ invitationData }: CreateAccountProps) => {
                           )}
                         />
 
-                        <FormField
-                          control={form.control}
-                          name="teamLeadFields.basicInfo.country"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Country</FormLabel>
-                              <FormControl>
-                                <CountrySelect
-                                  value={field.value || ""}
-                                  onValueChange={field.onChange}
-                                  placeholder="Select your location here"
-                                  className="w-full"
-                                  isProjectManager={true}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                        <div>
+                          <FormLabel>Phone Number</FormLabel>
+                          <div className="flex gap-2 mt-2">
+                            <FormField
+                              control={form.control}
+                              name="teamLeadFields.basicInfo.country"
+                              render={({ field }) => (
+                                <FormItem className="w-1/3">
+                                  <FormControl>
+                                    <CountrySelect
+                                      value={field.value || ""}
+                                      onValueChange={field.onChange}
+                                      placeholder="Country"
+                                      className="w-full"
+                                    />
+                                  </FormControl>
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={form.control}
+                              name="teamLeadFields.basicInfo.phoneNumber"
+                              render={({ field }) => (
+                                <FormItem className="flex-1">
+                                  <FormControl>
+                                    <Input
+                                      placeholder="Enter your phone number"
+                                      className="bg-transparent placeholder:bg-transparent border-grayBorders"
+                                      value={field.value || ""}
+                                      onChange={field.onChange}
+                                      onBlur={field.onBlur}
+                                    />
+                                  </FormControl>
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                        </div>
                       </div>
 
-                      {/* Row 2: Email Address and Phone Number */}
+                      {/* Row 2: Email Address and Password */}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                         <FormField
                           control={form.control}
@@ -377,23 +509,32 @@ const CreateAccount = ({ invitationData }: CreateAccountProps) => {
 
                         <FormField
                           control={form.control}
-                          name="teamLeadFields.basicInfo.phoneNumber"
+                          name="password"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>
-                                Phone Number{" "}
-                                <span className="text-gray-400">
-                                  (optional)
-                                </span>
-                              </FormLabel>
+                              <FormLabel>Password</FormLabel>
                               <FormControl>
-                                <Input
-                                  placeholder="XXX XXX XX"
-                                  className="bg-transparent placeholder:bg-transparent border-grayBorders"
-                                  value={field.value || ""}
-                                  onChange={field.onChange}
-                                  onBlur={field.onBlur}
-                                />
+                                <div className="relative">
+                                  <Input
+                                    type={showPassword ? "text" : "password"}
+                                    placeholder="Enter your password"
+                                    className="bg-transparent placeholder:bg-transparent border-grayBorders"
+                                    {...field}
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      setShowPassword(!showPassword)
+                                    }
+                                    className="absolute inset-y-0 right-0 pr-3 flex items-center bg-transparent"
+                                  >
+                                    {showPassword ? (
+                                      <EyeOff className="h-4 w-4 text-gray-400" />
+                                    ) : (
+                                      <Eye className="h-4 w-4 text-gray-400" />
+                                    )}
+                                  </button>
+                                </div>
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -405,7 +546,7 @@ const CreateAccount = ({ invitationData }: CreateAccountProps) => {
 
                   {accountType === "designer" && currentStep === 1 && (
                     <>
-                      {/* Row 1: Full Name and Country */}
+                      {/* Row 1: Full Name and Phone Number with Country */}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                         <FormField
                           control={form.control}
@@ -427,28 +568,47 @@ const CreateAccount = ({ invitationData }: CreateAccountProps) => {
                           )}
                         />
 
-                        <FormField
-                          control={form.control}
-                          name="designerFields.basicInfo.country"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Country</FormLabel>
-                              <FormControl>
-                                <CountrySelect
-                                  value={field.value || ""}
-                                  onValueChange={field.onChange}
-                                  placeholder="Select your location here"
-                                  className="w-full"
-                                  isProjectManager={true}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                        <div>
+                          <FormLabel>Phone Number</FormLabel>
+                          <div className="flex gap-2 mt-2">
+                            <FormField
+                              control={form.control}
+                              name="designerFields.basicInfo.country"
+                              render={({ field }) => (
+                                <FormItem className="w-1/3">
+                                  <FormControl>
+                                    <CountrySelect
+                                      value={field.value || ""}
+                                      onValueChange={field.onChange}
+                                      placeholder="Country"
+                                      className="w-full"
+                                    />
+                                  </FormControl>
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={form.control}
+                              name="designerFields.basicInfo.phoneNumber"
+                              render={({ field }) => (
+                                <FormItem className="flex-1">
+                                  <FormControl>
+                                    <Input
+                                      placeholder="Enter your phone number"
+                                      className="bg-transparent placeholder:bg-transparent border-grayBorders"
+                                      value={field.value || ""}
+                                      onChange={field.onChange}
+                                      onBlur={field.onBlur}
+                                    />
+                                  </FormControl>
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                        </div>
                       </div>
 
-                      {/* Row 2: Email Address and Phone Number */}
+                      {/* Row 2: Email Address and Password */}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                         <FormField
                           control={form.control}
@@ -476,23 +636,32 @@ const CreateAccount = ({ invitationData }: CreateAccountProps) => {
 
                         <FormField
                           control={form.control}
-                          name="designerFields.basicInfo.phoneNumber"
+                          name="password"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>
-                                Phone Number{" "}
-                                <span className="text-gray-400">
-                                  (optional)
-                                </span>
-                              </FormLabel>
+                              <FormLabel>Password</FormLabel>
                               <FormControl>
-                                <Input
-                                  placeholder="XXX XXX XX"
-                                  className="bg-transparent placeholder:bg-transparent border-grayBorders"
-                                  value={field.value || ""}
-                                  onChange={field.onChange}
-                                  onBlur={field.onBlur}
-                                />
+                                <div className="relative">
+                                  <Input
+                                    type={showPassword ? "text" : "password"}
+                                    placeholder="Enter your password"
+                                    className="bg-transparent placeholder:bg-transparent border-grayBorders"
+                                    {...field}
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      setShowPassword(!showPassword)
+                                    }
+                                    className="absolute inset-y-0 right-0 pr-3 flex items-center bg-transparent"
+                                  >
+                                    {showPassword ? (
+                                      <EyeOff className="h-4 w-4 text-gray-400" />
+                                    ) : (
+                                      <Eye className="h-4 w-4 text-gray-400" />
+                                    )}
+                                  </button>
+                                </div>
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -652,7 +821,32 @@ const CreateAccount = ({ invitationData }: CreateAccountProps) => {
                     onClick={handleTeamLeadStep1Next}
                     className="w-full sm:w-2/3 md:w-1/2"
                   >
-                    Next
+                    {isLoading ? (
+                      <span className="flex items-center gap-2">
+                        <svg
+                          className="animate-spin h-4 w-4"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                            fill="none"
+                          />
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8v8z"
+                          />
+                        </svg>
+                        Loading...
+                      </span>
+                    ) : (
+                      "Next"
+                    )}
                   </Button>
                 ) : accountType === "designer" && currentStep === 1 ? (
                   <Button
@@ -663,7 +857,32 @@ const CreateAccount = ({ invitationData }: CreateAccountProps) => {
                     onClick={handleDesignerStep1Next}
                     className="w-full sm:w-2/3 md:w-1/2"
                   >
-                    Next
+                    {isLoading ? (
+                      <span className="flex items-center gap-2">
+                        <svg
+                          className="animate-spin h-4 w-4"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                            fill="none"
+                          />
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8v8z"
+                          />
+                        </svg>
+                        Loading...
+                      </span>
+                    ) : (
+                      "Next"
+                    )}
                   </Button>
                 ) : (
                   <Button

@@ -1,4 +1,10 @@
-import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { UseFormReturn } from "react-hook-form";
@@ -31,14 +37,12 @@ export const StartupFields = ({ form }: StartupFieldsProps) => {
         name="startupFields.companyName"
         render={({ field }) => (
           <FormItem>
-            <FormLabel className="text-sm font-medium">
-              Company Name <span className="text-red-500">*</span>
-            </FormLabel>
+            <FormLabel className="text-sm font-medium ">Company Name</FormLabel>
             <FormControl>
               <Input
                 placeholder="Enter your company name"
                 {...field}
-                className="bg-transparent placeholder:bg-transparent border-grayBorders"
+                className="bg-black border-grayBorders text-white placeholder:text-gray-500"
                 value={field.value ?? ""}
                 onChange={field.onChange}
               />
@@ -52,9 +56,7 @@ export const StartupFields = ({ form }: StartupFieldsProps) => {
         name="startupFields.teamSize"
         render={({ field }) => (
           <FormItem>
-            <FormLabel className="text-sm font-medium">
-              Company Size <span className="text-red-500">*</span>
-            </FormLabel>
+            <FormLabel className="text-sm font-medium">Company Size</FormLabel>
             <FormControl>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                 {TEAM_SIZES.map((option) => (
@@ -64,21 +66,23 @@ export const StartupFields = ({ form }: StartupFieldsProps) => {
                       "flex items-center justify-center px-2 py-3 text-xs rounded-md border cursor-pointer transition-colors",
                       field.value === option.value
                         ? "border-darkPrimary border-2 bg-darkPrimary/10 font-bold"
-                        : "border-grayBorders bg-popover hover:bg-muted/50",
+                        : "border-grayBorders bg-black hover:bg-darkGray2"
                     )}
                     onClick={() => {
                       field.onChange(option.value);
                       // Add a hidden input with the team size value for FormData
-                      const hiddenInput = document.createElement('input');
-                      hiddenInput.type = 'hidden';
-                      hiddenInput.name = 'teamSize';
+                      const hiddenInput = document.createElement("input");
+                      hiddenInput.type = "hidden";
+                      hiddenInput.name = "teamSize";
                       hiddenInput.value = option.value;
-                      
+
                       // Remove any existing hidden inputs with the same name
-                      document.querySelectorAll('input[name="teamSize"]').forEach(el => el.remove());
-                      
+                      document
+                        .querySelectorAll('input[name="teamSize"]')
+                        .forEach((el) => el.remove());
+
                       // Add the new hidden input to the form
-                      document.querySelector('form')?.appendChild(hiddenInput);
+                      document.querySelector("form")?.appendChild(hiddenInput);
                     }}
                     data-value={option.value}
                     role="button"
@@ -98,4 +102,4 @@ export const StartupFields = ({ form }: StartupFieldsProps) => {
       />
     </>
   );
-}; 
+};

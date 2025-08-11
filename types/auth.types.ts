@@ -1,4 +1,5 @@
 import { User } from "./convex";
+import { Id } from "@/convex/_generated/dataModel";
 
 export type DeveloperRole =
   | "Frontend Developer"
@@ -71,7 +72,6 @@ export interface TeamLeadProfiles {
 export interface TeamLeadExperience {
   professionalPMExperience: ExperienceDuration;
   startupExperience: ExperienceDuration;
-  resume?: File | null;
   projectSpecialties: ProjectSpecialty[];
 }
 
@@ -107,6 +107,7 @@ export interface DesignerExperience {
   professionalDesignExperience: ExperienceDuration;
   startupExperience: ExperienceDuration;
   resume?: File | null;
+  resumeId?: Id<"media">;
   designWorkTypes: DesignWorkType[];
 }
 

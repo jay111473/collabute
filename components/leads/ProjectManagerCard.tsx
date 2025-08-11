@@ -44,83 +44,56 @@ const getProfilePictureUrl = (projectManager: EnhancedUser): string | undefined 
 };
 
 /**
- * Extracts stack names from a project manager
+ * Gets specialties from a project manager
  */
-const getStackNames = (projectManager: EnhancedUser): string => {
-  // Try project manager fields first
-  const pmStack = projectManager.projectManagerFields?.stack
-    ?.map((stack: any) =>
-      typeof stack === "object" ? (stack as Stack).name : ""
-    )
-    .filter(Boolean)
-    .join(", ");
-
-  // Fallback to lead fields for backwards compatibility
-  const leadStack = projectManager.leadFields?.specializations
-    ?.join(", ");
-
-  return pmStack || leadStack || "";
+const getSpecialties = (projectManager: EnhancedUser): string => {
+  const specialties = projectManager?.projectManagerFields?.projectSpecialties;
+  const leadStack = projectManager.leadFields?.specializations;
+  
+  return specialties?.join(", ") || leadStack?.join(", ") || "Not specified";
 };
 
 /**
- * Gets skills from a project manager (stack names or skills)
+ * Gets skills from a project manager
  */
 const getSkills = (projectManager: EnhancedUser): string => {
-  const stackNames = getStackNames(projectManager);
-  const skills = projectManager.developerFields?.skills
-    ?.map((skill: any) => typeof skill === 'object' ? skill.skill : skill)
-    .join(", ");
-
-  return stackNames || skills || "Not specified";
+  const specialties = getSpecialties(projectManager);
+  return specialties;
 };
 
 /**
  * Gets the primary role for display
  */
 const getPrimaryRole = (projectManager: EnhancedUser): string => {
-  // Check project manager fields first
-  if (projectManager.projectManagerFields?.primaryRole?.[0]) {
-    return projectManager.projectManagerFields.primaryRole[0];
-  }
-
   // Check lead fields for title
   if (projectManager.leadFields?.title) {
     return projectManager.leadFields.title;
   }
-
-  // Fallback to developer fields
-  if (projectManager.developerFields?.primaryRole?.[0]) {
-    return projectManager.developerFields.primaryRole[0];
-  }
-
+  
+  // For project managers, return a static role
   return "Project Manager";
 };
 
 /**
- * Gets industry information from available fields
+ * Gets industry information from specialties
  */
 const getIndustry = (projectManager: EnhancedUser): string => {
-  // Try to derive industry from stack or skills
-  const stackNames = getStackNames(projectManager);
-  if (
-    stackNames.toLowerCase().includes("web3") ||
-    stackNames.toLowerCase().includes("crypto")
-  ) {
-    return "Web3, Crypto, Finance";
+  const specialties = projectManager?.projectManagerFields?.projectSpecialties || [];
+  const specialtiesText = specialties.join(" ").toLowerCase();
+  if (specialtiesText.includes("saas")) {
+    return "SaaS, Web Applications";
   }
-  if (
-    stackNames.toLowerCase().includes("mobile") ||
-    stackNames.toLowerCase().includes("ios") ||
-    stackNames.toLowerCase().includes("android")
-  ) {
-    return "SaaS, Mobile Apps, AI";
+  if (specialtiesText.includes("e-commerce") || specialtiesText.includes("marketplace")) {
+    return "E-commerce, Marketplace";
   }
-  if (
-    stackNames.toLowerCase().includes("design") ||
-    stackNames.toLowerCase().includes("ui") ||
-    stackNames.toLowerCase().includes("ux")
-  ) {
-    return "Design, Tech, E-commerce";
+  if (specialtiesText.includes("mobile")) {
+    return "Mobile Apps, Software";
+  }
+  if (specialtiesText.includes("enterprise")) {
+    return "Enterprise Software";
+  }
+  if (specialtiesText.includes("dashboard") || specialtiesText.includes("analytics")) {
+    return "Data, Analytics";
   }
 
   // Default based on role
@@ -139,6 +112,19 @@ const getIndustry = (projectManager: EnhancedUser): string => {
   }
 
   return "Tech, Software Development";
+};
+
+/**
+ * Gets experience years from the experience string
+ */
+const getExperienceYears = (projectManager: EnhancedUser): number => {
+  const pmExperience = projectManager.projectManagerFields?.professionalPMExperience;
+  if (!pmExperience) return 0;
+  
+  // Extract number from strings like "2-3 years", "8-10 years", "+10 years"
+  if (pmExperience.includes("+10")) return 10;
+  const match = pmExperience.match(/(\d+)/);
+  return match ? parseInt(match[1]) : 0;
 };
 
 /**

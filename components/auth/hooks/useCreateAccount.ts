@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, UseFormReturn } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -40,7 +40,18 @@ interface UseCreateAccountProps {
   email?: string;
 }
 
-export const useCreateAccount = (invitationData?: UseCreateAccountProps) => {
+export const useCreateAccount = (invitationData?: UseCreateAccountProps): {
+  form: UseFormReturn<CreateAccountFormData>;
+  isLoading: boolean;
+  showPassword: boolean;
+  setShowPassword: (show: boolean) => void;
+  isFormValid: () => boolean;
+  hasFieldError: (fieldName: string) => boolean;
+  getFieldError: (fieldName: string) => string | undefined;
+  resetFormErrors: () => void;
+  resetFieldError: (fieldName: string) => void;
+  setIsLoading: (loading: boolean) => void;
+} => {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
@@ -87,7 +98,6 @@ export const useCreateAccount = (invitationData?: UseCreateAccountProps) => {
               experience: {
                 professionalPMExperience: "2-3 years" as const,
                 startupExperience: "1-2 years" as const,
-                resume: null,
                 projectSpecialties: [],
               },
               availability: {
@@ -353,18 +363,15 @@ export const useCreateAccount = (invitationData?: UseCreateAccountProps) => {
   };
 
   return {
-    form,
+    form: form as UseFormReturn<CreateAccountFormData>,
     isLoading,
     showPassword,
     setShowPassword,
-    onSubmit,
-    validateTeamLeadStep,
-    validateDesignerStep,
     isFormValid,
     hasFieldError,
     getFieldError,
     resetFormErrors,
     resetFieldError,
-    accountType,
+    setIsLoading,
   };
 };

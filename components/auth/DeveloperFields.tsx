@@ -29,7 +29,7 @@ const DEVELOPER_ROLES: DeveloperRole[] = [
 
 const PROJECT_MANAGER_SKILLS: DeveloperRole[] = [
   "Frontend Developer",
-  "Backend Developer", 
+  "Backend Developer",
   "Full Stack Developer",
   "Mobile Developer",
   "DevOps Engineer",
@@ -45,7 +45,10 @@ interface DeveloperFieldsProps {
   isProjectManager?: boolean;
 }
 
-export const DeveloperFields = ({ form, isProjectManager = false }: DeveloperFieldsProps) => {
+export const DeveloperFields = ({
+  form,
+  isProjectManager = false,
+}: DeveloperFieldsProps) => {
   // Initialize the structure if missing
   useEffect(() => {
     if (!form.getValues("developerFields")) {
@@ -73,19 +76,19 @@ export const DeveloperFields = ({ form, isProjectManager = false }: DeveloperFie
               options={roleOptions}
               selected={field.value || []}
               onChange={field.onChange}
-              placeholder={isProjectManager 
-                ? "Select your technical skills (at least one required)"
-                : "Select your primary roles (at least one required)"
+              placeholder={
+                isProjectManager
+                  ? "Select your technical skills (at least one required)"
+                  : "Select your primary roles (at least one required)"
               }
               className="bg-transparent border-grayBorders"
             />
           </FormControl>
           <FormMessage />
           <p className="text-xs text-muted-foreground mt-1">
-            {isProjectManager 
+            {isProjectManager
               ? "Select technical areas you can manage and understand. This helps us match you with suitable projects."
-              : "Select all roles that describe your expertise. You can choose multiple options."
-            }
+              : "Select all roles that describe your expertise. You can choose multiple options."}
           </p>
         </FormItem>
       )}

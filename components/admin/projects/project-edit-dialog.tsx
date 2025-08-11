@@ -61,10 +61,12 @@ export function ProjectEditDialog({
     budget: project?.budget || 0,
     isPublic: project?.isPublic ?? true,
     stacks: project?.stacks || [],
+    teamLeadId: project?.teamLeadId || "",
   });
 
   // Fetch data for dropdowns
   const techStacks = useQuery(api.tech_stacks.list, { isActive: true });
+  const users = useQuery(api.users.list, {});
   const ownerUser = useQuery(
     api.users.getUserProfile,
     project?.ownerId ? { authUserId: project.ownerId } : "skip"
@@ -86,6 +88,7 @@ export function ProjectEditDialog({
         budget: project.budget || 0,
         isPublic: project.isPublic ?? true,
         stacks: project.stacks || [],
+        teamLeadId: project.teamLeadId || "",
       });
     }
   }, [project]);
@@ -98,8 +101,12 @@ export function ProjectEditDialog({
       await updateProject({
         projectId: project._id,
         updates: {
-          ...formData,
+          title: formData.title,
+          description: formData.description,
           status: formData.status as any,
+          budget: formData.budget,
+          stacks: formData.stacks,
+          teamLeadId: formData.teamLeadId || undefined,
         },
       });
       onOpenChange(false);
@@ -353,6 +360,48 @@ export function ProjectEditDialog({
                     />
                   )}
                 </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="teamLead" className="text-gray-300">
+                  Team Lead
+                </Label>
+                {mode === "view" ? (
+                  <div className="flex items-center gap-2">
+                    <Users className="h-4 w-4 text-gray-400" />
+                    <p className="text-sm text-white">
+                      {teamLeadUser?.name || "No team lead assigned"}
+                    </p>
+                  </div>
+                ) : (
+                  <Select
+                    value={formData.teamLeadId || "none"}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, teamLeadId: value === "none" ? "" : value })
+                    }
+                  >
+                    <SelectTrigger className="bg-darkGray border-grayBorders text-white">
+                      <SelectValue placeholder="Select team lead (optional)" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-darkGray border-grayBorders">
+                      <SelectItem
+                        value="none"
+                        className="text-white hover:bg-darkGray2"
+                      >
+                        No team lead
+                      </SelectItem>
+                      {users?.map((user) => (
+                        <SelectItem
+                          key={user._id}
+                          value={user._id}
+                          className="text-white hover:bg-darkGray2"
+                        >
+                          {user.email || user.name || "Unknown User"}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
               </div>
 
               {mode === "edit" && (

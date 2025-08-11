@@ -10,13 +10,10 @@ const badgeVariants = cva(
   {
     variants: {
       variant: {
-        default:
-          "border-transparent bg-blue-600 text-white hover:bg-blue-600/80",
-        secondary:
-          "border-transparent bg-gray-100 text-gray-800 hover:bg-gray-100/80",
-        destructive:
-          "border-transparent bg-red-500 text-white hover:bg-red-500/80",
-        outline: "text-gray-700 border-gray-300 bg-white hover:bg-gray-50",
+        default: "border-transparent bg-blue-600 text-white",
+        secondary: "border-transparent bg-gray-100 text-gray-800",
+        destructive: "border-transparent bg-red-500 text-white",
+        outline: "text-white border-grayBorders bg-darkGray",
       },
     },
     defaultVariants: {
@@ -31,13 +28,7 @@ export interface BadgeProps
   icon?: React.ReactNode;
 }
 
-function Badge({
-  className,
-  variant,
-  children,
-  icon,
-  ...props
-}: BadgeProps) {
+function Badge({ className, variant, children, icon, ...props }: BadgeProps) {
   return (
     <div className={cn(badgeVariants({ variant }), className)} {...props}>
       {icon && <span className="mr-1">{icon}</span>}

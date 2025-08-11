@@ -46,6 +46,7 @@ export function ProjectsTable() {
     name: "",
     description: "",
     ownerId: "",
+    teamLeadId: "",
     status: "PLANNED" as string,
     budget: "",
     isPublic: true,
@@ -100,6 +101,7 @@ export function ProjectsTable() {
         title: formData.name.trim(),
         description: formData.description.trim(),
         ownerId: formData.ownerId as any,
+        teamLeadId: formData.teamLeadId || undefined,
         startDate: Date.now(),
         budget: formData.budget ? parseFloat(formData.budget) : undefined,
       });
@@ -109,6 +111,7 @@ export function ProjectsTable() {
         name: "",
         description: "",
         ownerId: "",
+        teamLeadId: "",
         status: "PLANNED",
         budget: "",
         isPublic: true,
@@ -274,7 +277,24 @@ export function ProjectsTable() {
                 <SelectContent>
                   {users?.map((user) => (
                     <SelectItem key={user._id} value={user._id}>
-                      {user.name || user.email}
+                      {user.email || user.name || "Unknown User"}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="teamLeadId">Team Lead</Label>
+              <Select value={formData.teamLeadId || "none"} onValueChange={(value) => setFormData({ ...formData, teamLeadId: value === "none" ? "" : value })}>
+                <SelectTrigger className="bg-darkGray border-grayBorders text-white">
+                  <SelectValue placeholder="Select team lead (optional)" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">No team lead</SelectItem>
+                  {users?.map((user) => (
+                    <SelectItem key={user._id} value={user._id}>
+                      {user.email || user.name || "Unknown User"}
                     </SelectItem>
                   ))}
                 </SelectContent>

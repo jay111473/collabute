@@ -1,6 +1,6 @@
 "use client";
 
-import { EnhancedProject } from "@/types/convex";
+import { EnhancedProject, ProjectStatus } from "@/types/convex";
 import MyProjectCard from "../projects";
 import { EmptyState } from "./EmptyState";
 import { Input } from "@/components/ui/input";
@@ -94,7 +94,9 @@ const ProjectSummaryBox = ({
  */
 const MyProjectsComponent = ({ projects }: { projects: EnhancedProject[] }) => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
+  const [selectedStatus, setSelectedStatus] = useState<ProjectStatus | null>(
+    null
+  );
   const [sortBy, setSortBy] = useState("newest");
 
   const sortOptions = [
@@ -107,14 +109,14 @@ const MyProjectsComponent = ({ projects }: { projects: EnhancedProject[] }) => {
   // Calculate project counts by status
   const projectCounts = useMemo(() => {
     const counts = {
-      planned: 0,
-      "in-progress": 0,
-      completed: 0,
-      "on-hold": 0,
+      PLANNED: 0,
+      IN_PROGRESS: 0,
+      COMPLETED: 0,
+      ON_HOLD: 0,
     };
 
     projects?.forEach((project) => {
-      if (project.status in counts) {
+      if (project.status && project.status in counts) {
         counts[project.status as keyof typeof counts]++;
       }
     });
@@ -214,57 +216,55 @@ const MyProjectsComponent = ({ projects }: { projects: EnhancedProject[] }) => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <ProjectSummaryBox
             title="Planned"
-            count={projectCounts.planned}
+            count={projectCounts.PLANNED}
             icon={<Calendar className="w-5 h-5 text-blue-400" />}
-            isSelected={selectedStatus === "planned"}
+            isSelected={selectedStatus === "PLANNED"}
             onClick={() =>
-              setSelectedStatus(selectedStatus === "planned" ? null : "planned")
+              setSelectedStatus(selectedStatus === "PLANNED" ? null : "PLANNED")
             }
             variant="default"
           />
           <ProjectSummaryBox
             title="In Progress"
-            count={projectCounts["in-progress"]}
+            count={projectCounts.IN_PROGRESS}
             subtitle={
-              projectCounts["in-progress"] > 0
-                ? "Active development"
-                : undefined
+              projectCounts.IN_PROGRESS > 0 ? "Active development" : undefined
             }
             icon={<Clock className="w-5 h-5" style={{ color: "#F5C78B" }} />}
-            isSelected={selectedStatus === "in-progress"}
+            isSelected={selectedStatus === "IN_PROGRESS"}
             onClick={() =>
               setSelectedStatus(
-                selectedStatus === "in-progress" ? null : "in-progress"
+                selectedStatus === "IN_PROGRESS" ? null : "IN_PROGRESS"
               )
             }
             variant="warning"
           />
           <ProjectSummaryBox
             title="On Hold"
-            count={projectCounts["on-hold"]}
+            count={projectCounts.ON_HOLD}
             subtitle={
-              projectCounts["on-hold"] > 0 ? "Temporarily paused" : undefined
+              projectCounts.ON_HOLD > 0 ? "Temporarily paused" : undefined
             }
             icon={<Pause className="w-5 h-5" style={{ color: "#F58B9B" }} />}
-            isSelected={selectedStatus === "on-hold"}
+            isSelected={selectedStatus === "ON_HOLD"}
             onClick={() =>
-              setSelectedStatus(selectedStatus === "on-hold" ? null : "on-hold")
+              setSelectedStatus(selectedStatus === "ON_HOLD" ? null : "ON_HOLD")
             }
             variant="danger"
           />
           <ProjectSummaryBox
             title="Completed"
-            count={projectCounts.completed}
+            count={projectCounts.COMPLETED}
             subtitle={
-              projectCounts.completed > 0 ? "Successfully delivered" : undefined
+              projectCounts.COMPLETED > 0 ? "Successfully delivered" : undefined
             }
             icon={
               <CheckCircle className="w-5 h-5" style={{ color: "#99D5A8" }} />
             }
-            isSelected={selectedStatus === "completed"}
+            isSelected={selectedStatus === "COMPLETED"}
             onClick={() =>
               setSelectedStatus(
-                selectedStatus === "completed" ? null : "completed"
+                selectedStatus === "COMPLETED" ? null : "COMPLETED"
               )
             }
             variant="success"

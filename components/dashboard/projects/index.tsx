@@ -10,9 +10,57 @@ import { Skeleton } from "@/components/ui/skeleton";
 import ProjectIcon from "@/public/icons/project";
 import Image from "next/image";
 import Link from "next/link";
-import { Project, Media, User, EnhancedProject } from "@/types/convex";
+import { Media, EnhancedProject, ProjectStatus } from "@/types/convex";
 import { api } from "@/convex/_generated/api";
 import { useQuery } from "convex/react";
+
+interface ProjectStatusBadgeProps {
+  status?: ProjectStatus;
+}
+
+function ProjectStatusBadge({ status }: ProjectStatusBadgeProps) {
+  // Map ProjectStatus enum to visual status badges
+  const getStatusInfo = () => {
+    switch (status) {
+      case "COMPLETED":
+        return { text: "Completed", variant: "success" };
+      case "ON_HOLD":
+        return { text: "On Hold", variant: "warning" };
+      case "IN_PROGRESS":
+        return { text: "Active", variant: "active" };
+      case "PLANNED":
+        return { text: "Planned", variant: "planned" };
+      default:
+        return { text: "Unknown", variant: "default" };
+    }
+  };
+
+  const statusInfo = getStatusInfo();
+
+  const getStatusClasses = (variant: string) => {
+    switch (variant) {
+      case "active":
+        return "bg-purple-500/10 text-purple-400 border-purple-500/20 backdrop-blur-sm";
+      case "warning":
+        return "bg-yellow-500/10 text-yellow-400 border-yellow-500/20 backdrop-blur-sm";
+      case "success":
+        return "bg-green-500/10 text-green-400 border-green-500/20 backdrop-blur-sm";
+      case "planned":
+        return "bg-blue-500/10 text-blue-400 border-blue-500/20 backdrop-blur-sm";
+      default:
+        return "bg-gray-500/10 text-gray-400 border-gray-500/20 backdrop-blur-sm";
+    }
+  };
+
+  return (
+    <Badge
+      variant="outline"
+      className={`font-medium text-xs px-3 py-1.5 rounded-full border ${getStatusClasses(statusInfo.variant)}`}
+    >
+      {statusInfo.text}
+    </Badge>
+  );
+}
 
 function ProjectHeader({
   project,
@@ -71,12 +119,7 @@ function ProjectHeader({
           </Badge>
         </div>
         <div className="text-right">
-          <div className="text-white">
-            <span className="text-gray-300">Project Progress:</span>{" "}
-            <span className="text-darkPrimary font-medium">
-              {progressData.overallPercentage}%
-            </span>
-          </div>
+          <ProjectStatusBadge status={project.status} />
         </div>
       </div>
 
@@ -182,9 +225,13 @@ function ProjectHeader({
           <span className="text-gray-500">|</span>
           <span className="text-gray-400 text-sm">
             Last updated{" "}
-            {formatDate(
-              new Date(project.updatedAt || project._creationTime).toISOString()
-            )}
+            <span className="text-white">
+              {formatDate(
+                new Date(
+                  project.updatedAt || project._creationTime
+                ).toISOString()
+              )}
+            </span>
           </span>
         </div>
       </div>

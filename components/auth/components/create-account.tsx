@@ -16,6 +16,7 @@ import { DeveloperFields } from "../DeveloperFields";
 import { StartupFields } from "../StartupFields";
 import { useCreateAccount } from "@/components/auth/hooks/useCreateAccount";
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { toast, Toaster } from "sonner";
 import type {
@@ -23,7 +24,7 @@ import type {
   TeamLeadFormData,
   DesignerFormData,
 } from "@/types/auth.types";
-import { useMutation } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { ConvexError } from "convex/values";
@@ -43,12 +44,13 @@ const CreateAccount = ({ invitationData }: CreateAccountProps) => {
     useCreateAccount(invitationData || undefined);
   const accountType = form.watch("type");
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
   const [showTeamLeadWizard, setShowTeamLeadWizard] = useState(false);
   const [showDesignerWizard, setShowDesignerWizard] = useState(false);
   const [teamLeadStep1Data, setTeamLeadStep1Data] = useState<any>(null);
   const [designerStep1Data, setDesignerStep1Data] = useState<any>(null);
   const [currentStep, setCurrentStep] = useState(1);
-  const createUserAccount = useMutation(api.users.createUserAccount);
+  const { signIn } = useAuthActions();
   const completeWizardProfile = useMutation(
     api.users.completeWizardUserProfile
   );
@@ -58,25 +60,25 @@ const CreateAccount = ({ invitationData }: CreateAccountProps) => {
     undefined
   );
 
-  // Create user account after basic info is collected
+  // Create user account after basic info is collected using Convex Auth
   const createAccountAfterBasicInfo = async (values: CreateAccountFormData) => {
     try {
       console.log("Creating user account with basic info:", values);
 
-      const result = await createUserAccount({
-        email: values.email,
-        password: values.password,
-        name: values.name,
-        phoneNumber: values.phoneNumber || undefined,
-        countryCode: values.countryCode || undefined,
-        type: values.type.toUpperCase() as any,
-      });
+      const formData = new FormData();
+      formData.append("email", values.email);
+      formData.append("password", values.password);
+      formData.append("name", values.name);
+      formData.append("flow", "signUp");
+      if (values.phoneNumber)
+        formData.append("phoneNumber", values.phoneNumber);
+      if (values.countryCode)
+        formData.append("countryCode", values.countryCode);
+      formData.append("type", values.type.toUpperCase());
 
-      if (result.success) {
-        setCreatedUserId(result.userId);
-        console.log("User account created with ID:", result.userId);
-        return result.userId;
-      }
+            await signIn("password", formData);
+      
+      console.log("User account created successfully");
     } catch (error: any) {
       console.error("Error creating user account:", error);
       toast.error("Failed to create account", {
@@ -111,6 +113,19 @@ const CreateAccount = ({ invitationData }: CreateAccountProps) => {
       });
     }
   }, [accountType, form]); // don't add resetFormErrors() as dependency. It will cause render cycle (max- depth reached error)
+
+  // Prevent browser warning during form submission
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      // Don't show warning during submission
+      if (isLoading) {
+        return;
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [isLoading]);
 
   const handleTeamLeadComplete = (teamLeadData: TeamLeadFormData) => {
     const completeTeamLeadData: TeamLeadFormData = {
@@ -177,7 +192,7 @@ const CreateAccount = ({ invitationData }: CreateAccountProps) => {
 
     if (nameIsValid && emailIsValid && countryIsValid) {
       setIsLoading(true);
-      
+
       try {
         const name = form.getValues("designerFields.basicInfo.fullName");
         const email = form.getValues("designerFields.basicInfo.email");
@@ -209,13 +224,11 @@ const CreateAccount = ({ invitationData }: CreateAccountProps) => {
           startupFields: undefined,
         };
 
-        const userId = await createAccountAfterBasicInfo(accountData);
+        await createAccountAfterBasicInfo(accountData);
 
-        if (userId) {
-          // Account created successfully, proceed to step 2
-          setShowDesignerWizard(true);
-          setCurrentStep(2);
-        }
+        // Account created successfully, proceed to step 2
+        setShowDesignerWizard(true);
+        setCurrentStep(2);
       } catch (error) {
         console.error("Failed to create designer account:", error);
         // Error is already handled in createAccountAfterBasicInfo
@@ -238,7 +251,7 @@ const CreateAccount = ({ invitationData }: CreateAccountProps) => {
 
     if (nameIsValid && emailIsValid && countryIsValid) {
       setIsLoading(true);
-      
+
       try {
         const name = form.getValues("teamLeadFields.basicInfo.fullName");
         const email = form.getValues("teamLeadFields.basicInfo.email");
@@ -270,13 +283,11 @@ const CreateAccount = ({ invitationData }: CreateAccountProps) => {
           startupFields: undefined,
         };
 
-        const userId = await createAccountAfterBasicInfo(accountData);
+        await createAccountAfterBasicInfo(accountData);
 
-        if (userId) {
-          // Account created successfully, proceed to step 2
-          setShowTeamLeadWizard(true);
-          setCurrentStep(2);
-        }
+        // Account created successfully, proceed to step 2
+        setShowTeamLeadWizard(true);
+        setCurrentStep(2);
       } catch (error) {
         console.error("Failed to create team lead account:", error);
         // Error is already handled in createAccountAfterBasicInfo
@@ -293,46 +304,70 @@ const CreateAccount = ({ invitationData }: CreateAccountProps) => {
   ) => {
     setIsLoading(true);
 
-    // Debug log the values
-
     try {
-      // If we don't have a user ID yet, create the account first
-      let userId = createdUserId;
-      if (!userId) {
-        userId = await createAccountAfterBasicInfo(values);
+      console.log("Creating user account with Convex Auth:", values);
+
+      // Create FormData for Convex Auth signIn
+      const formData = new FormData();
+      formData.append("email", values.email);
+      formData.append("password", values.password);
+      formData.append("name", values.name);
+      formData.append("flow", "signUp");
+
+      // Add additional fields that the Password provider can access
+      if (values.phoneNumber)
+        formData.append("phoneNumber", values.phoneNumber);
+      if (values.countryCode)
+        formData.append("countryCode", values.countryCode);
+      formData.append("type", values.type.toUpperCase());
+
+      // Use Convex Auth to create and authenticate the user
+      await signIn("password", formData);
+
+      // User is now authenticated, complete their profile with wizard data
+      try {
+        await completeWizardProfile({
+          teamLeadFields: values.teamLeadFields
+            ? {
+                profiles: values.teamLeadFields.profiles,
+                experience: values.teamLeadFields.experience,
+                availability: values.teamLeadFields.availability,
+              }
+            : undefined,
+          designerFields: values.designerFields
+            ? {
+                profiles: values.designerFields.profiles,
+                experience: values.designerFields.experience,
+                availability: values.designerFields.availability,
+              }
+            : undefined,
+          developerFields: values.developerFields
+            ? {
+                primaryRole: values.developerFields.primaryRole || undefined,
+              }
+            : undefined,
+          startupFields: values.startupFields
+            ? {
+                companyName: values.startupFields.companyName || undefined,
+                teamSize: values.startupFields.teamSize || undefined,
+              }
+            : undefined,
+        });
+      } catch (profileError: any) {
+        console.warn("Profile completion error (non-critical):", profileError);
+        // Continue with success flow even if profile completion fails
       }
-
-      if (!userId) {
-        throw new Error("Failed to get user ID");
-      }
-
-      // Complete the user profile with wizard data
-      console.log("Completing user profile for userId:", userId);
-
-      // Extract only the needed fields for profile completion (excluding basicInfo)
-      const teamLeadFieldsForCompletion = values.teamLeadFields ? {
-        profiles: values.teamLeadFields.profiles,
-        experience: values.teamLeadFields.experience,
-        availability: values.teamLeadFields.availability,
-      } : undefined;
-
-      const designerFieldsForCompletion = values.designerFields ? {
-        profiles: values.designerFields.profiles,
-        experience: values.designerFields.experience,
-        availability: values.designerFields.availability,
-      } : undefined;
-
-      await completeWizardProfile({
-        userId: userId as any,
-        teamLeadFields: teamLeadFieldsForCompletion,
-        designerFields: designerFieldsForCompletion,
-      });
 
       // Different handling based on user type
       if (!skipToast) {
         if (values.type === "startup") {
           toast.success("Welcome! Account created successfully!");
-          window.location.href = "/dashboard";
+          // Use router for navigation instead of window.location
+          router.push("/dashboard");
+        } else if (values.type === "developer") {
+          toast.success("Welcome! Account created successfully!");
+          // Use router for navigation instead of window.location
+          router.push("/dashboard");
         } else {
           toast.success("Profile submitted successfully!", {
             description:
@@ -342,19 +377,11 @@ const CreateAccount = ({ invitationData }: CreateAccountProps) => {
       }
     } catch (error: any) {
       console.error("Sign up error:", error);
-      console.error("Error details:", {
-        message: error.message,
-        stack: error.stack,
-        data: error.data,
-        type: typeof error,
-        constructor: error.constructor.name,
-      });
 
       const errorMessage =
         error instanceof ConvexError
           ? (error.data as { message: string }).message
           : error.message || "Failed to create account";
-      console.log("errorMessage", errorMessage);
 
       // Show error toast to user
       toast.error("Account Creation Failed", {
@@ -370,10 +397,7 @@ const CreateAccount = ({ invitationData }: CreateAccountProps) => {
       <Form {...form}>
         <form
           className="w-full max-w-full sm:max-w-[600px] md:max-w-[700px]"
-          onSubmit={(e) => {
-            e.preventDefault();
-            // Form submission is handled by the wizards
-          }}
+          onSubmit={form.handleSubmit((values) => handleSubmit(values))}
         >
           <div className="space-y-4 md:space-y-6">
             {!(accountType === "project_manager" && showTeamLeadWizard) &&

@@ -506,7 +506,7 @@ export function ProjectLeader({
                       </div>
 
                       {/* Availability Badge */}
-                      {projectManager.projectManagerFields?.availability ===
+                      {/* {projectManager.projectManagerFields?.availability ===
                         "available" && (
                         <div className="absolute top-6 right-6">
                           <Badge
@@ -516,7 +516,7 @@ export function ProjectLeader({
                             Available
                           </Badge>
                         </div>
-                      )}
+                      )} */}
                     </div>
                   ))}
                 </div>

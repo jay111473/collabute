@@ -5,7 +5,13 @@ import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, Calendar, Github, Star, Bookmark, Code } from "lucide-react";
-import { User, Media, DeveloperProfile, ProjectManagerProfile, LeadProfile } from "@/types/convex";
+import {
+  User,
+  Media,
+  DeveloperProfile,
+  ProjectManagerProfile,
+  LeadProfile,
+} from "@/types/convex";
 
 interface Stack {
   name: string;
@@ -36,7 +42,9 @@ const formatDate = (date: Date): string => {
 /**
  * Extracts the profile picture URL from a project manager
  */
-const getProfilePictureUrl = (projectManager: EnhancedUser): string | undefined => {
+const getProfilePictureUrl = (
+  projectManager: EnhancedUser
+): string | undefined => {
   return projectManager.profilePicture &&
     typeof projectManager.profilePicture === "object"
     ? (projectManager.profilePicture as Media).url || undefined
@@ -44,83 +52,63 @@ const getProfilePictureUrl = (projectManager: EnhancedUser): string | undefined 
 };
 
 /**
- * Extracts stack names from a project manager
+ * Gets specialties from a project manager
  */
-const getStackNames = (projectManager: EnhancedUser): string => {
-  // Try project manager fields first
-  const pmStack = projectManager.projectManagerFields?.stack
-    ?.map((stack: any) =>
-      typeof stack === "object" ? (stack as Stack).name : ""
-    )
-    .filter(Boolean)
-    .join(", ");
+const getSpecialties = (projectManager: EnhancedUser): string => {
+  const specialties = projectManager?.projectManagerFields?.projectSpecialties;
+  const leadStack = projectManager.leadFields?.specializations;
 
-  // Fallback to lead fields for backwards compatibility
-  const leadStack = projectManager.leadFields?.specializations
-    ?.join(", ");
-
-  return pmStack || leadStack || "";
+  return specialties?.join(", ") || leadStack?.join(", ") || "Not specified";
 };
 
 /**
- * Gets skills from a project manager (stack names or skills)
+ * Gets skills from a project manager
  */
 const getSkills = (projectManager: EnhancedUser): string => {
-  const stackNames = getStackNames(projectManager);
-  const skills = projectManager.developerFields?.skills
-    ?.map((skill: any) => typeof skill === 'object' ? skill.skill : skill)
-    .join(", ");
-
-  return stackNames || skills || "Not specified";
+  const specialties = getSpecialties(projectManager);
+  return specialties;
 };
 
 /**
  * Gets the primary role for display
  */
 const getPrimaryRole = (projectManager: EnhancedUser): string => {
-  // Check project manager fields first
-  if (projectManager.projectManagerFields?.primaryRole?.[0]) {
-    return projectManager.projectManagerFields.primaryRole[0];
-  }
-
   // Check lead fields for title
   if (projectManager.leadFields?.title) {
     return projectManager.leadFields.title;
   }
 
-  // Fallback to developer fields
-  if (projectManager.developerFields?.primaryRole?.[0]) {
-    return projectManager.developerFields.primaryRole[0];
-  }
-
+  // For project managers, return a static role
   return "Project Manager";
 };
 
 /**
- * Gets industry information from available fields
+ * Gets industry information from specialties
  */
 const getIndustry = (projectManager: EnhancedUser): string => {
-  // Try to derive industry from stack or skills
-  const stackNames = getStackNames(projectManager);
-  if (
-    stackNames.toLowerCase().includes("web3") ||
-    stackNames.toLowerCase().includes("crypto")
-  ) {
-    return "Web3, Crypto, Finance";
+  const specialties =
+    projectManager?.projectManagerFields?.projectSpecialties || [];
+  const specialtiesText = specialties.join(" ").toLowerCase();
+  if (specialtiesText.includes("saas")) {
+    return "SaaS, Web Applications";
   }
   if (
-    stackNames.toLowerCase().includes("mobile") ||
-    stackNames.toLowerCase().includes("ios") ||
-    stackNames.toLowerCase().includes("android")
+    specialtiesText.includes("e-commerce") ||
+    specialtiesText.includes("marketplace")
   ) {
-    return "SaaS, Mobile Apps, AI";
+    return "E-commerce, Marketplace";
+  }
+  if (specialtiesText.includes("mobile")) {
+    return "Mobile Apps, Software";
+  }
+  if (specialtiesText.includes("enterprise")) {
+    return "Enterprise Software";
   }
   if (
-    stackNames.toLowerCase().includes("design") ||
-    stackNames.toLowerCase().includes("ui") ||
-    stackNames.toLowerCase().includes("ux")
+    specialtiesText.includes("dashboard") ||
+    specialtiesText.includes("analytics")
   ) {
-    return "Design, Tech, E-commerce";
+    return "Data, Analytics";
   }
 
   // Default based on role
@@ -142,25 +130,31 @@ const getIndustry = (projectManager: EnhancedUser): string => {
 };
 
 /**
+ * Gets experience years from the experience string
+ */
+const getExperienceYears = (projectManager: EnhancedUser): number => {
+  const pmExperience =
+    projectManager.projectManagerFields?.professionalPMExperience;
+  if (!pmExperience) return 0;
+
+  // Extract number from strings like "2-3 years", "8-10 years", "+10 years"
+  if (pmExperience.includes("+10")) return 10;
+  const match = pmExperience.match(/(\d+)/);
+  return match ? parseInt(match[1]) : 0;
+};
+
+/**
  * Calculates a mock rating based on experience and projects
  */
 const calculateRating = (projectManager: EnhancedUser): number => {
-  const experience = projectManager.projectManagerFields?.experience || 
-                    projectManager.leadFields?.managementExperience || 
-                    projectManager.developerFields?.experience || 0;
+  const experience =
+    projectManager.projectManagerFields?.professionalPMExperience ||
+    projectManager.leadFields?.managementExperience ||
+    projectManager.developerFields?.experience ||
+    0;
   const projectCount = projectManager.projects?.length || 0;
 
-  // Base rating on experience and projects
-  let rating = 3.5; // Base rating
-
-  if (experience >= 8) rating += 1.0;
-  else if (experience >= 5) rating += 0.7;
-  else if (experience >= 3) rating += 0.4;
-
-  if (projectCount >= 10) rating += 0.4;
-  else if (projectCount >= 5) rating += 0.2;
-
-  return Math.min(5.0, Math.round(rating * 10) / 10);
+  return projectCount;
 };
 
 /**
@@ -177,9 +171,11 @@ const ProjectManagerCard: FC<ProjectManagerCardProps> = ({
     : "Unknown";
   const currentProjects = projectManager.projects?.length || 0;
   const developmentProjects = currentProjects;
-  const experience = projectManager.projectManagerFields?.experience || 
-                    projectManager.leadFields?.managementExperience || 
-                    projectManager.developerFields?.experience || 0;
+  const experience =
+    projectManager.projectManagerFields?.professionalPMExperience ||
+    projectManager.leadFields?.managementExperience ||
+    projectManager.developerFields?.experience ||
+    0;
   const rating = calculateRating(projectManager);
   const industry = getIndustry(projectManager);
   const skills = getSkills(projectManager);
@@ -188,8 +184,9 @@ const ProjectManagerCard: FC<ProjectManagerCardProps> = ({
     projectManager.leadFields?.location ||
     projectManager.country ||
     "Location not specified";
-  const githubProfile = projectManager.projectManagerFields?.githubProfile ||
-                       projectManager.developerFields?.githubProfile;
+  const githubProfile =
+    projectManager.projectManagerFields?.githubProfile ||
+    projectManager.developerFields?.githubProfile;
 
   if (variant === "featured") {
     return (

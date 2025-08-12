@@ -382,7 +382,8 @@ export const completeUserProfile = mutation({
           professionalPMExperience:
             args.teamLeadFields?.experience?.professionalPMExperience,
           startupExperience: args.teamLeadFields?.experience?.startupExperience,
-          projectSpecialties: args.teamLeadFields?.experience?.projectSpecialties,
+          projectSpecialties:
+            args.teamLeadFields?.experience?.projectSpecialties,
           personalWebsite: args.teamLeadFields?.profiles?.personalWebsite,
           githubProfile: args.teamLeadFields?.profiles?.github,
           xProfile: args.teamLeadFields?.profiles?.xProfile,
@@ -848,7 +849,6 @@ export const storeWizardData = mutation({
 // Complete user profile with wizard data (called at final submission)
 export const completeWizardUserProfile = mutation({
   args: {
-    userId: v.id("users"),
     // Match the exact structure expected by wizard completion
     teamLeadFields: v.optional(
       v.object({
@@ -890,10 +890,27 @@ export const completeWizardUserProfile = mutation({
         }),
       })
     ),
+    // Add developer and startup fields
+    developerFields: v.optional(
+      v.object({
+        primaryRole: v.optional(v.array(v.string())),
+      })
+    ),
+    startupFields: v.optional(
+      v.object({
+        companyName: v.optional(v.string()),
+        teamSize: v.optional(v.string()),
+      })
+    ),
   },
   handler: async (ctx, args) => {
-    // Get the user
-    const user = await ctx.db.get(args.userId);
+    // Get current authenticated user
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new Error("Not authenticated");
+    }
+
+    const user = await ctx.db.get(userId);
     if (!user) {
       throw new Error("User not found");
     }
@@ -901,7 +918,7 @@ export const completeWizardUserProfile = mutation({
     // Handle Team Lead profile creation
     if (user.type === "PROJECT_MANAGER" && args.teamLeadFields) {
       await ctx.db.insert("project_manager_profiles", {
-        userId: args.userId,
+        userId: userId,
         professionalPMExperience:
           args.teamLeadFields.experience.professionalPMExperience,
         startupExperience: args.teamLeadFields.experience.startupExperience,
@@ -920,7 +937,7 @@ export const completeWizardUserProfile = mutation({
     // Handle Designer profile creation
     if (user.type === "DESIGNER" && args.designerFields) {
       await ctx.db.insert("designer_profiles", {
-        userId: args.userId,
+        userId: userId,
         portfolioType: args.designerFields.profiles.portfolioType,
         portfolioUrl: args.designerFields.profiles.portfolioUrl,
         dribbbleProfile: args.designerFields.profiles.dribbbleProfile,
@@ -937,6 +954,39 @@ export const completeWizardUserProfile = mutation({
         isAvailable: true,
         lastActive: Date.now(),
       });
+    }
+
+    // Handle Developer profile creation
+    if (user.type === "DEVELOPER" && args.developerFields?.primaryRole) {
+      const existingProfile = await ctx.db
+        .query("developer_profiles")
+        .withIndex("by_user", (q) => q.eq("userId", userId))
+        .first();
+
+      if (!existingProfile) {
+        await ctx.db.insert("developer_profiles", {
+          userId: userId,
+          primaryRole: args.developerFields.primaryRole,
+        });
+      }
+    }
+
+    // Handle Startup profile creation
+    if (user.type === "STARTUP" && args.startupFields?.companyName) {
+      const existingProfile = await ctx.db
+        .query("startup_profiles")
+        .withIndex("by_user", (q) => q.eq("userId", userId))
+        .first();
+
+      if (!existingProfile) {
+        await ctx.db.insert("startup_profiles", {
+          userId: userId,
+          companyName: args.startupFields.companyName,
+          teamSize: args.startupFields.teamSize
+            ? parseInt(args.startupFields.teamSize.split("-")[0])
+            : undefined,
+        });
+      }
     }
 
     return { success: true };

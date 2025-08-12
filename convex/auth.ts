@@ -1,9 +1,23 @@
 import { convexAuth } from "@convex-dev/auth/server";
 import GitHub from "@auth/core/providers/github";
 import { Password } from "@convex-dev/auth/providers/Password";
+import { DataModel } from "./_generated/dataModel";
+
+// Custom Password provider to handle additional fields
+const CustomPassword = Password<DataModel>({
+  profile(params) {
+    return {
+      email: params.email as string,
+      name: params.name as string,
+      phoneNumber: (params.phoneNumber as string) || undefined,
+      countryCode: (params.countryCode as string) || undefined,
+      type: (params.type as "DEVELOPER" | "STARTUP" | "DESIGNER" | "LEAD" | "PROJECT_MANAGER") || undefined,
+    };
+  },
+});
 
 export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
-  providers: [Password, GitHub],
+  providers: [CustomPassword, GitHub],
   callbacks: {
     async afterUserCreatedOrUpdated(ctx, args) {
       // If the user signed in with GitHub, store their GitHub profile data

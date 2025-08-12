@@ -243,6 +243,7 @@ interface CountrySelectProps {
   onValueChange?: (value: string) => void;
   placeholder?: string;
   className?: string;
+  isProjectManager?: boolean;
 }
 
 export function CountrySelect({
@@ -250,6 +251,7 @@ export function CountrySelect({
   onValueChange,
   placeholder = "Select country",
   className,
+  isProjectManager = false,
 }: CountrySelectProps) {
   const [open, setOpen] = React.useState(false);
 
@@ -269,8 +271,14 @@ export function CountrySelect({
         >
           {selectedCountry ? (
             <div className="flex items-center gap-2">
-              <span className="text-lg">{selectedCountry.flag}</span>
-              <span className="text-sm">{selectedCountry.dialCode}</span>
+              {isProjectManager ? (
+                <span className="text-sm">{selectedCountry.name}</span>
+              ) : (
+                <>
+                  <span className="text-lg">{selectedCountry.flag}</span>
+                  <span className="text-sm">{selectedCountry.dialCode}</span>
+                </>
+              )}
             </div>
           ) : (
             <span className="text-gray-500 text-sm">{placeholder}</span>
@@ -299,13 +307,19 @@ export function CountrySelect({
                   }}
                   className="flex items-center gap-3 px-3 py-2 cursor-pointer hover:bg-gray-800 text-white"
                 >
-                  <span className="text-lg">{country.flag}</span>
-                  <div className="flex flex-col">
+                  {isProjectManager ? (
                     <span className="text-sm">{country.name}</span>
-                    <span className="text-xs text-gray-400">
-                      {country.dialCode}
-                    </span>
-                  </div>
+                  ) : (
+                    <>
+                      <span className="text-lg">{country.flag}</span>
+                      <div className="flex flex-col">
+                        <span className="text-sm">{country.name}</span>
+                        <span className="text-xs text-gray-400">
+                          {country.dialCode}
+                        </span>
+                      </div>
+                    </>
+                  )}
                   <Check
                     className={cn(
                       "ml-auto h-4 w-4",

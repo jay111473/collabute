@@ -190,6 +190,7 @@ export default defineSchema({
     stripeAccountStatus: v.optional(v.string()),
     portfolio: v.optional(v.array(v.string())),
     resumeUrl: v.optional(v.string()),
+    resumeId: v.optional(v.id("media")),
     primaryRole: v.optional(v.array(v.string())),
     githubProfile: v.optional(v.string()),
   })
@@ -214,31 +215,67 @@ export default defineSchema({
 
   project_manager_profiles: defineTable({
     userId: v.id("users"),
-    bio: v.optional(v.string()),
-    stack: v.optional(
-      v.array(
-        v.object({
-          name: v.string(),
-          level: v.optional(v.string()),
-        })
-      )
-    ),
-    experience: v.optional(v.number()),
-    experienceLevel: v.optional(ExperienceLevelValidator),
-    availability: v.optional(v.string()),
-    preferredWorkType: v.optional(v.string()),
-    hourlyRate: v.optional(v.number()),
-    portfolio: v.optional(v.array(v.string())),
-    resumeUrl: v.optional(v.string()),
-    primaryRole: v.optional(v.array(v.string())),
+
+    // Professional Experience
+    professionalPMExperience: v.optional(v.string()), // "0-1 years", "2-3 years", etc.
+    startupExperience: v.optional(v.string()),
+
+    // Skills & Expertise
+    projectSpecialties: v.optional(v.array(v.string())), // From wizard: SaaS, E-commerce, etc.
+
+    // Social Profiles
+    personalWebsite: v.optional(v.string()),
     githubProfile: v.optional(v.string()),
-    managementExperience: v.optional(v.number()),
-    teamSize: v.optional(v.number()),
-    projectTypes: v.optional(v.array(v.string())),
+    xProfile: v.optional(v.string()),
+
+    // Work Preferences
+    availabilityHours: v.optional(v.string()), // "1-2 hours", "3-4 hours", etc.
+
+    // Professional Values (from wizard)
+    greatSoftwareDefinition: v.optional(v.string()), // How they define great software
+    projectManagementDescription: v.optional(v.string()), // Do you manage projects or people?
   })
     .index("by_user", ["userId"])
-    .index("by_experience_level", ["experienceLevel"])
-    .index("by_availability", ["availability"]),
+    .index("by_availability", ["availabilityHours"]),
+
+  designer_profiles: defineTable({
+    userId: v.id("users"),
+
+    // Portfolio & Social Profiles
+    portfolioType: v.optional(v.string()), // "Personal Website (Preferred)", "PDF Portfolio", "Figma/Adobe XD Link"
+    portfolioUrl: v.optional(v.string()),
+    dribbbleProfile: v.optional(v.string()),
+    behanceProfile: v.optional(v.string()),
+    layersProfile: v.optional(v.string()),
+
+    // Experience
+    professionalDesignExperience: v.optional(v.string()),
+    startupExperience: v.optional(v.string()),
+    resumeUrl: v.optional(v.string()),
+    resumeId: v.optional(v.id("media")),
+    designWorkTypes: v.optional(v.array(v.string())),
+
+    // Availability & Working Style
+    availabilityHours: v.optional(v.string()),
+    qualityOverDelivery: v.optional(v.string()),
+    favoriteProducts: v.optional(v.string()),
+
+    // Additional designer-specific fields
+    bio: v.optional(v.string()),
+    hourlyRate: v.optional(v.number()),
+    isAvailable: v.optional(v.boolean()),
+    lastActive: v.optional(v.number()),
+    completedProjects: v.optional(v.number()),
+    rating: v.optional(v.number()),
+    reviews: v.optional(v.array(v.any())),
+    certifications: v.optional(v.array(v.string())),
+    languages: v.optional(v.array(v.string())),
+    timezone: v.optional(v.string()),
+    workingHours: v.optional(v.string()),
+  })
+    .index("by_user", ["userId"])
+    .index("by_availability", ["availabilityHours"])
+    .index("by_design_experience", ["professionalDesignExperience"]),
 
   startup_profiles: defineTable({
     userId: v.id("users"),
@@ -414,6 +451,15 @@ export default defineSchema({
     type: v.optional(v.string()),
     createdAt: v.number(),
     description: v.optional(v.string()),
+    // File upload fields
+    title: v.optional(v.string()),
+    originalFilename: v.optional(v.string()),
+    mimeType: v.optional(v.string()),
+    fileSize: v.optional(v.number()),
+    uploadedBy: v.optional(v.id("users")),
+    tags: v.optional(v.array(v.string())),
+    isActive: v.optional(v.boolean()),
+    uploadedAt: v.optional(v.number()),
   }),
 
   transactions: defineTable({
@@ -543,4 +589,23 @@ export default defineSchema({
     .index("by_action", ["action"])
     .index("by_timestamp", ["timestamp"])
     .index("by_target_user", ["targetUserId"]),
+
+  // ==============================
+  // WIZARD DATA TABLE (TEMPORARY)
+  // ==============================
+
+  wizard_data: defineTable({
+    email: v.string(),
+    name: v.string(),
+    phoneNumber: v.optional(v.string()),
+    countryCode: v.optional(v.string()),
+    type: UserTypeValidator,
+    teamLeadFields: v.optional(v.any()),
+    designerFields: v.optional(v.any()),
+    createdAt: v.number(),
+    expiresAt: v.number(),
+  })
+    .index("by_email", ["email"])
+    .index("by_created_at", ["createdAt"])
+    .index("by_expires_at", ["expiresAt"]),
 });

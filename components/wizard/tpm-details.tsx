@@ -36,11 +36,11 @@ export function TpmDetails({
 
   const getSkillsArray = () => {
     // Try to get skills from projectManagerFields stack first
-    if (selectedLeader.projectManagerFields?.stack) {
-      return selectedLeader.projectManagerFields.stack
-        .map((tech) => tech.name)
-        .slice(0, 8);
-    }
+    // if (selectedLeader.projectManagerFields?.stack) {
+    //   return selectedLeader.projectManagerFields.stack
+    //     .map((tech) => tech.name)
+    //     .slice(0, 8);
+    // }
     // Fallback to developerFields skills
     if (selectedLeader.developerFields?.skills) {
       return selectedLeader.developerFields.skills
@@ -58,7 +58,7 @@ export function TpmDetails({
 
   const getExperience = () => {
     return (
-      selectedLeader.projectManagerFields?.experience ||
+      selectedLeader.projectManagerFields?.professionalPMExperience ||
       selectedLeader.developerFields?.experience ||
       3
     );
@@ -106,12 +106,12 @@ export function TpmDetails({
                       </span>
                     </div>
                   </div>
-                  {selectedLeader.projectManagerFields?.availability ===
+                  {/* {selectedLeader.projectManagerFields?.availability ===
                     "available" && (
                     <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20">
                       Available Now
                     </Badge>
-                  )}
+                  )} */}
                 </div>
               </div>
 
@@ -185,7 +185,7 @@ export function TpmDetails({
                   Technical Skills
                 </h4>
                 <div className="flex flex-wrap gap-2">
-                  {getSkillsArray().map((skill, index) => (
+                  {getSkillsArray().map((skill: string, index: number) => (
                     <Badge
                       key={index}
                       variant="outline"

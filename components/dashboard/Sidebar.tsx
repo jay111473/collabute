@@ -112,7 +112,7 @@ export default function Sidebar({ user }: { user: User }) {
       type: "DEVELOPER",
     },
     {
-      name: "Project Managers",
+      name: "Explore",
       icon: CompassIcon,
       path: "/dashboard/leads",
       type: "STARTUP",
@@ -145,8 +145,8 @@ export default function Sidebar({ user }: { user: User }) {
 
   // Filter navigation items based on user type
   const filteredNavItems = navItems.filter(
-    (item) =>
-      item.type === "cross" ||
+    (item) => // remove chat option from nav for project manager
+      (item.type === "cross" && item.name !== "Chat") ||
       item.type === user.type ||
       (item.type === "DEVELOPER" && user.type === "PROJECT_MANAGER") ||
       (item.type === "STARTUP" && user.type === "PROJECT_MANAGER")
@@ -168,7 +168,7 @@ export default function Sidebar({ user }: { user: User }) {
           <Link
             href={"/dashboard/wizard"}
             prefetch={true}
-            className={`relative flex items-center gap-3 rounded-lg p-3 transition-all text-sm bg-darkPrimary text-white`}
+            className={`relative flex items-center gap-3 rounded-lg p-3 transition-all text-sm bg-darkPrimary text-black`}
           >
             <Plus className="h-4 w-4" />
             New Project
@@ -179,6 +179,7 @@ export default function Sidebar({ user }: { user: User }) {
               key={item.name}
               href={item.path}
               isActive={pathname === item.path}
+              className="text-sm"
             >
               <item.icon className="h-4 w-4" />
               {item.name}

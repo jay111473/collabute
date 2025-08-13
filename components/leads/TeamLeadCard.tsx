@@ -4,7 +4,7 @@ import { FC } from "react";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Calendar, Github, Star } from "lucide-react";
+import { MapPin, Calendar, Github, Star, Code } from "lucide-react";
 import { User, Media, LeadProfile } from "@/types/convex";
 import { useRouter, useSearchParams } from "next/navigation";
 
@@ -81,103 +81,118 @@ const TeamLeadCard: FC<TeamLeadCardProps> = ({ teamLead }) => {
   return (
     <div className="space-y-4">
       <Card className="bg-[#1a1a1a] border-none rounded-lg p-6 relative">
-        <div className="flex justify-end items-center gap-x-4">
+        <div className="flex justify-between items-start">
+          <div className="flex gap-4">
+            <Avatar className="h-16 w-16">
+              <AvatarImage src={profilePictureUrl} />
+              <AvatarFallback className="bg-gradient-to-b from-gray-500 to-gray-700">
+                {teamLead.name?.[0] || "U"}
+              </AvatarFallback>
+            </Avatar>
+
+            <div className="flex flex-col space-y-3">
+              <div className="flex gap-2 items-center">
+                <h2 className="text-white text-lg font-semibold">
+                  {teamLead.name || "Unnamed User"}
+                </h2>
+                <p className="text-gray-400 text-sm">
+                  @
+                  {teamLead.name?.toLowerCase().replace(/\s+/g, "") ||
+                    "username"}
+                </p>
+              </div>
+
+              <div className="mt-1">
+                <span className="inline-flex items-center gap-2 rounded-full border border-gray-600/70 px-3 py-1 text-xs text-white/90">
+                  <Code className="h-3.5 w-3.5 text-gray-300" />
+                  {primaryRole}
+                </span>
+              </div>
+
+              <div className="flex flex-wrap gap-4 text-gray-400 text-sm mt-2">
+                <div className="flex items-center gap-1">
+                  <MapPin className="h-4 w-4" />
+                  <span>{location}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Calendar className="h-4 w-4" />
+                  <span>Joined: {joinDate}</span>
+                </div>
+                {githubProfile && (
+                  <a
+                    href={githubProfile}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1 text-gray-400 hover:text-white transition-colors"
+                  >
+                    <Github className="h-4 w-4" />
+                    <span>{githubProfile}</span>
+                  </a>
+                )}
+              </div>
+
+              <div>
+                <div className="grid grid-cols-3 text-center mt-6 w-full">
+                  <div>
+                    <p className="text-white text-xl font-semibold">
+                      {currentProjects}
+                    </p>
+                    <p className="text-gray-400 text-xs">Current Projects</p>
+                  </div>
+                  <div className="border-x border-gray-700">
+                    <p className="text-white text-xl font-semibold">
+                      +{experience}
+                    </p>
+                    <p className="text-gray-400 text-xs">Years Experience</p>
+                  </div>
+                  <div>
+                    <div className="flex items-center justify-center gap-1">
+                      <Star className="h-4 w-4 text-purple-400 fill-purple-400" />
+                      <p className="text-white text-xl font-semibold">
+                        {rating}
+                      </p>
+                    </div>
+                    <p className="text-gray-400 text-xs">Rating</p>
+                  </div>
+                </div>
+
+                <div className="mt-6">
+                  <h3 className="text-white text-sm font-semibold">
+                    Skill set
+                  </h3>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {skillSet.map((skill, i) => (
+                      <Badge
+                        key={i}
+                        className="bg-gray-800 text-white border-none rounded-full px-3 py-1 text-xs"
+                      >
+                        {skill}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="mt-6">
+                  <h3 className="text-white text-sm font-semibold">
+                    Achievements
+                  </h3>
+                  <div className="flex items-center gap-2 mt-2">
+                    <span className="text-lg">🏆</span>
+                    <Badge className="bg-gray-800 text-white border-none px-3 py-1 text-xs">
+                      Pro developer
+                    </Badge>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <button
-            onClick={() => {}} // to be used to invite team lead , leaving empty for now
-            className="bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium px-4 py-2 rounded-md transition-colors"
+            onClick={() => {}}
+            className="bg-darkPrimary hover:bg-accent text-black text-sm font-medium px-4 py-2 rounded-md transition-colors"
           >
             Invite
           </button>
-        </div>
-
-        <div className="flex items-center gap-4">
-          <Avatar className="h-16 w-16">
-            <AvatarImage src={profilePictureUrl} />
-            <AvatarFallback>{teamLead.name?.[0] || "U"}</AvatarFallback>
-          </Avatar>
-          <div>
-            <h2 className="text-white text-lg font-semibold">
-              {teamLead.name || "Unnamed User"}
-            </h2>
-            <p className="text-gray-400 text-sm">
-              @{teamLead.name?.toLowerCase().replace(/\s+/g, "") || "username"}
-            </p>
-            <Badge className="mt-2 bg-gray-800 text-white border-none">
-              {primaryRole}
-            </Badge>
-          </div>
-        </div>
-
-        <div className="flex flex-wrap gap-4 text-gray-400 text-sm mt-4">
-          <div className="flex items-center gap-1">
-            <MapPin className="h-4 w-4" />
-            <span>{location}</span>
-          </div>
-          {teamLead.leadFields?.calendar?.[0] && (
-            <div className="flex items-center gap-1">
-              <Calendar className="h-4 w-4" />
-              <span>{teamLead.leadFields.calendar[0]}</span>
-            </div>
-          )}
-          <div className="flex items-center gap-1">
-            <Calendar className="h-4 w-4" />
-            <span>Joined: {joinDate}</span>
-          </div>
-          {githubProfile && (
-            <a
-              href={githubProfile}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1 text-gray-400 hover:text-white transition-colors"
-            >
-              <Github className="h-4 w-4" />
-              <span>{githubProfile}</span>
-            </a>
-          )}
-        </div>
-
-        <div className="grid grid-cols-3 text-center mt-6">
-          <div>
-            <p className="text-white text-xl font-semibold">
-              {currentProjects}
-            </p>
-            <p className="text-gray-400 text-xs">Current Projects</p>
-          </div>
-          <div className="border-x border-gray-700">
-            <p className="text-white text-xl font-semibold">+{experience}</p>
-            <p className="text-gray-400 text-xs">Years Experience</p>
-          </div>
-          <div>
-            <div className="flex items-center justify-center gap-1">
-              <Star className="h-4 w-4 text-purple-400 fill-purple-400" />
-              <p className="text-white text-xl font-semibold">{rating}</p>
-            </div>
-            <p className="text-gray-400 text-xs">Rating</p>
-          </div>
-        </div>
-
-        <div className="mt-6">
-          <h3 className="text-white text-sm font-semibold">Skill set</h3>
-          <div className="flex flex-wrap gap-2 mt-2">
-            {skillSet.map((skill, i) => (
-              <Badge
-                key={i}
-                className="bg-gray-800 text-white border-none rounded-full px-3 py-1 text-xs"
-              >
-                {skill}
-              </Badge>
-            ))}
-          </div>
-        </div>
-
-        <div className="mt-6">
-          <h3 className="text-white text-sm font-semibold">Achievements</h3>
-          <div className="flex items-center gap-2 mt-2">
-            <span className="text-lg">🏆</span>
-            <Badge className="bg-gray-800 text-white border-none px-3 py-1 text-xs">
-              Pro developer
-            </Badge>
-          </div>
         </div>
       </Card>
 

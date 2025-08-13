@@ -145,8 +145,8 @@ export default function Sidebar({ user }: { user: User }) {
 
   // Filter navigation items based on user type
   const filteredNavItems = navItems.filter(
-    (item) => // remove chat option from nav for project manager
-      (item.type === "cross" && item.name !== "Chat") ||
+    (item) =>
+      item.type === "cross" ||
       item.type === user.type ||
       (item.type === "DEVELOPER" && user.type === "PROJECT_MANAGER") ||
       (item.type === "STARTUP" && user.type === "PROJECT_MANAGER")

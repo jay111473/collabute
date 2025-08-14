@@ -1,8 +1,7 @@
 import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
+import { query, mutation } from "./_generated/server";
 import { getAuthUserId } from "@convex-dev/auth/server";
 
-// Get current authenticated user with complete profile
 export const getCurrentUser = query({
   args: {},
   handler: async (ctx) => {
@@ -54,66 +53,424 @@ export const getCurrentUser = query({
   },
 });
 
-// Get complete user profile with role-specific data
-export const getCompleteUserProfile = query({
+// ==============================
+// USER RATING SYSTEM
+// ==============================
+
+/**
+ * Get user's average rating from reviews
+ */
+export const getUserRating = query({
   args: { userId: v.id("users") },
   handler: async (ctx, args) => {
-    // Require authentication to view user profiles
-    const currentUserId = await getAuthUserId(ctx);
-    if (!currentUserId) {
-      throw new Error("Authentication required");
+    const reviews = await ctx.db
+      .query("user_reviews")
+      .withIndex("by_reviewee", (q) => q.eq("revieweeId", args.userId))
+      .filter((q) => q.eq(q.field("isVisible"), true))
+      .collect();
+
+    if (reviews.length === 0) {
+      return {
+        averageRating: 0,
+        totalReviews: 0,
+        ratingBreakdown: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
+      };
     }
 
-    // Users can only view their own profile unless they're admin
-    if (currentUserId !== args.userId) {
-      // Check if current user is admin
-      const currentUser = await ctx.db.get(currentUserId);
-      if (!currentUser?.roleId) {
-        throw new Error("Access denied");
-      }
+    const totalRating = reviews.reduce((sum, review) => sum + review.rating, 0);
+    const averageRating = Math.round((totalRating / reviews.length) * 10) / 10;
 
-      const currentRole = await ctx.db.get(currentUser.roleId);
-      const isAdmin = currentRole && (
-        (currentRole.permissions?.includes("admin")) ||
-        currentRole.name === "admin"
-      );
+    // Calculate rating breakdown
+    const ratingBreakdown = reviews.reduce(
+      (breakdown, review) => {
+        breakdown[review.rating as keyof typeof breakdown]++;
+        return breakdown;
+      },
+      { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
+    );
 
-      if (!isAdmin) {
-        throw new Error("Access denied - can only view your own profile");
+    return {
+      averageRating,
+      totalReviews: reviews.length,
+      ratingBreakdown,
+    };
+  },
+});
+
+/**
+ * Get user reviews with reviewer information
+ */
+export const getUserReviews = query({
+  args: {
+    userId: v.id("users"),
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const limit = args.limit || 10;
+
+    const reviews = await ctx.db
+      .query("user_reviews")
+      .withIndex("by_reviewee", (q) => q.eq("revieweeId", args.userId))
+      .filter((q) => q.eq(q.field("isVisible"), true))
+      .order("desc")
+      .take(limit);
+
+    // Populate reviewer information
+    const reviewsWithReviewers = await Promise.all(
+      reviews.map(async (review) => {
+        const reviewer = await ctx.db.get(review.reviewerId);
+        const project = review.projectId
+          ? await ctx.db.get(review.projectId)
+          : null;
+
+        return {
+          ...review,
+          reviewer: reviewer
+            ? {
+                _id: reviewer._id,
+                name: reviewer.name,
+                profilePicture: reviewer.profilePicture,
+              }
+            : null,
+          project: project
+            ? {
+                _id: project._id,
+                title: project.title,
+                slug: project.slug,
+              }
+            : null,
+        };
+      })
+    );
+
+    return reviewsWithReviewers;
+  },
+});
+
+/**
+ * Create a new review
+ */
+export const createReview = mutation({
+  args: {
+    revieweeId: v.id("users"),
+    rating: v.number(),
+    comment: v.optional(v.string()),
+    projectId: v.optional(v.id("projects")),
+    reviewType: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Not authenticated");
+    }
+
+    const reviewer = await ctx.db
+      .query("users")
+      .withIndex("email", (q) => q.eq("email", identity.email!))
+      .first();
+
+    if (!reviewer) {
+      throw new Error("Reviewer not found");
+    }
+
+    // Validate rating range
+    if (args.rating < 1 || args.rating > 5) {
+      throw new Error("Rating must be between 1 and 5");
+    }
+
+    // Check if reviewer has already reviewed this user for this project
+    if (args.projectId) {
+      const existingReview = await ctx.db
+        .query("user_reviews")
+        .withIndex("by_reviewee", (q) => q.eq("revieweeId", args.revieweeId))
+        .filter((q) =>
+          q.and(
+            q.eq(q.field("reviewerId"), reviewer._id),
+            q.eq(q.field("projectId"), args.projectId)
+          )
+        )
+        .first();
+
+      if (existingReview) {
+        throw new Error("You have already reviewed this user for this project");
       }
     }
+
+    const reviewId = await ctx.db.insert("user_reviews", {
+      revieweeId: args.revieweeId,
+      reviewerId: reviewer._id,
+      projectId: args.projectId,
+      rating: args.rating,
+      comment: args.comment,
+      reviewType: args.reviewType,
+      isVisible: true,
+      createdAt: Date.now(),
+    });
+
+    return reviewId;
+  },
+});
+
+// ==============================
+// USER ACHIEVEMENTS SYSTEM
+// ==============================
+
+/**
+ * Get user's achievements
+ */
+export const getUserAchievements = query({
+  args: { userId: v.id("users") },
+  handler: async (ctx, args) => {
+    const grants = await ctx.db
+      .query("user_achievement_grants")
+      .withIndex("by_user", (q) => q.eq("userId", args.userId))
+      .filter((q) => q.eq(q.field("isVisible"), true))
+      .collect();
+
+    // Populate achievement details
+    const achievements = await Promise.all(
+      grants.map(async (grant) => {
+        const achievement = await ctx.db.get(grant.achievementId);
+        return {
+          ...grant,
+          achievement,
+        };
+      })
+    );
+
+    return achievements.filter((item) => item.achievement?.isActive);
+  },
+});
+
+/**
+ * Get all available achievements
+ */
+export const getAvailableAchievements = query({
+  args: {},
+  handler: async (ctx) => {
+    return await ctx.db
+      .query("user_achievements")
+      .withIndex("by_active", (q) => q.eq("isActive", true))
+      .collect();
+  },
+});
+
+/**
+ * Grant achievement to user
+ */
+export const grantAchievement = mutation({
+  args: {
+    userId: v.id("users"),
+    achievementId: v.id("user_achievements"),
+    reason: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Not authenticated");
+    }
+
+    const granter = await ctx.db
+      .query("users")
+      .withIndex("email", (q) => q.eq("email", identity.email!))
+      .first();
+
+    if (!granter) {
+      throw new Error("Granter not found");
+    }
+
+    // Check if user already has this achievement
+    const existingGrant = await ctx.db
+      .query("user_achievement_grants")
+      .withIndex("by_user_achievement", (q) =>
+        q.eq("userId", args.userId).eq("achievementId", args.achievementId)
+      )
+      .first();
+
+    if (existingGrant) {
+      throw new Error("User already has this achievement");
+    }
+
+    const grantId = await ctx.db.insert("user_achievement_grants", {
+      userId: args.userId,
+      achievementId: args.achievementId,
+      grantedById: granter._id,
+      grantedAt: Date.now(),
+      reason: args.reason,
+      isVisible: true,
+    });
+
+    return grantId;
+  },
+});
+
+/**
+ * Create a new achievement type
+ */
+export const createAchievement = mutation({
+  args: {
+    name: v.string(),
+    description: v.optional(v.string()),
+    icon: v.optional(v.string()),
+    badgeColor: v.optional(v.string()),
+    category: v.string(),
+    criteria: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Not authenticated");
+    }
+
+    const achievementId = await ctx.db.insert("user_achievements", {
+      name: args.name,
+      description: args.description,
+      icon: args.icon,
+      badgeColor: args.badgeColor || "#fbbf24", // Default yellow
+      category: args.category,
+      criteria: args.criteria,
+      isActive: true,
+      createdAt: Date.now(),
+    });
+
+    return achievementId;
+  },
+});
+
+// ==============================
+// USER PROJECTS
+// ==============================
+
+/**
+ * Get user's recent projects with details
+ */
+export const getUserProjects = query({
+  args: {
+    userId: v.id("users"),
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const limit = args.limit || 4;
 
     const user = await ctx.db.get(args.userId);
-    if (!user) return null;
-
-    let roleProfile = null;
-
-    // Get role-specific profile based on user type
-    switch (user.type) {
-      case "DEVELOPER":
-        roleProfile = await ctx.db
-          .query("developer_profiles")
-          .withIndex("by_user", (q) => q.eq("userId", args.userId))
-          .first();
-        break;
-
-      case "LEAD":
-      case "PROJECT_MANAGER":
-        roleProfile = await ctx.db
-          .query("lead_profiles")
-          .withIndex("by_user", (q) => q.eq("userId", args.userId))
-          .first();
-        break;
-
-      case "STARTUP":
-        roleProfile = await ctx.db
-          .query("startup_profiles")
-          .withIndex("by_user", (q) => q.eq("userId", args.userId))
-          .first();
-        break;
+    if (!user || !user.projects) {
+      return [];
     }
 
-    // Get GitHub profile if connected
+    // Get project details
+    const projects = await Promise.all(
+      user.projects.map(async (projectId) => {
+        const project = await ctx.db.get(projectId);
+        return project;
+      })
+    );
+
+    // Filter out null projects and sort by creation time (newest first)
+    const validProjects = projects
+      .filter(Boolean)
+      .sort((a, b) => b!._creationTime - a!._creationTime)
+      .slice(0, limit);
+
+    // Enhance projects with additional data
+    const enhancedProjects = await Promise.all(
+      validProjects.map(async (project) => {
+        if (!project) return null;
+
+        // Get project tags/stacks for display
+        const tags = project.stacks || project.tags || [];
+
+        return {
+          _id: project._id,
+          title: project.title,
+          description: project.description,
+          tags: tags.slice(0, 3), // Limit to 3 tags for UI
+          status: project.status,
+          type: project.type,
+          _creationTime: project._creationTime,
+        };
+      })
+    );
+
+    return enhancedProjects.filter(Boolean);
+  },
+});
+
+// ==============================
+// ENHANCED USER PROFILE DATA
+// ==============================
+
+/**
+ * Get comprehensive user profile data including ratings and achievements
+ */
+export const getEnhancedUserProfile = query({
+  args: { userId: v.id("users") },
+  handler: async (ctx, args) => {
+    // Get basic user data
+    const user = await ctx.db.get(args.userId);
+    if (!user) {
+      return null;
+    }
+
+    // Get user rating data
+    const reviews = await ctx.db
+      .query("user_reviews")
+      .withIndex("by_reviewee", (q) => q.eq("revieweeId", args.userId))
+      .filter((q) => q.eq(q.field("isVisible"), true))
+      .collect();
+
+    const ratingData = reviews.length === 0 ? {
+      averageRating: 0,
+      totalReviews: 0,
+      ratingBreakdown: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
+    } : {
+      averageRating: Math.round((reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length) * 10) / 10,
+      totalReviews: reviews.length,
+      ratingBreakdown: reviews.reduce((breakdown, review) => {
+        breakdown[review.rating as keyof typeof breakdown]++;
+        return breakdown;
+      }, { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }),
+    };
+
+    // Get user achievements
+    const grants = await ctx.db
+      .query("user_achievement_grants")
+      .withIndex("by_user", (q) => q.eq("userId", args.userId))
+      .filter((q) => q.eq(q.field("isVisible"), true))
+      .collect();
+
+    const achievements = await Promise.all(
+      grants.map(async (grant) => {
+        const achievement = await ctx.db.get(grant.achievementId);
+        return { ...grant, achievement };
+      })
+    );
+
+    // Get user's projects
+    const projects = user.projects
+      ? await Promise.all(
+          user.projects.map(async (projectId) => {
+            const project = await ctx.db.get(projectId);
+            return project;
+          })
+        )
+      : [];
+
+    // Get profile-specific data
+    const developerProfile = await ctx.db
+      .query("developer_profiles")
+      .withIndex("by_user", (q) => q.eq("userId", args.userId))
+      .first();
+
+    const leadProfile = await ctx.db
+      .query("lead_profiles")
+      .withIndex("by_user", (q) => q.eq("userId", args.userId))
+      .first();
+
+    const projectManagerProfile = await ctx.db
+      .query("project_manager_profiles")
+      .withIndex("by_user", (q) => q.eq("userId", args.userId))
+      .first();
+
     const githubProfile = await ctx.db
       .query("github_profiles")
       .withIndex("by_user", (q) => q.eq("userId", args.userId))
@@ -121,325 +478,17 @@ export const getCompleteUserProfile = query({
 
     return {
       ...user,
-      roleProfile,
-      githubProfile,
+      rating: ratingData,
+      achievements: achievements
+        .map((grant: any) => grant.achievement)
+        .filter(Boolean),
+      projects: projects.filter(Boolean),
+      profiles: {
+        developer: developerProfile,
+        lead: leadProfile,
+        projectManager: projectManagerProfile,
+        github: githubProfile,
+      },
     };
-  },
-});
-
-// Helper function to transform skills from string array to object array
-const transformSkills = (skills: string[] | undefined) => {
-  if (!skills) return undefined;
-  return skills.map((skill) => ({ skill, level: undefined }));
-};
-
-// Create developer profile
-export const createDeveloperProfile = mutation({
-  args: {
-    userId: v.id("users"),
-    bio: v.optional(v.string()),
-    skills: v.optional(v.array(v.string())), // Accept string array for convenience, transform internally
-    experience: v.optional(v.number()),
-    experienceLevel: v.optional(
-      v.union(
-        v.literal("JUNIOR"),
-        v.literal("MID_LEVEL"),
-        v.literal("SENIOR"),
-        v.literal("LEAD"),
-        v.literal("ARCHITECT")
-      )
-    ),
-    availability: v.optional(v.string()),
-    preferredWorkType: v.optional(v.string()),
-    hourlyRate: v.optional(v.number()),
-    portfolio: v.optional(v.array(v.string())),
-    resumeUrl: v.optional(v.string()),
-  },
-  handler: async (ctx, args) => {
-    const { userId, skills, ...profileData } = args;
-
-    // Transform skills to the correct format
-    const transformedSkills = transformSkills(skills);
-
-    // Check if profile already exists
-    const existingProfile = await ctx.db
-      .query("developer_profiles")
-      .withIndex("by_user", (q) => q.eq("userId", userId))
-      .first();
-
-    if (existingProfile) {
-      await ctx.db.patch(existingProfile._id, {
-        ...profileData,
-        skills: transformedSkills,
-      });
-      return existingProfile._id;
-    }
-
-    return await ctx.db.insert("developer_profiles", {
-      userId,
-      ...profileData,
-      skills: transformedSkills,
-    });
-  },
-});
-
-// Create lead profile
-export const createLeadProfile = mutation({
-  args: {
-    userId: v.id("users"),
-    specializations: v.optional(v.array(v.string())),
-    title: v.optional(v.string()),
-    location: v.optional(v.string()),
-    calendar: v.optional(v.array(v.any())),
-    preferredPayment: v.optional(v.string()),
-    companyName: v.optional(v.string()),
-    companySize: v.optional(v.string()),
-    managementExperience: v.optional(v.number()),
-  },
-  handler: async (ctx, args) => {
-    const { userId, ...profileData } = args;
-
-    const existingProfile = await ctx.db
-      .query("lead_profiles")
-      .withIndex("by_user", (q) => q.eq("userId", userId))
-      .first();
-
-    if (existingProfile) {
-      await ctx.db.patch(existingProfile._id, profileData);
-      return existingProfile._id;
-    }
-
-    return await ctx.db.insert("lead_profiles", {
-      userId,
-      ...profileData,
-    });
-  },
-});
-
-// Create startup profile
-export const createStartupProfile = mutation({
-  args: {
-    userId: v.id("users"),
-    companyName: v.string(),
-    companyDescription: v.optional(v.string()),
-    website: v.optional(v.string()),
-    fundingStage: v.optional(v.string()),
-    teamSize: v.optional(v.number()),
-    industry: v.optional(v.string()),
-    foundedYear: v.optional(v.number()),
-    businessModel: v.optional(v.string()),
-    targetMarket: v.optional(v.string()),
-  },
-  handler: async (ctx, args) => {
-    const { userId, ...profileData } = args;
-
-    const existingProfile = await ctx.db
-      .query("startup_profiles")
-      .withIndex("by_user", (q) => q.eq("userId", userId))
-      .first();
-
-    if (existingProfile) {
-      await ctx.db.patch(existingProfile._id, profileData);
-      return existingProfile._id;
-    }
-
-    return await ctx.db.insert("startup_profiles", {
-      userId,
-      ...profileData,
-    });
-  },
-});
-
-// Create or update GitHub profile
-export const createGitHubProfile = mutation({
-  args: {
-    userId: v.id("users"),
-    githubId: v.string(),
-    githubUsername: v.string(),
-    githubConnected: v.boolean(),
-    githubConnectedAt: v.number(),
-    githubAccessToken: v.optional(v.string()),
-    githubInstallationId: v.optional(v.string()),
-    publicRepos: v.optional(v.number()),
-    followers: v.optional(v.number()),
-    following: v.optional(v.number()),
-  },
-  handler: async (ctx, args) => {
-    const { userId, ...profileData } = args;
-
-    const existingProfile = await ctx.db
-      .query("github_profiles")
-      .withIndex("by_user", (q) => q.eq("userId", userId))
-      .first();
-
-    if (existingProfile) {
-      await ctx.db.patch(existingProfile._id, {
-        ...profileData,
-        githubLastFetch: Date.now(),
-      });
-      return existingProfile._id;
-    }
-
-    return await ctx.db.insert("github_profiles", {
-      userId,
-      ...profileData,
-      githubLastFetch: Date.now(),
-    });
-  },
-});
-
-// Search developers with filtering
-export const searchDevelopers = query({
-  args: {
-    skills: v.optional(v.array(v.string())), // Keep as string array for search convenience
-    experienceLevel: v.optional(
-      v.union(
-        v.literal("JUNIOR"),
-        v.literal("MID_LEVEL"),
-        v.literal("SENIOR"),
-        v.literal("LEAD"),
-        v.literal("ARCHITECT")
-      )
-    ),
-    availability: v.optional(v.string()),
-    minHourlyRate: v.optional(v.number()),
-    maxHourlyRate: v.optional(v.number()),
-  },
-  handler: async (ctx, args) => {
-    // Get all developers
-    const developers = await ctx.db
-      .query("users")
-      .filter((q: any) => q.eq(q.field("type"), "DEVELOPER"))
-      .collect();
-
-    // Get their profiles
-    const developersWithProfiles = await Promise.all(
-      developers.map(async (dev) => {
-        const profile = await ctx.db
-          .query("developer_profiles")
-          .withIndex("by_user", (q) => q.eq("userId", dev._id))
-          .first();
-
-        return {
-          ...dev,
-          profile,
-        };
-      })
-    );
-
-    // Filter based on criteria
-    let filteredDevelopers = developersWithProfiles.filter(
-      (dev) => dev.profile
-    );
-
-    if (args.skills?.length) {
-      filteredDevelopers = filteredDevelopers.filter((dev) =>
-        dev.profile?.skills?.some((skillObj) =>
-          args.skills!.includes(skillObj.skill)
-        )
-      );
-    }
-
-    if (args.experienceLevel) {
-      filteredDevelopers = filteredDevelopers.filter(
-        (dev) => dev.profile?.experienceLevel === args.experienceLevel
-      );
-    }
-
-    if (args.availability) {
-      filteredDevelopers = filteredDevelopers.filter(
-        (dev) => dev.profile?.availability === args.availability
-      );
-    }
-
-    if (args.minHourlyRate) {
-      filteredDevelopers = filteredDevelopers.filter(
-        (dev) =>
-          dev.profile?.hourlyRate &&
-          dev.profile.hourlyRate >= args.minHourlyRate!
-      );
-    }
-
-    if (args.maxHourlyRate) {
-      filteredDevelopers = filteredDevelopers.filter(
-        (dev) =>
-          dev.profile?.hourlyRate &&
-          dev.profile.hourlyRate <= args.maxHourlyRate!
-      );
-    }
-
-    return filteredDevelopers;
-  },
-});
-
-// Update user profile by type
-export const updateUserProfileByType = mutation({
-  args: {
-    userId: v.id("users"),
-    profileData: v.any(),
-  },
-  handler: async (ctx, args) => {
-    const user = await ctx.db.get(args.userId);
-    if (!user) throw new Error("User not found");
-
-    switch (user.type) {
-      case "DEVELOPER":
-        // Inline developer profile creation
-        const existingDevProfile = await ctx.db
-          .query("developer_profiles")
-          .withIndex("by_user", (q) => q.eq("userId", args.userId))
-          .first();
-
-        if (existingDevProfile) {
-          await ctx.db.patch(existingDevProfile._id, args.profileData as any);
-          return existingDevProfile._id;
-        }
-
-        return await ctx.db.insert("developer_profiles", {
-          userId: args.userId,
-          ...args.profileData,
-        } as any);
-
-      case "LEAD":
-      case "PROJECT_MANAGER":
-        // Inline lead profile creation
-        const existingLeadProfile = await ctx.db
-          .query("lead_profiles")
-          .withIndex("by_user", (q) => q.eq("userId", args.userId))
-          .first();
-
-        if (existingLeadProfile) {
-          await ctx.db.patch(existingLeadProfile._id, args.profileData as any);
-          return existingLeadProfile._id;
-        }
-
-        return await ctx.db.insert("lead_profiles", {
-          userId: args.userId,
-          ...args.profileData,
-        } as any);
-
-      case "STARTUP":
-        // Inline startup profile creation
-        const existingStartupProfile = await ctx.db
-          .query("startup_profiles")
-          .withIndex("by_user", (q) => q.eq("userId", args.userId))
-          .first();
-
-        if (existingStartupProfile) {
-          await ctx.db.patch(
-            existingStartupProfile._id,
-            args.profileData as any
-          );
-          return existingStartupProfile._id;
-        }
-
-        return await ctx.db.insert("startup_profiles", {
-          userId: args.userId,
-          ...args.profileData,
-        } as any);
-
-      default:
-        throw new Error("Invalid user type");
-    }
   },
 });

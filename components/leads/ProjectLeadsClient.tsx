@@ -64,37 +64,45 @@ const ProjectManagersClient: FC<ProjectManagersClientProps> = ({
     return Math.min(5.0, Math.round(rating * 10) / 10);
   }
 
+  // Removed teamLeadId logic - now using dedicated slug-based routes
+
   return (
     <div className="flex-1">
-      <div className="p-6">
-        {/* Filters */}
-        <ProjectManagerFilterBar
-          search={search}
-          onSearchChange={setSearch}
-          filters={filters}
-          onFilterChange={handleFilterChange}
-          sort={sort}
-          onSortChange={setSort}
-          hasActiveFilters={hasActiveFilters}
-          onResetFilters={resetFilters}
-        />
+      <div className="flex items-center justify-between">
+        <span className="text-xs text-white">Explore project leads</span>
+      </div>
 
-        {/* Top Ranked Section */}
-        <ProjectManagerSectionHeader title="Top Ranked" />
-        <ProjectManagerGrid
-          projectManagers={topRankedProjectManagers}
-          isLoading={isLoading}
-          variant="featured"
-        />
-
-        {/* All Project Managers Section */}
-        <div className="mt-12">
-          <ProjectManagerSectionHeader title="All project managers" />
-          <ProjectManagerGrid
-            projectManagers={projectManagers}
-            isLoading={isLoading}
-            variant="compact"
+      <div className="flex-1">
+        <div className="p-6">
+          {/* Filters */}
+          <ProjectManagerFilterBar
+            search={search}
+            onSearchChange={setSearch}
+            filters={filters}
+            onFilterChange={handleFilterChange}
+            sort={sort}
+            onSortChange={setSort}
+            hasActiveFilters={hasActiveFilters}
+            onResetFilters={resetFilters}
           />
+
+          {/* Top Ranked Section */}
+          <ProjectManagerSectionHeader title="Top Ranked" />
+          <ProjectManagerGrid
+            projectManagers={topRankedProjectManagers}
+            isLoading={isLoading}
+            variant="featured"
+          />
+
+          {/* All Project Managers Section */}
+          <div className="mt-12">
+            <ProjectManagerSectionHeader title="All project managers" />
+            <ProjectManagerGrid
+              projectManagers={projectManagers}
+              isLoading={isLoading}
+              variant="compact"
+            />
+          </div>
         </div>
       </div>
     </div>

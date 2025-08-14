@@ -53,7 +53,9 @@ export default async function DashboardProjectManagersPage({
 
   return (
     <div className="flex-1 flex flex-col">
-      <ProjectManagersClient projectManagers={projectManagers} />
+      <ProjectManagersClient
+        projectManagers={projectManagers}
+      />
     </div>
   );
 }

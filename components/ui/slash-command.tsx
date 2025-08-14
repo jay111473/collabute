@@ -11,12 +11,7 @@ import {
   ListOrdered,
   Quote,
   Code,
-  Image as ImageIcon,
-  Link as LinkIcon,
   Minus,
-  Table,
-  Bold,
-  Italic,
 } from "lucide-react";
 
 interface SlashCommandProps {
@@ -49,12 +44,7 @@ export const SlashCommand = forwardRef<SlashCommandRef, SlashCommandProps>(
         icon: Type,
         searchTerms: ["text", "paragraph", "p"],
         command: ({ editor, range }) => {
-          editor
-            .chain()
-            .focus()
-            .deleteRange(range)
-            .clearNodes()
-            .run();
+          editor.chain().focus().deleteRange(range).clearNodes().run();
         },
       },
       {
@@ -105,12 +95,7 @@ export const SlashCommand = forwardRef<SlashCommandRef, SlashCommandProps>(
         icon: List,
         searchTerms: ["list", "bullet", "ul", "unordered"],
         command: ({ editor, range }) => {
-          editor
-            .chain()
-            .focus()
-            .deleteRange(range)
-            .toggleBulletList()
-            .run();
+          editor.chain().focus().deleteRange(range).toggleBulletList().run();
         },
       },
       {
@@ -119,12 +104,7 @@ export const SlashCommand = forwardRef<SlashCommandRef, SlashCommandProps>(
         icon: ListOrdered,
         searchTerms: ["list", "numbered", "ol", "ordered"],
         command: ({ editor, range }) => {
-          editor
-            .chain()
-            .focus()
-            .deleteRange(range)
-            .toggleOrderedList()
-            .run();
+          editor.chain().focus().deleteRange(range).toggleOrderedList().run();
         },
       },
       {
@@ -133,12 +113,7 @@ export const SlashCommand = forwardRef<SlashCommandRef, SlashCommandProps>(
         icon: Quote,
         searchTerms: ["quote", "blockquote", "citation"],
         command: ({ editor, range }) => {
-          editor
-            .chain()
-            .focus()
-            .deleteRange(range)
-            .setBlockquote()
-            .run();
+          editor.chain().focus().deleteRange(range).setBlockquote().run();
         },
       },
       {
@@ -147,12 +122,7 @@ export const SlashCommand = forwardRef<SlashCommandRef, SlashCommandProps>(
         icon: Code,
         searchTerms: ["code", "codeblock", "pre"],
         command: ({ editor, range }) => {
-          editor
-            .chain()
-            .focus()
-            .deleteRange(range)
-            .setCodeBlock()
-            .run();
+          editor.chain().focus().deleteRange(range).setCodeBlock().run();
         },
       },
       {
@@ -161,12 +131,7 @@ export const SlashCommand = forwardRef<SlashCommandRef, SlashCommandProps>(
         icon: Minus,
         searchTerms: ["divider", "separator", "hr", "horizontal", "rule"],
         command: ({ editor, range }) => {
-          editor
-            .chain()
-            .focus()
-            .deleteRange(range)
-            .setHorizontalRule()
-            .run();
+          editor.chain().focus().deleteRange(range).setHorizontalRule().run();
         },
       },
     ];
@@ -180,7 +145,7 @@ export const SlashCommand = forwardRef<SlashCommandRef, SlashCommandProps>(
           item.searchTerms.some((term) => term.includes(searchQuery))
         );
       });
-      
+
       setItems(filteredItems);
       setSelectedIndex(0);
     }, [query]);
@@ -206,7 +171,7 @@ export const SlashCommand = forwardRef<SlashCommandRef, SlashCommandProps>(
         );
         return true;
       }
-      
+
       if (event.key === "ArrowDown") {
         event.preventDefault();
         setSelectedIndex((prevIndex) =>
@@ -214,13 +179,13 @@ export const SlashCommand = forwardRef<SlashCommandRef, SlashCommandProps>(
         );
         return true;
       }
-      
+
       if (event.key === "Enter") {
         event.preventDefault();
         selectItem(selectedIndex);
         return true;
       }
-      
+
       return false;
     };
 
@@ -242,16 +207,16 @@ export const SlashCommand = forwardRef<SlashCommandRef, SlashCommandProps>(
     }
 
     return (
-      <div 
+      <div
         className="bg-darkGray border border-grayBorders rounded-md shadow-lg p-1 min-w-[300px] max-h-[400px] relative z-[9999] slash-command-menu"
-        style={{ 
-          scrollbarWidth: 'thin',
-          scrollbarColor: '#4b5563 #374151',
-          overflowY: 'auto',
-          overscrollBehavior: 'contain',
-          WebkitOverflowScrolling: 'touch', // Enable smooth scrolling on webkit
-          maxHeight: '400px',
-          contain: 'layout style paint'
+        style={{
+          scrollbarWidth: "thin",
+          scrollbarColor: "#4b5563 #374151",
+          overflowY: "auto",
+          overscrollBehavior: "contain",
+          WebkitOverflowScrolling: "touch", // Enable smooth scrolling on webkit
+          maxHeight: "400px",
+          contain: "layout style paint",
         }}
         onMouseDown={(e) => e.stopPropagation()}
         onTouchStart={(e) => e.stopPropagation()}

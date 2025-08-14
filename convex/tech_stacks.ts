@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { slugify } from "./utils/slugify";
 
 // ==============================
 // TECH STACK QUERIES
@@ -80,10 +81,7 @@ export const create = mutation({
   },
   handler: async (ctx, args) => {
     // Generate slug from name
-    const slug = args.name
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "");
+    const slug = slugify(args.name);
 
     // Check if slug already exists
     const existingStack = await ctx.db
@@ -123,10 +121,7 @@ export const update = mutation({
     if (args.name !== undefined) {
       updates.name = args.name.trim();
       // Generate new slug if name changed
-      updates.slug = args.name
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/^-+|-+$/g, "");
+      updates.slug = slugify(args.name);
 
       // Check if new slug conflicts with existing stack
       const existingStack = await ctx.db
@@ -284,10 +279,7 @@ export const seed = mutation({
 
     // Insert all tech stacks
     for (const stack of techStacks) {
-      const slug = stack.name
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/^-+|-+$/g, "");
+      const slug = slugify(stack.name);
 
       await ctx.db.insert("tech_stacks", {
         name: stack.name,

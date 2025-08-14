@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import type { EnhancedProject } from "../types/convex";
+import { generateProjectSlug } from "./utils/slugify";
 
 export const createProject = mutation({
   args: {
@@ -19,14 +20,9 @@ export const createProject = mutation({
     productId: v.optional(v.id("products")),
   },
   handler: async (ctx, args) => {
-    const slug = args.title
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/(^-|-$)/g, "");
-
     const projectId = await ctx.db.insert("projects", {
       ...args,
-      slug,
+      slug: "", // Temporary, will be updated below
       status: "PLANNED",
       milestones: {
         ideaRefinement: "not-started",
@@ -39,6 +35,10 @@ export const createProject = mutation({
         scaling: "not-started",
       },
     });
+
+    // Generate and assign slug after project creation
+    const slug = generateProjectSlug(args.title, projectId);
+    await ctx.db.patch(projectId, { slug });
 
     // Create project conversation
     const conversationId = await ctx.db.insert("conversations", {
@@ -443,10 +443,7 @@ export const updateProject = mutation({
 
     // Update slug if title changed
     if (args.updates.title) {
-      updates.slug = args.updates.title
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/(^-|-$)/g, "");
+      updates.slug = generateProjectSlug(args.updates.title, args.projectId);
     }
 
     await ctx.db.patch(args.projectId, updates);

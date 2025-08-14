@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { slugify } from "./utils/slugify";
 
 // Create a new issue
 export const createIssue = mutation({
@@ -23,18 +24,17 @@ export const createIssue = mutation({
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Authentication required");
 
-    const slug = args.title
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/(^-|-$)/g, "");
-
     const issueId = await ctx.db.insert("issues", {
       ...args,
-      slug,
+      slug: "", // Temporary, will be updated below
       status: "OPEN",
       reporterId: userId,
       assigneeIds: args?.assigneeIds || [],
     });
+
+    // Generate and assign slug after issue creation
+    const slug = `${slugify(args.title)}-${issueId.slice(-6)}`;
+    await ctx.db.patch(issueId, { slug });
 
     return issueId;
   },
@@ -181,10 +181,7 @@ export const updateIssue = mutation({
 
     // Update slug if title changed
     if (args.updates.title) {
-      updates.slug = args.updates.title
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/(^-|-$)/g, "");
+      updates.slug = `${slugify(args.updates.title)}-${args.issueId.slice(-6)}`;
     }
 
     await ctx.db.patch(args.issueId, updates);

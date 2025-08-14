@@ -6,7 +6,7 @@ import React from "react";
 
 const Payments = () => {
   const { user } = useUserConvex();
-  
+
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
       <div className="grid gap-4 md:grid-cols-2 md:gap-4 lg:grid-cols-2">

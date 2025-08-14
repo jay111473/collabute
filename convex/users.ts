@@ -3,6 +3,7 @@ import { mutation, query } from "./_generated/server";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { KycStatusValidator } from "./schema";
 import { Scrypt } from "lucia";
+import { generateUserSlug } from "./utils/slugify";
 
 // Get media file URL for download/display
 export const getMediaUrl = query({
@@ -38,6 +39,62 @@ export const currentUser = query({
       return null;
     }
     return await ctx.db.get(userId);
+  },
+});
+
+export const getUserBySlug = query({
+  args: { slug: v.string() },
+  handler: async (ctx, args) => {
+    const user = await ctx.db
+      .query("users")
+      .withIndex("slug", (q) => q.eq("slug", args.slug))
+      .first();
+
+    if (!user) {
+      return null;
+    }
+
+    // Get all profile fields for the user
+    const projectManagerFields = await ctx.db
+      .query("project_manager_profiles")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .first();
+
+    const developerFields = await ctx.db
+      .query("developer_profiles")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .first();
+
+    const leadFields = await ctx.db
+      .query("lead_profiles")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .first();
+
+    const designerFields = await ctx.db
+      .query("designer_profiles")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .first();
+
+    const startupFields = await ctx.db
+      .query("startup_profiles")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .first();
+
+    // Get GitHub profile
+    const githubProfile = await ctx.db
+      .query("github_profiles")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .first();
+
+    return {
+      ...user,
+      projectManagerFields,
+      developerFields,
+      leadFields,
+      designerFields,
+      startupFields,
+      githubProfile,
+    };
   },
 });
 
@@ -757,6 +814,10 @@ export const createUserAccount = mutation({
       createdAt: Date.now(),
     });
 
+    // Generate and assign slug after user creation
+    const slug = generateUserSlug(args.name, userId);
+    await ctx.db.patch(userId, { slug });
+
     return { userId, success: true };
   },
 });
@@ -1111,6 +1172,12 @@ export const create = mutation({
       kycStatus: "PENDING" as any,
     });
 
+    // Generate and assign slug after user creation
+    if (args.name) {
+      const slug = generateUserSlug(args.name, userId);
+      await ctx.db.patch(userId, { slug });
+    }
+
     // Create auth account for password authentication
     await ctx.db.insert("authAccounts", {
       userId,
@@ -1424,6 +1491,36 @@ export const registerEarlyBird = mutation({
       isVerified: false,
     });
 
+    // Generate and assign slug after user creation
+    const slug = generateUserSlug(sanitizedName, userId);
+    await ctx.db.patch(userId, { slug });
+
     return { userId };
+  },
+});
+
+// Migration function to generate slugs for existing users
+export const generateSlugsForExistingUsers = mutation({
+  args: {},
+  handler: async (ctx) => {
+    // Get all users without slugs
+    const usersWithoutSlugs = await ctx.db
+      .query("users")
+      .filter((q) => q.eq(q.field("slug"), undefined))
+      .collect();
+
+    let updated = 0;
+    for (const user of usersWithoutSlugs) {
+      if (user.name) {
+        const slug = generateUserSlug(user.name, user._id);
+        await ctx.db.patch(user._id, { slug });
+        updated++;
+      }
+    }
+
+    return { 
+      message: `Generated slugs for ${updated} users`,
+      updated 
+    };
   },
 });

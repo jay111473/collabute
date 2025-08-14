@@ -29,20 +29,6 @@ export default function Layout({
   );
 }
 
-function UnauthenticatedRedirect() {
-  const router = useRouter();
-
-  useEffect(() => {
-    router.push("/login");
-  }, [router]);
-
-  return (
-    <div className="flex items-center justify-center min-h-screen bg-black">
-      <div className="text-white">Redirecting to login...</div>
-    </div>
-  );
-}
-
 function DashboardContent({ children }: { children: React.ReactNode }) {
   const { user, loading } = useUserConvex();
   const router = useRouter();

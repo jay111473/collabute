@@ -30,6 +30,7 @@ import type * as tech_stacks from "../tech_stacks.js";
 import type * as transactions from "../transactions.js";
 import type * as userProfiles from "../userProfiles.js";
 import type * as users from "../users.js";
+import type * as utils_slugify from "../utils/slugify.js";
 
 import type {
   ApiFromModules,
@@ -68,6 +69,7 @@ declare const fullApi: ApiFromModules<{
   transactions: typeof transactions;
   userProfiles: typeof userProfiles;
   users: typeof users;
+  "utils/slugify": typeof utils_slugify;
 }>;
 declare const fullApiWithMounts: typeof fullApi;
 

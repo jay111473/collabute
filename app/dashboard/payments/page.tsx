@@ -1,50 +1,71 @@
 "use client";
-import DashboardCard from "@/components/uikit/dashboard-card";
+import { TransactionBox } from "@/components/dashboard/payments/transaction-box";
+import { ProjectsPaymentOverview } from "@/components/dashboard/payments/projects-payment-overview";
+import { DashboardCard } from "@/components/uikit/dashboard-card";
+import { api } from "@/convex/_generated/api";
 import { useUserConvex } from "@/hooks/use-user-convex";
-import { DollarSign } from "lucide-react";
+import { useQuery } from "convex/react";
 import React from "react";
+import { Id } from "@/convex/_generated/dataModel";
 
 const Payments = () => {
   const { user } = useUserConvex();
+
+  const getUserTransactions = useQuery(
+    api.transactions.getByUser,
+    user?._id ? { userId: user._id } : "skip"
+  );
+
+  const getUserProjects = useQuery(
+    api.projects.getAllProjects,
+    user?._id ? { ownerId: user._id } : "skip"
+  );
 
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
       <div className="grid gap-4 md:grid-cols-2 md:gap-4 lg:grid-cols-2">
         <DashboardCard
           title="Current Balance"
-          value={`$${user?.wallet}`}
-          icon={DollarSign}
+          value={`${user?.wallet || 0}`}
+          buttonText="Deposit"
+          buttonVariant="filled"
         />
         <DashboardCard
-          title="To Withdraw"
-          value={`$${user}`}
-          icon={DollarSign}
+          title="Total Paid"
+          value={`${user?.wallet || 0}`}
+          buttonText="All transactions"
+          buttonVariant="outlined"
         />
       </div>
-      <div className="border mt-3 rounded-xl p-4 w-full border-white/10 bg-darkGray">
-        <h3 className="text-xl font-semibold text-white mb-4">
-          Transaction History
-        </h3>
-        <div className="space-y-4">
-          {/* <TransactionBox
-              type="withdrawal"
-              date="2023-09-12"
-              amount={150}
-              status="completed"
-            />
-            <TransactionBox
-              type="payment"
-              date="2023-09-10"
-              amount={300}
-              status="completed"
-            />
-            <TransactionBox
-              type="withdrawal"
-              date="2023-09-05"
-              amount={500}
-              status="pending"
-            /> */}
-        </div>
+
+      <ProjectsPaymentOverview projects={getUserProjects} />
+
+      <div className="space-y-4">
+        <h1 className="text-[17px] font-semibold text-white mb-3">
+          Recent Transactions
+        </h1>
+        {getUserTransactions?.map((transaction) => (
+          <TransactionBox
+            key={transaction._id}
+            transaction={{
+              id: transaction._id,
+              amount: Number(transaction.amount),
+              type: transaction.type as "income" | "withdrawal" | "tip",
+              status: transaction.status as
+                | "pending"
+                | "completed"
+                | "failed"
+                | "cancelled",
+              transactionDate: new Date(
+                transaction._creationTime
+              ).toISOString(),
+              description: transaction.description,
+              projectId: transaction.projectId as Id<"projects">,
+              method: transaction.method,
+              userId: transaction.userId as Id<"users">,
+            }}
+          />
+        ))}
       </div>
     </main>
   );

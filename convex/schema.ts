@@ -112,7 +112,8 @@ export const projectFields = {
   state: v.optional(v.string()),
   startDate: v.number(),
   endDate: v.optional(v.number()),
-  budget: v.optional(v.number()),
+  budget: v.optional(v.number()), // this is the budget of individual project
+  spent: v.optional(v.number()), // paid to each project by founder
   isPublic: v.optional(v.boolean()),
   ownerId: v.id("users"),
   teamLeadId: v.optional(v.id("users")),
@@ -484,7 +485,8 @@ export default defineSchema({
     name: v.string(),
     description: v.optional(v.string()),
     category: v.optional(v.string()),
-    price: v.optional(v.number()),
+    price: v.optional(v.number()), // budget for all child projects
+    spent: v.optional(v.number()), // total spent on child projects
     isActive: v.boolean(),
   })
     .index("by_category", ["category"])

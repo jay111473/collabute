@@ -14,6 +14,7 @@ export const createProject = mutation({
     endDate: v.optional(v.number()),
     budget: v.optional(v.number()),
     stacks: v.optional(v.array(v.string())),
+    spent: v.optional(v.number()),
     tags: v.optional(v.array(v.string())),
     ownerId: v.id("users"),
     teamLeadId: v.optional(v.id("users")),

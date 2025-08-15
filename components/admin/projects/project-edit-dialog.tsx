@@ -39,6 +39,7 @@ import {
   Pause,
   XCircle,
 } from "lucide-react";
+import { Id } from "@/convex/_generated/dataModel";
 
 interface ProjectEditDialogProps {
   project: Project | null;
@@ -106,7 +107,7 @@ export function ProjectEditDialog({
           status: formData.status as any,
           budget: formData.budget,
           stacks: formData.stacks,
-          teamLeadId: formData.teamLeadId || undefined,
+          teamLeadId: formData.teamLeadId as Id<"users">,
         },
       });
       onOpenChange(false);
@@ -377,7 +378,10 @@ export function ProjectEditDialog({
                   <Select
                     value={formData.teamLeadId || "none"}
                     onValueChange={(value) =>
-                      setFormData({ ...formData, teamLeadId: value === "none" ? "" : value })
+                      setFormData({
+                        ...formData,
+                        teamLeadId: value === "none" ? "" : value,
+                      })
                     }
                   >
                     <SelectTrigger className="bg-darkGray border-grayBorders text-white">

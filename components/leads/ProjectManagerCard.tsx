@@ -5,158 +5,30 @@ import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, Calendar, Github, Star, Bookmark, Code } from "lucide-react";
-import {
-  User,
-  Media,
-  DeveloperProfile,
-  ProjectManagerProfile,
-  LeadProfile,
-} from "@/types/convex";
 import { useRouter } from "next/navigation";
-
-interface Stack {
-  name: string;
-  level?: string;
-}
-
-interface EnhancedUser extends User {
-  projectManagerFields?: ProjectManagerProfile;
-  developerFields?: DeveloperProfile;
-  leadFields?: LeadProfile;
-}
+import {
+  EnhancedUser,
+  getProfilePictureUrl,
+  getPrimaryRole,
+  getLocation,
+  getGithubProfile,
+  getJoinDate,
+  getExperienceYears,
+  calculateRating,
+  getIndustry,
+  getSpecialtiesAsString,
+  getCurrentProjectCount,
+  getGithubDisplayText,
+} from "@/lib/utils/user-profile";
 
 interface ProjectManagerCardProps {
   projectManager: EnhancedUser;
   variant?: "featured" | "compact";
 }
 
-/**
- * Formats a date to a readable string (Month Year)
- */
-const formatDate = (date: Date): string => {
-  return new Intl.DateTimeFormat("en-US", {
-    month: "long",
-    year: "numeric",
-  }).format(date);
-};
 
-/**
- * Extracts the profile picture URL from a project manager
- */
-const getProfilePictureUrl = (
-  projectManager: EnhancedUser
-): string | undefined => {
-  return projectManager.profilePicture &&
-    typeof projectManager.profilePicture === "object"
-    ? (projectManager.profilePicture as Media).url || undefined
-    : undefined;
-};
 
-/**
- * Gets specialties from a project manager
- */
-const getSpecialties = (projectManager: EnhancedUser): string => {
-  const specialties = projectManager?.projectManagerFields?.projectSpecialties;
-  const leadStack = projectManager.leadFields?.specializations;
 
-  return specialties?.join(", ") || leadStack?.join(", ") || "Not specified";
-};
-
-/**
- * Gets skills from a project manager
- */
-const getSkills = (projectManager: EnhancedUser): string => {
-  const specialties = getSpecialties(projectManager);
-  return specialties;
-};
-
-/**
- * Gets the primary role for display
- */
-const getPrimaryRole = (projectManager: EnhancedUser): string => {
-  // Check lead fields for title
-  if (projectManager.leadFields?.title) {
-    return projectManager.leadFields.title;
-  }
-
-  // For project managers, return a static role
-  return "Project Manager";
-};
-
-/**
- * Gets industry information from specialties
- */
-const getIndustry = (projectManager: EnhancedUser): string => {
-  const specialties =
-    projectManager?.projectManagerFields?.projectSpecialties || [];
-  const specialtiesText = specialties.join(" ").toLowerCase();
-  if (specialtiesText.includes("saas")) {
-    return "SaaS, Web Applications";
-  }
-  if (
-    specialtiesText.includes("e-commerce") ||
-    specialtiesText.includes("marketplace")
-  ) {
-    return "E-commerce, Marketplace";
-  }
-  if (specialtiesText.includes("mobile")) {
-    return "Mobile Apps, Software";
-  }
-  if (specialtiesText.includes("enterprise")) {
-    return "Enterprise Software";
-  }
-  if (
-    specialtiesText.includes("dashboard") ||
-    specialtiesText.includes("analytics")
-  ) {
-    return "Data, Analytics";
-  }
-
-  // Default based on role
-  const role = getPrimaryRole(projectManager);
-  if (
-    role.toLowerCase().includes("frontend") ||
-    role.toLowerCase().includes("full stack")
-  ) {
-    return "SaaS, Mobile Apps, AI";
-  }
-  if (
-    role.toLowerCase().includes("backend") ||
-    role.toLowerCase().includes("devops")
-  ) {
-    return "Web3, Crypto, Finance";
-  }
-
-  return "Tech, Software Development";
-};
-
-/**
- * Gets experience years from the experience string
- */
-const getExperienceYears = (projectManager: EnhancedUser): number => {
-  const pmExperience =
-    projectManager.projectManagerFields?.professionalPMExperience;
-  if (!pmExperience) return 0;
-
-  // Extract number from strings like "2-3 years", "8-10 years", "+10 years"
-  if (pmExperience.includes("+10")) return 10;
-  const match = pmExperience.match(/(\d+)/);
-  return match ? parseInt(match[1]) : 0;
-};
-
-/**
- * Calculates a mock rating based on experience and projects
- */
-const calculateRating = (projectManager: EnhancedUser): number => {
-  const experience =
-    projectManager.projectManagerFields?.professionalPMExperience ||
-    projectManager.leadFields?.managementExperience ||
-    projectManager.developerFields?.experience ||
-    0;
-  const projectCount = projectManager.projects?.length || 0;
-
-  return projectCount;
-};
 
 /**
  * Project Manager card component with two variants: featured (large visual) and compact (detailed list)
@@ -165,29 +37,19 @@ const ProjectManagerCard: FC<ProjectManagerCardProps> = ({
   projectManager,
   variant = "compact",
 }) => {
-  // Extract and prepare data
+  // Extract and prepare data using utility functions
   const profilePictureUrl = getProfilePictureUrl(projectManager);
-  const joinDate = projectManager.createdAt
-    ? formatDate(new Date(projectManager.createdAt))
-    : "Unknown";
-  const currentProjects = projectManager.projects?.length || 0;
+  const joinDate = getJoinDate(projectManager);
+  const currentProjects = getCurrentProjectCount(projectManager);
   const developmentProjects = currentProjects;
-  const experience =
-    projectManager.projectManagerFields?.professionalPMExperience ||
-    projectManager.leadFields?.managementExperience ||
-    projectManager.developerFields?.experience ||
-    0;
+  const experience = getExperienceYears(projectManager);
   const rating = calculateRating(projectManager);
   const industry = getIndustry(projectManager);
-  const skills = getSkills(projectManager);
+  const skills = getSpecialtiesAsString(projectManager);
   const primaryRole = getPrimaryRole(projectManager);
-  const location =
-    projectManager.leadFields?.location ||
-    projectManager.country ||
-    "Location not specified";
-  const githubProfile =
-    projectManager.projectManagerFields?.githubProfile ||
-    projectManager.developerFields?.githubProfile;
+  const location = getLocation(projectManager);
+  const githubProfile = getGithubProfile(projectManager);
+  const githubDisplayText = getGithubDisplayText(projectManager);
 
   const router = useRouter();
 
@@ -195,7 +57,7 @@ const ProjectManagerCard: FC<ProjectManagerCardProps> = ({
     return (
       <Card
         className="bg-darkGray border-none rounded-2xl w-full cursor-pointer"
-        onClick={() => router.push(`/dashboard/leads?Id=${projectManager._id}`)}
+        onClick={() => router.push(`/dashboard/leads/${projectManager.slug || projectManager._id}`)}
       >
         <div className="p-6">
           <div className="flex items-start gap-4">
@@ -238,7 +100,7 @@ const ProjectManagerCard: FC<ProjectManagerCardProps> = ({
               >
                 <Github className="h-4 w-4" />
                 <span className="text-xs">
-                  {githubProfile.replace("https://github.com/", "Github.com/")}
+                  {githubDisplayText}
                 </span>
               </a>
             )}
@@ -291,7 +153,7 @@ const ProjectManagerCard: FC<ProjectManagerCardProps> = ({
   return (
     <Card
       className="bg-darkGray border-none rounded-2xl p-6 w-full cursor-pointer"
-      onClick={() => router.push(`/dashboard/leads?Id=${projectManager._id}`)}
+      onClick={() => router.push(`/dashboard/leads/${projectManager.slug || projectManager._id}`)}
     >
       {/* Header with Avatar and Basic Info */}
       <div className="flex items-start gap-4 mb-6">
@@ -348,7 +210,7 @@ const ProjectManagerCard: FC<ProjectManagerCardProps> = ({
           >
             <Github className="h-4 w-4" />
             <span>
-              {githubProfile.replace("https://github.com/", "Github.com/")}
+              {githubDisplayText}
             </span>
           </a>
         )}

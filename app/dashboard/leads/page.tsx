@@ -50,11 +50,12 @@ export default async function DashboardProjectManagersPage({
 }) {
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
   const projectManagers = await getProjectManagers(resolvedSearchParams);
-  const teamLeadId = resolvedSearchParams ? resolvedSearchParams.Id : undefined
 
   return (
     <div className="flex-1 flex flex-col">
-      <ProjectManagersClient projectManagers={projectManagers} teamLeadId={teamLeadId} />
+      <ProjectManagersClient
+        projectManagers={projectManagers}
+      />
     </div>
   );
 }

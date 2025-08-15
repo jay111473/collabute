@@ -81,6 +81,7 @@ export type BlogStatus = Infer<typeof BlogStatusValidator>;
 
 export const userFields = {
   name: v.optional(v.string()),
+  slug: v.optional(v.string()),
   image: v.optional(v.string()),
   email: v.optional(v.string()),
   emailVerificationTime: v.optional(v.number()),
@@ -96,6 +97,7 @@ export const userFields = {
   earlybird: v.optional(v.boolean()),
   wallet: v.optional(v.number()),
   projects: v.optional(v.array(v.id("projects"))),
+  birthDate: v.optional(v.number()),
   createdAt: v.optional(v.number()),
 };
 
@@ -169,7 +171,9 @@ export default defineSchema({
   // USER TABLES
   // ==============================
 
-  users: defineTable(userFields).index("email", ["email"]),
+  users: defineTable(userFields)
+    .index("email", ["email"])
+    .index("slug", ["slug"]),
 
   developer_profiles: defineTable({
     userId: v.id("users"),
@@ -591,6 +595,53 @@ export default defineSchema({
     .index("by_action", ["action"])
     .index("by_timestamp", ["timestamp"])
     .index("by_target_user", ["targetUserId"]),
+
+  // ==============================
+  // RATING & ACHIEVEMENTS SYSTEM
+  // ==============================
+
+  user_reviews: defineTable({
+    revieweeId: v.id("users"), // User being reviewed
+    reviewerId: v.id("users"), // User giving the review
+    projectId: v.optional(v.id("projects")), // Optional: linked to specific project collaboration
+    rating: v.number(), // 1-5 star rating
+    comment: v.optional(v.string()), // Optional review comment
+    reviewType: v.string(), // "PROJECT_COLLABORATION", "GENERAL", "SKILL_BASED"
+    isVisible: v.boolean(), // Whether review is public
+    createdAt: v.number(),
+    updatedAt: v.optional(v.number()),
+  })
+    .index("by_reviewee", ["revieweeId"])
+    .index("by_reviewer", ["reviewerId"])
+    .index("by_project", ["projectId"])
+    .index("by_rating", ["rating"])
+    .index("by_type", ["reviewType"]),
+
+  user_achievements: defineTable({
+    name: v.string(), // "Pro developer", "Top contributor", etc.
+    description: v.optional(v.string()),
+    icon: v.optional(v.string()), // Icon name or URL
+    badgeColor: v.optional(v.string()), // Color for the badge
+    category: v.string(), // "SKILL", "MILESTONE", "RECOGNITION"
+    criteria: v.optional(v.string()), // Description of how to earn this achievement
+    isActive: v.boolean(),
+    createdAt: v.number(),
+  })
+    .index("by_category", ["category"])
+    .index("by_active", ["isActive"]),
+
+  user_achievement_grants: defineTable({
+    userId: v.id("users"),
+    achievementId: v.id("user_achievements"),
+    grantedById: v.optional(v.id("users")), // Who granted this (admin, system, etc.)
+    grantedAt: v.number(),
+    reason: v.optional(v.string()), // Reason for granting
+    isVisible: v.boolean(), // Whether to show on profile
+  })
+    .index("by_user", ["userId"])
+    .index("by_achievement", ["achievementId"])
+    .index("by_granted_by", ["grantedById"])
+    .index("by_user_achievement", ["userId", "achievementId"]),
 
   // ==============================
   // WIZARD DATA TABLE (TEMPORARY)

@@ -1,17 +1,29 @@
-import { Badge } from "@/components/ui/badge";
-import { Project } from "@/types/convex";
+import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
+import { useQuery } from "convex/react";
 import { format } from "date-fns";
-import { ArrowDownLeft, ArrowUpRight, Clock, Clock1 } from "lucide-react";
+import {
+  Banknote,
+  Hand,
+  Coins,
+  User,
+  Clock,
+  DollarSign,
+  Layers3,
+  GitFork,
+} from "lucide-react";
 
 interface Transaction {
   id: string;
-  transactionAmount: number | null;
-  transactionType: "income" | "withdrawal" | "tip" | null;
-  transactionStatus: "pending" | "completed" | "failed" | "cancelled" | null;
-  transactionProject?: number | null | Project;
-  transactionMethod?: string | null;
-  transactionDate?: string | null;
-  transactionDescription?: string;
+  amount: number;
+  type: string;
+  status: string;
+  method: string;
+  userId: Id<"users">;
+  description?: string;
+  projectId?: Id<"projects">;
+  reference?: string;
+  transactionDate?: string;
 }
 
 interface TransactionBoxProps {
@@ -19,105 +31,134 @@ interface TransactionBoxProps {
 }
 
 export function TransactionBox({ transaction }: TransactionBoxProps) {
-  const getStatusColor = (status: string | null) => {
-    switch (status) {
-      case "completed":
-        return "bg-green-100 text-green-800 hover:bg-green-100";
-      case "pending":
-        return "bg-yellow-100 text-yellow-800 hover:bg-yellow-100";
-      case "failed":
-        return "bg-red-100 text-red-800 hover:bg-red-100";
-      case "cancelled":
-        return "bg-gray-100 text-gray-800 hover:bg-gray-100";
-      default:
-        return "bg-gray-100 text-gray-800 hover:bg-gray-100";
-    }
-  };
-
-  const getTransactionTypeDisplay = (type: string | null) => {
-    switch (type) {
+  const getTransactionTitle = () => {
+    switch (transaction.type) {
       case "income":
-        return "Payment for issue";
+        return "Payment for Issue";
       case "withdrawal":
         return "Withdrawal";
       case "tip":
-        return "Tip";
+        return "Tip from CTO";
       default:
         return "Transaction";
     }
   };
 
-  const isCredit =
-    transaction.transactionType === "income" ||
-    transaction.transactionType === "tip";
+  const getIcon = () => {
+    switch (transaction.type) {
+      case "income":
+        return <DollarSign className="h-4 w-4 text-white" />;
+      case "withdrawal":
+        return <Banknote className="h-4 w-4 text-white" />;
+      case "tip":
+        return <Hand className="h-4 w-4 text-white" />;
+      default:
+        return <Coins className="h-4 w-4 text-white" />;
+    }
+  };
+
+  const getIconBgColor = () => {
+    switch (transaction.type) {
+      case "income":
+        return "bg-purple-500";
+      case "withdrawal":
+        return "bg-red-500";
+      case "tip":
+        return "bg-orange-500";
+      default:
+        return "bg-gray-500";
+    }
+  };
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return format(date, "MMM dd, yyyy 'at' h:mm a");
+    return format(date, "MMM dd, yyyy");
   };
 
+  const isNegative =
+    transaction.type === "withdrawal" || transaction.type === "tip";
+
+  const project = useQuery(
+    api.projects.getProjectDetailsById,
+    transaction.projectId ? { projectId: transaction.projectId } : "skip"
+  );
+
   return (
-    <div className="w-full border rounded-lg p-4 hover:shadow-md transition-shadow">
-      <div className="flex items-start justify-between">
-        <div className="flex items-start gap-3">
-          <div
-            className={`p-2 rounded-full ${
-              isCredit ? "bg-green-100" : "bg-red-100"
-            }`}
-          >
-            {isCredit ? (
-              <ArrowDownLeft className="h-5 w-5 text-green-600" />
-            ) : (
-              <ArrowUpRight className="h-5 w-5 text-red-600" />
+    <div className="flex items-center justify-between w-full bg-[#111111] rounded-xl px-5 py-4">
+      <div className="flex items-start gap-x-3">
+        <div
+          className={`w-8 h-8 rounded-full ${getIconBgColor()} flex items-center justify-center`}
+        >
+          {getIcon()}
+        </div>
+        <div className="flex flex-col gap-y-2">
+          <div className="flex items-center gap-x-2">
+            <span className="text-white text-[15px] font-medium">
+              {getTransactionTitle()}
+            </span>
+            <div className="flex items-center gap-x-2 justify-center">
+              <div className="flex items-center justify-end gap-1 text-[12px] text-[#9CA3AF] border rounded-full border-gray-700 px-2 py-1">
+                <Clock className="h-3 w-3 text-darkPrimary" />
+                <span>Date</span>
+                <span className="text-white font-bold">
+                  {transaction.transactionDate &&
+                    formatDate(transaction.transactionDate)}
+                </span>
+              </div>
+
+              <div className="flex items-center border rounded-full border-gray-700 px-2 py-1 justify-end gap-1 text-[12px] text-[#9CA3AF]">
+                <DollarSign className="h-3 w-3 text-darkPrimary" />
+                <span>Type</span>
+                <span className="text-white font-bold">
+                  {transaction.method}
+                </span>
+              </div>
+            </div>
+          </div>
+          <div className="flex items-center gap-x-4 text-[12px] text-[#9CA3AF] mt-1 divide-x divide-gray-700">
+            {project && (
+              <div className="flex items-center gap-1">
+                <Layers3 className="h-3 w-3" />
+                <span>Project</span>
+                <span className="text-white font-bold text-xs ml-0.5">
+                  {project?.title || "Unknown"}
+                </span>
+              </div>
+            )}
+
+            {transaction.description && (
+              <div className="flex items-center gap-1 pl-4">
+                <GitFork className="h-3 w-3" />
+                <span>Issue</span>
+                <span className="text-white font-bold">
+                  {transaction.description}
+                </span>
+              </div>
+            )}
+
+            {transaction.type === "tip" && transaction.reference && (
+              <div className="flex items-center gap-1 pl-4">
+                <User className="h-3 w-3" />
+                <span>CTO</span>
+                <span className="text-white font-bold">
+                  {transaction.reference}
+                </span>
+              </div>
             )}
           </div>
-
-          <div className="flex flex-col justify-start items-start space-y-2">
-            <div className="flex items-center gap-2">
-              <h4 className="font-semibold">
-                {getTransactionTypeDisplay(transaction.transactionType)}
-                {transaction.transactionMethod &&
-                  ` via ${transaction.transactionMethod}`}
-              </h4>
-              <Badge
-                variant="outline"
-                icon={<Clock1 size={14} className="text-primary" />}
-                className="text-xs font-medium"
-              >
-                Date:{" "}
-                {transaction.transactionDate &&
-                  formatDate(transaction.transactionDate)}
-              </Badge>
-            </div>
-            <div className="flex items-center gap-2">
-              <Badge
-                variant="secondary"
-                className={`${getStatusColor(transaction.transactionStatus)}`}
-              >
-                {transaction.transactionStatus || "unknown"}
-              </Badge>
-              {transaction.transactionDate && (
-                <div className="flex items-center gap-1 text-gray-500">
-                  <Clock className="h-3 w-3" />
-                  <span className="text-xs">
-                    {formatDate(transaction.transactionDate)}
-                  </span>
-                </div>
-              )}
-            </div>
-          </div>
         </div>
-
-        <div className="flex flex-col items-end gap-1">
+      </div>
+      <div className="flex items-center justify-center flex-col gap-2">
+        <div className="text-right">
           <span
-            className={`text-base font-semibold ${
-              isCredit ? "text-green-600" : "text-red-600"
-            }`}
+            className={`text-[15px] font-medium ${isNegative ? "text-orange-400" : "text-white"}`}
           >
-            {isCredit ? "+" : "-"}$
-            {Math.abs(transaction.transactionAmount || 0).toFixed(2)}
+            {isNegative ? "- $" : "$"} {Math.abs(transaction.amount || 0)}
           </span>
         </div>
+        <button className="px-3 py-1 bg-[#2C2C2C] hover:bg-[#3A3A3A] text-white text-[13px] rounded-lg border border-[#3A3A3A] transition">
+          Details
+        </button>
       </div>
     </div>
   );

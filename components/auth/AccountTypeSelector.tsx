@@ -4,6 +4,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { UseFormReturn } from "react-hook-form";
 import type { CreateAccountFormData } from "@/types/auth.types";
+import { useEffect } from "react";
 
 interface AccountTypeSelectorProps {
   form: UseFormReturn<CreateAccountFormData>;
@@ -18,6 +19,20 @@ export const AccountTypeSelector = ({
   form,
   invitationData,
 }: AccountTypeSelectorProps) => {
+  // Initialize fields based on the current form type when component mounts
+  useEffect(() => {
+    const currentType = form.getValues("type");
+    if (currentType === "developer" || currentType === "project_manager") {
+      if (!form.getValues("developerFields")) {
+        form.setValue("developerFields", { primaryRole: [] });
+      }
+    } else if (currentType === "startup") {
+      if (!form.getValues("startupFields")) {
+        form.setValue("startupFields", { companyName: "", teamSize: null });
+      }
+    }
+  }, [form]);
+
   const handleAccountTypeChange = (value: string) => {
     form.setValue(
       "type",
@@ -34,7 +49,7 @@ export const AccountTypeSelector = ({
     } else if (value === "developer" || value === "project_manager") {
       // Initialize developer fields if they don't exist
       if (!form.getValues("developerFields")) {
-        form.setValue("developerFields", { primaryRole: null });
+        form.setValue("developerFields", { primaryRole: [] });
       }
       // Reset startup fields
       form.setValue("startupFields", undefined);

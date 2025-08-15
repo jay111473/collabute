@@ -10,7 +10,10 @@ const isAdminRoute = createRouteMatcher(["/admin(.*)"]);
 const isAdminLogin = createRouteMatcher(["/admin/login", "/admin/setup"]);
 
 export default convexAuthNextjsMiddleware(async (request, { convexAuth }) => {
-  if (isSignInPage(request) && (await convexAuth.isAuthenticated())) {
+  // Allow GitHub integration step even when authenticated
+  const isGitHubStep = request.nextUrl.searchParams.get("step") === "github";
+  
+  if (isSignInPage(request) && (await convexAuth.isAuthenticated()) && !isGitHubStep) {
     return nextjsMiddlewareRedirect(request, "/dashboard");
   }
   if (isProtectedRoute(request) && !(await convexAuth.isAuthenticated())) {

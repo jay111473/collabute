@@ -25,6 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
+import { GitHubIntegration } from "@/components/github-integration";
 
 interface TeamLeadWizardProps {
   form: UseFormReturn<CreateAccountFormData>;
@@ -33,6 +34,8 @@ interface TeamLeadWizardProps {
   onBasicInfoComplete?: (
     values: CreateAccountFormData
   ) => Promise<string | void>;
+  onGitHubComplete?: () => void;
+  onGitHubSkip?: () => void;
   initialData?: any;
   startFromStep?: number;
   setCurrentStep: (step: number) => void;
@@ -45,6 +48,8 @@ const TeamLeadWizard = ({
   onComplete,
   onSubmit,
   onBasicInfoComplete,
+  onGitHubComplete,
+  onGitHubSkip,
   initialData,
   startFromStep = 1,
   setCurrentStep,
@@ -79,7 +84,7 @@ const TeamLeadWizard = ({
       projectManagementDescription: "",
     },
   });
-  const maxStep = 5;
+  const maxStep = 6;
 
   const updateNestedField = (
     section: keyof TeamLeadFormData,
@@ -200,31 +205,7 @@ const TeamLeadWizard = ({
     switch (currentStep) {
       case 1:
         isValid = validateStep1();
-        if (isValid && onBasicInfoComplete) {
-          try {
-            setIsSubmitting(true);
-            // Update form with current data before creating account
-            form.setValue("name", teamLeadData.basicInfo.fullName);
-            form.setValue("email", teamLeadData.basicInfo.email);
-            form.setValue(
-              "phoneNumber",
-              teamLeadData.basicInfo.phoneNumber || ""
-            );
-            form.setValue("countryCode", teamLeadData.basicInfo.country || "");
-            form.setValue("type", "project_manager");
-
-            // Create the user account
-            await onBasicInfoComplete(form.getValues());
-            setIsSubmitting(false);
-          } catch (error: any) {
-            console.error("Account creation error:", error);
-            toast.error("Failed to create account", {
-              description: error.message || "Please try again",
-            });
-            setIsSubmitting(false);
-            return;
-          }
-        }
+        // Don't create account on step 1 - just validate and proceed
         break;
       case 2:
         isValid = validateStep2();
@@ -237,25 +218,26 @@ const TeamLeadWizard = ({
         if (isValid) {
           setIsSubmitting(true);
           try {
-            // Ensure form has the correct type
-            form.setValue("type", "project_manager");
-
-            // Update all the basic info fields in the main form
-            form.setValue("name", teamLeadData.basicInfo.fullName);
-            form.setValue("email", teamLeadData.basicInfo.email);
-            form.setValue(
-              "phoneNumber",
-              teamLeadData.basicInfo.phoneNumber || ""
-            );
-            form.setValue("countryCode", teamLeadData.basicInfo.country || "");
+            // First create the account with basic info
+            if (onBasicInfoComplete) {
+              form.setValue("name", teamLeadData.basicInfo.fullName);
+              form.setValue("email", teamLeadData.basicInfo.email);
+              form.setValue("phoneNumber", teamLeadData.basicInfo.phoneNumber || "");
+              form.setValue("countryCode", teamLeadData.basicInfo.country || "");
+              form.setValue("type", "project_manager");
+              
+              await onBasicInfoComplete(form.getValues());
+            }
 
             // Complete the team lead data and save to form
             onComplete(teamLeadData);
-            await onSubmit();
-            // Success - show toast and redirect will happen in the parent component
+            onSubmit();
+            
+            // Success - now proceed to GitHub integration step
             toast.success("Application submitted successfully!", {
-              description: "Your application is under review. We'll contact you soon!",
+              description: "Last step: Connect your GitHub account",
             });
+            setIsSubmitting(false);
           } catch (error: any) {
             console.error("Submission error:", error);
             const errorMessage =
@@ -265,9 +247,13 @@ const TeamLeadWizard = ({
               description: errorMessage,
             });
             setIsSubmitting(false);
+            return;
           }
-          return;
         }
+        break;
+      case 5:
+        // GitHub integration step - no validation needed, just proceed
+        isValid = true;
         break;
       default:
         isValid = true;
@@ -761,7 +747,7 @@ const TeamLeadWizard = ({
           </div>
         );
 
-      case 5:
+      case 6:
         return (
           <div className="text-center space-y-6 max-w-2xl mx-auto">
             <div className="relative mb-8">
@@ -824,6 +810,17 @@ const TeamLeadWizard = ({
           </div>
         );
 
+      case 5:
+        return (
+          <GitHubIntegration
+            onComplete={onGitHubComplete}
+            onSkip={onGitHubSkip}
+            showSkipOption={true}
+            title="Connect with GitHub"
+            description="Complete your setup by connecting your GitHub account for seamless project management."
+          />
+        );
+
       default:
         return null;
     }
@@ -834,7 +831,7 @@ const TeamLeadWizard = ({
       <div className="w-full">
         <div className="w-full">{renderStepContent()}</div>
 
-        {currentStep < 5 && (
+        {currentStep < 6 && (
           <div className="flex justify-end items-center mt-12 max-w-4xl mx-auto gap-x-4">
             {currentStep > 1 ? (
               <Button

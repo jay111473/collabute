@@ -1,5 +1,6 @@
 import { query, mutation } from "./_generated/server";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { v } from "convex/values";
 
 // Check if user has GitHub connected - only accessible by authenticated users
 export const checkGitHubConnection = query({
@@ -84,6 +85,59 @@ export const getGitHubProfile = query({
       return null;
     } catch (error) {
       return null;
+    }
+  },
+});
+
+// Connect GitHub account - stores GitHub OAuth data for authenticated user
+export const connectGitHub = mutation({
+  args: {
+    githubId: v.string(),
+    githubUsername: v.string(),
+    githubAccessToken: v.optional(v.string()),
+    githubInstallationId: v.optional(v.string()),
+    publicRepos: v.optional(v.number()),
+    followers: v.optional(v.number()),
+    following: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new Error("Authentication required");
+    }
+
+    try {
+      // Check if GitHub profile already exists for this user
+      const existingProfile = await ctx.db
+        .query("github_profiles")
+        .filter((q) => q.eq(q.field("userId"), userId))
+        .first();
+
+      const githubData = {
+        userId,
+        githubId: args.githubId,
+        githubUsername: args.githubUsername,
+        githubConnected: true,
+        githubConnectedAt: Date.now(),
+        githubAccessToken: args.githubAccessToken,
+        githubInstallationId: args.githubInstallationId,
+        publicRepos: args.publicRepos,
+        followers: args.followers,
+        following: args.following,
+        githubLastFetch: Date.now(),
+      };
+
+      if (existingProfile && existingProfile.userId === userId) {
+        // Update existing profile
+        await ctx.db.patch(existingProfile._id, githubData);
+        return { success: true, profileId: existingProfile._id };
+      } else {
+        // Create new profile
+        const profileId = await ctx.db.insert("github_profiles", githubData);
+        return { success: true, profileId };
+      }
+    } catch (error) {
+      throw new Error("Failed to connect GitHub account");
     }
   },
 });

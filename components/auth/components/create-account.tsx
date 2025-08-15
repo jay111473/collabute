@@ -24,7 +24,7 @@ import type {
   TeamLeadFormData,
   DesignerFormData,
 } from "@/types/auth.types";
-import { useMutation, useQuery } from "convex/react";
+import { useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { ConvexError } from "convex/values";
@@ -55,11 +55,6 @@ const CreateAccount = ({ invitationData }: CreateAccountProps) => {
     api.users.completeWizardUserProfile
   );
 
-  // Store the created user ID for profile completion
-  const [createdUserId, setCreatedUserId] = useState<string | undefined>(
-    undefined
-  );
-
   // Create user account after basic info is collected using Convex Auth
   const createAccountAfterBasicInfo = async (values: CreateAccountFormData) => {
     try {
@@ -76,8 +71,8 @@ const CreateAccount = ({ invitationData }: CreateAccountProps) => {
         formData.append("countryCode", values.countryCode);
       formData.append("type", values.type.toUpperCase());
 
-            await signIn("password", formData);
-      
+      await signIn("password", formData);
+
       console.log("User account created successfully");
     } catch (error: any) {
       console.error("Error creating user account:", error);
@@ -116,7 +111,7 @@ const CreateAccount = ({ invitationData }: CreateAccountProps) => {
 
   // Prevent browser warning during form submission
   useEffect(() => {
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+    const handleBeforeUnload = () => {
       // Don't show warning during submission
       if (isLoading) {
         return;
@@ -210,21 +205,8 @@ const CreateAccount = ({ invitationData }: CreateAccountProps) => {
           country: countryCode,
         });
 
-        // Create account with basic info
-        const accountData: CreateAccountFormData = {
-          name,
-          email,
-          password,
-          phoneNumber: phoneNumber || "",
-          countryCode: countryCode || "",
-          type: "designer",
-          designerFields: undefined,
-          teamLeadFields: undefined,
-          developerFields: undefined,
-          startupFields: undefined,
-        };
-
-        await createAccountAfterBasicInfo(accountData);
+        // Account data will be created later when wizard is complete
+        // Don't create account yet - wait until wizard is complete
 
         // Account created successfully, proceed to step 2
         setShowDesignerWizard(true);
@@ -269,21 +251,8 @@ const CreateAccount = ({ invitationData }: CreateAccountProps) => {
           phoneNumber: phoneNumber,
         });
 
-        // Create account with basic info
-        const accountData: CreateAccountFormData = {
-          name,
-          email,
-          password,
-          phoneNumber: phoneNumber || "",
-          countryCode: countryCode || "",
-          type: "project_manager",
-          designerFields: undefined,
-          teamLeadFields: undefined,
-          developerFields: undefined,
-          startupFields: undefined,
-        };
-
-        await createAccountAfterBasicInfo(accountData);
+        // Account data will be created later when wizard is complete
+        // Don't create account yet - wait until wizard is complete
 
         // Account created successfully, proceed to step 2
         setShowTeamLeadWizard(true);
@@ -297,34 +266,39 @@ const CreateAccount = ({ invitationData }: CreateAccountProps) => {
     }
   };
 
-  // Handle final form submission (complete profile)
+
+  // Handle form submission - show GitHub for developers/startups
   const handleSubmit = async (
     values: CreateAccountFormData,
     skipToast = false
   ) => {
+    // For developers and startups, redirect to GitHub integration step
+    if (values.type === "developer" || values.type === "startup") {
+      // Store the account data in sessionStorage to use after GitHub step
+      sessionStorage.setItem("pendingAccountData", JSON.stringify(values));
+      // Redirect to GitHub step
+      window.location.href = `/onboarding?step=github&type=${values.type}`;
+      return;
+    }
+
+    // For other types, create account directly
     setIsLoading(true);
-
     try {
-      console.log("Creating user account with Convex Auth:", values);
-
-      // Create FormData for Convex Auth signIn
       const formData = new FormData();
       formData.append("email", values.email);
       formData.append("password", values.password);
       formData.append("name", values.name);
       formData.append("flow", "signUp");
 
-      // Add additional fields that the Password provider can access
       if (values.phoneNumber)
         formData.append("phoneNumber", values.phoneNumber);
       if (values.countryCode)
         formData.append("countryCode", values.countryCode);
       formData.append("type", values.type.toUpperCase());
 
-      // Use Convex Auth to create and authenticate the user
       await signIn("password", formData);
 
-      // User is now authenticated, complete their profile with wizard data
+      // Complete profile with wizard data
       try {
         await completeWizardProfile({
           teamLeadFields: values.teamLeadFields
@@ -341,49 +315,23 @@ const CreateAccount = ({ invitationData }: CreateAccountProps) => {
                 availability: values.designerFields.availability,
               }
             : undefined,
-          developerFields: values.developerFields
-            ? {
-                primaryRole: values.developerFields.primaryRole || undefined,
-              }
-            : undefined,
-          startupFields: values.startupFields
-            ? {
-                companyName: values.startupFields.companyName || undefined,
-                teamSize: values.startupFields.teamSize || undefined,
-              }
-            : undefined,
         });
       } catch (profileError: any) {
         console.warn("Profile completion error (non-critical):", profileError);
-        // Continue with success flow even if profile completion fails
       }
 
-      // Different handling based on user type
       if (!skipToast) {
-        if (values.type === "startup") {
-          toast.success("Welcome! Account created successfully!");
-          // Use router for navigation instead of window.location
-          router.push("/dashboard");
-        } else if (values.type === "developer") {
-          toast.success("Welcome! Account created successfully!");
-          // Use router for navigation instead of window.location
-          router.push("/dashboard");
-        } else {
-          toast.success("Profile submitted successfully!", {
-            description:
-              "Your application is under review. We'll contact you soon!",
-          });
-        }
+        toast.success("Profile submitted successfully!", {
+          description:
+            "Your application is under review. We'll contact you soon!",
+        });
       }
     } catch (error: any) {
       console.error("Sign up error:", error);
-
       const errorMessage =
         error instanceof ConvexError
           ? (error.data as { message: string }).message
           : error.message || "Failed to create account";
-
-      // Show error toast to user
       toast.error("Account Creation Failed", {
         description: errorMessage,
       });
@@ -391,6 +339,7 @@ const CreateAccount = ({ invitationData }: CreateAccountProps) => {
       setIsLoading(false);
     }
   };
+
 
   return (
     <>
@@ -409,12 +358,16 @@ const CreateAccount = ({ invitationData }: CreateAccountProps) => {
               )}
 
             {accountType === "project_manager" &&
-              (showTeamLeadWizard || currentStep === 5) && (
+              (showTeamLeadWizard ||
+                currentStep === 5 ||
+                currentStep === 6) && (
                 <TeamLeadWizard
                   form={form}
                   onComplete={handleTeamLeadComplete}
                   onSubmit={handleTeamLeadSubmit}
                   onBasicInfoComplete={createAccountAfterBasicInfo}
+                  onGitHubComplete={() => router.push("/dashboard")}
+                  onGitHubSkip={() => router.push("/dashboard")}
                   initialData={teamLeadStep1Data}
                   startFromStep={2}
                   setCurrentStep={setCurrentStep}

@@ -214,6 +214,7 @@ export const createAccountSchema = z
     designerFields: designerFormSchema.optional(),
   })
   .superRefine((data, ctx) => {
+    // Only validate phone number for non-project-manager types
     if (data.type !== "project_manager") {
       if (!data.phoneNumber || !/^\+?[1-9]\d{6,15}$/.test(data.phoneNumber)) {
         ctx.addIssue({
@@ -223,6 +224,8 @@ export const createAccountSchema = z
         });
       }
     }
+    
+    // Only validate fields for the selected account type
     if (data.type === "developer") {
       if (
         !data.developerFields?.primaryRole ||
@@ -235,6 +238,7 @@ export const createAccountSchema = z
         });
       }
     }
+    
     if (data.type === "startup") {
       const companyName = data.startupFields?.companyName;
       if (typeof companyName !== "string" || companyName.length < 2) {
@@ -252,24 +256,9 @@ export const createAccountSchema = z
         });
       }
     }
-    if (data.type === "project_manager") {
-      if (!data.teamLeadFields) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Team Lead fields are required for project manager accounts",
-          path: ["teamLeadFields"],
-        });
-      }
-    }
-    if (data.type === "designer") {
-      if (!data.designerFields) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Designer fields are required for designer accounts",
-          path: ["designerFields"],
-        });
-      }
-    }
+    
+    // Note: We don't validate teamLeadFields and designerFields here since they use wizards
+    // and handle their own validation. For initial form submission, we only need basic info.
   });
 
 export const stepValidationSchemas = {

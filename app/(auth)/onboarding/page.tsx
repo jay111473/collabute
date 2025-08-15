@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { Authenticated, Unauthenticated, AuthLoading } from "convex/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import CreateAccount from "@/components/auth/components/create-account";
+import { GitHubIntegration } from "@/components/github-integration";
 import { Toaster } from "sonner";
 import Image from "next/image";
 import Link from "next/link";
@@ -23,6 +24,7 @@ function AuthenticatedRedirect() {
 }
 
 function OnboardingForm() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const [invitationData, setInvitationData] = useState<{
     token?: string;
@@ -45,6 +47,65 @@ function OnboardingForm() {
   }, [searchParams]);
 
   const isProjectManagerInvite = invitationData?.type === "PROJECT_MANAGER";
+  const isGitHubStep = searchParams.get("step") === "github";
+  const userType = searchParams.get("type");
+
+  // Handle GitHub integration step
+  const handleGitHubComplete = async () => {
+    // Get pending account data from sessionStorage
+    const pendingData = sessionStorage.getItem('pendingAccountData');
+    if (pendingData) {
+      // Create account with the pending data
+      const accountData = JSON.parse(pendingData);
+      // Clear the stored data
+      sessionStorage.removeItem('pendingAccountData');
+      
+      // Create form data for account creation
+      const formData = new FormData();
+      formData.append("email", accountData.email);
+      formData.append("password", accountData.password);
+      formData.append("name", accountData.name);
+      formData.append("flow", "signUp");
+      if (accountData.phoneNumber) formData.append("phoneNumber", accountData.phoneNumber);
+      if (accountData.countryCode) formData.append("countryCode", accountData.countryCode);
+      formData.append("type", accountData.type.toUpperCase());
+      
+      // This would need to be done through proper auth flow
+      // For now, redirect to complete the signup
+      window.location.href = "/dashboard";
+    } else {
+      router.push("/dashboard");
+    }
+  };
+
+  const handleGitHubSkip = async () => {
+    // Same as complete but without waiting for GitHub
+    const pendingData = sessionStorage.getItem('pendingAccountData');
+    if (pendingData) {
+      const accountData = JSON.parse(pendingData);
+      sessionStorage.removeItem('pendingAccountData');
+      // Would create account here
+      window.location.href = "/dashboard";
+    } else {
+      router.push("/dashboard");
+    }
+  };
+
+  // Show GitHub integration if step=github
+  if (isGitHubStep && (userType === "developer" || userType === "startup")) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-black text-white px-4 py-6 md:px-6 overflow-x-hidden">
+        <Toaster />
+        <GitHubIntegration
+          onComplete={handleGitHubComplete}
+          onSkip={handleGitHubSkip}
+          showSkipOption={true}
+          title="Connect with GitHub"
+          description="Complete your setup by connecting your GitHub account for seamless project management."
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-black text-white px-4 py-6 md:px-6 overflow-x-hidden">

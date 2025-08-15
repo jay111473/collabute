@@ -196,15 +196,17 @@ const DesignerWizard = ({
         if (isValid) {
           setIsSubmitting(true);
           try {
-            // Ensure form has the correct type
+            // First create the account with basic info (this should be already done in step 1)
+            // But let's ensure all form fields are set correctly
             form.setValue("type", "designer");
-
-            // For designers, basic info is already in the main form from step 1
-            // Just ensure we have all the updated designer-specific data
+            form.setValue("name", designerData.basicInfo.fullName);
+            form.setValue("email", designerData.basicInfo.email);
+            form.setValue("phoneNumber", designerData.basicInfo.phoneNumber || "");
+            form.setValue("countryCode", designerData.basicInfo.country || "");
 
             // Complete the designer data and save to form
             onComplete(designerData);
-            await onSubmit();
+            onSubmit();
             // Success - show toast and redirect will happen in the parent component
             toast.success("Application submitted successfully!", {
               description:

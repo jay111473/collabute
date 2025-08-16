@@ -5,6 +5,7 @@ import { Authenticated, Unauthenticated, AuthLoading } from "convex/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import CreateAccount from "@/components/auth/components/create-account";
 import { GitHubIntegration } from "@/components/github-integration";
+import { CompleteSignup } from "@/components/auth/components/complete-signup";
 import { Toaster } from "sonner";
 import Image from "next/image";
 import Link from "next/link";
@@ -49,43 +50,41 @@ function OnboardingForm() {
   const isProjectManagerInvite = invitationData?.type === "PROJECT_MANAGER";
   const isGitHubStep = searchParams.get("step") === "github";
   const userType = searchParams.get("type");
+  const completeSignup = searchParams.get("complete_signup") === "true";
+  const githubConnected = searchParams.get("github_connected") === "true";
+  const githubSkipped = searchParams.get("github_skipped") === "true";
+
+  // Handle completing signup after GitHub step
+  if (completeSignup) {
+    return <CompleteSignup 
+      githubConnected={githubConnected} 
+      githubSkipped={githubSkipped} 
+      userType={userType || undefined} 
+    />;
+  }
 
   // Handle GitHub integration step
   const handleGitHubComplete = async () => {
-    // Get pending account data from sessionStorage
+    // GitHub is installed, now redirect back to create account form
+    // with a flag indicating GitHub is connected
     const pendingData = sessionStorage.getItem('pendingAccountData');
     if (pendingData) {
-      // Create account with the pending data
       const accountData = JSON.parse(pendingData);
-      // Clear the stored data
-      sessionStorage.removeItem('pendingAccountData');
-      
-      // Create form data for account creation
-      const formData = new FormData();
-      formData.append("email", accountData.email);
-      formData.append("password", accountData.password);
-      formData.append("name", accountData.name);
-      formData.append("flow", "signUp");
-      if (accountData.phoneNumber) formData.append("phoneNumber", accountData.phoneNumber);
-      if (accountData.countryCode) formData.append("countryCode", accountData.countryCode);
-      formData.append("type", accountData.type.toUpperCase());
-      
-      // This would need to be done through proper auth flow
-      // For now, redirect to complete the signup
-      window.location.href = "/dashboard";
+      // Keep the data in sessionStorage for the create account form
+      // Redirect to a special URL that will trigger account creation
+      window.location.href = `/onboarding?complete_signup=true&github_connected=true&type=${accountData.type}`;
     } else {
       router.push("/dashboard");
     }
   };
 
   const handleGitHubSkip = async () => {
-    // Same as complete but without waiting for GitHub
+    // Skip GitHub but still create account
     const pendingData = sessionStorage.getItem('pendingAccountData');
     if (pendingData) {
       const accountData = JSON.parse(pendingData);
-      sessionStorage.removeItem('pendingAccountData');
-      // Would create account here
-      window.location.href = "/dashboard";
+      // Redirect to complete signup without GitHub
+      window.location.href = `/onboarding?complete_signup=true&github_skipped=true&type=${accountData.type}`;
     } else {
       router.push("/dashboard");
     }

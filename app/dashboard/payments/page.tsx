@@ -1,7 +1,6 @@
 "use client";
 import { TransactionBox } from "@/components/dashboard/payments/transaction-box";
 import { ProjectsPaymentOverview } from "@/components/dashboard/payments/projects-payment-overview";
-import { DashboardCard } from "@/components/uikit/dashboard-card";
 import { api } from "@/convex/_generated/api";
 import { useUserConvex } from "@/hooks/use-user-convex";
 import { useQuery } from "convex/react";
@@ -24,7 +23,7 @@ const Payments = () => {
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
       <div className="grid gap-4 md:grid-cols-2 md:gap-4 lg:grid-cols-2">
-        <DashboardCard
+        <DashboardCardPayment
           title="Current Balance"
           value={`${user?.wallet || 0}`}
           buttonText="Deposit"

@@ -58,7 +58,6 @@ const CreateAccount = ({ invitationData }: CreateAccountProps) => {
   // Create user account after basic info is collected using Convex Auth
   const createAccountAfterBasicInfo = async (values: CreateAccountFormData) => {
     try {
-      console.log("Creating user account with basic info:", values);
 
       const formData = new FormData();
       formData.append("email", values.email);
@@ -73,9 +72,7 @@ const CreateAccount = ({ invitationData }: CreateAccountProps) => {
 
       await signIn("password", formData);
 
-      console.log("User account created successfully");
     } catch (error: any) {
-      console.error("Error creating user account:", error);
       toast.error("Failed to create account", {
         description: error.message || "Please try again",
       });
@@ -160,7 +157,6 @@ const CreateAccount = ({ invitationData }: CreateAccountProps) => {
       await handleSubmit(values, true); // Skip toast to prevent duplicate - wizard shows its own success message
       setCurrentStep(5);
     } catch (error) {
-      console.error("Team lead submission error:", error);
     }
   };
 
@@ -170,7 +166,6 @@ const CreateAccount = ({ invitationData }: CreateAccountProps) => {
       await handleSubmit(values, true); // Skip toast to prevent duplicate - wizard shows its own success message
       setCurrentStep(5);
     } catch (error) {
-      console.error("Designer submission error:", error);
     }
   };
 
@@ -195,7 +190,6 @@ const CreateAccount = ({ invitationData }: CreateAccountProps) => {
           "designerFields.basicInfo.phoneNumber"
         );
         const countryCode = form.getValues("designerFields.basicInfo.country");
-        const password = form.getValues("password");
 
         // Store step 1 data
         setDesignerStep1Data({
@@ -205,14 +199,10 @@ const CreateAccount = ({ invitationData }: CreateAccountProps) => {
           country: countryCode,
         });
 
-        // Account data will be created later when wizard is complete
-        // Don't create account yet - wait until wizard is complete
-
         // Account created successfully, proceed to step 2
         setShowDesignerWizard(true);
         setCurrentStep(2);
       } catch (error) {
-        console.error("Failed to create designer account:", error);
         // Error is already handled in createAccountAfterBasicInfo
       } finally {
         setIsLoading(false);
@@ -241,7 +231,6 @@ const CreateAccount = ({ invitationData }: CreateAccountProps) => {
           "teamLeadFields.basicInfo.phoneNumber"
         );
         const countryCode = form.getValues("teamLeadFields.basicInfo.country");
-        const password = form.getValues("password");
 
         // Store step 1 data
         setTeamLeadStep1Data({
@@ -258,7 +247,6 @@ const CreateAccount = ({ invitationData }: CreateAccountProps) => {
         setShowTeamLeadWizard(true);
         setCurrentStep(2);
       } catch (error) {
-        console.error("Failed to create team lead account:", error);
         // Error is already handled in createAccountAfterBasicInfo
       } finally {
         setIsLoading(false);
@@ -317,7 +305,6 @@ const CreateAccount = ({ invitationData }: CreateAccountProps) => {
             : undefined,
         });
       } catch (profileError: any) {
-        console.warn("Profile completion error (non-critical):", profileError);
       }
 
       if (!skipToast) {
@@ -327,7 +314,6 @@ const CreateAccount = ({ invitationData }: CreateAccountProps) => {
         });
       }
     } catch (error: any) {
-      console.error("Sign up error:", error);
       const errorMessage =
         error instanceof ConvexError
           ? (error.data as { message: string }).message
@@ -349,7 +335,6 @@ const CreateAccount = ({ invitationData }: CreateAccountProps) => {
           onSubmit={form.handleSubmit(
             (values) => handleSubmit(values),
             (errors) => {
-              console.error("Form validation errors:", errors);
               // Show first error to user
               const firstError = Object.values(errors)[0] as any;
               if (firstError?.message) {

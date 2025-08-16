@@ -1,16 +1,13 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, ArrowRight, HelpCircle } from "lucide-react";
 import { FaGithub } from "react-icons/fa";
-import { useMutation } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import { toast } from "sonner";
 import { useSearchParams } from "next/navigation";
+import { toast } from "sonner";
+import { CheckCircle, ArrowRight } from "lucide-react";
 import Image from "next/image";
-import { useGitHubSmartAuth } from "./hooks/useGitHubSmartAuth";
-import { PopupHelp } from "./ui/popup-help";
+import { useGitHubSmartAuth } from "@/components/hooks/useGitHubSmartAuth";
 
 interface GitHubIntegrationProps {
   onComplete?: () => void;
@@ -20,56 +17,56 @@ interface GitHubIntegrationProps {
   description?: string;
 }
 
-export const GitHubIntegration = ({ 
-  onComplete,
-  onSkip, 
-  showSkipOption = true,
-  title = "Connect with GitHub",
-  description = "Automate issue workflow when GitHub pull requests are opened and merged."
-}: GitHubIntegrationProps) => {
-  const [showPopupHelp, setShowPopupHelp] = useState(false);
+export function GitHubIntegration({ 
+  onComplete, 
+  onSkip,
+  showSkipOption = false,
+  title = "Connect Your GitHub Account",
+  description = "Link your GitHub account to enable seamless project management and issue tracking."
+}: GitHubIntegrationProps) {
   const searchParams = useSearchParams();
-  const connectGitHub = useMutation(api.githubAuth.connectGitHub);
+  const [isAuthenticating, setIsAuthenticating] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
 
-  const {
-    authState,
-    isConnecting,
-    installationId,
-    authMethod,
-    startAuth,
-    reset,
-    isSuccess,
-    isAuthenticating
-  } = useGitHubSmartAuth({
-    onSuccess: (id) => {
-      setTimeout(() => {
-        if (onComplete) {
-          onComplete();
-        }
-      }, 1500);
+  const { startAuth } = useGitHubSmartAuth({
+    onSuccess: (installationId) => {
+      setIsSuccess(true);
+      setIsAuthenticating(false);
+      // Store installation ID if needed
+      if (installationId) {
+        sessionStorage.setItem('githubInstallationId', installationId);
+      }
+      if (onComplete) {
+        setTimeout(() => onComplete(), 1500);
+      }
     },
     onError: (error) => {
-      console.error('GitHub auth error:', error);
-    },
-    preferPopup: true // Try popup first, fallback to redirect
+      setIsAuthenticating(false);
+      toast.error(error);
+    }
   });
 
   // Handle GitHub connection
   const handleGitHubConnect = async () => {
+    setIsAuthenticating(true);
     const currentParams = new URLSearchParams(window.location.search);
     const userType = currentParams.get('type') || 'developer';
     await startAuth(userType);
   };
 
-  // Handle fallback for old redirect-based flow
+  // Handle fallback for redirect flow callback
   useEffect(() => {
     const githubError = searchParams.get('github_error');
     const appInstalledParam = searchParams.get('github_app_installed');
     const installationIdParam = searchParams.get('installation_id');
 
-    // Handle GitHub App installation callback (fallback for redirect flow)
+    // Handle GitHub App installation callback
     if (appInstalledParam === 'true' && installationIdParam) {
+      setIsSuccess(true);
       toast.success("GitHub App installed successfully!");
+      
+      // Store installation ID
+      sessionStorage.setItem('githubInstallationId', installationIdParam);
       
       // Complete the flow
       if (onComplete) {
@@ -129,15 +126,12 @@ export const GitHubIntegration = ({
         <div className="space-y-2">
           <h2 className="text-2xl font-bold text-white">
             {isSuccess ? 'GitHub Connected!' : 
-             isAuthenticating ? 'Authenticating...' : 
+             isAuthenticating ? 'Redirecting to GitHub...' : 
              title}
           </h2>
           <p className="text-gray-400 text-sm max-w-2xl mx-auto">
             {isSuccess ? 'Your GitHub account has been successfully connected to Collabute.' :
-             isAuthenticating ? 
-               authMethod === 'popup' ? 'Please complete the authentication in the popup window.' :
-               authMethod === 'redirect' ? 'Redirecting to GitHub for authentication...' :
-               'Connecting to GitHub...' :
+             isAuthenticating ? 'Please complete the authentication in GitHub.' :
              description}
           </p>
         </div>
@@ -181,113 +175,61 @@ export const GitHubIntegration = ({
                 Privacy Focused
               </h3>
               <p className="text-gray-400 text-sm">
-                We only request necessary permissions. Your code remains private - we don't ask for read access.
+                We only access the repositories you specifically grant permissions to, ensuring your private code stays private.
               </p>
             </div>
           </div>
         </div>
       </div>
-
-      {/* Helpful Tips for Popup Authentication */}
-      {isAuthenticating && authMethod === 'popup' && (
-        <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4 max-w-2xl mx-auto">
-          <div className="flex items-start gap-3">
-            <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-              <span className="text-white text-xs">!</span>
-            </div>
-            <div className="space-y-1">
-              <h4 className="text-blue-400 font-medium text-sm">Popup Authentication</h4>
-              <p className="text-blue-300 text-sm">
-                A popup window has opened for GitHub authentication. If you don't see it, please check for popup blockers 
-                and allow popups for this site.
-              </p>
-              <button
-                onClick={() => setShowPopupHelp(true)}
-                className="text-blue-400 hover:text-blue-300 text-sm underline mt-2"
-              >
-                Need help enabling popups?
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Action Buttons */}
-      <div className="flex flex-col gap-3 max-w-sm mx-auto">
-        <Button
-          onClick={handleGitHubConnect}
-          disabled={isConnecting || isSuccess}
-          variant="primary"
-          size="lg"
-          className="w-full"
-        >
-          {isSuccess ? (
-            <>
-              <CheckCircle className="w-5 h-5 mr-2 text-green-400" />
-              GitHub Connected
-            </>
-          ) : isConnecting ? (
-            <>
-              <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2" />
-              {isAuthenticating ? 'Authenticating...' : 'Opening GitHub...'}
-            </>
-          ) : (
-            <>
-              <FaGithub className="w-5 h-5 mr-2" />
-              Install GitHub App
-            </>
-          )}
-        </Button>
+      <div className="flex flex-col gap-3">
+        {!isSuccess && (
+          <>
+            <Button
+              onClick={handleGitHubConnect}
+              disabled={isAuthenticating}
+              variant="primary"
+              size="lg"
+              className="w-full"
+            >
+              {isAuthenticating ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2" />
+                  Redirecting to GitHub...
+                </>
+              ) : (
+                <>
+                  <FaGithub className="w-5 h-5 mr-2" />
+                  Connect GitHub Account
+                </>
+              )}
+            </Button>
 
-        {showSkipOption && (
-          <Button
-            variant="ghost"
-            onClick={handleSkip}
-            disabled={isConnecting}
-            className="w-full text-gray-400 hover:text-white border-grayBorders"
-          >
-            I&apos;ll do this later
-          </Button>
+            {showSkipOption && !isAuthenticating && (
+              <Button
+                onClick={handleSkip}
+                variant="outline"
+                size="lg"
+                className="w-full"
+              >
+                Skip for now
+              </Button>
+            )}
+          </>
+        )}
+
+        {isSuccess && (
+          <div className="text-center space-y-2">
+            <p className="text-green-400 text-sm font-medium">
+              ✓ GitHub successfully connected
+            </p>
+            <p className="text-gray-500 text-xs">
+              Redirecting to your dashboard...
+            </p>
+          </div>
         )}
       </div>
-
-      {/* Popup Help Modal */}
-      {showPopupHelp && (
-        <PopupHelp
-          onClose={() => setShowPopupHelp(false)}
-          onUseRedirect={() => {
-            setShowPopupHelp(false);
-            // Reset current auth and try with redirect
-            reset();
-            setTimeout(() => {
-              const currentParams = new URLSearchParams(window.location.search);
-              const userType = currentParams.get('type') || 'developer';
-              
-              // Force redirect by creating URL manually and redirecting
-              const appSlug = process.env.NEXT_PUBLIC_GITHUB_APP_SLUG || 'collabute';
-              const statusId = Math.random().toString(36).substring(2, 15) + 
-                              Math.random().toString(36).substring(2, 15);
-              const randomState = Math.random().toString(36).substring(2, 15) + 
-                                 Math.random().toString(36).substring(2, 15);
-              
-              const redirectInfo = {
-                random: randomState,
-                type: userType,
-                step: 'github',
-                origin: window.location.origin,
-                popup: false,
-                statusId: statusId
-              };
-              
-              const encodedState = btoa(JSON.stringify(redirectInfo));
-              const installationUrl = `https://github.com/apps/${appSlug}/installations/new?state=${encodedState}`;
-              
-              toast.info("Redirecting to GitHub...");
-              window.location.assign(installationUrl);
-            }, 500);
-          }}
-        />
-      )}
     </div>
   );
-};
+}

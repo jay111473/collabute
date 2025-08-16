@@ -139,7 +139,7 @@ For suggestions, provide market-validated options that move toward implementatio
 - Implementation approaches that reduce risk
 - Market opportunities with clear demand
 
-Be direct, supportive, and focused on turning their idea into a profitable product.`
+Be direct, supportive, and focused on turning their idea into a profitable product.`,
       });
 
       return response.toJsonResponse();

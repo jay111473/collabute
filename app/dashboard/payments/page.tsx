@@ -6,6 +6,7 @@ import { useUserConvex } from "@/hooks/use-user-convex";
 import { useQuery } from "convex/react";
 import React from "react";
 import { Id } from "@/convex/_generated/dataModel";
+import { DashboardPaymentCard } from "@/components/dashboard/payments/dashboard-payment-card";
 
 const Payments = () => {
   const { user } = useUserConvex();
@@ -23,13 +24,13 @@ const Payments = () => {
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
       <div className="grid gap-4 md:grid-cols-2 md:gap-4 lg:grid-cols-2">
-        <DashboardCardPayment
+        <DashboardPaymentCard
           title="Current Balance"
           value={`${user?.wallet || 0}`}
           buttonText="Deposit"
           buttonVariant="filled"
         />
-        <DashboardCard
+        <DashboardPaymentCard
           title="Total Paid"
           value={`${user?.wallet || 0}`}
           buttonText="All transactions"

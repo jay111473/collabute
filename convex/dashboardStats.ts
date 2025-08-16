@@ -18,8 +18,15 @@ export const getUserIssuesCount = query({
     // Get all issues assigned to this user or reported by this user
     const assignedIssues = await ctx.db
       .query("issues")
-      .filter((q) => q.eq(q.field("assigneeId"), user._id))
-      .collect();
+      .collect()
+      .then((issues) =>
+        issues.filter(
+          (issue) =>
+            issue.assigneeIds &&
+            issue.assigneeIds.length > 0 &&
+            issue.assigneeIds.includes(user._id)
+        )
+      );
 
     const reportedIssues = await ctx.db
       .query("issues")
@@ -28,8 +35,8 @@ export const getUserIssuesCount = query({
 
     // Combine and deduplicate
     const allIssues = new Set([
-      ...assignedIssues.map(i => i._id),
-      ...reportedIssues.map(i => i._id)
+      ...assignedIssues.map((i) => i._id),
+      ...reportedIssues.map((i) => i._id),
     ]);
 
     return allIssues.size;
@@ -48,7 +55,10 @@ export const getDeveloperTotalPayments = query({
       .withIndex("email", (q) => q.eq("email", identity.email!))
       .first();
 
-    if (!user || (user.type !== "DEVELOPER" && user.type !== "PROJECT_MANAGER")) {
+    if (
+      !user ||
+      (user.type !== "DEVELOPER" && user.type !== "PROJECT_MANAGER")
+    ) {
       return 0;
     }
 
@@ -63,9 +73,9 @@ export const getDeveloperTotalPayments = query({
     // Get all transactions where this user is the recipient
     const transactions = await ctx.db
       .query("transactions")
-      .filter((q) => 
+      .filter((q) =>
         q.and(
-          q.eq(q.field("recipientId"), user._id),
+          q.eq(q.field("userId"), user._id),
           q.eq(q.field("status"), "completed")
         )
       )
@@ -111,7 +121,7 @@ export const getDashboardStats = query({
         issuesCount: 0,
         projectsCount: 0,
         totalPayments: 0,
-        wallet: 0
+        wallet: 0,
       };
     }
 
@@ -125,7 +135,7 @@ export const getDashboardStats = query({
         issuesCount: 0,
         projectsCount: 0,
         totalPayments: 0,
-        wallet: 0
+        wallet: 0,
       };
     }
 
@@ -133,7 +143,7 @@ export const getDashboardStats = query({
       issuesCount: 0,
       projectsCount: 0,
       totalPayments: 0,
-      wallet: user.wallet || 0
+      wallet: user.wallet || 0,
     };
 
     // For developers and PMs, get issues and payments
@@ -141,8 +151,15 @@ export const getDashboardStats = query({
       // Get issues
       const assignedIssues = await ctx.db
         .query("issues")
-        .filter((q) => q.eq(q.field("assigneeId"), user._id))
-        .collect();
+        .collect()
+        .then((issues) =>
+          issues.filter(
+            (issue) =>
+              issue.assigneeIds &&
+              issue.assigneeIds.length > 0 &&
+              issue.assigneeIds.includes(user._id)
+          )
+        );
 
       const reportedIssues = await ctx.db
         .query("issues")
@@ -150,8 +167,8 @@ export const getDashboardStats = query({
         .collect();
 
       const allIssues = new Set([
-        ...assignedIssues.map(i => i._id),
-        ...reportedIssues.map(i => i._id)
+        ...assignedIssues.map((i) => i._id),
+        ...reportedIssues.map((i) => i._id),
       ]);
 
       stats.issuesCount = allIssues.size;
@@ -159,15 +176,18 @@ export const getDashboardStats = query({
       // Get total payments
       const transactions = await ctx.db
         .query("transactions")
-        .filter((q) => 
+        .filter((q) =>
           q.and(
-            q.eq(q.field("recipientId"), user._id),
+            q.eq(q.field("userId"), user._id),
             q.eq(q.field("status"), "completed")
           )
         )
         .collect();
 
-      stats.totalPayments = transactions.reduce((sum, tx) => sum + (tx.amount || 0), 0);
+      stats.totalPayments = transactions.reduce(
+        (sum, tx) => sum + (tx.amount || 0),
+        0
+      );
     }
 
     // For startups and leads, get projects

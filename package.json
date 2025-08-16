@@ -80,6 +80,8 @@
     "cmdk": "^1.0.4",
     "convex": "^1.25.4",
     "cookies-next": "^4.3.0",
+    "cursor": "^0.1.5",
+    "cursor-agent": "^1.0.3",
     "date-fns": "^4.1.0",
     "framer-motion": "^10.18.0",
     "html-to-image": "^1.11.13",

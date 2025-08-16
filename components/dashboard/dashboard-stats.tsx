@@ -1,8 +1,8 @@
 "use client";
 
 import { DollarSign, ArrowLeftRight, GitPullRequest } from "lucide-react";
-import DashboardCard from "@/components/uikit/dashboard-card";
 import { useUserConvex } from "@/hooks/use-user-convex";
+import DashboardCard from "@/components/uikit/dashboard-card";
 
 export default function DashboardStats() {
   const { user } = useUserConvex();

@@ -346,7 +346,19 @@ const CreateAccount = ({ invitationData }: CreateAccountProps) => {
       <Form {...form}>
         <form
           className="w-full max-w-full sm:max-w-[600px] md:max-w-[700px]"
-          onSubmit={form.handleSubmit((values) => handleSubmit(values))}
+          onSubmit={form.handleSubmit(
+            (values) => handleSubmit(values),
+            (errors) => {
+              console.error("Form validation errors:", errors);
+              // Show first error to user
+              const firstError = Object.values(errors)[0] as any;
+              if (firstError?.message) {
+                toast.error("Validation Error", {
+                  description: firstError.message
+                });
+              }
+            }
+          )}
         >
           <div className="space-y-4 md:space-y-6">
             {!(accountType === "project_manager" && showTeamLeadWizard) &&

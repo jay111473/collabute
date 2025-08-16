@@ -172,7 +172,7 @@ export const getGithubProfile = (user: EnhancedUser): string | undefined => {
  * Gets formatted join date
  */
 export const getJoinDate = (user: EnhancedUser): string =>
-  user.createdAt ? formatDate(new Date(user.createdAt)) : "Recently joined";
+  user._creationTime ? formatDate(new Date(user._creationTime)) : "Recently joined";
 
 /**
  * Gets formatted birth date

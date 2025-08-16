@@ -270,7 +270,6 @@ export type EnhancedProject = Omit<Project, 'startDate' | 'endDate' | 'tags'> & 
   // Date fields transformed to ISO strings
   startDate: string;
   endDate: string | null;
-  createdAt: string;
   updatedAt: string;
   
   // Populated owner with media - includes profilePicture media object

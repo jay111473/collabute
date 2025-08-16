@@ -331,7 +331,7 @@ export function MediaTable() {
                 <TableCell className="px-4 py-4">
                   <div className="flex items-center gap-1 text-sm text-gray-300">
                     <Calendar className="h-3 w-3" />
-                    {formatDate(item.createdAt || item._creationTime)}
+                    {formatDate(item._creationTime)}
                   </div>
                 </TableCell>
                 <TableCell className="text-right px-6 py-4">

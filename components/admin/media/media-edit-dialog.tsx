@@ -272,7 +272,7 @@ export function MediaEditDialog({ media, isOpen, onOpenChange, mode }: MediaEdit
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-400">Uploaded:</span>
-                    <span className="text-sm text-white">{formatUploadDate(media.createdAt)}</span>
+                    <span className="text-sm text-white">{formatUploadDate(media._creationTime)}</span>
                   </div>
                 </div>
               </div>
@@ -315,7 +315,7 @@ export function MediaEditDialog({ media, isOpen, onOpenChange, mode }: MediaEdit
                 <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-gray-400" />
                   <p className="text-sm text-white">
-                    {formatUploadDate(media.createdAt)}
+                    {formatUploadDate(media._creationTime)}
                   </p>
                 </div>
               </div>
@@ -333,10 +333,6 @@ export function MediaEditDialog({ media, isOpen, onOpenChange, mode }: MediaEdit
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-400">Created At:</span>
                     <span className="text-white">{new Date(media._creationTime).toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-400">Uploaded At:</span>
-                    <span className="text-white">{new Date(media.createdAt).toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-400">Type:</span>

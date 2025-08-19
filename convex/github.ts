@@ -1,7 +1,7 @@
 import { v } from "convex/values";
 import { mutation, query, action } from "./_generated/server";
 import { getAuthUserId } from "@convex-dev/auth/server";
-import type { GitHubRepository, GitHubActivity, GitHubUserProfile } from "../types/convex";
+import type { GitHubRepository, GitHubActivity } from "../types/convex";
 
 // Get user's GitHub account from github_profiles table
 export const getUserGitHubAccount = query({
@@ -9,9 +9,7 @@ export const getUserGitHubAccount = query({
   handler: async (ctx, args) => {
     const account = await ctx.db
       .query("github_profiles")
-      .withIndex("by_user", (q) =>
-        q.eq("userId", args.userId)
-      )
+      .withIndex("by_user", (q) => q.eq("userId", args.userId))
       .first();
 
     return account;
@@ -73,7 +71,7 @@ export const syncUserRepositories = mutation({
           stargazersCount: repo.stargazersCount,
           forksCount: repo.forksCount,
           defaultBranch: repo.defaultBranch,
-          lastSyncAt: Date.now(),
+          lastSyncedAt: Date.now(),
         });
         syncedRepos.push(existingRepo._id);
       } else {
@@ -90,9 +88,14 @@ export const syncUserRepositories = mutation({
           language: repo.language,
           stargazersCount: repo.stargazersCount,
           forksCount: repo.forksCount,
+          openIssuesCount: 0, // Will be updated by sync
           defaultBranch: repo.defaultBranch,
+          githubCreatedAt: new Date().toISOString(), // Placeholder
+          githubUpdatedAt: new Date().toISOString(), // Placeholder
+          githubInstallationId: "", // Will be updated when GitHub App is installed
+          syncStatus: "pending",
           isActive: true,
-          lastSyncAt: Date.now(),
+          lastSyncedAt: Date.now(),
         });
         syncedRepos.push(repoId);
       }
@@ -269,12 +272,14 @@ export const syncRepositoryIssues = mutation({
         title: issue.title,
         slug: `github-${issue.number}`,
         description: issue.body || "",
-        status: (issue.state === "open" ? "OPEN" : "CLOSED") as "OPEN" | "CLOSED",
+        status: (issue.state === "open" ? "OPEN" : "CLOSED") as
+          | "OPEN"
+          | "CLOSED",
         priority: "MEDIUM", // Default priority
         labels: issue.labels,
         githubIssueNumber: issue.number,
         githubUrl: issue.htmlUrl,
-        lastSyncAt: Date.now(),
+        lastSyncedAt: Date.now(),
       };
 
       if (existingIssue) {
@@ -336,31 +341,38 @@ export const fetchAndStoreRepositories = action({
   args: { userId: v.id("users") },
   handler: async (ctx, { userId }) => {
     console.log("Fetching GitHub repositories for user:", userId);
-    
+
     // Get GitHub profile and access token
-    const githubProfile = await ctx.runQuery("auth:getGithubProfile" as any, { userId });
-    
+    const githubProfile = await ctx.runQuery("auth:getGithubProfile" as any, {
+      userId,
+    });
+
     if (!githubProfile || !githubProfile.githubAccessToken) {
       throw new Error("GitHub profile not found or access token missing");
     }
 
     try {
       // Fetch repositories from GitHub API
-      const response = await fetch("https://api.github.com/user/repos?per_page=100", {
-        headers: {
-          Authorization: `Bearer ${githubProfile.githubAccessToken}`,
-          "User-Agent": "Collabute-App",
-          Accept: "application/vnd.github.v3+json",
-        },
-      });
+      const response = await fetch(
+        "https://api.github.com/user/repos?per_page=100",
+        {
+          headers: {
+            Authorization: `Bearer ${githubProfile.githubAccessToken}`,
+            "User-Agent": "Collabute-App",
+            Accept: "application/vnd.github.v3+json",
+          },
+        }
+      );
 
       if (!response.ok) {
-        throw new Error(`GitHub API error: ${response.status} ${response.statusText}`);
+        throw new Error(
+          `GitHub API error: ${response.status} ${response.statusText}`
+        );
       }
 
       const repos = await response.json();
       console.log(`Fetched ${repos.length} repositories from GitHub`);
-      
+
       // Prepare repository data for sync
       const repoData = repos.map((repo: GitHubRepository) => ({
         id: repo.id,
@@ -377,10 +389,13 @@ export const fetchAndStoreRepositories = action({
       }));
 
       // Store repositories using existing sync function
-      const syncedRepoIds = await ctx.runMutation("github:syncUserRepositories" as any, {
-        userId,
-        repositories: repoData,
-      });
+      const syncedRepoIds = await ctx.runMutation(
+        "github:syncUserRepositories" as any,
+        {
+          userId,
+          repositories: repoData,
+        }
+      );
 
       // Update GitHub profile with latest stats
       await ctx.runMutation("auth:updateGithubProfile" as any, {
@@ -403,33 +418,52 @@ export const fetchGithubActivities = action({
   args: { userId: v.id("users") },
   handler: async (ctx, { userId }) => {
     console.log("Fetching GitHub activities for user:", userId);
-    
-    const githubProfile = await ctx.runQuery("auth:getGithubProfile" as any, { userId });
-    
-    if (!githubProfile || !githubProfile.githubAccessToken || !githubProfile.githubUsername) {
-      throw new Error("GitHub profile incomplete - username or access token missing");
+
+    const githubProfile = await ctx.runQuery("auth:getGithubProfile" as any, {
+      userId,
+    });
+
+    if (
+      !githubProfile ||
+      !githubProfile.githubAccessToken ||
+      !githubProfile.githubUsername
+    ) {
+      throw new Error(
+        "GitHub profile incomplete - username or access token missing"
+      );
     }
 
     try {
       // Fetch user events from GitHub API
-      const response = await fetch(`https://api.github.com/users/${githubProfile.githubUsername}/events?per_page=100`, {
-        headers: {
-          Authorization: `Bearer ${githubProfile.githubAccessToken}`,
-          "User-Agent": "Collabute-App",
-          Accept: "application/vnd.github.v3+json",
-        },
-      });
+      const response = await fetch(
+        `https://api.github.com/users/${githubProfile.githubUsername}/events?per_page=100`,
+        {
+          headers: {
+            Authorization: `Bearer ${githubProfile.githubAccessToken}`,
+            "User-Agent": "Collabute-App",
+            Accept: "application/vnd.github.v3+json",
+          },
+        }
+      );
 
       if (!response.ok) {
-        throw new Error(`GitHub API error: ${response.status} ${response.statusText}`);
+        throw new Error(
+          `GitHub API error: ${response.status} ${response.statusText}`
+        );
       }
 
       const activities = await response.json();
       console.log(`Fetched ${activities.length} activities from GitHub`);
-      
+
       // Filter relevant activities (commits, PRs, issues, repository creation)
-      const relevantActivities = activities.filter((activity: GitHubActivity) => 
-        ['PushEvent', 'PullRequestEvent', 'IssuesEvent', 'CreateEvent', 'ForkEvent'].includes(activity.type)
+      const relevantActivities = activities.filter((activity: GitHubActivity) =>
+        [
+          "PushEvent",
+          "PullRequestEvent",
+          "IssuesEvent",
+          "CreateEvent",
+          "ForkEvent",
+        ].includes(activity.type)
       );
 
       console.log(`Found ${relevantActivities.length} relevant activities`);
@@ -446,9 +480,11 @@ export const fetchGithubUserProfile = action({
   args: { userId: v.id("users") },
   handler: async (ctx, { userId }) => {
     console.log("Fetching GitHub user profile for user:", userId);
-    
-    const githubProfile = await ctx.runQuery("auth:getGithubProfile" as any, { userId });
-    
+
+    const githubProfile = await ctx.runQuery("auth:getGithubProfile" as any, {
+      userId,
+    });
+
     if (!githubProfile || !githubProfile.githubAccessToken) {
       throw new Error("GitHub profile not found or access token missing");
     }
@@ -464,12 +500,14 @@ export const fetchGithubUserProfile = action({
       });
 
       if (!response.ok) {
-        throw new Error(`GitHub API error: ${response.status} ${response.statusText}`);
+        throw new Error(
+          `GitHub API error: ${response.status} ${response.statusText}`
+        );
       }
 
       const profile = await response.json();
       console.log("Fetched GitHub profile:", profile.login);
-      
+
       // Update GitHub profile with fetched data
       await ctx.runMutation("auth:updateGithubProfile" as any, {
         userId,

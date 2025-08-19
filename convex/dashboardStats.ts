@@ -1,4 +1,3 @@
-import { v } from "convex/values";
 import { query } from "./_generated/server";
 
 // Get issues count for a specific user (developer or PM)

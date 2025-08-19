@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import type { EnhancedProject } from "../types/convex";
 import { generateProjectSlug } from "./utils/slugify";
+import { ProjectStatusValidator, ProjectTypeValidator, ProjectPhaseValidator, PHASE_STATUS, PROJECT_STATUS } from "./schema";
 
 export const createProject = mutation({
   args: {
@@ -9,7 +10,7 @@ export const createProject = mutation({
     description: v.string(),
     longDescription: v.optional(v.string()),
     logoUrl: v.optional(v.string()),
-    type: v.optional(v.string()),
+    type: v.optional(ProjectTypeValidator),
     startDate: v.number(),
     endDate: v.optional(v.number()),
     budget: v.optional(v.number()),
@@ -24,7 +25,15 @@ export const createProject = mutation({
     const projectId = await ctx.db.insert("projects", {
       ...args,
       slug: "", // Temporary, will be updated below
-      status: "PLANNED",
+      status: PROJECT_STATUS.PLANNED,
+      phases: [
+        { name: "Planning", status: PHASE_STATUS.NOT_STARTED, percentageDone: 0 },
+        { name: "Design", status: PHASE_STATUS.NOT_STARTED, percentageDone: 0 },
+        { name: "Development", status: PHASE_STATUS.NOT_STARTED, percentageDone: 0 },
+        { name: "Testing/QA", status: PHASE_STATUS.NOT_STARTED, percentageDone: 0 },
+        { name: "Deployment", status: PHASE_STATUS.NOT_STARTED, percentageDone: 0 },
+        { name: "Maintenance", status: PHASE_STATUS.NOT_STARTED, percentageDone: 0 },
+      ],
       milestones: {
         ideaRefinement: "not-started",
         documentation: "not-started",
@@ -76,8 +85,8 @@ export const createProject = mutation({
 export const getProjects = query({
   args: {
     ownerId: v.optional(v.id("users")),
-    status: v.optional(v.string()),
-    type: v.optional(v.string()),
+    status: v.optional(ProjectStatusValidator),
+    type: v.optional(ProjectTypeValidator),
     limit: v.optional(v.number()),
     page: v.optional(v.number()),
   },
@@ -428,9 +437,9 @@ export const updateProject = mutation({
       description: v.optional(v.string()),
       longDescription: v.optional(v.string()),
       logoUrl: v.optional(v.string()),
-      type: v.optional(v.string()),
-      status: v.optional(v.string()),
-      state: v.optional(v.string()),
+      type: v.optional(ProjectTypeValidator),
+      status: v.optional(ProjectStatusValidator),
+      phases: v.optional(v.array(ProjectPhaseValidator)),
       endDate: v.optional(v.number()),
       budget: v.optional(v.number()),
       stacks: v.optional(v.array(v.string())),
@@ -448,6 +457,59 @@ export const updateProject = mutation({
     }
 
     await ctx.db.patch(args.projectId, updates);
+    return true;
+  },
+});
+
+export const updateProjectPhase = mutation({
+  args: {
+    projectId: v.id("projects"),
+    phaseName: v.string(),
+    updates: v.object({
+      status: v.optional(v.union(
+        v.literal("not_started"),
+        v.literal("in_progress"),
+        v.literal("completed"),
+        v.literal("blocked")
+      )),
+      percentageDone: v.optional(v.number()),
+      note: v.optional(v.string()),
+    }),
+  },
+  handler: async (ctx, args) => {
+    const project = await ctx.db.get(args.projectId);
+    if (!project) throw new Error("Project not found");
+
+    const phases = project.phases || [];
+    const phaseIndex = phases.findIndex(p => p.name === args.phaseName);
+    
+    if (phaseIndex === -1) {
+      throw new Error(`Phase "${args.phaseName}" not found`);
+    }
+
+    phases[phaseIndex] = {
+      ...phases[phaseIndex],
+      ...args.updates,
+    };
+
+    await ctx.db.patch(args.projectId, { phases });
+    return true;
+  },
+});
+
+export const addProjectPhase = mutation({
+  args: {
+    projectId: v.id("projects"),
+    phase: ProjectPhaseValidator,
+  },
+  handler: async (ctx, args) => {
+    const project = await ctx.db.get(args.projectId);
+    if (!project) throw new Error("Project not found");
+
+    const phases = project.phases || [];
+    phases.push(args.phase);
+
+    await ctx.db.patch(args.projectId, { phases });
     return true;
   },
 });
@@ -644,8 +706,8 @@ export const getProjectStats = query({
 export const getAllProjects = query({
   args: {
     ownerId: v.optional(v.id("users")),
-    status: v.optional(v.string()),
-    type: v.optional(v.string()),
+    status: v.optional(ProjectStatusValidator),
+    type: v.optional(ProjectTypeValidator),
     limit: v.optional(v.number()),
   },
   handler: async (ctx, args) => {

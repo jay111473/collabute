@@ -420,7 +420,7 @@ export function GithubRepositoryEditDialog({
                 <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-gray-400" />
                   <p className="text-sm text-white">
-                    {new Date(repository.lastSyncAt).toLocaleString()}
+                    {new Date(repository.lastSyncedAt).toLocaleString()}
                   </p>
                 </div>
               </div>
@@ -475,7 +475,7 @@ export function GithubRepositoryEditDialog({
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-400">Last Synced:</span>
                     <span className="text-white">
-                      {new Date(repository.lastSyncAt).toLocaleString()}
+                      {new Date(repository.lastSyncedAt).toLocaleString()}
                     </span>
                   </div>
                 </div>

@@ -99,9 +99,14 @@ export const create = mutation({
     language: v.optional(v.string()),
     stargazersCount: v.number(),
     forksCount: v.number(),
+    openIssuesCount: v.number(),
     defaultBranch: v.string(),
+    githubCreatedAt: v.string(),
+    githubUpdatedAt: v.string(),
+    githubInstallationId: v.string(),
+    syncStatus: v.union(v.literal("synced"), v.literal("pending"), v.literal("error")),
     isActive: v.boolean(),
-    lastSyncAt: v.number(),
+    lastSyncedAt: v.number(),
     projectId: v.optional(v.id("projects")),
   },
   handler: async (ctx, args) => {
@@ -126,7 +131,7 @@ export const update = mutation({
     forksCount: v.optional(v.number()),
     defaultBranch: v.optional(v.string()),
     isActive: v.optional(v.boolean()),
-    lastSyncAt: v.optional(v.number()),
+    lastSyncedAt: v.optional(v.number()),
     projectId: v.optional(v.id("projects")),
   },
   handler: async (ctx, args) => {
@@ -165,7 +170,7 @@ export const updateSyncTime = mutation({
   args: { id: v.id("github_repositories") },
   handler: async (ctx, args) => {
     return await ctx.db.patch(args.id, {
-      lastSyncAt: Date.now(),
+      lastSyncedAt: Date.now(),
     });
   },
 });

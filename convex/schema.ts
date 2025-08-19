@@ -28,12 +28,81 @@ export const ExperienceLevelValidator = v.union(
   v.literal("ARCHITECT")
 );
 
+// Project status constants
+export const PROJECT_STATUS = {
+  PLANNED: "PLANNED",
+  IN_PROGRESS: "IN_PROGRESS",
+  COMPLETED: "COMPLETED",
+  ON_HOLD: "ON_HOLD",
+} as const;
+
 export const ProjectStatusValidator = v.union(
-  v.literal("PLANNED"),
-  v.literal("IN_PROGRESS"),
-  v.literal("COMPLETED"),
-  v.literal("ON_HOLD")
+  v.literal(PROJECT_STATUS.PLANNED),
+  v.literal(PROJECT_STATUS.IN_PROGRESS),
+  v.literal(PROJECT_STATUS.COMPLETED),
+  v.literal(PROJECT_STATUS.ON_HOLD)
 );
+
+// Project type constants
+export const PROJECT_TYPE = {
+  FRONTEND: "frontend",
+  BACKEND: "backend",
+  DEVOPS: "devops",
+  MOBILE: "mobile",
+  DATA_ANALYTICS: "data_analytics",
+  AI_ML: "ai_ml",
+  EMBEDDED_IOT: "embedded_iot",
+  DESKTOP: "desktop",
+  GAME: "game",
+  BLOCKCHAIN_WEB3: "blockchain_web3",
+  CLOUD_INFRASTRUCTURE: "cloud_infrastructure",
+  SECURITY: "security",
+  DATABASE: "database",
+  API_INTEGRATION: "api_integration",
+  AR_VR: "ar_vr",
+  AUDIO_VIDEO: "audio_video",
+} as const;
+
+export const ProjectTypeValidator = v.union(
+  v.literal(PROJECT_TYPE.FRONTEND),
+  v.literal(PROJECT_TYPE.BACKEND),
+  v.literal(PROJECT_TYPE.DEVOPS),
+  v.literal(PROJECT_TYPE.MOBILE),
+  v.literal(PROJECT_TYPE.DATA_ANALYTICS),
+  v.literal(PROJECT_TYPE.AI_ML),
+  v.literal(PROJECT_TYPE.EMBEDDED_IOT),
+  v.literal(PROJECT_TYPE.DESKTOP),
+  v.literal(PROJECT_TYPE.GAME),
+  v.literal(PROJECT_TYPE.BLOCKCHAIN_WEB3),
+  v.literal(PROJECT_TYPE.CLOUD_INFRASTRUCTURE),
+  v.literal(PROJECT_TYPE.SECURITY),
+  v.literal(PROJECT_TYPE.DATABASE),
+  v.literal(PROJECT_TYPE.API_INTEGRATION),
+  v.literal(PROJECT_TYPE.AR_VR),
+  v.literal(PROJECT_TYPE.AUDIO_VIDEO)
+);
+
+// Phase status constants
+export const PHASE_STATUS = {
+  NOT_STARTED: "not_started",
+  IN_PROGRESS: "in_progress",
+  COMPLETED: "completed",
+  BLOCKED: "blocked",
+} as const;
+
+export const ProjectPhaseStatusValidator = v.union(
+  v.literal(PHASE_STATUS.NOT_STARTED),
+  v.literal(PHASE_STATUS.IN_PROGRESS),
+  v.literal(PHASE_STATUS.COMPLETED),
+  v.literal(PHASE_STATUS.BLOCKED)
+);
+
+export const ProjectPhaseValidator = v.object({
+  name: v.string(),
+  status: ProjectPhaseStatusValidator,
+  percentageDone: v.number(),
+  note: v.optional(v.string()),
+});
 
 export const IssueStatusValidator = v.union(
   v.literal("OPEN"),
@@ -62,6 +131,47 @@ export const BlogStatusValidator = v.union(
   v.literal("archived")
 );
 
+export const GitHubSyncStatusValidator = v.union(
+  v.literal("synced"),
+  v.literal("pending"),
+  v.literal("error")
+);
+
+export const GitHubOperationTypeValidator = v.union(
+  v.literal("webhook"),
+  v.literal("periodic_sync"),
+  v.literal("manual_sync")
+);
+
+export const GitHubEntityTypeValidator = v.union(
+  v.literal("repository"),
+  v.literal("issue"),
+  v.literal("collaborator")
+);
+
+export const GitHubOperationValidator = v.union(
+  v.literal("create"),
+  v.literal("update"),
+  v.literal("delete")
+);
+
+export const GitHubOperationStatusValidator = v.union(
+  v.literal("success"),
+  v.literal("failed"),
+  v.literal("retrying")
+);
+
+export const GitHubIssueStateValidator = v.union(
+  v.literal("open"),
+  v.literal("closed")
+);
+
+export const GitHubCollaboratorRoleValidator = v.union(
+  v.literal("admin"),
+  v.literal("write"),
+  v.literal("read")
+);
+
 // ==============================
 // TYPE EXPORTS
 // ==============================
@@ -70,10 +180,24 @@ export type UserType = Infer<typeof UserTypeValidator>;
 export type KycStatus = Infer<typeof KycStatusValidator>;
 export type ExperienceLevel = Infer<typeof ExperienceLevelValidator>;
 export type ProjectStatus = Infer<typeof ProjectStatusValidator>;
+export type ProjectType = Infer<typeof ProjectTypeValidator>;
+export type ProjectPhaseStatus = Infer<typeof ProjectPhaseStatusValidator>;
+export type ProjectPhase = Infer<typeof ProjectPhaseValidator>;
 export type IssueStatus = Infer<typeof IssueStatusValidator>;
 export type MessageType = Infer<typeof MessageTypeValidator>;
 export type ApplicationStatus = Infer<typeof ApplicationStatusValidator>;
 export type BlogStatus = Infer<typeof BlogStatusValidator>;
+export type GitHubSyncStatus = Infer<typeof GitHubSyncStatusValidator>;
+export type GitHubOperationType = Infer<typeof GitHubOperationTypeValidator>;
+export type GitHubEntityType = Infer<typeof GitHubEntityTypeValidator>;
+export type GitHubOperation = Infer<typeof GitHubOperationValidator>;
+export type GitHubOperationStatus = Infer<
+  typeof GitHubOperationStatusValidator
+>;
+export type GitHubIssueState = Infer<typeof GitHubIssueStateValidator>;
+export type GitHubCollaboratorRole = Infer<
+  typeof GitHubCollaboratorRoleValidator
+>;
 
 // ==============================
 // FIELD VALIDATORS
@@ -107,9 +231,9 @@ export const projectFields = {
   description: v.string(),
   longDescription: v.optional(v.string()),
   logoUrl: v.optional(v.string()),
-  type: v.optional(v.string()),
+  type: v.optional(ProjectTypeValidator),
   status: ProjectStatusValidator,
-  state: v.optional(v.string()),
+  phases: v.optional(v.array(ProjectPhaseValidator)),
   startDate: v.number(),
   endDate: v.optional(v.number()),
   budget: v.optional(v.number()), // this is the budget of individual project
@@ -134,6 +258,15 @@ export const issueFields = {
   status: IssueStatusValidator,
   priority: v.optional(v.string()),
   budget: v.optional(v.number()),
+  estimatedDuration: v.optional(v.string()),
+  deadline: v.optional(v.number()),
+  requiredSkills: v.optional(v.array(v.id("skills"))),
+  requirements: v.optional(v.array(v.object({
+    text: v.string(),
+    completed: v.boolean(),
+  }))),
+  dependencies: v.optional(v.array(v.id("issues"))),
+  files: v.optional(v.array(v.id("media"))),
   onboardingVideoLink: v.optional(v.string()),
   onboardingVideoUrl: v.optional(v.string()),
   onboardingThumbnailUrl: v.optional(v.string()),
@@ -352,6 +485,8 @@ export default defineSchema({
     .index("by_status", ["status"])
     .index("by_reporter", ["reporterId"])
     .index("by_slug", ["slug"])
+    .index("by_deadline", ["deadline"])
+    .index("by_priority", ["priority"])
     .index("by_github_number", ["githubIssueNumber", "projectId"]),
 
   issue_applications: defineTable({
@@ -386,6 +521,7 @@ export default defineSchema({
 
   github_repositories: defineTable({
     githubId: v.number(),
+    githubInstallationId: v.string(),
     name: v.string(),
     fullName: v.string(),
     description: v.optional(v.string()),
@@ -393,18 +529,88 @@ export default defineSchema({
     private: v.boolean(),
     htmlUrl: v.string(),
     cloneUrl: v.string(),
+    defaultBranch: v.string(),
     language: v.optional(v.string()),
     stargazersCount: v.number(),
     forksCount: v.number(),
-    defaultBranch: v.string(),
+    openIssuesCount: v.number(),
+    githubCreatedAt: v.string(),
+    githubUpdatedAt: v.string(),
+    lastSyncedAt: v.number(),
+    syncStatus: GitHubSyncStatusValidator,
     isActive: v.boolean(),
-    lastSyncAt: v.number(),
     projectId: v.optional(v.id("projects")),
   })
     .index("by_github_id", ["githubId"])
+    .index("by_installation", ["githubInstallationId"])
     .index("by_owner", ["ownerId"])
     .index("by_project", ["projectId"])
-    .index("by_full_name", ["fullName"]),
+    .index("by_full_name", ["fullName"])
+    .index("by_sync_status", ["syncStatus", "lastSyncedAt"]),
+
+  github_issues: defineTable({
+    githubId: v.number(),
+    repositoryId: v.id("github_repositories"),
+    number: v.number(),
+    title: v.string(),
+    body: v.optional(v.string()),
+    state: GitHubIssueStateValidator,
+    labels: v.array(v.string()),
+    assigneeGithubId: v.optional(v.number()),
+    creatorGithubId: v.number(),
+    githubCreatedAt: v.string(),
+    githubUpdatedAt: v.string(),
+    githubClosedAt: v.optional(v.string()),
+    lastSyncedAt: v.number(),
+    syncStatus: GitHubSyncStatusValidator,
+    platformIssueId: v.optional(v.id("issues")),
+  })
+    .index("by_github_id", ["githubId"])
+    .index("by_repository", ["repositoryId"])
+    .index("by_sync_status", ["syncStatus", "lastSyncedAt"])
+    .index("by_assignee", ["assigneeGithubId"])
+    .index("by_repo_number", ["repositoryId", "number"])
+    .index("by_platform_issue", ["platformIssueId"]),
+
+  github_collaborators: defineTable({
+    githubId: v.number(),
+    repositoryId: v.id("github_repositories"),
+    login: v.string(),
+    avatarUrl: v.string(),
+    role: GitHubCollaboratorRoleValidator,
+    permissions: v.object({
+      admin: v.boolean(),
+      maintain: v.boolean(),
+      push: v.boolean(),
+      triage: v.boolean(),
+      pull: v.boolean(),
+    }),
+    lastSyncedAt: v.number(),
+    platformUserId: v.optional(v.id("users")),
+  })
+    .index("by_github_id", ["githubId"])
+    .index("by_repository", ["repositoryId"])
+    .index("by_login", ["login"])
+    .index("by_platform_user", ["platformUserId"]),
+
+  github_sync_operations: defineTable({
+    type: GitHubOperationTypeValidator,
+    entityType: GitHubEntityTypeValidator,
+    entityId: v.string(),
+    operation: GitHubOperationValidator,
+    status: GitHubOperationStatusValidator,
+    error: v.optional(v.string()),
+    retryCount: v.number(),
+    startedAt: v.number(),
+    completedAt: v.optional(v.number()),
+    webhookEventId: v.optional(v.string()),
+    repositoryId: v.optional(v.id("github_repositories")),
+  })
+    .index("by_status", ["status"])
+    .index("by_entity", ["entityType", "entityId"])
+    .index("by_timestamp", ["startedAt"])
+    .index("by_repository", ["repositoryId"])
+    .index("by_webhook_event", ["webhookEventId"]),
 
   // ==============================
   // COMMUNICATION TABLES
@@ -581,6 +787,24 @@ export default defineSchema({
     .index("by_category", ["category"])
     .index("by_active", ["isActive"]),
 
+  // ==============================
+  // SKILLS COLLECTION
+  // ==============================
+
+  skills: defineTable({
+    name: v.string(),
+    slug: v.string(),
+    description: v.optional(v.string()),
+    category: v.optional(v.string()), // e.g., "programming", "framework", "tool", "soft_skill"
+    color: v.optional(v.string()),
+    icon: v.optional(v.string()),
+    isActive: v.boolean(),
+  })
+    .index("by_slug", ["slug"])
+    .index("by_name", ["name"])
+    .index("by_category", ["category"])
+    .index("by_active", ["isActive"]),
+
   // Security audit logs
   audit_logs: defineTable({
     userId: v.optional(v.id("users")), // Who performed the action (null for system)
@@ -642,10 +866,6 @@ export default defineSchema({
     .index("by_achievement", ["achievementId"])
     .index("by_granted_by", ["grantedById"])
     .index("by_user_achievement", ["userId", "achievementId"]),
-
-  // ==============================
-  // WIZARD DATA TABLE (TEMPORARY)
-  // ==============================
 
   wizard_data: defineTable({
     email: v.string(),

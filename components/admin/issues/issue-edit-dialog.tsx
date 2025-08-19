@@ -14,6 +14,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
 import {
   Select,
   SelectContent,
@@ -24,6 +28,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Issue } from "@/types/convex";
+import { cn } from "@/lib/utils";
+import { format } from "date-fns";
 import {
   Bug,
   DollarSign,
@@ -46,6 +52,15 @@ import {
   Flame,
   TrendingUp,
   Minus,
+  CalendarIcon,
+  Plus,
+  X,
+  Check,
+  ChevronsUpDown,
+  FileText,
+  Link as LinkIcon,
+  CheckSquare,
+  Skills,
 } from "lucide-react";
 
 interface IssueEditDialogProps {
@@ -72,6 +87,12 @@ export function IssueEditDialog({
     type: issue?.type || "",
     labels: issue?.labels || [],
     onboardingVideoLink: issue?.onboardingVideoLink || "",
+    estimatedDuration: issue?.estimatedDuration || "",
+    deadline: issue?.deadline ? new Date(issue.deadline) : undefined,
+    requiredSkills: issue?.requiredSkills || [],
+    requirements: issue?.requirements || [],
+    dependencies: issue?.dependencies || [],
+    category: issue?.category || [],
   });
 
   // Fetch user data for reporter
@@ -79,7 +100,12 @@ export function IssueEditDialog({
     api.users.getUserProfile,
     issue?.reporterId ? { authUserId: issue.reporterId } : "skip"
   );
-
+  
+  const skills = useQuery(api.skills.list, { isActive: true }) as any[] | undefined;
+  const allIssues = useQuery(api.issues.list, {}) as Issue[] | undefined;
+  const projects = useQuery(api.projects.list, {}) as any[] | undefined;
+  const users = useQuery(api.users.list, {}) as any[] | undefined;
+  
   const updateIssue = useMutation(api.issues.updateIssue);
 
   // Update form data when issue changes
@@ -95,6 +121,12 @@ export function IssueEditDialog({
         type: issue.type || "",
         labels: issue.labels || [],
         onboardingVideoLink: issue.onboardingVideoLink || "",
+        estimatedDuration: issue.estimatedDuration || "",
+        deadline: issue.deadline ? new Date(issue.deadline) : undefined,
+        requiredSkills: issue.requiredSkills || [],
+        requirements: issue.requirements || [],
+        dependencies: issue.dependencies || [],
+        category: issue.category || [],
       });
     }
   }, [issue]);
@@ -104,12 +136,57 @@ export function IssueEditDialog({
 
     setIsLoading(true);
     try {
+      // Get only changed fields by comparing with original issue
+      const getChangedFields = (original: any, current: any): any => {
+        const changes: any = {};
+        Object.keys(current).forEach(key => {
+          if (key === 'deadline') {
+            // Handle Date objects
+            const originalValue = original[key] ? new Date(original[key]).getTime() : null;
+            const currentValue = current[key] ? current[key].getTime() : null;
+            if (originalValue !== currentValue) {
+              changes[key] = currentValue;
+            }
+          } else if (Array.isArray(current[key])) {
+            // Handle arrays
+            if (JSON.stringify(original[key] || []) !== JSON.stringify(current[key])) {
+              changes[key] = current[key];
+            }
+          } else if (original[key] !== current[key]) {
+            changes[key] = current[key];
+          }
+        });
+        return changes;
+      };
+
+      const originalData = {
+        title: issue.title,
+        description: issue.description,
+        longDescription: issue.longDescription,
+        status: issue.status,
+        priority: issue.priority,
+        budget: issue.budget,
+        type: issue.type,
+        labels: issue.labels || [],
+        onboardingVideoLink: issue.onboardingVideoLink,
+        estimatedDuration: issue.estimatedDuration,
+        deadline: issue.deadline ? new Date(issue.deadline) : undefined,
+        requiredSkills: issue.requiredSkills || [],
+        requirements: issue.requirements || [],
+        dependencies: issue.dependencies || [],
+        category: issue.category || [],
+      };
+
+      const changes = getChangedFields(originalData, formData);
+
+      if (Object.keys(changes).length === 0) {
+        onOpenChange(false);
+        return;
+      }
+
       await updateIssue({
         issueId: issue._id,
-        updates: {
-          ...formData,
-          status: formData.status as any,
-        },
+        updates: changes,
       });
       onOpenChange(false);
     } catch (error) {
@@ -279,22 +356,34 @@ export function IssueEditDialog({
         </DialogHeader>
 
         <Tabs defaultValue="basic" className="w-full space-y-6">
-          <TabsList className="grid w-full grid-cols-3 bg-darkGray2/50 border border-grayBorders/30 rounded-xl p-1 h-12">
+          <TabsList className="grid w-full grid-cols-5 bg-darkGray2/50 border border-grayBorders/30 rounded-xl p-1 h-12">
             <TabsTrigger
               value="basic"
-              className="text-gray-400 text-sm font-medium data-[state=active]:bg-darkGray data-[state=active]:text-white data-[state=active]:shadow-sm rounded-lg transition-all duration-200 hover:text-gray-200 hover:bg-darkGray/30 px-3 py-2"
+              className="text-gray-400 text-sm font-medium data-[state=active]:bg-darkGray data-[state=active]:text-white data-[state=active]:shadow-sm rounded-lg transition-all duration-200 hover:text-gray-200 hover:bg-darkGray/30 px-2 py-2"
             >
-              Basic Info
+              Basic
+            </TabsTrigger>
+            <TabsTrigger
+              value="timeline"
+              className="text-gray-400 text-sm font-medium data-[state=active]:bg-darkGray data-[state=active]:text-white data-[state=active]:shadow-sm rounded-lg transition-all duration-200 hover:text-gray-200 hover:bg-darkGray/30 px-2 py-2"
+            >
+              Timeline
+            </TabsTrigger>
+            <TabsTrigger
+              value="skills"
+              className="text-gray-400 text-sm font-medium data-[state=active]:bg-darkGray data-[state=active]:text-white data-[state=active]:shadow-sm rounded-lg transition-all duration-200 hover:text-gray-200 hover:bg-darkGray/30 px-2 py-2"
+            >
+              Skills
             </TabsTrigger>
             <TabsTrigger
               value="details"
-              className="text-gray-400 text-sm font-medium data-[state=active]:bg-darkGray data-[state=active]:text-white data-[state=active]:shadow-sm rounded-lg transition-all duration-200 hover:text-gray-200 hover:bg-darkGray/30 px-3 py-2"
+              className="text-gray-400 text-sm font-medium data-[state=active]:bg-darkGray data-[state=active]:text-white data-[state=active]:shadow-sm rounded-lg transition-all duration-200 hover:text-gray-200 hover:bg-darkGray/30 px-2 py-2"
             >
               Details
             </TabsTrigger>
             <TabsTrigger
               value="system"
-              className="text-gray-400 text-sm font-medium data-[state=active]:bg-darkGray data-[state=active]:text-white data-[state=active]:shadow-sm rounded-lg transition-all duration-200 hover:text-gray-200 hover:bg-darkGray/30 px-3 py-2"
+              className="text-gray-400 text-sm font-medium data-[state=active]:bg-darkGray data-[state=active]:text-white data-[state=active]:shadow-sm rounded-lg transition-all duration-200 hover:text-gray-200 hover:bg-darkGray/30 px-2 py-2"
             >
               System
             </TabsTrigger>
@@ -500,6 +589,381 @@ export function IssueEditDialog({
             </div>
           </TabsContent>
 
+          <TabsContent value="timeline" className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="estimatedDuration" className="text-gray-300">Estimated Duration</Label>
+                {mode === "view" ? (
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-4 w-4 text-gray-400" />
+                    <p className="text-sm text-white bg-darkGray2 px-3 py-2 rounded-md border border-grayBorders">
+                      {issue?.estimatedDuration || "Not specified"}
+                    </p>
+                  </div>
+                ) : (
+                  <Input
+                    id="estimatedDuration"
+                    value={formData.estimatedDuration}
+                    onChange={(e) =>
+                      setFormData({ ...formData, estimatedDuration: e.target.value })
+                    }
+                    className="bg-darkGray border-grayBorders text-white"
+                    placeholder="4-6 hours, 2 days, 1 week"
+                  />
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="deadline" className="text-gray-300">Deadline</Label>
+                {mode === "view" ? (
+                  <div className="flex items-center gap-2">
+                    <CalendarIcon className="h-4 w-4 text-gray-400" />
+                    <p className="text-sm text-white bg-darkGray2 px-3 py-2 rounded-md border border-grayBorders">
+                      {issue?.deadline
+                        ? format(new Date(issue.deadline), "PPP")
+                        : "No deadline set"}
+                    </p>
+                  </div>
+                ) : (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full justify-start text-left font-normal bg-darkGray border-grayBorders text-white hover:bg-darkGray2",
+                          !formData.deadline && "text-gray-400"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {formData.deadline ? format(formData.deadline, "PPP") : "Pick a deadline"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0 bg-darkGray border-grayBorders">
+                      <CalendarComponent
+                        mode="single"
+                        selected={formData.deadline}
+                        onSelect={(date: Date | undefined) => setFormData({ ...formData, deadline: date })}
+                        initialFocus
+                        className="bg-darkGray text-white"
+                      />
+                    </PopoverContent>
+                  </Popover>
+                )}
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-gray-300">Dependencies</Label>
+              {mode === "view" ? (
+                <div className="space-y-2">
+                  {issue?.dependencies && issue.dependencies.length > 0 ? (
+                    issue.dependencies.map((depId) => {
+                      const dependency = allIssues?.find(i => i._id === depId);
+                      return dependency ? (
+                        <div key={depId} className="flex items-center gap-2 p-2 bg-darkGray2 rounded border border-grayBorders">
+                          <LinkIcon className="h-4 w-4 text-gray-400" />
+                          <span className="text-sm text-white">{dependency.title}</span>
+                          <Badge variant="outline" className="text-xs">
+                            {dependency.status}
+                          </Badge>
+                        </div>
+                      ) : null;
+                    })
+                  ) : (
+                    <p className="text-sm text-gray-400">No dependencies</p>
+                  )}
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className="w-full justify-between bg-darkGray border-grayBorders text-white hover:bg-darkGray2"
+                      >
+                        {formData.dependencies.length > 0
+                          ? `${formData.dependencies.length} dependencies selected`
+                          : "Select dependencies..."}
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-full p-0 bg-darkGray border-grayBorders">
+                      <Command className="bg-darkGray">
+                        <CommandInput placeholder="Search issues..." className="text-white" />
+                        <CommandEmpty>No issues found.</CommandEmpty>
+                        <CommandGroup className="max-h-64 overflow-auto">
+                          {allIssues?.filter(i => i._id !== issue?._id).map((issueItem) => (
+                            <CommandItem
+                              key={issueItem._id}
+                              onSelect={() => {
+                                const isSelected = formData.dependencies.includes(issueItem._id);
+                                if (isSelected) {
+                                  setFormData({
+                                    ...formData,
+                                    dependencies: formData.dependencies.filter(id => id !== issueItem._id)
+                                  });
+                                } else {
+                                  setFormData({
+                                    ...formData,
+                                    dependencies: [...formData.dependencies, issueItem._id]
+                                  });
+                                }
+                              }}
+                              className="text-white hover:bg-darkGray2"
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  formData.dependencies.includes(issueItem._id) ? "opacity-100" : "opacity-0"
+                                )}
+                              />
+                              <div className="flex items-center gap-2">
+                                <span className="truncate">{issueItem.title}</span>
+                                <Badge variant="outline" className="text-xs">
+                                  {issueItem.status}
+                                </Badge>
+                              </div>
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                  {formData.dependencies.length > 0 && (
+                    <div className="space-y-2">
+                      {formData.dependencies.map((depId) => {
+                        const dependency = allIssues?.find(i => i._id === depId);
+                        return dependency ? (
+                          <div key={depId} className="flex items-center gap-2 p-2 bg-darkGray2 rounded border border-grayBorders">
+                            <LinkIcon className="h-4 w-4 text-gray-400" />
+                            <span className="text-sm text-white flex-1">{dependency.title}</span>
+                            <Badge variant="outline" className="text-xs">
+                              {dependency.status}
+                            </Badge>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                setFormData({
+                                  ...formData,
+                                  dependencies: formData.dependencies.filter(id => id !== depId)
+                                });
+                              }}
+                              className="h-6 w-6 p-0 text-red-400 hover:text-red-300"
+                            >
+                              <X className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        ) : null;
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="skills" className="space-y-4">
+            <div className="space-y-2">
+              <Label className="text-gray-300">Required Skills</Label>
+              {mode === "view" ? (
+                <div className="flex flex-wrap gap-2">
+                  {issue?.requiredSkills && issue.requiredSkills.length > 0 ? (
+                    issue.requiredSkills.map((skillId) => {
+                      const skill = skills?.find(s => s._id === skillId);
+                      return skill ? (
+                        <Badge
+                          key={skillId}
+                          variant="outline"
+                          className="bg-purple-100 text-purple-700 border-purple-300 flex items-center gap-1"
+                        >
+                          <Skills className="h-3 w-3" />
+                          {skill.name}
+                        </Badge>
+                      ) : null;
+                    })
+                  ) : (
+                    <p className="text-sm text-gray-400">No skills specified</p>
+                  )}
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className="w-full justify-between bg-darkGray border-grayBorders text-white hover:bg-darkGray2"
+                      >
+                        {formData.requiredSkills.length > 0
+                          ? `${formData.requiredSkills.length} skills selected`
+                          : "Select skills..."}
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-full p-0 bg-darkGray border-grayBorders">
+                      <Command className="bg-darkGray">
+                        <CommandInput placeholder="Search skills..." className="text-white" />
+                        <CommandEmpty>No skills found.</CommandEmpty>
+                        <CommandGroup className="max-h-64 overflow-auto">
+                          {skills?.map((skill) => (
+                            <CommandItem
+                              key={skill._id}
+                              onSelect={() => {
+                                const isSelected = formData.requiredSkills.includes(skill._id);
+                                if (isSelected) {
+                                  setFormData({
+                                    ...formData,
+                                    requiredSkills: formData.requiredSkills.filter(id => id !== skill._id)
+                                  });
+                                } else {
+                                  setFormData({
+                                    ...formData,
+                                    requiredSkills: [...formData.requiredSkills, skill._id]
+                                  });
+                                }
+                              }}
+                              className="text-white hover:bg-darkGray2"
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  formData.requiredSkills.includes(skill._id) ? "opacity-100" : "opacity-0"
+                                )}
+                              />
+                              <div className="flex items-center gap-2">
+                                <Skills className="h-4 w-4 text-purple-500" />
+                                <span>{skill.name}</span>
+                                {skill.category && (
+                                  <Badge variant="outline" className="text-xs">
+                                    {skill.category}
+                                  </Badge>
+                                )}
+                              </div>
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                  {formData.requiredSkills.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {formData.requiredSkills.map((skillId) => {
+                        const skill = skills?.find(s => s._id === skillId);
+                        return skill ? (
+                          <Badge
+                            key={skillId}
+                            variant="outline"
+                            className="bg-purple-100 text-purple-700 border-purple-300 flex items-center gap-1"
+                          >
+                            <Skills className="h-3 w-3" />
+                            {skill.name}
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="ml-1 h-4 w-4 p-0 hover:bg-purple-200"
+                              onClick={() => {
+                                setFormData({
+                                  ...formData,
+                                  requiredSkills: formData.requiredSkills.filter(id => id !== skillId)
+                                });
+                              }}
+                            >
+                              <X className="h-3 w-3" />
+                            </Button>
+                          </Badge>
+                        ) : null;
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label className="text-gray-300">Requirements Checklist</Label>
+                {mode === "edit" && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setFormData({
+                        ...formData,
+                        requirements: [...formData.requirements, { text: "", completed: false }]
+                      });
+                    }}
+                    className="bg-darkGray border-grayBorders text-white hover:bg-darkGray2"
+                  >
+                    <Plus className="h-4 w-4 mr-1" />
+                    Add Requirement
+                  </Button>
+                )}
+              </div>
+              {formData.requirements.length > 0 ? (
+                <div className="space-y-2 max-h-64 overflow-y-auto">
+                  {formData.requirements.map((req, index) => (
+                    <div key={index} className="flex items-start gap-2 p-3 bg-darkGray2 rounded border border-grayBorders">
+                      <Checkbox
+                        checked={req.completed}
+                        onCheckedChange={(checked) => {
+                          if (mode === "edit") {
+                            const updated = [...formData.requirements];
+                            updated[index] = { ...updated[index], completed: !!checked };
+                            setFormData({ ...formData, requirements: updated });
+                          }
+                        }}
+                        disabled={mode === "view"}
+                        className="mt-0.5"
+                      />
+                      {mode === "view" ? (
+                        <div className="flex-1">
+                          <p className={cn(
+                            "text-sm",
+                            req.completed ? "text-green-400 line-through" : "text-white"
+                          )}>
+                            {req.text}
+                          </p>
+                        </div>
+                      ) : (
+                        <>
+                          <Input
+                            placeholder="Requirement text..."
+                            value={req.text}
+                            onChange={(e) => {
+                              const updated = [...formData.requirements];
+                              updated[index] = { ...updated[index], text: e.target.value };
+                              setFormData({ ...formData, requirements: updated });
+                            }}
+                            className="bg-darkGray border-grayBorders text-white flex-1"
+                          />
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              setFormData({
+                                ...formData,
+                                requirements: formData.requirements.filter((_, i) => i !== index)
+                              });
+                            }}
+                            className="text-red-400 hover:text-red-300 hover:bg-darkGray p-1"
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-gray-400 text-center py-8 bg-darkGray2 rounded border border-grayBorders">
+                  No requirements specified
+                </p>
+              )}
+            </div>
+          </TabsContent>
+
           <TabsContent value="details" className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="longDescription">Detailed Description</Label>
@@ -523,36 +987,13 @@ export function IssueEditDialog({
               )}
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="labels">Labels</Label>
-              {mode === "view" ? (
-                <div className="flex flex-wrap gap-2">
-                  {issue.labels && issue.labels.length > 0 ? (
-                    issue.labels.map((label: string, index: number) => (
-                      <Badge
-                        key={index}
-                        variant="outline"
-                        className="text-xs bg-slate-100 text-slate-700 border-slate-300"
-                      >
-                        {label}
-                      </Badge>
-                    ))
-                  ) : (
-                    <p className="text-sm text-gray-400">No labels</p>
-                  )}
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <Input
-                    id="labels"
-                    value={formData.labels.join(", ")}
-                    onChange={(e) => handleLabelsChange(e.target.value)}
-                    className="bg-darkGray border-grayBorders text-white"
-                    placeholder="bug, frontend, urgent (comma separated)"
-                  />
-                  {formData.labels.length > 0 && (
-                    <div className="flex flex-wrap gap-2">
-                      {formData.labels.map((label: string, index: number) => (
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="labels">Labels</Label>
+                {mode === "view" ? (
+                  <div className="flex flex-wrap gap-2">
+                    {issue.labels && issue.labels.length > 0 ? (
+                      issue.labels.map((label: string, index: number) => (
                         <Badge
                           key={index}
                           variant="outline"
@@ -560,11 +1001,86 @@ export function IssueEditDialog({
                         >
                           {label}
                         </Badge>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
+                      ))
+                    ) : (
+                      <p className="text-sm text-gray-400">No labels</p>
+                    )}
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <Input
+                      id="labels"
+                      value={formData.labels.join(", ")}
+                      onChange={(e) => handleLabelsChange(e.target.value)}
+                      className="bg-darkGray border-grayBorders text-white"
+                      placeholder="bug, frontend, urgent (comma separated)"
+                    />
+                    {formData.labels.length > 0 && (
+                      <div className="flex flex-wrap gap-2">
+                        {formData.labels.map((label: string, index: number) => (
+                          <Badge
+                            key={index}
+                            variant="outline"
+                            className="text-xs bg-slate-100 text-slate-700 border-slate-300"
+                          >
+                            {label}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="category">Category</Label>
+                {mode === "view" ? (
+                  <div className="flex flex-wrap gap-2">
+                    {issue.category && issue.category.length > 0 ? (
+                      issue.category.map((cat: string, index: number) => (
+                        <Badge
+                          key={index}
+                          variant="outline"
+                          className="text-xs bg-blue-100 text-blue-700 border-blue-300"
+                        >
+                          {cat}
+                        </Badge>
+                      ))
+                    ) : (
+                      <p className="text-sm text-gray-400">No categories</p>
+                    )}
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <Input
+                      id="category"
+                      value={formData.category.join(", ")}
+                      onChange={(e) => {
+                        const categories = e.target.value
+                          .split(",")
+                          .map((cat) => cat.trim())
+                          .filter(Boolean);
+                        setFormData({ ...formData, category: categories });
+                      }}
+                      className="bg-darkGray border-grayBorders text-white"
+                      placeholder="ui, api, database (comma separated)"
+                    />
+                    {formData.category.length > 0 && (
+                      <div className="flex flex-wrap gap-2">
+                        {formData.category.map((cat: string, index: number) => (
+                          <Badge
+                            key={index}
+                            variant="outline"
+                            className="text-xs bg-blue-100 text-blue-700 border-blue-300"
+                          >
+                            {cat}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="space-y-2">

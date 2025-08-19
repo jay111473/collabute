@@ -82,31 +82,20 @@ export function GitHubAccessVerification({
 
               <div className="text-center space-y-2">
                 <h3 className="text-xl font-semibold text-white">
-                  Complete GitHub Setup
+                  Install GitHub App
                 </h3>
                 <p className="text-gray-400">
-                  Great! Your GitHub account is connected. Let&apos;s complete
-                  the setup by granting repository creation permissions for your
-                  projects.
+                  Great! Your GitHub account is connected. Now install our GitHub App
+                  to enable repository creation and collaboration features.
                 </p>
               </div>
 
               <Button
                 onClick={connectGitHub}
-                disabled={isLoading}
                 className="w-full gap-x-2 bg-white dark:bg-white text-black dark:text-black hover:bg-white/90 dark:hover:bg-white/90 hover:scale-[1.02] transition-all duration-200"
               >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Reconnecting...
-                  </>
-                ) : (
-                  <>
-                    <GithubIcon />
-                    Grant Repository Permissions
-                  </>
-                )}
+                <GithubIcon />
+                Install GitHub App
               </Button>
             </div>
           </Card>
@@ -140,26 +129,26 @@ export function GitHubAccessVerification({
 
             <div className="text-center space-y-2">
               <h3 className="text-xl font-semibold text-white">
-                Connect Your GitHub Account
+                Install GitHub App
               </h3>
               <p className="text-gray-400">
-                Let&apos;s connect your GitHub account to enable repository
-                creation for your projects. This helps us automatically set up
-                your project infrastructure when approved.
+                Install our GitHub App to enable repository creation and
+                collaboration features for your projects. This allows us to
+                automatically set up your project infrastructure.
               </p>
             </div>
 
             {/* Setup progress */}
             <div className="w-full space-y-2 text-sm">
               <div className="flex items-center justify-between p-3 bg-darkGray rounded-lg">
-                <span className="text-gray-300">Step 1: GitHub Connection</span>
+                <span className="text-gray-300">Step 1: GitHub App Installation</span>
                 <span className="text-gray-400 flex items-center gap-1">
                   <ArrowRight className="h-3 w-3" />
                   Pending
                 </span>
               </div>
               <div className="flex items-center justify-between p-3 bg-darkGray rounded-lg">
-                <span className="text-gray-300">Step 2: Repository Access</span>
+                <span className="text-gray-300">Step 2: Account Setup</span>
                 <span className="text-gray-400 flex items-center gap-1">
                   <ArrowRight className="h-3 w-3" />
                   Pending
@@ -169,25 +158,15 @@ export function GitHubAccessVerification({
 
             <Button
               onClick={connectGitHub}
-              disabled={isLoading}
               className="w-full gap-x-2 bg-white dark:bg-white text-black dark:text-black hover:bg-white/90 dark:hover:bg-white/90 hover:scale-[1.02] transition-all duration-200"
             >
-              {isLoading ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Connecting...
-                </>
-              ) : (
-                <>
-                  <GithubIcon />
-                  Connect GitHub Account
-                </>
-              )}
+              <GithubIcon />
+              Install GitHub App
             </Button>
 
             <div className="text-center text-xs text-gray-500">
               <p>
-                You&apos;ll be redirected to GitHub to complete the connection.
+                You&apos;ll be redirected to GitHub to install our app.
                 This only takes a few seconds and then we can continue setting
                 up your project.
               </p>

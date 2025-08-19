@@ -14,6 +14,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
 import {
   Dialog,
   DialogContent,
@@ -23,7 +27,6 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
@@ -48,9 +51,21 @@ import {
   AlertTriangle,
   Flame,
   Minus,
+  Clock,
+  CalendarIcon,
+  Skills,
+  FileText,
+  Link as LinkIcon,
+  CheckSquare,
+  X,
+  Check,
+  ChevronDown,
+  ChevronsUpDown,
 } from "lucide-react";
 import { Issue } from "@/types/convex";
 import { IssueEditDialog } from "./issue-edit-dialog";
+import { cn } from "@/lib/utils";
+import { format } from "date-fns";
 
 export function IssuesTable() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -62,6 +77,7 @@ export function IssuesTable() {
   const [formData, setFormData] = useState({
     title: "",
     description: "",
+    longDescription: "",
     status: "OPEN" as string,
     priority: "MEDIUM" as string,
     type: "BUG" as string,
@@ -69,11 +85,22 @@ export function IssuesTable() {
     reporterId: "",
     projectId: "",
     budget: "",
+    estimatedDuration: "",
+    deadline: undefined as Date | undefined,
+    requiredSkills: [] as string[],
+    requirements: [] as Array<{ text: string; completed: boolean }>,
+    dependencies: [] as string[],
+    files: [] as string[],
+    labels: [] as string[],
+    category: [] as string[],
   });
   const issues = useQuery(api.issues.list, {}) as Issue[] | undefined;
   const projects = useQuery(api.projects.list, {}) as any[] | undefined;
   const users = useQuery(api.users.list, {}) as any[] | undefined;
+  const skills = useQuery(api.skills.list, { isActive: true }) as any[] | undefined;
+  const allIssues = useQuery(api.issues.list, {}) as Issue[] | undefined; // For dependencies
   const createIssue = useMutation(api.issues.createIssue);
+  const deleteIssue = useMutation(api.issues.deleteIssue);
 
   const filteredIssues = issues?.filter(
     (issue) =>
@@ -193,6 +220,18 @@ export function IssuesTable() {
     return project?.title || project?.name || "Unknown Project";
   };
 
+  const handleDeleteIssue = async (issueId: string) => {
+    if (!confirm("Are you sure you want to delete this issue? This action cannot be undone.")) {
+      return;
+    }
+
+    try {
+      await deleteIssue({ issueId: issueId as any });
+    } catch (error) {
+      console.error("Failed to delete issue:", error);
+    }
+  };
+
   const handleCreateIssue = async () => {
     if (!formData.title.trim() || !formData.projectId) return;
 
@@ -201,9 +240,17 @@ export function IssuesTable() {
       await createIssue({
         title: formData.title.trim(),
         description: formData.description.trim() || undefined,
+        longDescription: formData.longDescription.trim() || undefined,
         type: formData.type,
         priority: formData.priority,
         budget: formData.budget ? parseFloat(formData.budget) : undefined,
+        estimatedDuration: formData.estimatedDuration || undefined,
+        deadline: formData.deadline ? formData.deadline.getTime() : undefined,
+        requiredSkills: formData.requiredSkills.length > 0 ? formData.requiredSkills as any : undefined,
+        requirements: formData.requirements.length > 0 ? formData.requirements : undefined,
+        dependencies: formData.dependencies.length > 0 ? formData.dependencies as any : undefined,
+        labels: formData.labels.length > 0 ? formData.labels : undefined,
+        category: formData.category.length > 0 ? formData.category : undefined,
         projectId: formData.projectId as any,
         assigneeIds: formData.assigneeId
           ? [formData.assigneeId as any]
@@ -214,6 +261,7 @@ export function IssuesTable() {
       setFormData({
         title: "",
         description: "",
+        longDescription: "",
         status: "OPEN",
         priority: "MEDIUM",
         type: "BUG",
@@ -221,12 +269,40 @@ export function IssuesTable() {
         reporterId: "",
         projectId: "",
         budget: "",
+        estimatedDuration: "",
+        deadline: undefined,
+        requiredSkills: [],
+        requirements: [],
+        dependencies: [],
+        files: [],
+        labels: [],
+        category: [],
       });
     } catch (error) {
       console.error("Failed to create issue:", error);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const addRequirement = () => {
+    setFormData({
+      ...formData,
+      requirements: [...formData.requirements, { text: "", completed: false }]
+    });
+  };
+
+  const removeRequirement = (index: number) => {
+    setFormData({
+      ...formData,
+      requirements: formData.requirements.filter((_, i) => i !== index)
+    });
+  };
+
+  const updateRequirement = (index: number, field: 'text' | 'completed', value: string | boolean) => {
+    const updated = [...formData.requirements];
+    updated[index] = { ...updated[index], [field]: value };
+    setFormData({ ...formData, requirements: updated });
   };
 
   const handleViewIssue = (issue: Issue) => {
@@ -283,7 +359,13 @@ export function IssuesTable() {
                 Budget
               </TableHead>
               <TableHead className="text-gray-300 font-medium px-4 py-4">
-                Category
+                Duration
+              </TableHead>
+              <TableHead className="text-gray-300 font-medium px-4 py-4">
+                Deadline
+              </TableHead>
+              <TableHead className="text-gray-300 font-medium px-4 py-4">
+                Skills
               </TableHead>
               <TableHead className="text-right text-gray-300 font-medium px-6 py-4">
                 Actions
@@ -330,23 +412,43 @@ export function IssuesTable() {
                   </div>
                 </TableCell>
                 <TableCell className="px-4 py-4">
+                  <div className="flex items-center gap-1 text-sm text-gray-300">
+                    <Clock className="h-3 w-3" />
+                    {issue.estimatedDuration || "N/A"}
+                  </div>
+                </TableCell>
+                <TableCell className="px-4 py-4">
+                  <div className="flex items-center gap-1 text-sm text-gray-300">
+                    <CalendarIcon className="h-3 w-3" />
+                    {issue.deadline
+                      ? format(new Date(issue.deadline), "MMM d, yyyy")
+                      : "No deadline"}
+                  </div>
+                </TableCell>
+                <TableCell className="px-4 py-4">
                   <div className="flex flex-wrap gap-1">
-                    {issue.category?.slice(0, 2).map((cat) => (
+                    {issue.requiredSkills?.slice(0, 2).map((skillId) => {
+                      const skill = skills?.find(s => s._id === skillId);
+                      return skill ? (
+                        <Badge
+                          key={skillId}
+                          variant="outline"
+                          className="text-xs bg-purple-100 text-purple-700 border-purple-300"
+                        >
+                          {skill.name}
+                        </Badge>
+                      ) : null;
+                    })}
+                    {issue.requiredSkills && issue.requiredSkills.length > 2 && (
                       <Badge
-                        key={cat}
                         variant="outline"
-                        className="text-xs bg-slate-100 text-slate-700 border-slate-300"
+                        className="text-xs bg-purple-100 text-purple-700 border-purple-300"
                       >
-                        {cat}
+                        +{issue.requiredSkills.length - 2}
                       </Badge>
-                    ))}
-                    {issue.category && issue.category.length > 2 && (
-                      <Badge
-                        variant="outline"
-                        className="text-xs bg-slate-100 text-slate-700 border-slate-300"
-                      >
-                        +{issue.category.length - 2}
-                      </Badge>
+                    )}
+                    {(!issue.requiredSkills || issue.requiredSkills.length === 0) && (
+                      <span className="text-xs text-gray-500">No skills</span>
                     )}
                   </div>
                 </TableCell>
@@ -372,6 +474,7 @@ export function IssuesTable() {
                       variant="ghost"
                       size="sm"
                       className="text-red-600 hover:text-red-300 hover:bg-darkGray2 transition-colors duration-150"
+                      onClick={() => handleDeleteIssue(issue._id)}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -388,7 +491,7 @@ export function IssuesTable() {
       )}
 
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-        <DialogContent className="sm:max-w-md bg-darkGray border-grayBorders">
+        <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto bg-darkGray border-grayBorders">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Plus className="h-5 w-5" />
@@ -527,18 +630,253 @@ export function IssuesTable() {
               </Select>
             </div>
 
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="budget">Budget</Label>
+                <Input
+                  id="budget"
+                  type="number"
+                  placeholder="1000"
+                  value={formData.budget}
+                  onChange={(e) =>
+                    setFormData({ ...formData, budget: e.target.value })
+                  }
+                  className="bg-darkGray border-grayBorders text-white"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="estimatedDuration">Estimated Duration</Label>
+                <Input
+                  id="estimatedDuration"
+                  placeholder="4-6 hours, 2 days, 1 week"
+                  value={formData.estimatedDuration}
+                  onChange={(e) =>
+                    setFormData({ ...formData, estimatedDuration: e.target.value })
+                  }
+                  className="bg-darkGray border-grayBorders text-white"
+                />
+              </div>
+            </div>
+
             <div className="space-y-2">
-              <Label htmlFor="budget">Budget</Label>
-              <Input
-                id="budget"
-                type="number"
-                placeholder="1000"
-                value={formData.budget}
+              <Label htmlFor="longDescription">Detailed Description</Label>
+              <Textarea
+                id="longDescription"
+                placeholder="Detailed requirements, acceptance criteria, technical details..."
+                value={formData.longDescription}
                 onChange={(e) =>
-                  setFormData({ ...formData, budget: e.target.value })
+                  setFormData({ ...formData, longDescription: e.target.value })
                 }
-                className="bg-darkGray border-grayBorders text-white"
+                className="bg-darkGray border-grayBorders min-h-[100px]"
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="deadline">Deadline</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal bg-darkGray border-grayBorders text-white hover:bg-darkGray2",
+                      !formData.deadline && "text-gray-400"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {formData.deadline ? format(formData.deadline, "PPP") : "Pick a deadline"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0 bg-darkGray border-grayBorders">
+                  <Calendar
+                    mode="single"
+                    selected={formData.deadline}
+                    onSelect={(date: Date | undefined) => setFormData({ ...formData, deadline: date })}
+                    initialFocus
+                    className="bg-darkGray text-white"
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="requiredSkills">Required Skills</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    className="w-full justify-between bg-darkGray border-grayBorders text-white hover:bg-darkGray2"
+                  >
+                    {formData.requiredSkills.length > 0
+                      ? `${formData.requiredSkills.length} skills selected`
+                      : "Select skills..."}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-full p-0 bg-darkGray border-grayBorders">
+                  <Command className="bg-darkGray">
+                    <CommandInput placeholder="Search skills..." className="text-white" />
+                    <CommandEmpty>No skills found.</CommandEmpty>
+                    <CommandGroup className="max-h-64 overflow-auto">
+                      {skills?.map((skill) => (
+                        <CommandItem
+                          key={skill._id}
+                          onSelect={() => {
+                            const isSelected = formData.requiredSkills.includes(skill._id);
+                            if (isSelected) {
+                              setFormData({
+                                ...formData,
+                                requiredSkills: formData.requiredSkills.filter(id => id !== skill._id)
+                              });
+                            } else {
+                              setFormData({
+                                ...formData,
+                                requiredSkills: [...formData.requiredSkills, skill._id]
+                              });
+                            }
+                          }}
+                          className="text-white hover:bg-darkGray2"
+                        >
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              formData.requiredSkills.includes(skill._id) ? "opacity-100" : "opacity-0"
+                            )}
+                          />
+                          {skill.name}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+              {formData.requiredSkills.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {formData.requiredSkills.map((skillId) => {
+                    const skill = skills?.find(s => s._id === skillId);
+                    return skill ? (
+                      <Badge
+                        key={skillId}
+                        variant="outline"
+                        className="bg-purple-100 text-purple-700 border-purple-300"
+                      >
+                        {skill.name}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="ml-1 h-4 w-4 p-0 hover:bg-purple-200"
+                          onClick={() => {
+                            setFormData({
+                              ...formData,
+                              requiredSkills: formData.requiredSkills.filter(id => id !== skillId)
+                            });
+                          }}
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </Badge>
+                    ) : null;
+                  })}
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label>Requirements Checklist</Label>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={addRequirement}
+                  className="bg-darkGray border-grayBorders text-white hover:bg-darkGray2"
+                >
+                  <Plus className="h-4 w-4 mr-1" />
+                  Add Requirement
+                </Button>
+              </div>
+              {formData.requirements.length > 0 && (
+                <div className="space-y-2 max-h-48 overflow-y-auto">
+                  {formData.requirements.map((req, index) => (
+                    <div key={index} className="flex items-center gap-2 p-2 bg-darkGray2 rounded border border-grayBorders">
+                      <Checkbox
+                        checked={req.completed}
+                        onCheckedChange={(checked) => updateRequirement(index, 'completed', !!checked)}
+                      />
+                      <Input
+                        placeholder="Requirement text..."
+                        value={req.text}
+                        onChange={(e) => updateRequirement(index, 'text', e.target.value)}
+                        className="bg-darkGray border-grayBorders text-white flex-1"
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeRequirement(index)}
+                        className="text-red-400 hover:text-red-300 hover:bg-darkGray p-1"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="labels">Labels</Label>
+                <Input
+                  id="labels"
+                  placeholder="urgent, frontend, bug (comma-separated)"
+                  value={formData.labels.join(", ")}
+                  onChange={(e) => {
+                    const labels = e.target.value
+                      .split(",")
+                      .map(label => label.trim())
+                      .filter(Boolean);
+                    setFormData({ ...formData, labels });
+                  }}
+                  className="bg-darkGray border-grayBorders text-white"
+                />
+                {formData.labels.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {formData.labels.map((label, index) => (
+                      <Badge key={index} variant="outline" className="bg-slate-100 text-slate-700 border-slate-300">
+                        {label}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="category">Category</Label>
+                <Input
+                  id="category"
+                  placeholder="ui, api, database (comma-separated)"
+                  value={formData.category.join(", ")}
+                  onChange={(e) => {
+                    const category = e.target.value
+                      .split(",")
+                      .map(cat => cat.trim())
+                      .filter(Boolean);
+                    setFormData({ ...formData, category });
+                  }}
+                  className="bg-darkGray border-grayBorders text-white"
+                />
+                {formData.category.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {formData.category.map((cat, index) => (
+                      <Badge key={index} variant="outline" className="bg-blue-100 text-blue-700 border-blue-300">
+                        {cat}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
@@ -553,7 +891,7 @@ export function IssuesTable() {
             <Button
               onClick={handleCreateIssue}
               disabled={
-                !formData.title.trim() || !formData.projectId || isLoading
+                !formData.title.trim() || !formData.projectId || !formData.type || !formData.priority || isLoading
               }
               className="bg-blue-600 hover:bg-blue-700 text-white"
             >

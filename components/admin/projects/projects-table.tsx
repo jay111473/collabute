@@ -43,6 +43,7 @@ import {
 import { Project } from "@/types/convex";
 import { ProjectEditDialog } from "./project-edit-dialog";
 import { Id } from "@/convex/_generated/dataModel";
+import { PROJECT_TYPE } from "@/convex/schema";
 
 export function ProjectsTable() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -56,6 +57,7 @@ export function ProjectsTable() {
     description: "",
     ownerId: "",
     teamLeadId: "",
+    type: "" as string,
     status: "PLANNED" as string,
     budget: "",
     isPublic: true,
@@ -132,6 +134,7 @@ export function ProjectsTable() {
         description: formData.description.trim(),
         ownerId: formData.ownerId as any,
         teamLeadId: formData.teamLeadId as Id<"users">,
+        type: formData.type as any,
         startDate: Date.now(),
         budget: formData.budget ? parseFloat(formData.budget) : undefined,
       });
@@ -142,6 +145,7 @@ export function ProjectsTable() {
         description: "",
         ownerId: "",
         teamLeadId: "",
+        type: "",
         status: "PLANNED",
         budget: "",
         isPublic: true,
@@ -199,6 +203,9 @@ export function ProjectsTable() {
                 Status
               </TableHead>
               <TableHead className="text-gray-300 font-medium px-4 py-4">
+                Type
+              </TableHead>
+              <TableHead className="text-gray-300 font-medium px-4 py-4">
                 Owner
               </TableHead>
               <TableHead className="text-gray-300 font-medium px-4 py-4">
@@ -233,6 +240,11 @@ export function ProjectsTable() {
                 </TableCell>
                 <TableCell className="px-4 py-4">
                   {getStatusBadge(project.status)}
+                </TableCell>
+                <TableCell className="px-4 py-4">
+                  <Badge variant="outline" className="text-xs bg-purple-100 text-purple-700 border-purple-300">
+                    {project.type?.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase()) || "N/A"}
+                  </Badge>
                 </TableCell>
                 <TableCell className="px-4 py-4">
                   <div className="text-sm text-gray-300">
@@ -310,14 +322,14 @@ export function ProjectsTable() {
       )}
 
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-lg bg-darkGray border-grayBorders">
           <DialogHeader>
-            <DialogTitle>Create New Project</DialogTitle>
+            <DialogTitle className="text-white">Create New Project</DialogTitle>
           </DialogHeader>
 
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Project Name *</Label>
+              <Label htmlFor="name" className="text-gray-300">Project Name *</Label>
               <Input
                 id="name"
                 placeholder="Project title"
@@ -330,7 +342,7 @@ export function ProjectsTable() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description">Description *</Label>
+              <Label htmlFor="description" className="text-gray-300">Description *</Label>
               <Textarea
                 id="description"
                 placeholder="Project description..."
@@ -342,29 +354,63 @@ export function ProjectsTable() {
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="ownerId">Owner *</Label>
-              <Select
-                value={formData.ownerId}
-                onValueChange={(value) =>
-                  setFormData({ ...formData, ownerId: value })
-                }
-              >
-                <SelectTrigger className="bg-darkGray border-grayBorders text-white">
-                  <SelectValue placeholder="Select owner" />
-                </SelectTrigger>
-                <SelectContent>
-                  {users?.map((user) => (
-                    <SelectItem key={user._id} value={user._id}>
-                      {user.email || user.name || "Unknown User"}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="ownerId" className="text-gray-300">Owner *</Label>
+                <Select
+                  value={formData.ownerId}
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, ownerId: value })
+                  }
+                >
+                  <SelectTrigger className="bg-darkGray border-grayBorders text-white">
+                    <SelectValue placeholder="Select owner" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-darkGray border-grayBorders">
+                    {users?.map((user) => (
+                      <SelectItem key={user._id} value={user._id} className="text-white hover:bg-darkGray2">
+                        {user.email || user.name || "Unknown User"}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="type" className="text-gray-300">Project Type *</Label>
+                <Select
+                  value={formData.type}
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, type: value })
+                  }
+                >
+                  <SelectTrigger className="bg-darkGray border-grayBorders text-white">
+                    <SelectValue placeholder="Select project type" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-darkGray border-grayBorders max-h-[300px]">
+                    <SelectItem value="frontend" className="text-white hover:bg-darkGray2">Frontend</SelectItem>
+                    <SelectItem value="backend" className="text-white hover:bg-darkGray2">Backend</SelectItem>
+                    <SelectItem value="devops" className="text-white hover:bg-darkGray2">DevOps</SelectItem>
+                    <SelectItem value="mobile" className="text-white hover:bg-darkGray2">Mobile</SelectItem>
+                    <SelectItem value="data_analytics" className="text-white hover:bg-darkGray2">Data Analytics</SelectItem>
+                    <SelectItem value="ai_ml" className="text-white hover:bg-darkGray2">AI/ML</SelectItem>
+                    <SelectItem value="embedded_iot" className="text-white hover:bg-darkGray2">Embedded/IoT</SelectItem>
+                    <SelectItem value="desktop" className="text-white hover:bg-darkGray2">Desktop</SelectItem>
+                    <SelectItem value="game" className="text-white hover:bg-darkGray2">Game</SelectItem>
+                    <SelectItem value="blockchain_web3" className="text-white hover:bg-darkGray2">Blockchain/Web3</SelectItem>
+                    <SelectItem value="cloud_infrastructure" className="text-white hover:bg-darkGray2">Cloud Infrastructure</SelectItem>
+                    <SelectItem value="security" className="text-white hover:bg-darkGray2">Security</SelectItem>
+                    <SelectItem value="database" className="text-white hover:bg-darkGray2">Database</SelectItem>
+                    <SelectItem value="api_integration" className="text-white hover:bg-darkGray2">API Integration</SelectItem>
+                    <SelectItem value="ar_vr" className="text-white hover:bg-darkGray2">AR/VR</SelectItem>
+                    <SelectItem value="audio_video" className="text-white hover:bg-darkGray2">Audio/Video</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="teamLeadId">Team Lead</Label>
+              <Label htmlFor="teamLeadId" className="text-gray-300">Team Lead</Label>
               <Select
                 value={formData.teamLeadId || "none"}
                 onValueChange={(value) =>
@@ -377,10 +423,10 @@ export function ProjectsTable() {
                 <SelectTrigger className="bg-darkGray border-grayBorders text-white">
                   <SelectValue placeholder="Select team lead (optional)" />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">No team lead</SelectItem>
+                <SelectContent className="bg-darkGray border-grayBorders">
+                  <SelectItem value="none" className="text-white hover:bg-darkGray2">No team lead</SelectItem>
                   {users?.map((user) => (
-                    <SelectItem key={user._id} value={user._id}>
+                    <SelectItem key={user._id} value={user._id} className="text-white hover:bg-darkGray2">
                       {user.email || user.name || "Unknown User"}
                     </SelectItem>
                   ))}
@@ -389,7 +435,7 @@ export function ProjectsTable() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="budget">Budget</Label>
+              <Label htmlFor="budget" className="text-gray-300">Budget</Label>
               <Input
                 id="budget"
                 type="number"
@@ -403,7 +449,7 @@ export function ProjectsTable() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="repositoryUrl">Repository URL</Label>
+              <Label htmlFor="repositoryUrl" className="text-gray-300">Repository URL</Label>
               <Input
                 id="repositoryUrl"
                 placeholder="https://github.com/user/repo"
@@ -423,7 +469,7 @@ export function ProjectsTable() {
                   setFormData({ ...formData, isPublic: checked })
                 }
               />
-              <Label htmlFor="isPublic">Public</Label>
+              <Label htmlFor="isPublic" className="text-gray-300">Public</Label>
             </div>
           </div>
 
@@ -432,6 +478,7 @@ export function ProjectsTable() {
               variant="outline"
               onClick={() => setIsCreateOpen(false)}
               disabled={isLoading}
+              className="text-white bg-darkGray border-grayBorders hover:bg-darkGray2"
             >
               Cancel
             </Button>
@@ -441,6 +488,7 @@ export function ProjectsTable() {
                 !formData.name.trim() ||
                 !formData.description.trim() ||
                 !formData.ownerId ||
+                !formData.type ||
                 isLoading
               }
               className="bg-blue-600 hover:bg-blue-700 text-white"

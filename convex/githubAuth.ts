@@ -44,7 +44,7 @@ export const checkGitHubConnection = query({
 
       return {
         isConnected: true,
-        hasGitHubAccess: githubProfile.githubConnected,
+        hasGitHubAccess: githubProfile.githubConnected && !!githubProfile.githubInstallationId,
         githubUsername: githubProfile.githubUsername,
         error: null,
       };

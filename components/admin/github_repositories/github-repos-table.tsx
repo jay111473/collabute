@@ -129,7 +129,8 @@ export function GitHubReposTable() {
     };
 
     const colorClass =
-      languageColors[language] || "bg-gray-100 text-gray-300 border-grayBorders";
+      languageColors[language] ||
+      "bg-gray-100 text-gray-300 border-grayBorders";
 
     return (
       <Badge variant="outline" className={`text-xs ${colorClass}`}>
@@ -327,7 +328,7 @@ export function GitHubReposTable() {
                 </TableCell>
                 <TableCell className="px-4 py-4">
                   <div className="text-sm text-gray-300">
-                    {formatDate(repo.lastSyncAt)}
+                    {formatDate(repo.lastSyncedAt)}
                   </div>
                 </TableCell>
                 <TableCell className="text-right px-6 py-4">

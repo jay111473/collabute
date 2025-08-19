@@ -190,7 +190,7 @@ export const updateGitHubData = mutation({
           defaultBranch: repo.default_branch,
           stargazersCount: repo.stargazers_count,
           forksCount: repo.forks_count,
-          lastSyncAt: Date.now(),
+          lastSyncedAt: Date.now(),
         });
       } else {
         await ctx.db.insert("github_repositories", {
@@ -205,9 +205,14 @@ export const updateGitHubData = mutation({
           language: repo.language,
           stargazersCount: repo.stargazers_count,
           forksCount: repo.forks_count,
+          openIssuesCount: 0, // Will be updated by sync
           defaultBranch: repo.default_branch,
+          githubCreatedAt: new Date().toISOString(), // Placeholder
+          githubUpdatedAt: new Date().toISOString(), // Placeholder
+          githubInstallationId: "", // Will be updated when GitHub App is installed
+          syncStatus: "pending",
           isActive: true,
-          lastSyncAt: Date.now(),
+          lastSyncedAt: Date.now(),
         });
       }
     }

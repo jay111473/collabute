@@ -91,7 +91,8 @@ export type UserInsert = WithoutSystemFields<User>;
 export type MediaInsert = WithoutSystemFields<Media>;
 export type DeveloperProfileInsert = WithoutSystemFields<DeveloperProfile>;
 export type LeadProfileInsert = WithoutSystemFields<LeadProfile>;
-export type ProjectManagerProfileInsert = WithoutSystemFields<ProjectManagerProfile>;
+export type ProjectManagerProfileInsert =
+  WithoutSystemFields<ProjectManagerProfile>;
 export type StartupProfileInsert = WithoutSystemFields<StartupProfile>;
 export type GithubProfileInsert = WithoutSystemFields<GithubProfile>;
 export type RoleInsert = WithoutSystemFields<Role>;
@@ -178,7 +179,11 @@ export type SearchArgs = {
 };
 
 // Profile union type for user profiles
-export type UserProfile = DeveloperProfile | LeadProfile | ProjectManagerProfile | StartupProfile;
+export type UserProfile =
+  | DeveloperProfile
+  | LeadProfile
+  | ProjectManagerProfile
+  | StartupProfile;
 
 // Message with populated user data
 export type MessageWithUser = Message & {
@@ -266,30 +271,42 @@ export type IssueWithRequests = Issue & {
 };
 
 // Enhanced project type as returned by getAllProjects API
-export type EnhancedProject = Omit<Project, 'startDate' | 'endDate' | 'tags'> & {
+export type EnhancedProject = Omit<
+  Project,
+  "startDate" | "endDate" | "tags"
+> & {
   // Date fields transformed to ISO strings
   startDate: string;
   endDate: string | null;
   updatedAt: string;
-  
+
   // Populated owner with media - includes profilePicture media object
-  owner: (User & {
-    profilePicture: Media | null;
-  }) | null;
-  
+  owner:
+    | (User & {
+        profilePicture: Media | null;
+      })
+    | null;
+
   // Populated team lead with media - includes profilePicture media object
-  teamLead: (User & {
-    profilePicture: Media | null;
-  }) | null;
-  
+  teamLead:
+    | (User & {
+        profilePicture: Media | null;
+      })
+    | null;
+
   // Additional counts
   issueCount: number;
   collaboratorCount: number;
-  
+
   // Enhanced fields - tags is transformed to objects with tag and id
   stacks: string[];
   tags: { tag: string; id: string }[];
-  
+
+  progress?: number;
+  deadlineText?: string;
+  budget?: number;
+  createdAt?: string;
+
   // Milestones field from the actual return
   milestones: {
     ideaRefinement: string;
@@ -300,6 +317,26 @@ export type EnhancedProject = Omit<Project, 'startDate' | 'endDate' | 'tags'> & 
     launch: string;
     maintenance: string;
     scaling: string;
+  };
+};
+
+export type ExplorePageData = {
+  typeCounts: {
+    "Back-end": number;
+    "Front-end": number;
+    "QA / Test": number;
+    Deployment: number;
+    Design: number;
+  };
+  featuredProjects: EnhancedProject[];
+  allProjects: EnhancedProject[];
+  pagination: {
+    currentPage: number;
+    totalPages: number;
+    totalProjects: number;
+    hasNextPage: boolean;
+    hasPrevPage: boolean;
+    limit: number;
   };
 };
 

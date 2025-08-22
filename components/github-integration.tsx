@@ -211,7 +211,7 @@ export function GitHubIntegration({
                 onClick={handleSkip}
                 variant="outline"
                 size="lg"
-                className="w-full"
+                className="w-full text-white hover:text-white"
               >
                 Skip for now
               </Button>

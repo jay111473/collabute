@@ -246,6 +246,8 @@ export const projectFields = {
   milestones: v.optional(v.any()),
   productId: v.optional(v.id("products")),
   repositoryId: v.optional(v.id("github_repositories")),
+  createdAt: v.optional(v.number()),
+  updatedAt: v.optional(v.number()),
 };
 
 export const issueFields = {

@@ -13,6 +13,8 @@ export type Filter = {
   apiField?: string // Field name to use in API query
 }
 
+
+
 export const FILTERS: Filter[] = [
   {
     id: 'experience',
